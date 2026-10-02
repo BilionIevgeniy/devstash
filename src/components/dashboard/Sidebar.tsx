@@ -1,19 +1,8 @@
 import Link from "next/link";
-import {
-  Code,
-  File,
-  Image,
-  Layers,
-  Link as LinkIcon,
-  Settings,
-  Sparkles,
-  Star,
-  StickyNote,
-  Terminal,
-  type LucideIcon,
-} from "lucide-react";
+import { Layers, Settings, Star } from "lucide-react";
 
 import { CollapsibleSection } from "@/components/dashboard/CollapsibleSection";
+import { TypeIcon } from "@/components/dashboard/TypeIcon";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   mockCollections,
@@ -21,16 +10,6 @@ import {
   mockItemTypes,
   mockUser,
 } from "@/lib/mock-data";
-
-const TYPE_ICONS: Record<string, LucideIcon> = {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  File,
-  Image,
-  Link: LinkIcon,
-};
 
 const RECENT_COLLECTIONS_LIMIT = 4;
 
@@ -70,13 +49,16 @@ export function Sidebar() {
         <CollapsibleSection title="Types">
           <ul>
             {mockItemTypes.map((type) => {
-              const Icon = TYPE_ICONS[type.icon] ?? File;
               const count =
                 mockItemTypeCounts[type.name as keyof typeof mockItemTypeCounts];
               return (
                 <li key={type.id}>
                   <Link href={`/items/${type.name}s`} className={LINK_CLASS}>
-                    <Icon className="size-4" style={{ color: type.color }} />
+                    <TypeIcon
+                      name={type.icon}
+                      className="size-4"
+                      style={{ color: type.color }}
+                    />
                     <span className="capitalize">{type.name}s</span>
                     <span className="ml-auto text-xs text-muted-foreground">
                       {count}
