@@ -20,5 +20,4 @@ Not Started
 
 <!-- Keep this updated. Earliest to latest -->
 
-- Project setup and boilerplate cleanup
 - Initial Setup: Next.js scaffold, removed default public assets, cleaned up globals.css and page.tsx, added context/ docs and CLAUDE.md

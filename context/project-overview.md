@@ -105,6 +105,7 @@ Full‑text search across:
 model User {
   id                   String   @id @default(cuid())
   email                String   @unique
+  name                 String?
   password             String?
   isPro                Boolean  @default(false)
   stripeCustomerId     String?
@@ -225,6 +226,9 @@ model ItemTag {
 
 ## 🎨 UI / UX
 
+- Refer to screenshots as a base for the dashboard:
+  @context/screenshots/dashboard-ui-drawer.png
+  @context/screenshots/dashboard-ui-main.png
 - Dark mode first
 - Minimal, developer‑friendly UI
 - Syntax highlighting for code
