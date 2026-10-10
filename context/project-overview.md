@@ -138,9 +138,7 @@ model Item {
   typeId      String
   type        ItemType @relation(fields: [typeId], references: [id])
 
-  collectionId String?
-  collection   Collection? @relation(fields: [collectionId], references: [id])
-
+  collections ItemCollection[]
   tags        ItemTag[]
 
   createdAt   DateTime @default(now())
@@ -169,9 +167,20 @@ model Collection {
   userId      String
   user        User @relation(fields: [userId], references: [id])
 
-  items       Item[]
+  items       ItemCollection[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model ItemCollection {
+  itemId       String
+  collectionId String
+  addedAt      DateTime @default(now())
+
+  item       Item       @relation(fields: [itemId], references: [id])
+  collection Collection @relation(fields: [collectionId], references: [id])
+
+  @@id([itemId, collectionId])
 }
 
 model Tag {
