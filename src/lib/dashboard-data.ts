@@ -1,8 +1,7 @@
-import { mockCollections, mockItemTypes, mockItems } from "@/lib/mock-data";
+import { mockItemTypes, mockItems } from "@/lib/mock-data";
 
 export type Item = (typeof mockItems)[number];
 export type ItemType = (typeof mockItemTypes)[number];
-export type Collection = (typeof mockCollections)[number];
 
 const RECENT_ITEMS_LIMIT = 10;
 
@@ -20,25 +19,6 @@ export function getItemType(item: Item): ItemType {
   return type;
 }
 
-/** Distinct item types in a collection, most frequent first (ties keep item order). */
-export function getCollectionTypes(collectionId: string): ItemType[] {
-  const counts = new Map<ItemType, number>();
-  for (const item of mockItems) {
-    if (item.collectionId !== collectionId) continue;
-    const type = getItemType(item);
-    counts.set(type, (counts.get(type) ?? 0) + 1);
-  }
-  return [...counts.entries()]
-    .sort(([, countA], [, countB]) => countB - countA)
-    .map(([type]) => type);
-}
-
-export function getRecentCollections(): Collection[] {
-  return [...mockCollections].sort(
-    (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
-  );
-}
-
 export function getPinnedItems(): Item[] {
   return mockItems.filter((item) => item.isPinned).sort(byNewest);
 }
@@ -50,11 +30,7 @@ export function getRecentItems(): Item[] {
 export function getDashboardStats() {
   return {
     items: mockItems.length,
-    collections: mockCollections.length,
     favoriteItems: mockItems.filter((item) => item.isFavorite).length,
-    favoriteCollections: mockCollections.filter(
-      (collection) => collection.isFavorite,
-    ).length,
   };
 }
 

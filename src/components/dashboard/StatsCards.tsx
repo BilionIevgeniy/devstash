@@ -2,6 +2,7 @@ import { FolderHeart, FolderOpen, Package, Star } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { getDashboardStats } from "@/lib/dashboard-data";
+import { getCollectionStats } from "@/lib/db/collections";
 
 interface StatCardProps {
   label: string;
@@ -21,21 +22,22 @@ function StatCard({ label, value, icon: Icon }: StatCardProps) {
   );
 }
 
-export function StatsCards() {
+export async function StatsCards() {
   const stats = getDashboardStats();
+  const collectionStats = await getCollectionStats();
 
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       <StatCard label="Items" value={stats.items} icon={Package} />
       <StatCard
         label="Collections"
-        value={stats.collections}
+        value={collectionStats.total}
         icon={FolderOpen}
       />
       <StatCard label="Favorite Items" value={stats.favoriteItems} icon={Star} />
       <StatCard
         label="Favorite Collections"
-        value={stats.favoriteCollections}
+        value={collectionStats.favorites}
         icon={FolderHeart}
       />
     </div>

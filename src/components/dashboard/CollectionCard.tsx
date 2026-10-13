@@ -2,14 +2,14 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 
 import { TypeIcon } from "@/components/dashboard/TypeIcon";
-import { getCollectionTypes, type Collection } from "@/lib/dashboard-data";
+import type { DashboardCollection } from "@/types/collections";
 
 interface CollectionCardProps {
-  collection: Collection;
+  collection: DashboardCollection;
 }
 
 export function CollectionCard({ collection }: CollectionCardProps) {
-  const types = getCollectionTypes(collection.id);
+  const { types } = collection;
   const accentColor = types[0]?.color;
 
   return (

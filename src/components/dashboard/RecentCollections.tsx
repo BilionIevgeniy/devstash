@@ -1,9 +1,11 @@
 import Link from "next/link";
 
 import { CollectionCard } from "@/components/dashboard/CollectionCard";
-import { getRecentCollections } from "@/lib/dashboard-data";
+import { getRecentCollections } from "@/lib/db/collections";
 
-export function RecentCollections() {
+export async function RecentCollections() {
+  const collections = await getRecentCollections();
+
   return (
     <section>
       <div className="mb-4 flex items-center justify-between">
@@ -16,7 +18,7 @@ export function RecentCollections() {
         </Link>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {getRecentCollections().map((collection) => (
+        {collections.map((collection) => (
           <CollectionCard key={collection.id} collection={collection} />
         ))}
       </div>
