@@ -1,3 +1,4 @@
+import { DEMO_USER_EMAIL } from "@/lib/db/demo-user";
 import { prisma } from "@/lib/prisma";
 import type {
   CollectionStats,
@@ -5,8 +6,6 @@ import type {
   DashboardCollection,
 } from "@/types/collections";
 
-// Stand-in for the signed-in user until NextAuth is wired up.
-const DEMO_USER_EMAIL = "demo@devstash.io";
 const DEFAULT_TYPE_ICON = "File";
 
 const demoUserCollections = { user: { email: DEMO_USER_EMAIL } };

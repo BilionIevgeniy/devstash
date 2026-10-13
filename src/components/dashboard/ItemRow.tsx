@@ -1,18 +1,15 @@
 import { Pin, Star } from "lucide-react";
 
 import { TypeIcon } from "@/components/dashboard/TypeIcon";
-import {
-  formatShortDate,
-  getItemType,
-  type Item,
-} from "@/lib/dashboard-data";
+import { formatShortDate } from "@/lib/utils";
+import type { DashboardItem } from "@/types/items";
 
 interface ItemRowProps {
-  item: Item;
+  item: DashboardItem;
 }
 
 export function ItemRow({ item }: ItemRowProps) {
-  const type = getItemType(item);
+  const { type } = item;
 
   return (
     <article
