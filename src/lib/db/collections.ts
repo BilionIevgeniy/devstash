@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { DEMO_USER_EMAIL } from "@/lib/db/demo-user";
 import { prisma } from "@/lib/prisma";
 import type {
@@ -38,7 +40,7 @@ function rankTypesByUsage(itemTypes: RawItemType[]): CollectionType[] {
     }));
 }
 
-export async function getRecentCollections(): Promise<DashboardCollection[]> {
+async function fetchRecentCollections(): Promise<DashboardCollection[]> {
   const collections = await prisma.collection.findMany({
     where: demoUserCollections,
     orderBy: { updatedAt: "desc" },
@@ -67,6 +69,9 @@ export async function getRecentCollections(): Promise<DashboardCollection[]> {
     types: rankTypesByUsage(items.map(({ item }) => item.type)),
   }));
 }
+
+// The layout (sidebar) and the page both read this; cache() shares one query per request.
+export const getRecentCollections = cache(fetchRecentCollections);
 
 export async function getCollectionStats(): Promise<CollectionStats> {
   const [total, favorites] = await Promise.all([

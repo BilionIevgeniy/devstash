@@ -16,6 +16,10 @@ export interface DashboardItem {
   type: ItemTypeInfo;
 }
 
+export interface SidebarItemType extends ItemTypeInfo {
+  itemCount: number;
+}
+
 export interface ItemStats {
   total: number;
   favorites: number;

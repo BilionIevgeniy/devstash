@@ -4,22 +4,17 @@ import { Layers, Settings, Star } from "lucide-react";
 import { CollapsibleSection } from "@/components/dashboard/CollapsibleSection";
 import { TypeIcon } from "@/components/dashboard/TypeIcon";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  mockCollections,
-  mockItemTypeCounts,
-  mockItemTypes,
-  mockUser,
-} from "@/lib/mock-data";
+import { getRecentCollections } from "@/lib/db/collections";
+import { getSidebarItemTypes } from "@/lib/db/items";
+import { mockUser } from "@/lib/mock-data";
+import { cn } from "@/lib/utils";
+import type { DashboardCollection } from "@/types/collections";
+import type { SidebarItemType } from "@/types/items";
 
 const RECENT_COLLECTIONS_LIMIT = 4;
 
 const LINK_CLASS =
   "flex items-center gap-3 rounded-md px-2 py-1.5 text-sm hover:bg-accent";
-
-const favoriteCollections = mockCollections.filter((c) => c.isFavorite);
-const recentCollections = [...mockCollections]
-  .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-  .slice(0, RECENT_COLLECTIONS_LIMIT);
 
 function getInitials(name: string) {
   return name
@@ -37,7 +32,113 @@ function GroupLabel({ children }: { children: string }) {
   );
 }
 
-export function Sidebar() {
+function ItemCount({ value }: { value: number }) {
+  return <span className="ml-auto text-xs text-muted-foreground">{value}</span>;
+}
+
+function TypesSection({ itemTypes }: { itemTypes: SidebarItemType[] }) {
+  return (
+    <CollapsibleSection title="Types">
+      <ul>
+        {itemTypes.map((type) => (
+          <li key={type.id}>
+            <Link href={`/items/${type.name}s`} className={LINK_CLASS}>
+              <TypeIcon
+                name={type.icon}
+                className="size-4"
+                style={{ color: type.color }}
+              />
+              <span className="capitalize">{type.name}s</span>
+              <ItemCount value={type.itemCount} />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </CollapsibleSection>
+  );
+}
+
+function CollectionsSection({
+  collections,
+}: {
+  collections: DashboardCollection[];
+}) {
+  const favorites = collections.filter((c) => c.isFavorite);
+  const recent = collections.slice(0, RECENT_COLLECTIONS_LIMIT);
+
+  return (
+    <CollapsibleSection title="Collections">
+      <GroupLabel>Favorites</GroupLabel>
+      <ul>
+        {favorites.map((collection) => (
+          <li key={collection.id}>
+            <Link href={`/collections/${collection.id}`} className={LINK_CLASS}>
+              <Star className="size-4 shrink-0 fill-yellow-400 text-yellow-400" />
+              <span className="truncate">{collection.name}</span>
+              <ItemCount value={collection.itemCount} />
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <GroupLabel>Recent</GroupLabel>
+      <ul>
+        {recent.map((collection) => {
+          const color = collection.types[0]?.color;
+          return (
+            <li key={collection.id}>
+              <Link
+                href={`/collections/${collection.id}`}
+                className={LINK_CLASS}
+              >
+                <span
+                  aria-hidden
+                  className="flex size-4 shrink-0 items-center justify-center"
+                >
+                  <span
+                    className="size-2.5 rounded-full bg-muted-foreground/40"
+                    style={color ? { backgroundColor: color } : undefined}
+                  />
+                </span>
+                <span className="truncate">{collection.name}</span>
+                <ItemCount value={collection.itemCount} />
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+      <Link
+        href="/collections"
+        className={cn(LINK_CLASS, "mt-1 text-muted-foreground")}
+      >
+        View all collections
+      </Link>
+    </CollapsibleSection>
+  );
+}
+
+function UserArea() {
+  return (
+    <div className="flex shrink-0 items-center gap-3 border-t p-4">
+      <Avatar>
+        <AvatarFallback>{getInitials(mockUser.name)}</AvatarFallback>
+      </Avatar>
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium">{mockUser.name}</p>
+        <p className="truncate text-xs text-muted-foreground">
+          {mockUser.email}
+        </p>
+      </div>
+      <Settings className="ml-auto size-4 shrink-0 text-muted-foreground" />
+    </div>
+  );
+}
+
+export async function Sidebar() {
+  const [itemTypes, collections] = await Promise.all([
+    getSidebarItemTypes(),
+    getRecentCollections(),
+  ]);
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-16 shrink-0 items-center gap-2 px-4">
@@ -46,79 +147,11 @@ export function Sidebar() {
       </div>
 
       <nav className="flex-1 space-y-4 overflow-y-auto px-2 py-2">
-        <CollapsibleSection title="Types">
-          <ul>
-            {mockItemTypes.map((type) => {
-              const count =
-                mockItemTypeCounts[type.name as keyof typeof mockItemTypeCounts];
-              return (
-                <li key={type.id}>
-                  <Link href={`/items/${type.name}s`} className={LINK_CLASS}>
-                    <TypeIcon
-                      name={type.icon}
-                      className="size-4"
-                      style={{ color: type.color }}
-                    />
-                    <span className="capitalize">{type.name}s</span>
-                    <span className="ml-auto text-xs text-muted-foreground">
-                      {count}
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </CollapsibleSection>
-
-        <CollapsibleSection title="Collections">
-          <GroupLabel>Favorites</GroupLabel>
-          <ul>
-            {favoriteCollections.map((collection) => (
-              <li key={collection.id}>
-                <Link
-                  href={`/collections/${collection.id}`}
-                  className={LINK_CLASS}
-                >
-                  <Star className="size-4 shrink-0 fill-yellow-400 text-yellow-400" />
-                  <span className="truncate">{collection.name}</span>
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    {collection.itemCount}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <GroupLabel>Recent</GroupLabel>
-          <ul>
-            {recentCollections.map((collection) => (
-              <li key={collection.id}>
-                <Link
-                  href={`/collections/${collection.id}`}
-                  className={LINK_CLASS}
-                >
-                  <span className="truncate">{collection.name}</span>
-                  <span className="ml-auto text-xs text-muted-foreground">
-                    {collection.itemCount}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </CollapsibleSection>
+        <TypesSection itemTypes={itemTypes} />
+        <CollectionsSection collections={collections} />
       </nav>
 
-      <div className="flex shrink-0 items-center gap-3 border-t p-4">
-        <Avatar>
-          <AvatarFallback>{getInitials(mockUser.name)}</AvatarFallback>
-        </Avatar>
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium">{mockUser.name}</p>
-          <p className="truncate text-xs text-muted-foreground">
-            {mockUser.email}
-          </p>
-        </div>
-        <Settings className="ml-auto size-4 shrink-0 text-muted-foreground" />
-      </div>
+      <UserArea />
     </div>
   );
 }

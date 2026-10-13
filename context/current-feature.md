@@ -1,6 +1,6 @@
 # Current Feature
 
-Dashboard Items — @context/features/dashboard-items-spec.md
+Stats & Sidebar — @context/features/stats-sidebar-spec.md
 
 ## Status
 
@@ -8,18 +8,18 @@ Completed
 
 ## Goals
 
-- Replace the mock pinned and recent items in the dashboard main area with real data from the Neon database via Prisma
-- Create `src/lib/db/items.ts` with data fetching functions
-- Fetch items directly in the server component
-- Derive the item card icon and border color from the item type
-- Display item type tags and everything else currently on the cards
-- Update the items stats display
+- Main-area stats: already loaded from the database (`StatsCards` uses `getItemStats` and `getCollectionStats`), so nothing to do here
+- Show the system item types in the sidebar with their icons and per-type item counts from the database, linking to `/items/[typename]`
+- Load the sidebar's favorite and recent collections (with item counts) from the database instead of `src/lib/mock-data.ts`
+- Keep the star icon for favorite collections; for recent collections show a colored circle based on the most-used item type in that collection
+- Add a "View all collections" link under the collections list that goes to `/collections`
+- Add the sidebar database functions to the existing `src/lib/db/items.ts`, using `src/lib/db/collections.ts` as a reference
 
 ## Notes
 
-- If there are no pinned items, nothing should display in the pinned section
-- Keep the current layout and design; only the data source changes (from `src/lib/mock-data.ts` to the database)
-- Layout reference: @context/screenshots/dashboard-ui-main.png
+- Keep the current layout and design; only the data source changes
+- The user area at the bottom of the sidebar is not in the spec and stays on `mockUser`
+- Layout reference: @context/screenshots/dashboard-ui-drawer.png
 
 ## History
 
@@ -30,3 +30,4 @@ Completed
 - Database Setup: Prisma 7 with Neon PostgreSQL (pg driver adapter, prisma.config.ts), initial schema with NextAuth models, many-to-many ItemCollection join table, two migrations (init, item_collections), idempotent seed script (system item types, demo user, collections, items, tags), scripts/test-db.ts for database checks
 - Dashboard Collections: Collections grid and collection stats cards now load from Neon via Prisma (src/lib/db/collections.ts, src/types/collections.ts), card border color from the most-used item type, type icons for all types in a collection, /dashboard set to force-dynamic; items stats, pinned/recent items and sidebar still use mock data
 - Dashboard Items: Pinned items, recent items (20 newest) and the items stats cards now load from Neon via Prisma (src/lib/db/items.ts, src/types/items.ts), item card icon and border color from the item type, tags sorted by name, pinned section hidden when empty; removed the mock helpers in dashboard-data.ts (formatShortDate moved to utils.ts) and shared the demo user email via src/lib/db/demo-user.ts; sidebar still uses mock data
+- Stats & Sidebar: Sidebar item types (with per-type counts) and favorite/recent collections now load from Neon via Prisma (getSidebarItemTypes in src/lib/db/items.ts, getRecentCollections reused and wrapped in cache()), recent collections show a colored circle from their most-used item type, added a "View all collections" link, /dashboard layout set to force-dynamic; main-area stats were already database-backed; user area still uses mockUser
