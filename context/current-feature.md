@@ -1,23 +1,16 @@
-# Current Feature: Add Pro Badge to Sidebar
-
-Add Pro Badge to Sidebar — @context/features/add-pro-badge-sidebar.md
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add a PRO badge to the Files and Images item types in the sidebar
-- Use the ShadCN UI badge component
-- Keep the badge clean and subtle
-- Show the badge text as uppercase "PRO"
+<!-- Goals for the current feature go here -->
 
 ## Notes
 
-- The badge applies only to the Files and Images types
-- The ShadCN badge component was added with the ShadCN CLI (`src/components/ui/badge.tsx`)
-- Keep the current sidebar layout and design; only the badge is added, with no Pro gating logic
+<!-- Additional context, constraints or details from the spec go here -->
 
 ## History
 
@@ -29,3 +22,4 @@ In Progress
 - Dashboard Collections: Collections grid and collection stats cards now load from Neon via Prisma (src/lib/db/collections.ts, src/types/collections.ts), card border color from the most-used item type, type icons for all types in a collection, /dashboard set to force-dynamic; items stats, pinned/recent items and sidebar still use mock data
 - Dashboard Items: Pinned items, recent items (20 newest) and the items stats cards now load from Neon via Prisma (src/lib/db/items.ts, src/types/items.ts), item card icon and border color from the item type, tags sorted by name, pinned section hidden when empty; removed the mock helpers in dashboard-data.ts (formatShortDate moved to utils.ts) and shared the demo user email via src/lib/db/demo-user.ts; sidebar still uses mock data
 - Stats & Sidebar: Sidebar item types (with per-type counts) and favorite/recent collections now load from Neon via Prisma (getSidebarItemTypes in src/lib/db/items.ts, getRecentCollections reused and wrapped in cache()), recent collections show a colored circle from their most-used item type, added a "View all collections" link, /dashboard layout set to force-dynamic; main-area stats were already database-backed; user area still uses mockUser
+- Add Pro Badge to Sidebar: ShadCN badge component added (src/components/ui/badge.tsx); the Files and Images types in the sidebar show a subtle outlined uppercase "PRO" badge (Pro types listed in PRO_TYPE_NAMES in Sidebar.tsx), no Pro gating logic
