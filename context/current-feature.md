@@ -1,25 +1,23 @@
-# Current Feature
+# Current Feature: Add Pro Badge to Sidebar
 
-Stats & Sidebar — @context/features/stats-sidebar-spec.md
+Add Pro Badge to Sidebar — @context/features/add-pro-badge-sidebar.md
 
 ## Status
 
-Completed
+In Progress
 
 ## Goals
 
-- Main-area stats: already loaded from the database (`StatsCards` uses `getItemStats` and `getCollectionStats`), so nothing to do here
-- Show the system item types in the sidebar with their icons and per-type item counts from the database, linking to `/items/[typename]`
-- Load the sidebar's favorite and recent collections (with item counts) from the database instead of `src/lib/mock-data.ts`
-- Keep the star icon for favorite collections; for recent collections show a colored circle based on the most-used item type in that collection
-- Add a "View all collections" link under the collections list that goes to `/collections`
-- Add the sidebar database functions to the existing `src/lib/db/items.ts`, using `src/lib/db/collections.ts` as a reference
+- Add a PRO badge to the Files and Images item types in the sidebar
+- Use the ShadCN UI badge component
+- Keep the badge clean and subtle
+- Show the badge text as uppercase "PRO"
 
 ## Notes
 
-- Keep the current layout and design; only the data source changes
-- The user area at the bottom of the sidebar is not in the spec and stays on `mockUser`
-- Layout reference: @context/screenshots/dashboard-ui-drawer.png
+- The badge applies only to the Files and Images types
+- The ShadCN badge component was added with the ShadCN CLI (`src/components/ui/badge.tsx`)
+- Keep the current sidebar layout and design; only the badge is added, with no Pro gating logic
 
 ## History
 

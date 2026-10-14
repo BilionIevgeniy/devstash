@@ -4,6 +4,7 @@ import { Layers, Settings, Star } from "lucide-react";
 import { CollapsibleSection } from "@/components/dashboard/CollapsibleSection";
 import { TypeIcon } from "@/components/dashboard/TypeIcon";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { getRecentCollections } from "@/lib/db/collections";
 import { getSidebarItemTypes } from "@/lib/db/items";
 import { mockUser } from "@/lib/mock-data";
@@ -12,6 +13,7 @@ import type { DashboardCollection } from "@/types/collections";
 import type { SidebarItemType } from "@/types/items";
 
 const RECENT_COLLECTIONS_LIMIT = 4;
+const PRO_TYPE_NAMES = ["file", "image"];
 
 const LINK_CLASS =
   "flex items-center gap-3 rounded-md px-2 py-1.5 text-sm hover:bg-accent";
@@ -36,6 +38,17 @@ function ItemCount({ value }: { value: number }) {
   return <span className="ml-auto text-xs text-muted-foreground">{value}</span>;
 }
 
+function ProBadge() {
+  return (
+    <Badge
+      variant="outline"
+      className="h-4 px-1.5 text-[10px] uppercase tracking-wide text-muted-foreground"
+    >
+      PRO
+    </Badge>
+  );
+}
+
 function TypesSection({ itemTypes }: { itemTypes: SidebarItemType[] }) {
   return (
     <CollapsibleSection title="Types">
@@ -49,6 +62,7 @@ function TypesSection({ itemTypes }: { itemTypes: SidebarItemType[] }) {
                 style={{ color: type.color }}
               />
               <span className="capitalize">{type.name}s</span>
+              {PRO_TYPE_NAMES.includes(type.name) && <ProBadge />}
               <ItemCount value={type.itemCount} />
             </Link>
           </li>
