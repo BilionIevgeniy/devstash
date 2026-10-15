@@ -9,6 +9,7 @@ import {
   SheetDescription,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 interface DashboardShellProps {
   sidebar: ReactNode;
@@ -21,11 +22,14 @@ export function DashboardShell({ sidebar, children }: DashboardShellProps) {
 
   return (
     <div className="flex h-screen">
-      {isSidebarOpen && (
-        <aside className="hidden w-64 shrink-0 border-r md:block">
-          {sidebar}
-        </aside>
-      )}
+      <aside
+        className={cn(
+          "hidden w-64 shrink-0 border-r",
+          isSidebarOpen && "md:block",
+        )}
+      >
+        {sidebar}
+      </aside>
 
       <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
         <SheetContent

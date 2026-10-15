@@ -54,22 +54,30 @@ function RecentLink({ collection }: CollectionLinkProps) {
 export function CollectionsSection({ favorites, recent }: SidebarCollections) {
   return (
     <CollapsibleSection title="Collections">
-      <GroupLabel>Favorites</GroupLabel>
-      <ul>
-        {favorites.map((collection) => (
-          <li key={collection.id}>
-            <FavoriteLink collection={collection} />
-          </li>
-        ))}
-      </ul>
-      <GroupLabel>Recent</GroupLabel>
-      <ul>
-        {recent.map((collection) => (
-          <li key={collection.id}>
-            <RecentLink collection={collection} />
-          </li>
-        ))}
-      </ul>
+      {favorites.length > 0 && (
+        <>
+          <GroupLabel>Favorites</GroupLabel>
+          <ul>
+            {favorites.map((collection) => (
+              <li key={collection.id}>
+                <FavoriteLink collection={collection} />
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {recent.length > 0 && (
+        <>
+          <GroupLabel>Recent</GroupLabel>
+          <ul>
+            {recent.map((collection) => (
+              <li key={collection.id}>
+                <RecentLink collection={collection} />
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
       <Link
         href="/collections"
         className={cn(LINK_CLASS, "mt-1 text-muted-foreground")}

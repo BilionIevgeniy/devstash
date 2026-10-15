@@ -10,6 +10,9 @@ interface ItemRowProps {
 
 export function ItemRow({ item }: ItemRowProps) {
   const { type } = item;
+  const iconBackground = type.color
+    ? `color-mix(in oklab, ${type.color} 10%, transparent)`
+    : undefined;
 
   return (
     <article
@@ -18,7 +21,7 @@ export function ItemRow({ item }: ItemRowProps) {
     >
       <div
         className="flex size-10 shrink-0 items-center justify-center rounded-md"
-        style={{ backgroundColor: `${type.color}1a` }}
+        style={{ backgroundColor: iconBackground }}
       >
         <TypeIcon
           name={type.icon}

@@ -33,6 +33,7 @@ export function TopBar({ onToggleSidebar, onOpenDrawer }: TopBarProps) {
         <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           type="search"
+          aria-label="Search items"
           placeholder="Search items..."
           className="pl-9 pr-14"
         />

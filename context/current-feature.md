@@ -1,16 +1,26 @@
-# Current Feature
+# Current Feature: UI Fixes from Code Review
+
+Fixes from the code-reviewer findings 8, 9, 10 and 11.
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals for the current feature go here -->
+- `ItemRow.tsx`: stop building `"undefined1a"` when a type has no color; compute the icon tint only when a color exists, as `color-mix(in oklab, <color> 10%, transparent)`, and use no style otherwise (works with any CSS color, not only 6-digit hex)
+- `CollectionCard.tsx`: show "1 item" instead of "1 items" with an inline singular/plural check
+- `CollectionsSection.tsx`: render the Favorites and Recent groups (label and list) only when the list has entries; the "View all collections" link always stays
+- `DashboardShell.tsx`: always render the desktop `<aside>` and toggle it with a class (`hidden w-64 shrink-0 border-r`, plus `md:block` while open) instead of unmounting it, so the sidebar sections keep their open or closed state; import `cn` for this
+- `TopBar.tsx`: add `aria-label="Search items"` to the search input
 
 ## Notes
 
-<!-- Additional context, constraints or details from the spec go here -->
+- Do it in small steps, each with its own plan and go: findings 8 and 11 first (one-liners), then 9, then 10 (the only behavior change). Run `tsc --noEmit` and `npm run lint` after each step. The user runs the build and the browser check
+- The `color-mix` tint is exactly 10% opacity; the old `1a` suffix was about 10.2%, so seeded types look the same
+- The sidebar node is already mounted and hidden on mobile today, and the drawer renders its own copy, so keeping the `<aside>` mounted changes nothing else and refetches nothing
+- Browser check: a collection with one item reads "1 item"; with no favorites the Favorites label is gone; collapse a sidebar section, toggle the sidebar closed and open, and the section stays collapsed; item rows look unchanged
+- Out of scope: finding 13 (ContentType enum)
 
 ## History
 

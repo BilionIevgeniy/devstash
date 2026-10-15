@@ -11,6 +11,7 @@ interface CollectionCardProps {
 export function CollectionCard({ collection }: CollectionCardProps) {
   const { types } = collection;
   const accentColor = types[0]?.color;
+  const itemLabel = collection.itemCount === 1 ? "item" : "items";
 
   return (
     <Link
@@ -25,7 +26,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
         )}
       </div>
       <p className="text-sm text-muted-foreground">
-        {collection.itemCount} items
+        {collection.itemCount} {itemLabel}
       </p>
       <p className="mt-3 truncate text-sm text-muted-foreground">
         {collection.description}
