@@ -1,16 +1,26 @@
-# Current Feature
+# Current Feature: Dashboard Streaming (Suspense)
+
+Fixes from the code-reviewer findings 4 and 12.
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals for the current feature go here -->
+- Wrap `<Sidebar />` in `<Suspense>` with a skeleton fallback inside `layout.tsx`, so the shell and top bar render before the sidebar queries finish
+- Wrap each async dashboard section (stats, collections, pinned items, recent items) in its own `<Suspense>` with a matching skeleton, so each one streams in as soon as its query resolves
+- Add the ShadCN `skeleton` component with the CLI, plus small skeleton components for the sidebar, the stats row and a generic section
+- Remove the redundant `export const dynamic = "force-dynamic"` from `src/app/dashboard/page.tsx` (the layout already applies it to the segment)
+- Commit the two pending tooling files (`.claude/skills/cleanup/SKILL.md` and `.claude/agents/code-reviewer.md`) as a separate `chore:` commit on the same branch
 
 ## Notes
 
-<!-- Additional context, constraints or details from the spec go here -->
+- A route-level `loading.tsx` is not enough: it nests inside the layout, so it would not cover the sidebar queries, and it would hold the page back until all four sections resolve
+- `DashboardShell` renders the `sidebar` node in two places (the desktop `<aside>` and the mobile drawer). Check that the Suspense boundary behaves correctly in both
+- `PinnedItems` renders nothing when there are no pinned items, so its skeleton can cause a brief layout shift when the section turns out to be empty
+- Read the streaming and `loading.js` docs in `node_modules/next/dist/docs/` before writing code (AGENTS.md)
+- Out of scope: findings 5–11 and 13 (shared type mapping, Sidebar split, dead mock data, UI fixes, ContentType enum)
 
 ## History
 
