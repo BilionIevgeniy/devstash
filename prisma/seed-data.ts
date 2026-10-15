@@ -1,3 +1,5 @@
+import { DEMO_USER_EMAIL } from "../src/lib/db/demo-user";
+
 export interface SeedItemType {
   name: string;
   icon: string;
@@ -26,7 +28,7 @@ export interface SeedItem {
 }
 
 export const demoUser = {
-  email: "demo@devstash.io",
+  email: DEMO_USER_EMAIL,
   name: "John Doe",
 };
 

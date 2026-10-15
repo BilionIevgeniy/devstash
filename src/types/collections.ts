@@ -1,9 +1,4 @@
-export interface CollectionType {
-  id: string;
-  name: string;
-  icon: string;
-  color?: string;
-}
+import type { ItemTypeInfo } from "@/types/items";
 
 export interface DashboardCollection {
   id: string;
@@ -12,7 +7,7 @@ export interface DashboardCollection {
   isFavorite: boolean;
   itemCount: number;
   /** Distinct item types in the collection, most frequent first. */
-  types: CollectionType[];
+  types: ItemTypeInfo[];
 }
 
 export interface SidebarCollections {

@@ -1,18 +1,16 @@
 import type { Prisma } from "@/generated/prisma/client";
-import { DEMO_USER_EMAIL } from "@/lib/db/demo-user";
+import { DEMO_USER_FILTER } from "@/lib/db/demo-user";
+import { itemTypeSelect, toItemTypeInfo } from "@/lib/db/item-types";
 import { prisma } from "@/lib/prisma";
 import type {
   CollectionStats,
-  CollectionType,
   DashboardCollection,
   SidebarCollections,
 } from "@/types/collections";
+import type { ItemTypeInfo } from "@/types/items";
 
-const DEFAULT_TYPE_ICON = "File";
 const DASHBOARD_COLLECTIONS_LIMIT = 6;
 const SIDEBAR_RECENT_LIMIT = 4;
-
-const demoUserCollections = { user: { email: DEMO_USER_EMAIL } };
 
 const collectionSelect = {
   id: true,
@@ -25,35 +23,25 @@ const collectionSelect = {
 
 async function fetchTypesById(
   typeIds: string[],
-): Promise<Map<string, CollectionType>> {
+): Promise<Map<string, ItemTypeInfo>> {
   const types = await prisma.itemType.findMany({
     where: { id: { in: typeIds } },
-    select: { id: true, name: true, icon: true, color: true },
+    select: itemTypeSelect,
   });
 
-  return new Map(
-    types.map((type) => [
-      type.id,
-      {
-        id: type.id,
-        name: type.name,
-        icon: type.icon ?? DEFAULT_TYPE_ICON,
-        color: type.color ?? undefined,
-      },
-    ]),
-  );
+  return new Map(types.map((type) => [type.id, toItemTypeInfo(type)]));
 }
 
 function rankTypesByUsage(
   typeIds: string[],
-  typesById: Map<string, CollectionType>,
-): CollectionType[] {
+  typesById: Map<string, ItemTypeInfo>,
+): ItemTypeInfo[] {
   const counts = new Map<string, number>();
   for (const id of typeIds) {
     counts.set(id, (counts.get(id) ?? 0) + 1);
   }
 
-  const ranked: { type: CollectionType; count: number }[] = [];
+  const ranked: { type: ItemTypeInfo; count: number }[] = [];
   for (const [id, count] of counts) {
     const type = typesById.get(id);
     if (type) {
@@ -71,7 +59,7 @@ async function fetchCollections(
   take?: number,
 ): Promise<DashboardCollection[]> {
   const collections = await prisma.collection.findMany({
-    where: { ...demoUserCollections, ...where },
+    where: { ...DEMO_USER_FILTER, ...where },
     orderBy: { updatedAt: "desc" },
     take,
     select: collectionSelect,
@@ -106,9 +94,9 @@ export async function getSidebarCollections(): Promise<SidebarCollections> {
 
 export async function getCollectionStats(): Promise<CollectionStats> {
   const [total, favorites] = await Promise.all([
-    prisma.collection.count({ where: demoUserCollections }),
+    prisma.collection.count({ where: DEMO_USER_FILTER }),
     prisma.collection.count({
-      where: { ...demoUserCollections, isFavorite: true },
+      where: { ...DEMO_USER_FILTER, isFavorite: true },
     }),
   ]);
   return { total, favorites };

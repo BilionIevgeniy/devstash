@@ -1,16 +1,30 @@
-# Current Feature
+# Current Feature: Refactor Item Types, Sidebar and Mock Data
+
+Cleanups from the code-reviewer findings 5, 6 and 7. Pure refactor: no visible change in the app.
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals for the current feature go here -->
+- Remove the dead mock data: trim `src/lib/mock-data.ts` to `mockUser` only and take its email from `DEMO_USER_EMAIL`
+- Point `prisma/seed-data.ts` and `scripts/test-db.ts` at `DEMO_USER_EMAIL` (relative import) so the demo email lives in one place
+- Add `src/lib/db/item-types.ts` with the default type icon, a shared type `select` and `toItemTypeInfo`, and use it in `items.ts` and `collections.ts` instead of the duplicated `RawItemType` and inline mapping
+- Move `getSidebarItemTypes` (with its system type ordering) from `items.ts` into `item-types.ts`
+- Delete `CollectionType` and use `ItemTypeInfo` in `DashboardCollection`
+- Replace `demoUserItems` and `demoUserCollections` with one exported user filter constant in `src/lib/db/demo-user.ts`
+- Split `Sidebar.tsx`: move `TypesSection` (with `ProBadge` and `PRO_TYPE_NAMES`), `CollectionsSection` and `UserArea` into `src/components/dashboard/sidebar/`, with a small `shared.tsx` for `LINK_CLASS` and `ItemCount`; keep `Sidebar.tsx` as the async composition at its current path
+- Move `getInitials` to `src/lib/utils.ts`
+- Bring `CollectionsSection` under 50 lines by extracting the favorite and recent rows
 
 ## Notes
 
-<!-- Additional context, constraints or details from the spec go here -->
+- Do it in three steps, each with its own plan and go: finding 7, then 5, then 6. Run `tsc --noEmit` and `npm run lint` after each step. The user runs the build and the browser check that the dashboard and sidebar look unchanged
+- `PRO_TYPE_NAMES` stays with `TypesSection` for now. Move it when Pro gating needs it elsewhere
+- `Sidebar.tsx` stays where it is so `layout.tsx` does not change
+- The sidebar still uses `mockUser` for the user area until NextAuth lands
+- Out of scope: findings 8–11 and 13 (UI fixes, ContentType enum)
 
 ## History
 

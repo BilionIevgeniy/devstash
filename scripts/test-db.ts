@@ -2,8 +2,8 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { systemItemTypes } from "../prisma/seed-data";
 import { PrismaClient } from "../src/generated/prisma/client";
+import { DEMO_USER_EMAIL } from "../src/lib/db/demo-user";
 
-const DEMO_EMAIL = "demo@devstash.io";
 const CASCADE_EMAIL_PREFIX = "cascade-test-";
 
 class Rollback extends Error {}
@@ -79,8 +79,8 @@ async function checkSystemItemTypes() {
 }
 
 async function checkDemoUser() {
-  const user = await prisma.user.findUnique({ where: { email: DEMO_EMAIL } });
-  assert(user !== null, `demo user ${DEMO_EMAIL} not found`);
+  const user = await prisma.user.findUnique({ where: { email: DEMO_USER_EMAIL } });
+  assert(user !== null, `demo user ${DEMO_USER_EMAIL} not found`);
   assert(
     user.password?.startsWith("$2") === true,
     "demo user password is not a bcrypt hash",
