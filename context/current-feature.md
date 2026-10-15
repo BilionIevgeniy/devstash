@@ -1,30 +1,16 @@
-# Current Feature: Refactor Item Types, Sidebar and Mock Data
-
-Cleanups from the code-reviewer findings 5, 6 and 7. Pure refactor: no visible change in the app.
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Remove the dead mock data: trim `src/lib/mock-data.ts` to `mockUser` only and take its email from `DEMO_USER_EMAIL`
-- Point `prisma/seed-data.ts` and `scripts/test-db.ts` at `DEMO_USER_EMAIL` (relative import) so the demo email lives in one place
-- Add `src/lib/db/item-types.ts` with the default type icon, a shared type `select` and `toItemTypeInfo`, and use it in `items.ts` and `collections.ts` instead of the duplicated `RawItemType` and inline mapping
-- Move `getSidebarItemTypes` (with its system type ordering) from `items.ts` into `item-types.ts`
-- Delete `CollectionType` and use `ItemTypeInfo` in `DashboardCollection`
-- Replace `demoUserItems` and `demoUserCollections` with one exported user filter constant in `src/lib/db/demo-user.ts`
-- Split `Sidebar.tsx`: move `TypesSection` (with `ProBadge` and `PRO_TYPE_NAMES`), `CollectionsSection` and `UserArea` into `src/components/dashboard/sidebar/`, with a small `shared.tsx` for `LINK_CLASS` and `ItemCount`; keep `Sidebar.tsx` as the async composition at its current path
-- Move `getInitials` to `src/lib/utils.ts`
-- Bring `CollectionsSection` under 50 lines by extracting the favorite and recent rows
+<!-- Goals for the current feature go here -->
 
 ## Notes
 
-- Do it in three steps, each with its own plan and go: finding 7, then 5, then 6. Run `tsc --noEmit` and `npm run lint` after each step. The user runs the build and the browser check that the dashboard and sidebar look unchanged
-- `PRO_TYPE_NAMES` stays with `TypesSection` for now. Move it when Pro gating needs it elsewhere
-- `Sidebar.tsx` stays where it is so `layout.tsx` does not change
-- The sidebar still uses `mockUser` for the user area until NextAuth lands
-- Out of scope: findings 8–11 and 13 (UI fixes, ContentType enum)
+<!-- Additional context, constraints or details from the spec go here -->
 
 ## History
 
@@ -39,3 +25,4 @@ In Progress
 - Add Pro Badge to Sidebar: ShadCN badge component added (src/components/ui/badge.tsx); the Files and Images types in the sidebar show a subtle outlined uppercase "PRO" badge (Pro types listed in PRO_TYPE_NAMES in Sidebar.tsx), no Pro gating logic
 - Code Review Fixes: package.json runs prisma generate on postinstall and prisma generate plus migrate deploy before next build; mobile drawer width fixed with data-[side=left]:w-64 (16rem like the desktop sidebar); collections queries now select only the type id per membership and resolve types with one itemType query, the dashboard grid is capped at 6 and the sidebar has its own getSidebarCollections (all favorites plus the 4 newest), so cache() was removed from getRecentCollections; .env.example uses sslmode=verify-full
 - Dashboard Streaming: the dashboard layout wraps the sidebar in Suspense with a SidebarSkeleton fallback, and the page wraps stats, collections, pinned items and recent items in their own Suspense boundaries with skeletons sized to match the real cards (ShadCN skeleton component, SidebarSkeleton.tsx, DashboardSkeletons.tsx), so each part streams in as its query resolves; removed the redundant force-dynamic from the dashboard page (the layout sets it); added the code-reviewer agent and a green/red/yellow badge report line to the cleanup skill
+- Refactor Item Types, Sidebar and Mock Data: src/lib/mock-data.ts trimmed to mockUser and the demo email now comes from DEMO_USER_EMAIL everywhere (including prisma/seed-data.ts and scripts/test-db.ts); new src/lib/db/item-types.ts holds the shared item type select, toItemTypeInfo and getSidebarItemTypes (moved from items.ts) and is used by the items and collections queries; CollectionType removed in favor of ItemTypeInfo; demoUserItems and demoUserCollections replaced by one DEMO_USER_FILTER in demo-user.ts; Sidebar.tsx split into sidebar/TypesSection, CollectionsSection (now built from FavoriteLink and RecentLink), UserArea and shared (LINK_CLASS, ItemCount), with getInitials moved to src/lib/utils.ts; PRO_TYPE_NAMES stays in TypesSection
