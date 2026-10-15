@@ -1,23 +1,16 @@
-# Current Feature: Code Review Fixes (Build, Drawer, Collections Query)
-
-Fixes from the code-reviewer findings 1–3.
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Make a fresh clone, CI or Vercel build work: add `"postinstall": "prisma generate"` and make the build run `prisma generate && prisma migrate deploy && next build`
-- Fix the mobile drawer width: replace `w-64` in DashboardShell.tsx with `data-[side=left]:w-64` so it matches the 16rem desktop sidebar instead of 75% of the viewport
-- Make the collections query bounded: use `_count` for itemCount, select only the type ids and resolve types with one `itemType.findMany`, add a `take` for the page grid, and give the sidebar its own small query (favorites plus the 4 newest)
+<!-- Goals for the current feature go here -->
 
 ## Notes
 
-- `src/generated/prisma` is gitignored and nothing generates it today. It only works locally because the directory already exists
-- `SheetContent` already sets `data-[side=left]:w-3/4`, which has higher specificity than `w-64`. Using the same variant lets `cn` merge the classes. `data-[side=left]:sm:max-w-64` may also be needed
-- `getRecentCollections` is wrapped in `cache()` and used by both the sidebar and the page. Keep that in mind when splitting the queries
-- Out of scope: findings 4–13 (Suspense, shared type mapping, Sidebar split, dead mock data, and so on)
+<!-- Additional context, constraints or details from the spec go here -->
 
 ## History
 
@@ -30,3 +23,4 @@ In Progress
 - Dashboard Items: Pinned items, recent items (20 newest) and the items stats cards now load from Neon via Prisma (src/lib/db/items.ts, src/types/items.ts), item card icon and border color from the item type, tags sorted by name, pinned section hidden when empty; removed the mock helpers in dashboard-data.ts (formatShortDate moved to utils.ts) and shared the demo user email via src/lib/db/demo-user.ts; sidebar still uses mock data
 - Stats & Sidebar: Sidebar item types (with per-type counts) and favorite/recent collections now load from Neon via Prisma (getSidebarItemTypes in src/lib/db/items.ts, getRecentCollections reused and wrapped in cache()), recent collections show a colored circle from their most-used item type, added a "View all collections" link, /dashboard layout set to force-dynamic; main-area stats were already database-backed; user area still uses mockUser
 - Add Pro Badge to Sidebar: ShadCN badge component added (src/components/ui/badge.tsx); the Files and Images types in the sidebar show a subtle outlined uppercase "PRO" badge (Pro types listed in PRO_TYPE_NAMES in Sidebar.tsx), no Pro gating logic
+- Code Review Fixes: package.json runs prisma generate on postinstall and prisma generate plus migrate deploy before next build; mobile drawer width fixed with data-[side=left]:w-64 (16rem like the desktop sidebar); collections queries now select only the type id per membership and resolve types with one itemType query, the dashboard grid is capped at 6 and the sidebar has its own getSidebarCollections (all favorites plus the 4 newest), so cache() was removed from getRecentCollections; .env.example uses sslmode=verify-full
