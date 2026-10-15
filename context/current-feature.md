@@ -1,26 +1,16 @@
-# Current Feature: UI Fixes from Code Review
-
-Fixes from the code-reviewer findings 8, 9, 10 and 11.
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- `ItemRow.tsx`: stop building `"undefined1a"` when a type has no color; compute the icon tint only when a color exists, as `color-mix(in oklab, <color> 10%, transparent)`, and use no style otherwise (works with any CSS color, not only 6-digit hex)
-- `CollectionCard.tsx`: show "1 item" instead of "1 items" with an inline singular/plural check
-- `CollectionsSection.tsx`: render the Favorites and Recent groups (label and list) only when the list has entries; the "View all collections" link always stays
-- `DashboardShell.tsx`: always render the desktop `<aside>` and toggle it with a class (`hidden w-64 shrink-0 border-r`, plus `md:block` while open) instead of unmounting it, so the sidebar sections keep their open or closed state; import `cn` for this
-- `TopBar.tsx`: add `aria-label="Search items"` to the search input
+<!-- Goals for the current feature go here -->
 
 ## Notes
 
-- Do it in small steps, each with its own plan and go: findings 8 and 11 first (one-liners), then 9, then 10 (the only behavior change). Run `tsc --noEmit` and `npm run lint` after each step. The user runs the build and the browser check
-- The `color-mix` tint is exactly 10% opacity; the old `1a` suffix was about 10.2%, so seeded types look the same
-- The sidebar node is already mounted and hidden on mobile today, and the drawer renders its own copy, so keeping the `<aside>` mounted changes nothing else and refetches nothing
-- Browser check: a collection with one item reads "1 item"; with no favorites the Favorites label is gone; collapse a sidebar section, toggle the sidebar closed and open, and the section stays collapsed; item rows look unchanged
-- Out of scope: finding 13 (ContentType enum)
+<!-- Additional context, constraints or details from the spec go here -->
 
 ## History
 
@@ -36,3 +26,4 @@ In Progress
 - Code Review Fixes: package.json runs prisma generate on postinstall and prisma generate plus migrate deploy before next build; mobile drawer width fixed with data-[side=left]:w-64 (16rem like the desktop sidebar); collections queries now select only the type id per membership and resolve types with one itemType query, the dashboard grid is capped at 6 and the sidebar has its own getSidebarCollections (all favorites plus the 4 newest), so cache() was removed from getRecentCollections; .env.example uses sslmode=verify-full
 - Dashboard Streaming: the dashboard layout wraps the sidebar in Suspense with a SidebarSkeleton fallback, and the page wraps stats, collections, pinned items and recent items in their own Suspense boundaries with skeletons sized to match the real cards (ShadCN skeleton component, SidebarSkeleton.tsx, DashboardSkeletons.tsx), so each part streams in as its query resolves; removed the redundant force-dynamic from the dashboard page (the layout sets it); added the code-reviewer agent and a green/red/yellow badge report line to the cleanup skill
 - Refactor Item Types, Sidebar and Mock Data: src/lib/mock-data.ts trimmed to mockUser and the demo email now comes from DEMO_USER_EMAIL everywhere (including prisma/seed-data.ts and scripts/test-db.ts); new src/lib/db/item-types.ts holds the shared item type select, toItemTypeInfo and getSidebarItemTypes (moved from items.ts) and is used by the items and collections queries; CollectionType removed in favor of ItemTypeInfo; demoUserItems and demoUserCollections replaced by one DEMO_USER_FILTER in demo-user.ts; Sidebar.tsx split into sidebar/TypesSection, CollectionsSection (now built from FavoriteLink and RecentLink), UserArea and shared (LINK_CLASS, ItemCount), with getInitials moved to src/lib/utils.ts; PRO_TYPE_NAMES stays in TypesSection
+- UI Fixes from Code Review: ItemRow computes the icon tint with color-mix only when a type has a color (no more invalid "undefined1a", works with non-hex colors); CollectionCard reads "1 item" for a single item; CollectionsSection renders the Favorites and Recent groups only when they have entries; DashboardShell keeps the desktop sidebar mounted and toggles it with a class, so sidebar sections keep their open or closed state; the TopBar search input has aria-label "Search items"
