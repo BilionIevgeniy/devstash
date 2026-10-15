@@ -1,16 +1,23 @@
-# Current Feature
+# Current Feature: Code Review Fixes (Build, Drawer, Collections Query)
+
+Fixes from the code-reviewer findings 1–3.
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals for the current feature go here -->
+- Make a fresh clone, CI or Vercel build work: add `"postinstall": "prisma generate"` and make the build run `prisma generate && prisma migrate deploy && next build`
+- Fix the mobile drawer width: replace `w-64` in DashboardShell.tsx with `data-[side=left]:w-64` so it matches the 16rem desktop sidebar instead of 75% of the viewport
+- Make the collections query bounded: use `_count` for itemCount, select only the type ids and resolve types with one `itemType.findMany`, add a `take` for the page grid, and give the sidebar its own small query (favorites plus the 4 newest)
 
 ## Notes
 
-<!-- Additional context, constraints or details from the spec go here -->
+- `src/generated/prisma` is gitignored and nothing generates it today. It only works locally because the directory already exists
+- `SheetContent` already sets `data-[side=left]:w-3/4`, which has higher specificity than `w-64`. Using the same variant lets `cn` merge the classes. `data-[side=left]:sm:max-w-64` may also be needed
+- `getRecentCollections` is wrapped in `cache()` and used by both the sidebar and the page. Keep that in mind when splitting the queries
+- Out of scope: findings 4–13 (Suspense, shared type mapping, Sidebar split, dead mock data, and so on)
 
 ## History
 

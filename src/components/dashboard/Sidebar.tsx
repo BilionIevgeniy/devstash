@@ -5,14 +5,13 @@ import { CollapsibleSection } from "@/components/dashboard/CollapsibleSection";
 import { TypeIcon } from "@/components/dashboard/TypeIcon";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { getRecentCollections } from "@/lib/db/collections";
+import { getSidebarCollections } from "@/lib/db/collections";
 import { getSidebarItemTypes } from "@/lib/db/items";
 import { mockUser } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
-import type { DashboardCollection } from "@/types/collections";
+import type { SidebarCollections } from "@/types/collections";
 import type { SidebarItemType } from "@/types/items";
 
-const RECENT_COLLECTIONS_LIMIT = 4;
 const PRO_TYPE_NAMES = ["file", "image"];
 
 const LINK_CLASS =
@@ -72,14 +71,7 @@ function TypesSection({ itemTypes }: { itemTypes: SidebarItemType[] }) {
   );
 }
 
-function CollectionsSection({
-  collections,
-}: {
-  collections: DashboardCollection[];
-}) {
-  const favorites = collections.filter((c) => c.isFavorite);
-  const recent = collections.slice(0, RECENT_COLLECTIONS_LIMIT);
-
+function CollectionsSection({ favorites, recent }: SidebarCollections) {
   return (
     <CollapsibleSection title="Collections">
       <GroupLabel>Favorites</GroupLabel>
@@ -150,7 +142,7 @@ function UserArea() {
 export async function Sidebar() {
   const [itemTypes, collections] = await Promise.all([
     getSidebarItemTypes(),
-    getRecentCollections(),
+    getSidebarCollections(),
   ]);
 
   return (
@@ -162,7 +154,7 @@ export async function Sidebar() {
 
       <nav className="flex-1 space-y-4 overflow-y-auto px-2 py-2">
         <TypesSection itemTypes={itemTypes} />
-        <CollectionsSection collections={collections} />
+        <CollectionsSection {...collections} />
       </nav>
 
       <UserArea />

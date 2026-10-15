@@ -1,77 +1,108 @@
-import { cache } from "react";
-
+import type { Prisma } from "@/generated/prisma/client";
 import { DEMO_USER_EMAIL } from "@/lib/db/demo-user";
 import { prisma } from "@/lib/prisma";
 import type {
   CollectionStats,
   CollectionType,
   DashboardCollection,
+  SidebarCollections,
 } from "@/types/collections";
 
 const DEFAULT_TYPE_ICON = "File";
+const DASHBOARD_COLLECTIONS_LIMIT = 6;
+const SIDEBAR_RECENT_LIMIT = 4;
 
 const demoUserCollections = { user: { email: DEMO_USER_EMAIL } };
 
-interface RawItemType {
-  id: string;
-  name: string;
-  icon: string | null;
-  color: string | null;
+const collectionSelect = {
+  id: true,
+  name: true,
+  description: true,
+  isFavorite: true,
+  _count: { select: { items: true } },
+  items: { select: { item: { select: { typeId: true } } } },
+} satisfies Prisma.CollectionSelect;
+
+async function fetchTypesById(
+  typeIds: string[],
+): Promise<Map<string, CollectionType>> {
+  const types = await prisma.itemType.findMany({
+    where: { id: { in: typeIds } },
+    select: { id: true, name: true, icon: true, color: true },
+  });
+
+  return new Map(
+    types.map((type) => [
+      type.id,
+      {
+        id: type.id,
+        name: type.name,
+        icon: type.icon ?? DEFAULT_TYPE_ICON,
+        color: type.color ?? undefined,
+      },
+    ]),
+  );
 }
 
-function rankTypesByUsage(itemTypes: RawItemType[]): CollectionType[] {
-  const usage = new Map<string, { type: RawItemType; count: number }>();
-  for (const type of itemTypes) {
-    const entry = usage.get(type.id);
-    if (entry) {
-      entry.count += 1;
-    } else {
-      usage.set(type.id, { type, count: 1 });
+function rankTypesByUsage(
+  typeIds: string[],
+  typesById: Map<string, CollectionType>,
+): CollectionType[] {
+  const counts = new Map<string, number>();
+  for (const id of typeIds) {
+    counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+
+  const ranked: { type: CollectionType; count: number }[] = [];
+  for (const [id, count] of counts) {
+    const type = typesById.get(id);
+    if (type) {
+      ranked.push({ type, count });
     }
   }
 
-  return [...usage.values()]
+  return ranked
     .sort((a, b) => b.count - a.count || a.type.name.localeCompare(b.type.name))
-    .map(({ type }) => ({
-      id: type.id,
-      name: type.name,
-      icon: type.icon ?? DEFAULT_TYPE_ICON,
-      color: type.color ?? undefined,
-    }));
+    .map(({ type }) => type);
 }
 
-async function fetchRecentCollections(): Promise<DashboardCollection[]> {
+async function fetchCollections(
+  where: Prisma.CollectionWhereInput,
+  take?: number,
+): Promise<DashboardCollection[]> {
   const collections = await prisma.collection.findMany({
-    where: demoUserCollections,
+    where: { ...demoUserCollections, ...where },
     orderBy: { updatedAt: "desc" },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      isFavorite: true,
-      items: {
-        select: {
-          item: {
-            select: {
-              type: {
-                select: { id: true, name: true, icon: true, color: true },
-              },
-            },
-          },
-        },
-      },
-    },
+    take,
+    select: collectionSelect,
   });
 
-  return collections.map(({ items, ...collection }) => ({
+  const typeIds = new Set(
+    collections.flatMap(({ items }) => items.map(({ item }) => item.typeId)),
+  );
+  const typesById = await fetchTypesById([...typeIds]);
+
+  return collections.map(({ items, _count, ...collection }) => ({
     ...collection,
-    itemCount: items.length,
-    types: rankTypesByUsage(items.map(({ item }) => item.type)),
+    itemCount: _count.items,
+    types: rankTypesByUsage(
+      items.map(({ item }) => item.typeId),
+      typesById,
+    ),
   }));
 }
 
-// The layout (sidebar) and the page both read this; cache() shares one query per request.
-export const getRecentCollections = cache(fetchRecentCollections);
+export function getRecentCollections(): Promise<DashboardCollection[]> {
+  return fetchCollections({}, DASHBOARD_COLLECTIONS_LIMIT);
+}
+
+export async function getSidebarCollections(): Promise<SidebarCollections> {
+  const [favorites, recent] = await Promise.all([
+    fetchCollections({ isFavorite: true }),
+    fetchCollections({}, SIDEBAR_RECENT_LIMIT),
+  ]);
+  return { favorites, recent };
+}
 
 export async function getCollectionStats(): Promise<CollectionStats> {
   const [total, favorites] = await Promise.all([

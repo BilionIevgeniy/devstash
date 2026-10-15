@@ -30,7 +30,7 @@ export function DashboardShell({ sidebar, children }: DashboardShellProps) {
       <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
         <SheetContent
           side="left"
-          className="w-64 gap-0 p-0"
+          className="data-[side=left]:w-64 gap-0 p-0"
           showCloseButton={false}
         >
           <SheetTitle className="sr-only">Navigation</SheetTitle>
