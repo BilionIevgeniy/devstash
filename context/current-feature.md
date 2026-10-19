@@ -1,30 +1,16 @@
-# Current Feature: Auth UI - Sign In, Register & Sign Out
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Custom `/sign-in` page with email and password fields, a "Sign in with GitHub" button, a link to `/register`, and form validation with error display
-- Custom `/register` page with name, email, password and confirm password fields; validates that passwords match and the email format is valid, submits to `/api/auth/register` and redirects to sign-in on success
-- Bottom of the sidebar shows the user's avatar (GitHub image, or initials fallback) and name; clicking the avatar opens a dropdown/up menu with a "Sign out" link
-- Reusable avatar component that handles both the image and initials cases
+<!-- Goals for the current feature go here -->
 
 ## Notes
 
-- Replaces the NextAuth default pages with custom UI and updates the user icon, email and username at the bottom of the sidebar
-- Avatar logic: if the user has `image` (from GitHub) use it; otherwise generate initials from the name (e.g. "Brad Traversy" → "BT")
-- Spec: `context/features/auth-phase-3-spec.md`
-- Spec says clicking the icon should go to `/profile`; this conflicts with the avatar dropdown and needs to be settled before start
-- Testing checklist:
-  1. Go to `/sign-in` - verify custom page renders
-  2. Sign in with GitHub - verify flow works
-  3. Sign in with email/password - verify flow works
-  4. Verify avatar shows in top bar (GitHub image or initials)
-  5. Click avatar - verify dropdown appears
-  6. Click "Sign out" - verify logout and redirect
-  7. Go to `/register` - create new account - verify redirect to sign-in
+<!-- Additional context, constraints or details from the spec go here -->
 
 ## History
 
@@ -44,3 +30,4 @@ In Progress
 - UI Fixes from Code Review: ItemRow computes the icon tint with color-mix only when a type has a color (no more invalid "undefined1a", works with non-hex colors); CollectionCard reads "1 item" for a single item; CollectionsSection renders the Favorites and Recent groups only when they have entries; DashboardShell keeps the desktop sidebar mounted and toggles it with a class, so sidebar sections keep their open or closed state; the TopBar search input has aria-label "Search items"
 - Auth Setup - NextAuth + GitHub Provider: NextAuth v5 (next-auth@beta) with @auth/prisma-adapter, split config for edge compatibility (src/auth.config.ts with the GitHub provider, src/auth.ts with the Prisma adapter and JWT sessions), handlers exported from src/app/api/auth/[...nextauth]/route.ts, /dashboard/* protected by src/proxy.ts with redirect to NextAuth's default sign-in page, Session type extended with user.id in src/types/next-auth.d.ts, auth env vars added to .env.example
 - Auth Credentials - Email/Password Provider: Credentials provider added to the split auth config (placeholder authorize in src/auth.config.ts, real validation in src/auth.ts with Zod input check, bcryptjs compare and email normalised to lowercase, credentials fields declared so the default sign-in page renders Email and Password inputs), POST /api/auth/register (src/app/api/auth/register/route.ts) validates name, email, password (8-72 characters) and confirmPassword with Zod, returns 409 for an existing email (also on a Prisma P2002 race), hashes with bcryptjs (12 rounds) and returns { success, data, error } without the hash; zod added as a direct dependency; no migration needed as User.password already existed
+- Auth UI - Sign In, Register & Sign Out: custom /sign-in page (SignInForm with useActionState; signInWithCredentials, signInWithGitHub and signOutUser Server Actions in src/actions/auth.ts; GitHub button; Register link; NextAuth ?error= messages such as OAuthAccountNotLinked) and /register page (RegisterForm posting to /api/auth/register with a password-match check, a sonner toast "Account created. You can now sign in." and redirect to /sign-in) sharing an AuthCard; pages.signIn set in auth.config.ts and the proxy redirects to it; reusable UserAvatar (GitHub image, initials, or email letter fallback) and getInitials capped at 2 characters; the sidebar user area reads the session via auth() and opens an upward shadcn dropdown-menu with Sign out (no /profile link); Toaster mounted in the root layout with a fixed dark theme (no next-themes); React Compiler enabled in a separate commit; AUTH_URL documented in .env.example because the production build (npm run start) needs a trusted host locally; mockUser and src/lib/mock-data.ts removed
