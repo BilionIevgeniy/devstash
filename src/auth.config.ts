@@ -4,4 +4,5 @@ import type { NextAuthConfig } from "next-auth";
 
 export default {
   providers: [GitHub, Credentials({ authorize: () => null })],
+  pages: { signIn: "/sign-in" },
 } satisfies NextAuthConfig;

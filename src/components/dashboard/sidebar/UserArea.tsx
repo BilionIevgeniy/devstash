@@ -1,22 +1,58 @@
-import { Settings } from "lucide-react";
+"use client";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { mockUser } from "@/lib/mock-data";
-import { getInitials } from "@/lib/utils";
+import { ChevronsUpDown, LogOut } from "lucide-react";
 
-export function UserArea() {
+import { signOutUser } from "@/actions/auth";
+import { UserAvatar } from "@/components/auth/UserAvatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+interface UserAreaProps {
+  user: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
+}
+
+export function UserArea({ user }: UserAreaProps) {
   return (
-    <div className="flex shrink-0 items-center gap-3 border-t p-4">
-      <Avatar>
-        <AvatarFallback>{getInitials(mockUser.name)}</AvatarFallback>
-      </Avatar>
-      <div className="min-w-0">
-        <p className="truncate text-sm font-medium">{mockUser.name}</p>
-        <p className="truncate text-xs text-muted-foreground">
-          {mockUser.email}
-        </p>
-      </div>
-      <Settings className="ml-auto size-4 shrink-0 text-muted-foreground" />
+    <div className="shrink-0 border-t p-2">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="flex w-full items-center gap-3 rounded-lg p-2 text-left outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <UserAvatar
+              name={user.name}
+              email={user.email}
+              image={user.image}
+            />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">
+                {user.name ?? user.email}
+              </p>
+              {user.name && user.email && (
+                <p className="truncate text-xs text-muted-foreground">
+                  {user.email}
+                </p>
+              )}
+            </div>
+            <ChevronsUpDown className="ml-auto size-4 shrink-0 text-muted-foreground" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="top">
+          <DropdownMenuItem onSelect={() => signOutUser()}>
+            <LogOut />
+            Sign out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
