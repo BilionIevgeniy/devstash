@@ -1,4 +1,4 @@
-# Current Feature: Auth Setup - NextAuth + GitHub Provider
+# Current Feature: Auth Credentials - Email/Password Provider
 
 ## Status
 
@@ -6,36 +6,36 @@ In Progress
 
 ## Goals
 
-- Install NextAuth v5 (`next-auth@beta`) and `@auth/prisma-adapter`
-- Split auth config for edge compatibility: `src/auth.config.ts` (providers only, no adapter) and `src/auth.ts` (Prisma adapter, JWT strategy)
-- Add the GitHub OAuth provider
-- Export the handlers from `src/app/api/auth/[...nextauth]/route.ts`
-- Protect `/dashboard/*` with the Next.js 16 proxy in `src/proxy.ts` and redirect unauthenticated users to NextAuth's default sign-in page
-- Extend the Session type with `user.id` in `src/types/next-auth.d.ts`
+- Add a Credentials provider placeholder to `src/auth.config.ts` with `authorize: () => null`
+- Override the Credentials provider in `src/auth.ts` with real bcrypt validation
+- Create the registration API route `POST /api/auth/register`: accepts name, email, password and confirmPassword; validates that the passwords match; checks whether the user already exists; hashes the password with bcryptjs; creates the user in the database; returns a success or error response
+- Make sure the `User.password` field exists (it is already in `prisma/schema.prisma`, so no migration should be needed)
 
 ## Notes
 
-Spec: `context/features/auth-phase-1-spec.md`. Use Context7 to verify the newest config and conventions.
+Spec: `context/features/auth-phase-2-spec.md`.
 
-Gotchas:
-
-- Use `next-auth@beta` (not `@latest`, which installs v4)
-- The proxy file must be `src/proxy.ts` (same level as `app/`) with a named export: `export const proxy = auth(...)`, not a default export
-- Use `session: { strategy: 'jwt' }` with the split config pattern
-- Do not set a custom `pages.signIn`, use NextAuth's default page
-
-Environment variables: `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`
+- bcryptjs is already installed (`^3.0.3`)
+- Split pattern: `auth.config.ts` keeps the placeholder so it stays edge-compatible, `auth.ts` overrides it with the bcrypt validation logic
 
 Testing:
 
-1. Go to `/dashboard` and check it redirects to sign-in
-2. Click "Sign in with GitHub"
-3. Verify the redirect back to `/dashboard` after auth
+1. Register via curl:
+
+```bash
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test","email":"test@test.com","password":"password123","confirmPassword":"password123"}'
+```
+
+2. Go to `/api/auth/signin`
+3. Sign in with email/password
+4. Verify the redirect to `/dashboard`
+5. Verify GitHub OAuth still works
 
 References:
 
-- Edge compatibility: https://authjs.dev/getting-started/installation#edge-compatibility
-- Prisma adapter: https://authjs.dev/getting-started/adapters/prisma
+- Credentials provider: https://authjs.dev/getting-started/authentication/credentials
 
 ## History
 
@@ -52,3 +52,4 @@ References:
 - Dashboard Streaming: the dashboard layout wraps the sidebar in Suspense with a SidebarSkeleton fallback, and the page wraps stats, collections, pinned items and recent items in their own Suspense boundaries with skeletons sized to match the real cards (ShadCN skeleton component, SidebarSkeleton.tsx, DashboardSkeletons.tsx), so each part streams in as its query resolves; removed the redundant force-dynamic from the dashboard page (the layout sets it); added the code-reviewer agent and a green/red/yellow badge report line to the cleanup skill
 - Refactor Item Types, Sidebar and Mock Data: src/lib/mock-data.ts trimmed to mockUser and the demo email now comes from DEMO_USER_EMAIL everywhere (including prisma/seed-data.ts and scripts/test-db.ts); new src/lib/db/item-types.ts holds the shared item type select, toItemTypeInfo and getSidebarItemTypes (moved from items.ts) and is used by the items and collections queries; CollectionType removed in favor of ItemTypeInfo; demoUserItems and demoUserCollections replaced by one DEMO_USER_FILTER in demo-user.ts; Sidebar.tsx split into sidebar/TypesSection, CollectionsSection (now built from FavoriteLink and RecentLink), UserArea and shared (LINK_CLASS, ItemCount), with getInitials moved to src/lib/utils.ts; PRO_TYPE_NAMES stays in TypesSection
 - UI Fixes from Code Review: ItemRow computes the icon tint with color-mix only when a type has a color (no more invalid "undefined1a", works with non-hex colors); CollectionCard reads "1 item" for a single item; CollectionsSection renders the Favorites and Recent groups only when they have entries; DashboardShell keeps the desktop sidebar mounted and toggles it with a class, so sidebar sections keep their open or closed state; the TopBar search input has aria-label "Search items"
+- Auth Setup - NextAuth + GitHub Provider: NextAuth v5 (next-auth@beta) with @auth/prisma-adapter, split config for edge compatibility (src/auth.config.ts with the GitHub provider, src/auth.ts with the Prisma adapter and JWT sessions), handlers exported from src/app/api/auth/[...nextauth]/route.ts, /dashboard/* protected by src/proxy.ts with redirect to NextAuth's default sign-in page, Session type extended with user.id in src/types/next-auth.d.ts, auth env vars added to .env.example
