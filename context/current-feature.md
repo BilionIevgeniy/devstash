@@ -1,43 +1,19 @@
-# Current Feature: Auth Credentials - Email/Password Provider
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add a Credentials provider placeholder to `src/auth.config.ts` with `authorize: () => null`
-- Override the Credentials provider in `src/auth.ts` with real bcrypt validation
-- Create the registration API route `POST /api/auth/register`: accepts name, email, password and confirmPassword; validates that the passwords match; checks whether the user already exists; hashes the password with bcryptjs; creates the user in the database; returns a success or error response
-- Make sure the `User.password` field exists (it is already in `prisma/schema.prisma`, so no migration should be needed)
+<!-- Goals for the current feature go here -->
 
 ## Notes
 
-Spec: `context/features/auth-phase-2-spec.md`.
-
-- bcryptjs is already installed (`^3.0.3`)
-- Split pattern: `auth.config.ts` keeps the placeholder so it stays edge-compatible, `auth.ts` overrides it with the bcrypt validation logic
-
-Testing:
-
-1. Register via curl:
-
-```bash
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Test","email":"test@test.com","password":"password123","confirmPassword":"password123"}'
-```
-
-2. Go to `/api/auth/signin`
-3. Sign in with email/password
-4. Verify the redirect to `/dashboard`
-5. Verify GitHub OAuth still works
-
-References:
-
-- Credentials provider: https://authjs.dev/getting-started/authentication/credentials
+<!-- Additional context, constraints or details from the spec go here -->
 
 ## History
+
 
 - Initial Setup: Next.js scaffold, removed default public assets, cleaned up globals.css and page.tsx, added context/ docs and CLAUDE.md
 - Dashboard UI Phase 1: ShadCN UI setup (button, input), dark mode by default, /dashboard route with top bar (search + New Item, display only) and Sidebar/Main placeholders
@@ -53,3 +29,4 @@ References:
 - Refactor Item Types, Sidebar and Mock Data: src/lib/mock-data.ts trimmed to mockUser and the demo email now comes from DEMO_USER_EMAIL everywhere (including prisma/seed-data.ts and scripts/test-db.ts); new src/lib/db/item-types.ts holds the shared item type select, toItemTypeInfo and getSidebarItemTypes (moved from items.ts) and is used by the items and collections queries; CollectionType removed in favor of ItemTypeInfo; demoUserItems and demoUserCollections replaced by one DEMO_USER_FILTER in demo-user.ts; Sidebar.tsx split into sidebar/TypesSection, CollectionsSection (now built from FavoriteLink and RecentLink), UserArea and shared (LINK_CLASS, ItemCount), with getInitials moved to src/lib/utils.ts; PRO_TYPE_NAMES stays in TypesSection
 - UI Fixes from Code Review: ItemRow computes the icon tint with color-mix only when a type has a color (no more invalid "undefined1a", works with non-hex colors); CollectionCard reads "1 item" for a single item; CollectionsSection renders the Favorites and Recent groups only when they have entries; DashboardShell keeps the desktop sidebar mounted and toggles it with a class, so sidebar sections keep their open or closed state; the TopBar search input has aria-label "Search items"
 - Auth Setup - NextAuth + GitHub Provider: NextAuth v5 (next-auth@beta) with @auth/prisma-adapter, split config for edge compatibility (src/auth.config.ts with the GitHub provider, src/auth.ts with the Prisma adapter and JWT sessions), handlers exported from src/app/api/auth/[...nextauth]/route.ts, /dashboard/* protected by src/proxy.ts with redirect to NextAuth's default sign-in page, Session type extended with user.id in src/types/next-auth.d.ts, auth env vars added to .env.example
+- Auth Credentials - Email/Password Provider: Credentials provider added to the split auth config (placeholder authorize in src/auth.config.ts, real validation in src/auth.ts with Zod input check, bcryptjs compare and email normalised to lowercase, credentials fields declared so the default sign-in page renders Email and Password inputs), POST /api/auth/register (src/app/api/auth/register/route.ts) validates name, email, password (8-72 characters) and confirmPassword with Zod, returns 409 for an existing email (also on a Prisma P2002 race), hashes with bcryptjs (12 rounds) and returns { success, data, error } without the hash; zod added as a direct dependency; no migration needed as User.password already existed
