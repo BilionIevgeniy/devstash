@@ -1,31 +1,16 @@
-# Current Feature: Email Verification on Register
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Install `resend` and add a mail helper in `src/lib/email.ts` that sends through Resend using `RESEND_API_KEY` and the sender from `EMAIL_FROM`
-- On `POST /api/auth/register`, create a `VerificationToken` for the email (random token, stored hashed, expires after 24 hours) and email a verification link
-- If the verification email fails to send, keep the account, return a clear error and let the user request the email again
-- Add a `/verify-email?token=...&email=...` page that validates the token, sets `User.emailVerified`, deletes the token and shows a success or error state with a link to `/sign-in`
-- Block credentials sign-in until the email is verified, with a clear "Please verify your email" message on `/sign-in` (GitHub sign-in is unaffected)
-- After registering, show a "Check your email" state instead of "You can now sign in"
-- Add a "Resend verification email" action that invalidates earlier tokens for that email, with a 60-second cooldown (a repeat request inside the window silently sends nothing and answers like a success, so it does not reveal registered emails)
-- Add `scripts/delete-users.ts` (`npm run db:delete-users`) that deletes every user except the demo user `demo@devstash.io` (plus their verification tokens), for testing the registration flow on the development database; no migration
-- Add `EMAIL_FROM` to `.env.example` and tidy the `RESEND_API_KEY` comment
+<!-- Goals for the current feature go here -->
 
 ## Notes
 
-- No schema change: reuses the existing `VerificationToken` model and `User.emailVerified`
-- Responses keep the `{ success, data, error }` shape and all inputs are validated with Zod
-- Sender is a verified Resend domain: `EMAIL_FROM="DevStash <noreply@devstash.ievgenbilion.de>"` (domain added in Resend, region eu-west-1, DNS at IONOS). Until the domain shows Verified, `onboarding@resend.dev` only delivers to the Resend account owner
-- Do not enable Resend "Receiving" for the domain: it needs an MX record on `devstash`, which conflicts with the existing CNAME to Vercel
-- Add `RESEND_API_KEY` and `EMAIL_FROM` to the Vercel project environment variables (`.env` is not deployed)
-- Build the verification link from the request origin so it works on localhost, preview and production without another env var
-- No data migration: the development database only holds the demo user, which the seed already creates with `emailVerified` set. Existing credentials users in any other database keep `emailVerified = null` and cannot sign in by password until they verify through the resend flow
-- `scripts/delete-users.ts` is destructive: before every run check that `DATABASE_URL` points to the `development` Neon branch (host `ep-calm-voice-b4zvdl6z`)
+<!-- Additional context, constraints or details from the spec go here -->
 
 ## History
 
@@ -46,3 +31,4 @@ In Progress
 - Auth Setup - NextAuth + GitHub Provider: NextAuth v5 (next-auth@beta) with @auth/prisma-adapter, split config for edge compatibility (src/auth.config.ts with the GitHub provider, src/auth.ts with the Prisma adapter and JWT sessions), handlers exported from src/app/api/auth/[...nextauth]/route.ts, /dashboard/* protected by src/proxy.ts with redirect to NextAuth's default sign-in page, Session type extended with user.id in src/types/next-auth.d.ts, auth env vars added to .env.example
 - Auth Credentials - Email/Password Provider: Credentials provider added to the split auth config (placeholder authorize in src/auth.config.ts, real validation in src/auth.ts with Zod input check, bcryptjs compare and email normalised to lowercase, credentials fields declared so the default sign-in page renders Email and Password inputs), POST /api/auth/register (src/app/api/auth/register/route.ts) validates name, email, password (8-72 characters) and confirmPassword with Zod, returns 409 for an existing email (also on a Prisma P2002 race), hashes with bcryptjs (12 rounds) and returns { success, data, error } without the hash; zod added as a direct dependency; no migration needed as User.password already existed
 - Auth UI - Sign In, Register & Sign Out: custom /sign-in page (SignInForm with useActionState; signInWithCredentials, signInWithGitHub and signOutUser Server Actions in src/actions/auth.ts; GitHub button; Register link; NextAuth ?error= messages such as OAuthAccountNotLinked) and /register page (RegisterForm posting to /api/auth/register with a password-match check, a sonner toast "Account created. You can now sign in." and redirect to /sign-in) sharing an AuthCard; pages.signIn set in auth.config.ts and the proxy redirects to it; reusable UserAvatar (GitHub image, initials, or email letter fallback) and getInitials capped at 2 characters; the sidebar user area reads the session via auth() and opens an upward shadcn dropdown-menu with Sign out (no /profile link); Toaster mounted in the root layout with a fixed dark theme (no next-themes); React Compiler enabled in a separate commit; AUTH_URL documented in .env.example because the production build (npm run start) needs a trusted host locally; mockUser and src/lib/mock-data.ts removed
+- Email Verification on Register: registration now emails a verification link through Resend (src/lib/email.ts with RESEND_API_KEY and EMAIL_FROM from the verified domain devstash.ievgenbilion.de; src/lib/email-verification.ts creates a random 24-hour token stored as a SHA-256 hash in the existing VerificationToken model and builds the link from the request origin); /api/auth/register returns 502 when the email fails to send but keeps the account; the /verify-email page validates the token and sets User.emailVerified; credentials sign-in is blocked until verified (EmailNotVerifiedError with code email_not_verified in src/lib/auth-errors.ts, message in src/lib/auth-messages.ts) while GitHub sign-in is unaffected; the register form shows a "Check your email" notice (CheckEmailNotice) and a ResendVerificationButton also appears on sign-in and on a failed verification, backed by the resendVerificationEmail Server Action (src/actions/email-verification.ts) with a 60-second cooldown that stays silent so it does not reveal registered emails; scripts/delete-users.ts (npm run db:delete-users) removes every user except `demo@devstash.io` on the development database; no migration, so existing credentials users in other databases must verify through the resend flow; RESEND_API_KEY and EMAIL_FROM must also be set in Vercel
