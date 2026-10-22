@@ -1,15 +1,15 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, type SubmitEvent } from "react";
-import { toast } from "sonner";
 
+import { CheckEmailNotice } from "@/components/auth/CheckEmailNotice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_PASSWORD_LENGTH = 72;
 const GENERIC_ERROR = "Something went wrong. Please try again.";
+const EMAIL_NOT_SENT_STATUS = 502;
 
 const FIELDS = [
   { name: "name", label: "Name", type: "text", autoComplete: "name" },
@@ -33,10 +33,16 @@ interface RegisterResponse {
   error: string | null;
 }
 
+interface PendingVerification {
+  email: string;
+  error: string | null;
+}
+
 export function RegisterForm() {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
+  const [pendingVerification, setPendingVerification] =
+    useState<PendingVerification | null>(null);
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -56,9 +62,13 @@ export function RegisterForm() {
         body: JSON.stringify(values),
       });
       const result: RegisterResponse = await response.json();
+      const email = String(values.email);
       if (result.success) {
-        toast.success("Account created. You can now sign in.");
-        router.push("/sign-in");
+        setPendingVerification({ email, error: null });
+        return;
+      }
+      if (response.status === EMAIL_NOT_SENT_STATUS) {
+        setPendingVerification({ email, error: result.error });
         return;
       }
       setError(result.error ?? GENERIC_ERROR);
@@ -66,6 +76,15 @@ export function RegisterForm() {
       setError(GENERIC_ERROR);
     }
     setIsPending(false);
+  }
+
+  if (pendingVerification) {
+    return (
+      <CheckEmailNotice
+        email={pendingVerification.email}
+        error={pendingVerification.error}
+      />
+    );
   }
 
   return (

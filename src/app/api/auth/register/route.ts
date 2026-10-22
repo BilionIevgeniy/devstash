@@ -1,9 +1,12 @@
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { Prisma } from "@/generated/prisma/client";
+import { sendVerificationLink } from "@/lib/email-verification";
 import { prisma } from "@/lib/prisma";
 
 const BCRYPT_ROUNDS = 12;
+const EMAIL_NOT_SENT_MESSAGE =
+  "Account created, but we couldn't send the verification email. Request a new one.";
 
 const registerSchema = z
   .object({
@@ -64,6 +67,13 @@ export async function POST(request: Request) {
       data: { name, email, password: hashedPassword },
       select: { id: true, email: true, name: true },
     });
+
+    const emailResult = await sendVerificationLink(
+      user.email,
+      new URL(request.url).origin,
+    );
+    if (!emailResult.success) return failure(EMAIL_NOT_SENT_MESSAGE, 502);
+
     return success(user);
   } catch (error) {
     if (

@@ -3,8 +3,10 @@
 import { useActionState, useState } from "react";
 
 import { signInWithCredentials } from "@/actions/auth";
+import { ResendVerificationButton } from "@/components/auth/ResendVerificationButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { EMAIL_NOT_VERIFIED_MESSAGE } from "@/lib/auth-messages";
 import type { AuthActionState } from "@/types/auth";
 
 const INITIAL_STATE: AuthActionState = {
@@ -61,6 +63,9 @@ export function SignInForm({ initialError }: SignInFormProps) {
       <Button type="submit" size="lg" className="w-full" disabled={isPending}>
         {isPending ? "Signing in…" : "Sign in"}
       </Button>
+      {error === EMAIL_NOT_VERIFIED_MESSAGE && (
+        <ResendVerificationButton email={email} />
+      )}
     </form>
   );
 }

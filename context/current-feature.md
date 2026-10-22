@@ -1,16 +1,31 @@
-# Current Feature
+# Current Feature: Email Verification on Register
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals for the current feature go here -->
+- Install `resend` and add a mail helper in `src/lib/email.ts` that sends through Resend using `RESEND_API_KEY` and the sender from `EMAIL_FROM`
+- On `POST /api/auth/register`, create a `VerificationToken` for the email (random token, stored hashed, expires after 24 hours) and email a verification link
+- If the verification email fails to send, keep the account, return a clear error and let the user request the email again
+- Add a `/verify-email?token=...&email=...` page that validates the token, sets `User.emailVerified`, deletes the token and shows a success or error state with a link to `/sign-in`
+- Block credentials sign-in until the email is verified, with a clear "Please verify your email" message on `/sign-in` (GitHub sign-in is unaffected)
+- After registering, show a "Check your email" state instead of "You can now sign in"
+- Add a "Resend verification email" action that invalidates earlier tokens for that email, with a 60-second cooldown (a repeat request inside the window silently sends nothing and answers like a success, so it does not reveal registered emails)
+- Add `scripts/delete-users.ts` (`npm run db:delete-users`) that deletes every user except the demo user `demo@devstash.io` (plus their verification tokens), for testing the registration flow on the development database; no migration
+- Add `EMAIL_FROM` to `.env.example` and tidy the `RESEND_API_KEY` comment
 
 ## Notes
 
-<!-- Additional context, constraints or details from the spec go here -->
+- No schema change: reuses the existing `VerificationToken` model and `User.emailVerified`
+- Responses keep the `{ success, data, error }` shape and all inputs are validated with Zod
+- Sender is a verified Resend domain: `EMAIL_FROM="DevStash <noreply@devstash.ievgenbilion.de>"` (domain added in Resend, region eu-west-1, DNS at IONOS). Until the domain shows Verified, `onboarding@resend.dev` only delivers to the Resend account owner
+- Do not enable Resend "Receiving" for the domain: it needs an MX record on `devstash`, which conflicts with the existing CNAME to Vercel
+- Add `RESEND_API_KEY` and `EMAIL_FROM` to the Vercel project environment variables (`.env` is not deployed)
+- Build the verification link from the request origin so it works on localhost, preview and production without another env var
+- No data migration: the development database only holds the demo user, which the seed already creates with `emailVerified` set. Existing credentials users in any other database keep `emailVerified = null` and cannot sign in by password until they verify through the resend flow
+- `scripts/delete-users.ts` is destructive: before every run check that `DATABASE_URL` points to the `development` Neon branch (host `ep-calm-voice-b4zvdl6z`)
 
 ## History
 

@@ -3,6 +3,8 @@
 import { AuthError, CredentialsSignin } from "next-auth";
 import { z } from "zod";
 import { signIn, signOut } from "@/auth";
+import { EMAIL_NOT_VERIFIED_CODE } from "@/lib/auth-errors";
+import { EMAIL_NOT_VERIFIED_MESSAGE } from "@/lib/auth-messages";
 import type { AuthActionState } from "@/types/auth";
 
 const DASHBOARD_URL = "/dashboard";
@@ -35,7 +37,11 @@ export async function signInWithCredentials(
     await signIn("credentials", { ...parsed.data, redirectTo: DASHBOARD_URL });
   } catch (error) {
     if (error instanceof CredentialsSignin) {
-      return failure("Invalid email or password");
+      return failure(
+        error.code === EMAIL_NOT_VERIFIED_CODE
+          ? EMAIL_NOT_VERIFIED_MESSAGE
+          : "Invalid email or password",
+      );
     }
     if (error instanceof AuthError) return failure("Something went wrong");
     throw error;
