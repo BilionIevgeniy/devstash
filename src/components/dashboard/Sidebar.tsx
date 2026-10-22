@@ -3,15 +3,15 @@ import { Layers } from "lucide-react";
 import { CollectionsSection } from "@/components/dashboard/sidebar/CollectionsSection";
 import { TypesSection } from "@/components/dashboard/sidebar/TypesSection";
 import { UserArea } from "@/components/dashboard/sidebar/UserArea";
-import { auth } from "@/auth";
 import { getSidebarCollections } from "@/lib/db/collections";
 import { getSidebarItemTypes } from "@/lib/db/item-types";
+import { getSessionUser } from "@/lib/session";
 
 export async function Sidebar() {
-  const [itemTypes, collections, session] = await Promise.all([
-    getSidebarItemTypes(),
-    getSidebarCollections(),
-    auth(),
+  const user = await getSessionUser();
+  const [itemTypes, collections] = await Promise.all([
+    getSidebarItemTypes(user.id),
+    getSidebarCollections(user.id),
   ]);
 
   return (
@@ -26,7 +26,7 @@ export async function Sidebar() {
         <CollectionsSection {...collections} />
       </nav>
 
-      {session?.user && <UserArea user={session.user} />}
+      <UserArea user={user} />
     </div>
   );
 }

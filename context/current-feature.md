@@ -1,16 +1,24 @@
-# Current Feature
+# Current Feature: Dashboard Data for the Signed-in User
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals for the current feature go here -->
+- Every dashboard query filters by the signed-in user's id (`session.user.id`) instead of the hard-coded demo user: `getPinnedItems`, `getRecentItems`, `getItemStats` (src/lib/db/items.ts), `getRecentCollections`, `getSidebarCollections`, `getCollectionStats` (src/lib/db/collections.ts) and `getSidebarItemTypes` (src/lib/db/item-types.ts) take a `userId` argument
+- The server components that call them (PinnedItems, RecentItems, RecentCollections, StatsCards and the Sidebar) get the user id from the session; if there is no session the user is sent to `/sign-in`
+- `DEMO_USER_FILTER` is removed from src/lib/db/demo-user.ts; `DEMO_USER_EMAIL` stays because the seed and the scripts use it
+- A user with no data sees zero counts and sensible empty states on the dashboard and in the sidebar, with no errors
+- The demo user still sees the seeded data
 
 ## Notes
 
-<!-- Additional context, constraints or details from the spec go here -->
+- Found while testing email verification: any signed-in user saw the demo user's items and collections because the queries were never switched from the demo stand-in to the session after auth was added (the sidebar user area already used `auth()`)
+- This is a fix, so it gets its own branch `fix/dashboard-user-data` and its own commit
+- Sessions are JWT, so reading the session needs no database round trip; keep the Suspense boundaries so each part still streams in on its own
+- No schema change and no migration
+- To check by hand: sign in as the demo user (sees the seeded data) and as a freshly registered user (sees zeros), then run `npm run db:delete-users` to clean up; `npm run db:test` still works as it only uses `DEMO_USER_EMAIL`
 
 ## History
 

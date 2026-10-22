@@ -1,5 +1,4 @@
 import type { Prisma } from "@/generated/prisma/client";
-import { DEMO_USER_FILTER } from "@/lib/db/demo-user";
 import { prisma } from "@/lib/prisma";
 import type { ItemTypeInfo, SidebarItemType } from "@/types/items";
 
@@ -39,12 +38,14 @@ function systemTypePosition(name: string): number {
   return index === -1 ? SYSTEM_TYPE_ORDER.length : index;
 }
 
-export async function getSidebarItemTypes(): Promise<SidebarItemType[]> {
+export async function getSidebarItemTypes(
+  userId: string,
+): Promise<SidebarItemType[]> {
   const types = await prisma.itemType.findMany({
     where: { isSystem: true },
     select: {
       ...itemTypeSelect,
-      _count: { select: { items: { where: DEMO_USER_FILTER } } },
+      _count: { select: { items: { where: { userId } } } },
     },
   });
 

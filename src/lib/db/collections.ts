@@ -1,5 +1,4 @@
 import type { Prisma } from "@/generated/prisma/client";
-import { DEMO_USER_FILTER } from "@/lib/db/demo-user";
 import { itemTypeSelect, toItemTypeInfo } from "@/lib/db/item-types";
 import { prisma } from "@/lib/prisma";
 import type {
@@ -55,11 +54,12 @@ function rankTypesByUsage(
 }
 
 async function fetchCollections(
+  userId: string,
   where: Prisma.CollectionWhereInput,
   take?: number,
 ): Promise<DashboardCollection[]> {
   const collections = await prisma.collection.findMany({
-    where: { ...DEMO_USER_FILTER, ...where },
+    where: { userId, ...where },
     orderBy: { updatedAt: "desc" },
     take,
     select: collectionSelect,
@@ -80,24 +80,28 @@ async function fetchCollections(
   }));
 }
 
-export function getRecentCollections(): Promise<DashboardCollection[]> {
-  return fetchCollections({}, DASHBOARD_COLLECTIONS_LIMIT);
+export function getRecentCollections(
+  userId: string,
+): Promise<DashboardCollection[]> {
+  return fetchCollections(userId, {}, DASHBOARD_COLLECTIONS_LIMIT);
 }
 
-export async function getSidebarCollections(): Promise<SidebarCollections> {
+export async function getSidebarCollections(
+  userId: string,
+): Promise<SidebarCollections> {
   const [favorites, recent] = await Promise.all([
-    fetchCollections({ isFavorite: true }),
-    fetchCollections({}, SIDEBAR_RECENT_LIMIT),
+    fetchCollections(userId, { isFavorite: true }),
+    fetchCollections(userId, {}, SIDEBAR_RECENT_LIMIT),
   ]);
   return { favorites, recent };
 }
 
-export async function getCollectionStats(): Promise<CollectionStats> {
+export async function getCollectionStats(
+  userId: string,
+): Promise<CollectionStats> {
   const [total, favorites] = await Promise.all([
-    prisma.collection.count({ where: DEMO_USER_FILTER }),
-    prisma.collection.count({
-      where: { ...DEMO_USER_FILTER, isFavorite: true },
-    }),
+    prisma.collection.count({ where: { userId } }),
+    prisma.collection.count({ where: { userId, isFavorite: true } }),
   ]);
   return { total, favorites };
 }

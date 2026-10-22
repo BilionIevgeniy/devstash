@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { getCollectionStats } from "@/lib/db/collections";
 import { getItemStats } from "@/lib/db/items";
+import { getSessionUser } from "@/lib/session";
 
 interface StatCardProps {
   label: string;
@@ -23,9 +24,10 @@ function StatCard({ label, value, icon: Icon }: StatCardProps) {
 }
 
 export async function StatsCards() {
+  const { id: userId } = await getSessionUser();
   const [itemStats, collectionStats] = await Promise.all([
-    getItemStats(),
-    getCollectionStats(),
+    getItemStats(userId),
+    getCollectionStats(userId),
   ]);
 
   return (
