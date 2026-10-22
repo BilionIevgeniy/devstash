@@ -1,24 +1,16 @@
-# Current Feature: Dashboard Data for the Signed-in User
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Every dashboard query filters by the signed-in user's id (`session.user.id`) instead of the hard-coded demo user: `getPinnedItems`, `getRecentItems`, `getItemStats` (src/lib/db/items.ts), `getRecentCollections`, `getSidebarCollections`, `getCollectionStats` (src/lib/db/collections.ts) and `getSidebarItemTypes` (src/lib/db/item-types.ts) take a `userId` argument
-- The server components that call them (PinnedItems, RecentItems, RecentCollections, StatsCards and the Sidebar) get the user id from the session; if there is no session the user is sent to `/sign-in`
-- `DEMO_USER_FILTER` is removed from src/lib/db/demo-user.ts; `DEMO_USER_EMAIL` stays because the seed and the scripts use it
-- A user with no data sees zero counts and sensible empty states on the dashboard and in the sidebar, with no errors
-- The demo user still sees the seeded data
+<!-- Goals for the current feature go here -->
 
 ## Notes
 
-- Found while testing email verification: any signed-in user saw the demo user's items and collections because the queries were never switched from the demo stand-in to the session after auth was added (the sidebar user area already used `auth()`)
-- This is a fix, so it gets its own branch `fix/dashboard-user-data` and its own commit
-- Sessions are JWT, so reading the session needs no database round trip; keep the Suspense boundaries so each part still streams in on its own
-- No schema change and no migration
-- To check by hand: sign in as the demo user (sees the seeded data) and as a freshly registered user (sees zeros), then run `npm run db:delete-users` to clean up; `npm run db:test` still works as it only uses `DEMO_USER_EMAIL`
+<!-- Additional context, constraints or details from the spec go here -->
 
 ## History
 
@@ -40,3 +32,4 @@ In Progress
 - Auth Credentials - Email/Password Provider: Credentials provider added to the split auth config (placeholder authorize in src/auth.config.ts, real validation in src/auth.ts with Zod input check, bcryptjs compare and email normalised to lowercase, credentials fields declared so the default sign-in page renders Email and Password inputs), POST /api/auth/register (src/app/api/auth/register/route.ts) validates name, email, password (8-72 characters) and confirmPassword with Zod, returns 409 for an existing email (also on a Prisma P2002 race), hashes with bcryptjs (12 rounds) and returns { success, data, error } without the hash; zod added as a direct dependency; no migration needed as User.password already existed
 - Auth UI - Sign In, Register & Sign Out: custom /sign-in page (SignInForm with useActionState; signInWithCredentials, signInWithGitHub and signOutUser Server Actions in src/actions/auth.ts; GitHub button; Register link; NextAuth ?error= messages such as OAuthAccountNotLinked) and /register page (RegisterForm posting to /api/auth/register with a password-match check, a sonner toast "Account created. You can now sign in." and redirect to /sign-in) sharing an AuthCard; pages.signIn set in auth.config.ts and the proxy redirects to it; reusable UserAvatar (GitHub image, initials, or email letter fallback) and getInitials capped at 2 characters; the sidebar user area reads the session via auth() and opens an upward shadcn dropdown-menu with Sign out (no /profile link); Toaster mounted in the root layout with a fixed dark theme (no next-themes); React Compiler enabled in a separate commit; AUTH_URL documented in .env.example because the production build (npm run start) needs a trusted host locally; mockUser and src/lib/mock-data.ts removed
 - Email Verification on Register: registration now emails a verification link through Resend (src/lib/email.ts with RESEND_API_KEY and EMAIL_FROM from the verified domain devstash.ievgenbilion.de; src/lib/email-verification.ts creates a random 24-hour token stored as a SHA-256 hash in the existing VerificationToken model and builds the link from the request origin); /api/auth/register returns 502 when the email fails to send but keeps the account; the /verify-email page validates the token and sets User.emailVerified; credentials sign-in is blocked until verified (EmailNotVerifiedError with code email_not_verified in src/lib/auth-errors.ts, message in src/lib/auth-messages.ts) while GitHub sign-in is unaffected; the register form shows a "Check your email" notice (CheckEmailNotice) and a ResendVerificationButton also appears on sign-in and on a failed verification, backed by the resendVerificationEmail Server Action (src/actions/email-verification.ts) with a 60-second cooldown that stays silent so it does not reveal registered emails; scripts/delete-users.ts (npm run db:delete-users) removes every user except `demo@devstash.io` on the development database; no migration, so existing credentials users in other databases must verify through the resend flow; RESEND_API_KEY and EMAIL_FROM must also be set in Vercel
+- Dashboard Data for the Signed-in User: all dashboard queries (getPinnedItems, getRecentItems, getItemStats, getRecentCollections, getSidebarCollections, getCollectionStats, getSidebarItemTypes) now take a userId and filter by it instead of the hard-coded demo user; new getSessionUser() in src/lib/session.ts (cache() around auth(), redirects to /sign-in without a session) is read by PinnedItems, RecentItems, RecentCollections, StatsCards and the Sidebar (which also passes the user to UserArea), keeping the Suspense boundaries; DEMO_USER_FILTER removed from demo-user.ts (DEMO_USER_EMAIL stays for the seed and the scripts); RecentItems and RecentCollections show "No items yet." and "No collections yet." for a user with no data; no schema change or migration
