@@ -2,29 +2,15 @@
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-Refactor the project to a feature-based architecture with strict one-way layering and a pure domain core (see "Architecture & File Organization" in context/coding-standards.md):
-
-- Move auth, item-types, items, collections and app-shell code into `src/features/*`, with `git mv` to keep history
-- Move the dashboard page sections (StatsCards, PinnedItems, RecentItems, RecentCollections, DashboardSkeletons) into `src/app/dashboard/_components/`
-- Extract the pure rules that exist today into `domain/` folders (item type mapping and ordering, collection type ranking, verification token expiry, cooldown and URL building)
-- Enforce the layer order, the domain boundary, the `_internal/` private folders and import cycles in `eslint.config.mjs`
-- Add the `server-only` package and mark server-only modules with it, so a leak into a Client Component fails the build
-- Update the list-components skill to the new folders
-- Upgrade to Next.js 16.4.2 and React 19.2.9 as a separate step after the refactor
+<!-- Goals for the current feature go here -->
 
 ## Notes
 
-- Behaviour must not change: no new features, no route changes, no schema change or migration
-- Layer order: `lib` and `components/ui` < `item-types` and `auth` < `items` < `collections` < `app-shell` < `app`
-- No barrel files; the public API of a feature is everything outside its `_internal/` folder (private: auth errors, messages, email-verification action and CheckEmailNotice; app-shell TopBar, CollapsibleSection and the sidebar sections); `@/lib/prisma` is forbidden in `features/**/components/**`
-- Domain files are pure: no Prisma, React, Next.js, next-auth or SDK imports, no `Date.now()`
-- Deferred on purpose: `(app)` route group and wider proxy matcher, `ActionResult<T>`, extracting Zod schemas into `schemas.ts`, test setup, moving `PRO_TYPE_NAMES`
-- `src/lib/db/demo-user.ts` stays where it is because scripts/ and prisma/seed-data.ts import it by relative path
-- Verify with tsc, lint and `npm run build`; browser check is done by the user; no commit until the user has checked the site
+<!-- Additional context, constraints or details from the spec go here -->
 
 ## History
 
@@ -46,3 +32,4 @@ Refactor the project to a feature-based architecture with strict one-way layerin
 - Auth UI - Sign In, Register & Sign Out: custom /sign-in page (SignInForm with useActionState; signInWithCredentials, signInWithGitHub and signOutUser Server Actions in src/actions/auth.ts; GitHub button; Register link; NextAuth ?error= messages such as OAuthAccountNotLinked) and /register page (RegisterForm posting to /api/auth/register with a password-match check, a sonner toast "Account created. You can now sign in." and redirect to /sign-in) sharing an AuthCard; pages.signIn set in auth.config.ts and the proxy redirects to it; reusable UserAvatar (GitHub image, initials, or email letter fallback) and getInitials capped at 2 characters; the sidebar user area reads the session via auth() and opens an upward shadcn dropdown-menu with Sign out (no /profile link); Toaster mounted in the root layout with a fixed dark theme (no next-themes); React Compiler enabled in a separate commit; AUTH_URL documented in .env.example because the production build (npm run start) needs a trusted host locally; mockUser and src/lib/mock-data.ts removed
 - Email Verification on Register: registration now emails a verification link through Resend (src/lib/email.ts with RESEND_API_KEY and EMAIL_FROM from the verified domain devstash.ievgenbilion.de; src/lib/email-verification.ts creates a random 24-hour token stored as a SHA-256 hash in the existing VerificationToken model and builds the link from the request origin); /api/auth/register returns 502 when the email fails to send but keeps the account; the /verify-email page validates the token and sets User.emailVerified; credentials sign-in is blocked until verified (EmailNotVerifiedError with code email_not_verified in src/lib/auth-errors.ts, message in src/lib/auth-messages.ts) while GitHub sign-in is unaffected; the register form shows a "Check your email" notice (CheckEmailNotice) and a ResendVerificationButton also appears on sign-in and on a failed verification, backed by the resendVerificationEmail Server Action (src/actions/email-verification.ts) with a 60-second cooldown that stays silent so it does not reveal registered emails; scripts/delete-users.ts (npm run db:delete-users) removes every user except `demo@devstash.io` on the development database; no migration, so existing credentials users in other databases must verify through the resend flow; RESEND_API_KEY and EMAIL_FROM must also be set in Vercel
 - Dashboard Data for the Signed-in User: all dashboard queries (getPinnedItems, getRecentItems, getItemStats, getRecentCollections, getSidebarCollections, getCollectionStats, getSidebarItemTypes) now take a userId and filter by it instead of the hard-coded demo user; new getSessionUser() in src/lib/session.ts (cache() around auth(), redirects to /sign-in without a session) is read by PinnedItems, RecentItems, RecentCollections, StatsCards and the Sidebar (which also passes the user to UserArea), keeping the Suspense boundaries; DEMO_USER_FILTER removed from demo-user.ts (DEMO_USER_EMAIL stays for the seed and the scripts); RecentItems and RecentCollections show "No items yet." and "No collections yet." for a user with no data; no schema change or migration
+- Feature-Based Architecture: code regrouped under src/features (auth, item-types, items, collections, app-shell) with one-way layering (lib and components/ui < item-types and auth < items < collections < app-shell < app) and no barrel files; the public API of a feature is everything outside its _internal/ folder (private: auth errors, messages, the email-verification action and CheckEmailNotice; app-shell TopBar, CollapsibleSection and the sidebar sections); the dashboard page sections (StatsCards, PinnedItems, RecentItems, RecentCollections, DashboardSkeletons) moved to src/app/dashboard/_components; pure rules extracted into domain/ folders (toItemTypeInfo and system type ordering, rankTypesByUsage, verification token expiry, cooldown and URL building, with `now` passed in); auth.ts, auth.config.ts, session.ts and next-auth.d.ts now live in features/auth, EmailResult is inlined in lib/email.ts, src/actions and src/types removed; eslint.config.mjs enforces the layer order, _internal privacy, domain purity (import/no-restricted-paths and no-restricted-imports), import/no-cycle and no Prisma in feature components; server-only package added and imported by every queries.ts, auth.ts, session.ts, email-verification.ts, lib/prisma.ts and lib/email.ts so a leak into a Client Component fails the build; Next.js upgraded to 16.4.2 and React and React DOM to 19.2.9 (eslint-config-next 16.4.2) in a separate commit; coding-standards.md documents the architecture and the list-components skill scans the new folders; no behaviour, route, schema or migration change; deferred: (app) route group with a wider proxy matcher, `ActionResult<T>`, extracting Zod schemas into schemas.ts, test setup, moving PRO_TYPE_NAMES
