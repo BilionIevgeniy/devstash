@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-import { signInWithGitHub } from "@/actions/auth";
-import { AuthCard } from "@/components/auth/AuthCard";
-import { SignInForm } from "@/components/auth/SignInForm";
+import { signInWithGitHub } from "@/features/auth/actions/auth";
+import { AuthCard } from "@/features/auth/components/AuthCard";
+import { SignInForm } from "@/features/auth/components/SignInForm";
 import { Button } from "@/components/ui/button";
 
 const AUTH_ERROR_MESSAGES = new Map([

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { z } from "zod";
 
-import { AuthCard } from "@/components/auth/AuthCard";
-import { ResendVerificationButton } from "@/components/auth/ResendVerificationButton";
+import { AuthCard } from "@/features/auth/components/AuthCard";
+import { ResendVerificationButton } from "@/features/auth/components/ResendVerificationButton";
 import { Button } from "@/components/ui/button";
-import { INVALID_LINK_ERROR, verifyEmailToken } from "@/lib/email-verification";
+import { INVALID_LINK_ERROR, verifyEmailToken } from "@/features/auth/email-verification";
 
 const searchParamsSchema = z.object({
   token: z.string().min(1),

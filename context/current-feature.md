@@ -2,18 +2,31 @@
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals for the current feature go here -->
+Refactor the project to a feature-based architecture with strict one-way layering and a pure domain core (see "Architecture & File Organization" in context/coding-standards.md):
+
+- Move auth, item-types, items, collections and app-shell code into `src/features/*`, with `git mv` to keep history
+- Move the dashboard page sections (StatsCards, PinnedItems, RecentItems, RecentCollections, DashboardSkeletons) into `src/app/dashboard/_components/`
+- Extract the pure rules that exist today into `domain/` folders (item type mapping and ordering, collection type ranking, verification token expiry, cooldown and URL building)
+- Enforce the layer order, the domain boundary, the `_internal/` private folders and import cycles in `eslint.config.mjs`
+- Add the `server-only` package and mark server-only modules with it, so a leak into a Client Component fails the build
+- Update the list-components skill to the new folders
+- Upgrade to Next.js 16.4.2 and React 19.2.9 as a separate step after the refactor
 
 ## Notes
 
-<!-- Additional context, constraints or details from the spec go here -->
+- Behaviour must not change: no new features, no route changes, no schema change or migration
+- Layer order: `lib` and `components/ui` < `item-types` and `auth` < `items` < `collections` < `app-shell` < `app`
+- No barrel files; the public API of a feature is everything outside its `_internal/` folder (private: auth errors, messages, email-verification action and CheckEmailNotice; app-shell TopBar, CollapsibleSection and the sidebar sections); `@/lib/prisma` is forbidden in `features/**/components/**`
+- Domain files are pure: no Prisma, React, Next.js, next-auth or SDK imports, no `Date.now()`
+- Deferred on purpose: `(app)` route group and wider proxy matcher, `ActionResult<T>`, extracting Zod schemas into `schemas.ts`, test setup, moving `PRO_TYPE_NAMES`
+- `src/lib/db/demo-user.ts` stays where it is because scripts/ and prisma/seed-data.ts import it by relative path
+- Verify with tsc, lint and `npm run build`; browser check is done by the user; no commit until the user has checked the site
 
 ## History
-
 
 - Initial Setup: Next.js scaffold, removed default public assets, cleaned up globals.css and page.tsx, added context/ docs and CLAUDE.md
 - Dashboard UI Phase 1: ShadCN UI setup (button, input), dark mode by default, /dashboard route with top bar (search + New Item, display only) and Sidebar/Main placeholders

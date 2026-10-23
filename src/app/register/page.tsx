@@ -1,7 +1,7 @@
 import Link from "next/link";
 
-import { AuthCard } from "@/components/auth/AuthCard";
-import { RegisterForm } from "@/components/auth/RegisterForm";
+import { AuthCard } from "@/features/auth/components/AuthCard";
+import { RegisterForm } from "@/features/auth/components/RegisterForm";
 
 export default function RegisterPage() {
   return (

@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { Prisma } from "@/generated/prisma/client";
-import { sendVerificationLink } from "@/lib/email-verification";
+import { sendVerificationLink } from "@/features/auth/email-verification";
 import { prisma } from "@/lib/prisma";
 
 const BCRYPT_ROUNDS = 12;

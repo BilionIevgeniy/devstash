@@ -1,5 +1,11 @@
+import "server-only";
+
 import { Resend } from "resend";
-import type { EmailResult } from "@/types/email";
+
+export interface EmailResult {
+  success: boolean;
+  error: string | null;
+}
 
 const VERIFICATION_SUBJECT = "Verify your DevStash email";
 
