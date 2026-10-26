@@ -55,8 +55,10 @@ Feature-based architecture with strict one-way layering. Code is grouped by feat
 ```text
 src/
   app/                       Next.js routing only: page, layout, route.ts, loading, error
-    dashboard/
-      _components/           page-specific sections (private folder, not routable)
+    (app)/                   authenticated routes (route group, not part of the URL)
+      layout.tsx             app shell shared by every authenticated route
+      dashboard/, profile/
+        _components/         page-specific sections (private folder, not routable)
     sign-in/, register/, verify-email/, api/auth/
   features/
     auth/                    sign-in/register UI, auth actions, auth.ts, auth.config.ts,
@@ -122,7 +124,7 @@ Each feature keeps its business rules in `features/[feature]/domain/` as pure Ty
 - Circular imports are forbidden (`import/no-cycle`)
 - `@/lib/prisma` is never imported in `features/**/components/**`; components get data through props or from queries called by a server component
 - Route-specific UI lives in `app/[route]/_components/`. When a second route reuses it, move it into the matching feature
-- Every authenticated route must be covered by the matcher in `src/proxy.ts`: widen it in the same change as the new route. When the first non-dashboard authenticated page lands, group authenticated routes under an `(app)` route group
+- Authenticated routes live in the `app/(app)/` route group under its shared shell layout. Every authenticated route must also be covered by the matcher in `src/proxy.ts`: widen it in the same change as the new route
 - The shared action result type `ActionResult<T>` goes into `src/lib/` when the first non-auth Server Action is written
 - Tests, when added, are colocated as `[name].test.ts`
 - Layer order, the `_internal/` boundary, the domain core boundary and import cycles are enforced in `eslint.config.mjs` (`import/no-restricted-paths`, `no-restricted-imports` and `import/no-cycle`)

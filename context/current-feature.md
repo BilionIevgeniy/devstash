@@ -1,16 +1,25 @@
-# Current Feature
+# Current Feature: Profile Page
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals for the current feature go here -->
+- Profile page at the `/profile` route, protected (requires authentication)
+- Display user info: email, name, avatar (GitHub image or initials) and account creation date
+- Show usage stats: total items, total collections and a count for each item type (snippets, prompts, notes, commands, links, files, images)
+- Account actions: change password (email/password users only) and delete account behind a confirmation dialog
+- Follow existing codebase patterns for data fetching and components
 
 ## Notes
 
-<!-- Additional context, constraints or details from the spec go here -->
+- Spec: `context/features/profile-spec.md`
+- Avatar logic: use the GitHub avatar from OAuth if available, otherwise generate initials from name/email
+- The change password button appears only for users who signed up with email/password (not GitHub OAuth)
+- Delete account needs a confirmation dialog to prevent accidental deletion
+- `/profile` is the first authenticated page outside `/dashboard`: widen the `src/proxy.ts` matcher in the same change and group authenticated routes under an `(app)` route group (see coding-standards.md)
+- Change password and delete account are Server Actions returning `{ success, data, error }`; the `ActionResult<T>` type goes into `src/lib/` when the first non-auth Server Action is written
 
 ## History
 

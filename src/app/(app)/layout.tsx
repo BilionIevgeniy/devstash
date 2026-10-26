@@ -6,9 +6,7 @@ import { SidebarSkeleton } from "@/features/app-shell/components/SidebarSkeleton
 
 export const dynamic = "force-dynamic";
 
-export default function DashboardLayout({
-  children,
-}: LayoutProps<"/dashboard">) {
+export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <DashboardShell
       sidebar={

@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronsUpDown, LogOut } from "lucide-react";
+import { ChevronsUpDown, LogOut, User } from "lucide-react";
+import Link from "next/link";
 
 import { signOutUser } from "@/features/auth/actions/auth";
 import { UserAvatar } from "@/features/auth/components/UserAvatar";
@@ -47,6 +48,12 @@ export function UserArea({ user }: UserAreaProps) {
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent side="top">
+          <DropdownMenuItem asChild>
+            <Link href="/profile">
+              <User />
+              Profile
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => signOutUser()}>
             <LogOut />
             Sign out

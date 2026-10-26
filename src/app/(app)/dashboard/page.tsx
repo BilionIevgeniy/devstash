@@ -4,11 +4,11 @@ import {
   CollectionsSkeleton,
   ItemsSkeleton,
   StatsSkeleton,
-} from "@/app/dashboard/_components/DashboardSkeletons";
-import { PinnedItems } from "@/app/dashboard/_components/PinnedItems";
-import { RecentCollections } from "@/app/dashboard/_components/RecentCollections";
-import { RecentItems } from "@/app/dashboard/_components/RecentItems";
-import { StatsCards } from "@/app/dashboard/_components/StatsCards";
+} from "@/app/(app)/dashboard/_components/DashboardSkeletons";
+import { PinnedItems } from "@/app/(app)/dashboard/_components/PinnedItems";
+import { RecentCollections } from "@/app/(app)/dashboard/_components/RecentCollections";
+import { RecentItems } from "@/app/(app)/dashboard/_components/RecentItems";
+import { StatsCards } from "@/app/(app)/dashboard/_components/StatsCards";
 
 const PINNED_SKELETON_ROWS = 2;
 const RECENT_SKELETON_ROWS = 5;
