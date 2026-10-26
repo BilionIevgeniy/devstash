@@ -1,16 +1,27 @@
-# Current Feature
+# Current Feature: Forgot Password
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals for the current feature go here -->
+- "Forgot password?" link on the sign-in form that goes to `/forgot-password`
+- `/forgot-password` page with an email form backed by a Server Action; it always shows the same neutral message ("If an account exists, we sent a reset link") so it does not reveal which emails are registered, like the existing resend-verification flow
+- Reset email sent through Resend with a link to `/reset-password?token=...&email=...`
+- `/reset-password` page that validates the token on load, then shows a new password and confirm password form (8-72 characters, hashed with bcryptjs, 12 rounds, like registration)
+- Reset tokens live in the existing `VerificationToken` table as a SHA-256 hash; single-use, expire after 1 hour, and a newer request replaces the previous token
+- An invalid or expired link shows an error card with a link to request a new one
+- After a successful reset the user is sent to `/sign-in` with a success toast
 
 ## Notes
 
-<!-- Additional context, constraints or details from the spec go here -->
+- No migration. `VerificationToken` has no type column, so the identifier is prefixed (`password-reset:<email>`) to keep reset tokens apart from email-verification tokens. Without the prefix, requesting a reset would delete a pending verification token (createVerificationToken deletes every token for an email), and `verifyEmailToken` matches on email alone, so a reset token could verify an email and the reverse
+- All code stays inside `features/auth`: `domain/password-reset.ts` (pure rules: 1-hour TTL, identifier prefix, 60-second cooldown, URL building, `now` passed in), `password-reset.ts` (server-only create and consume, reusing the exported `hashToken`), Server Actions `requestPasswordReset` and `resetPassword`, `ForgotPasswordForm` and `ResetPasswordForm`; `sendPasswordResetEmail` in `src/lib/email.ts`; two thin pages in `src/app/` (`forgot-password`, `reset-password`)
+- `src/proxy.ts` needs no change: its matcher only covers `/dashboard`, so the new pages are public
+- Accounts without a password (GitHub-only) get no email and the same neutral response
+- A successful reset does not mark the email as verified; an unverified user can still use the resend button on sign-in
+- Known limitation, out of scope: sessions are JWT, so a reset does not sign out other devices
 
 ## History
 

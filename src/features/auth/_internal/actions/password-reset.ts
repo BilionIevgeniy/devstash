@@ -1,0 +1,98 @@
+"use server";
+
+import { z } from "zod";
+import { getRequestOrigin } from "@/features/auth/_internal/request-origin";
+import {
+  MAX_PASSWORD_LENGTH,
+  MIN_PASSWORD_LENGTH,
+} from "@/features/auth/domain/password-reset";
+import {
+  resetPasswordWithToken,
+  sendPasswordResetLink,
+  wasResetLinkSentRecently,
+} from "@/features/auth/password-reset";
+import type { AuthActionState } from "@/features/auth/types";
+import { prisma } from "@/lib/prisma";
+
+const GENERIC_ERROR = "Something went wrong. Please try again.";
+const SUCCESS: AuthActionState = { success: true, data: null, error: null };
+
+const emailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .pipe(z.email("Invalid email address"));
+
+const resetPasswordSchema = z
+  .object({
+    email: emailSchema,
+    token: z.string().min(1),
+    password: z
+      .string()
+      .min(
+        MIN_PASSWORD_LENGTH,
+        `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
+      )
+      .max(
+        MAX_PASSWORD_LENGTH,
+        `Password must be at most ${MAX_PASSWORD_LENGTH} characters`,
+      ),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+interface ResetPasswordInput {
+  email: string;
+  token: string;
+  password: string;
+  confirmPassword: string;
+}
+
+function failure(error: string): AuthActionState {
+  return { success: false, data: null, error };
+}
+
+export async function requestPasswordReset(
+  _prevState: AuthActionState,
+  formData: FormData,
+): Promise<AuthActionState> {
+  const parsed = emailSchema.safeParse(formData.get("email"));
+  if (!parsed.success) return failure(parsed.error.issues[0].message);
+
+  try {
+    const origin = await getRequestOrigin();
+    if (!origin) return failure(GENERIC_ERROR);
+
+    const user = await prisma.user.findUnique({
+      where: { email: parsed.data },
+      select: { password: true },
+    });
+    if (!user?.password || (await wasResetLinkSentRecently(parsed.data))) {
+      return SUCCESS;
+    }
+
+    // A send failure is only logged: reporting it would reveal that the
+    // account exists.
+    await sendPasswordResetLink(parsed.data, origin);
+    return SUCCESS;
+  } catch (error) {
+    console.error("Requesting a password reset failed:", error);
+    return failure(GENERIC_ERROR);
+  }
+}
+
+export async function resetPassword(
+  input: ResetPasswordInput,
+): Promise<AuthActionState> {
+  const parsed = resetPasswordSchema.safeParse(input);
+  if (!parsed.success) return failure(parsed.error.issues[0].message);
+
+  const { email, token, password } = parsed.data;
+  const result = await resetPasswordWithToken(email, token, password);
+  if (!result.success) return failure(result.error ?? GENERIC_ERROR);
+
+  return SUCCESS;
+}

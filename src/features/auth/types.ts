@@ -8,3 +8,8 @@ export interface VerifyEmailResult {
   success: boolean;
   error: string | null;
 }
+
+export interface PasswordResetResult {
+  success: boolean;
+  error: string | null;
+}

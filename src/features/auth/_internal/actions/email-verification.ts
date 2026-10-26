@@ -1,7 +1,7 @@
 "use server";
 
-import { headers } from "next/headers";
 import { z } from "zod";
+import { getRequestOrigin } from "@/features/auth/_internal/request-origin";
 import {
   sendVerificationLink,
   wasLinkSentRecently,
@@ -19,15 +19,6 @@ const emailSchema = z
 
 function failure(error: string): AuthActionState {
   return { success: false, data: null, error };
-}
-
-async function getRequestOrigin(): Promise<string | null> {
-  const requestHeaders = await headers();
-  const host =
-    requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
-  if (!host) return null;
-  const protocol = requestHeaders.get("x-forwarded-proto") ?? "http";
-  return `${protocol}://${host}`;
 }
 
 export async function resendVerificationEmail(
