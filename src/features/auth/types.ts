@@ -19,6 +19,11 @@ export interface ChangePasswordResult {
   error: string | null;
 }
 
+export interface DeleteAccountResult {
+  success: boolean;
+  error: string | null;
+}
+
 export interface UserProfile {
   name: string | null;
   email: string;

@@ -1,16 +1,31 @@
-# Current Feature
+# Current Feature: Auth Security Hardening
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Goals for the current feature go here -->
+Fix findings 1-6 of `docs/audit-results/AUTH_SECURITY_REVIEW.md`:
+
+- Trusted origin (#3): verification and reset links are built from a configured `APP_URL` (`src/lib/app-url.ts`, `getAppOrigin()`), never from request headers; `_internal/request-origin.ts` is removed
+- Rate limiting (#1): shared Postgres-backed limiter (`RateLimit` table, atomic upsert counter) for credentials sign-in (by IP and by email, inside `authorize` so the raw NextAuth route is covered), registration (by IP), resend verification and forgot password (by address and by IP) and password checks (by user); the per-address email limit replaces the read-then-write cooldown
+- Session revocation (#2): `User.sessionVersion` checked in the `jwt` callback; password reset, password change and account deletion invalidate existing sessions
+- Verify email (#4): GET validates the token without consuming it, then a confirm form asks for the registration password before the email is verified
+- Registration (#5): new and existing addresses get the same response, so registration no longer reveals registered emails
+- Delete account (#6): requires the current password for accounts with a password and a fresh GitHub sign-in for GitHub-only accounts
 
 ## Notes
 
-<!-- Additional context, constraints or details from the spec go here -->
+- Implemented in the order #3, migration plus #1, #2, #4, #5, #6, then the code-reviewer findings were fixed
+- One migration adds `User.sessionVersion` and the `RateLimit` table (`prisma migrate dev`, development branch only)
+- Rate-limit policy (limits, windows) lives as pure constants in `features/auth/domain/`; the counter lives in `src/lib/rate-limit.ts`
+- The sign-in limit counts every attempt and resets the email counter on success; exhausted email limits return the same neutral success as today
+- A token without `sv` counts as version 0, so existing sessions survive the deploy until the first bump
+- A password change bumps `sessionVersion`, so it signs the user out everywhere, including the current browser
+- Deferred: shorter session `maxAge`, "password changed" and "someone tried to register" emails, the remaining Low findings 7-11
+- Review fixes: IPv6 clients are counted by their /64 prefix (`src/lib/client-ip.ts`); a request without a client IP skips the per-IP limits and logs once instead of sharing one counter; an exhausted per-IP email limit answers "Too many attempts" openly while the per-address limit stays neutral, and the address is checked first so repeated "Resend" clicks do not use up the IP budget; registration no longer reports a failed send (the 502 branch is gone); registration logic moved to `features/auth/registration.ts` with the resend rule in `domain/registration.ts`; `requiresReauthentication` moved to `domain/reauth.ts` with `now` passed in; the resend action reads `APP_URL` before any lookup
+- Before merging: `APP_URL` must be set in Vercel for Production and Preview (it throws whenever NODE_ENV is production and it is unset); the Vercel build runs `prisma migrate deploy`, so the migration reaches production on deploy
 
 ## History
 

@@ -8,7 +8,6 @@ import {
   getPasswordResetIdentifier,
   INVALID_RESET_LINK_MESSAGE,
   PASSWORD_RESET_TOKEN_TTL_HOURS,
-  wasResetSentWithinCooldown,
 } from "@/features/auth/domain/password-reset";
 import { isTokenExpired } from "@/features/auth/domain/verification-token";
 import { hashToken } from "@/features/auth/email-verification";
@@ -31,17 +30,6 @@ async function createPasswordResetToken(email: string): Promise<string> {
     }),
   ]);
   return token;
-}
-
-export async function wasResetLinkSentRecently(email: string): Promise<boolean> {
-  const latest = await prisma.verificationToken.findFirst({
-    where: { identifier: getPasswordResetIdentifier(email) },
-    orderBy: { expires: "desc" },
-    select: { expires: true },
-  });
-  if (!latest) return false;
-
-  return wasResetSentWithinCooldown(latest.expires, new Date());
 }
 
 export async function sendPasswordResetLink(
@@ -114,7 +102,10 @@ export async function resetPasswordWithToken(
         return { success: false, error: INVALID_RESET_LINK_MESSAGE };
       }
 
-      await tx.user.update({ where: { email }, data: { password } });
+      await tx.user.update({
+        where: { email },
+        data: { password, sessionVersion: { increment: 1 } },
+      });
       return { success: true, error: null };
     });
   } catch (error) {

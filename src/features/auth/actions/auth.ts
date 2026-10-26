@@ -3,12 +3,21 @@
 import { AuthError, CredentialsSignin } from "next-auth";
 import { z } from "zod";
 import { signIn, signOut } from "@/features/auth/auth";
-import { EMAIL_NOT_VERIFIED_CODE } from "@/features/auth/_internal/errors";
+import {
+  EMAIL_NOT_VERIFIED_CODE,
+  TOO_MANY_ATTEMPTS_CODE,
+} from "@/features/auth/_internal/errors";
 import { EMAIL_NOT_VERIFIED_MESSAGE } from "@/features/auth/_internal/messages";
+import { TOO_MANY_ATTEMPTS_MESSAGE } from "@/features/auth/domain/rate-limits";
 import type { AuthActionState } from "@/features/auth/types";
 
 const DASHBOARD_URL = "/dashboard";
 const SIGN_IN_URL = "/sign-in";
+const PROFILE_URL = "/profile";
+const CREDENTIALS_ERROR_MESSAGES = new Map([
+  [EMAIL_NOT_VERIFIED_CODE, EMAIL_NOT_VERIFIED_MESSAGE],
+  [TOO_MANY_ATTEMPTS_CODE, TOO_MANY_ATTEMPTS_MESSAGE],
+]);
 
 const signInSchema = z.object({
   email: z
@@ -38,9 +47,8 @@ export async function signInWithCredentials(
   } catch (error) {
     if (error instanceof CredentialsSignin) {
       return failure(
-        error.code === EMAIL_NOT_VERIFIED_CODE
-          ? EMAIL_NOT_VERIFIED_MESSAGE
-          : "Invalid email or password",
+        CREDENTIALS_ERROR_MESSAGES.get(error.code) ??
+          "Invalid email or password",
       );
     }
     if (error instanceof AuthError) return failure("Something went wrong");
@@ -51,6 +59,12 @@ export async function signInWithCredentials(
 
 export async function signInWithGitHub(): Promise<void> {
   await signIn("github", { redirectTo: DASHBOARD_URL });
+}
+
+// A fresh GitHub sign-in confirms the owner before a destructive action on an
+// account that has no password to type.
+export async function reauthenticateWithGitHub(): Promise<void> {
+  await signIn("github", { redirectTo: PROFILE_URL });
 }
 
 export async function signOutUser(): Promise<void> {

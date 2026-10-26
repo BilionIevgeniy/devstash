@@ -1,21 +1,51 @@
 "use server";
 
+import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { getRequestOrigin } from "@/features/auth/_internal/request-origin";
+import { MAX_PASSWORD_LENGTH } from "@/features/auth/domain/password-reset";
 import {
+  CONFIRM_EMAIL_BY_ADDRESS,
+  TOO_MANY_ATTEMPTS_MESSAGE,
+  VERIFICATION_EMAIL_BY_ADDRESS,
+} from "@/features/auth/domain/rate-limits";
+import {
+  INVALID_LINK_ERROR,
+  WRONG_CONFIRM_PASSWORD_MESSAGE,
+} from "@/features/auth/domain/verification-token";
+import { checkEmailSend } from "@/features/auth/email-rate-limit";
+import {
+  isVerificationTokenValid,
   sendVerificationLink,
-  wasLinkSentRecently,
+  verifyEmailToken,
 } from "@/features/auth/email-verification";
+import { getAppOrigin } from "@/lib/app-url";
 import { prisma } from "@/lib/prisma";
+import { consumeRateLimit, resetRateLimit } from "@/lib/rate-limit";
 import type { AuthActionState } from "@/features/auth/types";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
+const SUCCESS: AuthActionState = { success: true, data: null, error: null };
 
 const emailSchema = z
   .string()
   .trim()
   .toLowerCase()
   .pipe(z.email("Invalid email address"));
+
+const confirmEmailSchema = z.object({
+  email: emailSchema,
+  token: z.string().min(1),
+  password: z
+    .string()
+    .min(1, "Password is required")
+    .max(MAX_PASSWORD_LENGTH),
+});
+
+interface ConfirmEmailInput {
+  email: string;
+  token: string;
+  password: string;
+}
 
 function failure(error: string): AuthActionState {
   return { success: false, data: null, error };
@@ -28,28 +58,68 @@ export async function resendVerificationEmail(
   if (!parsed.success) return failure(parsed.error.issues[0].message);
 
   try {
+    // Read before any lookup so a missing APP_URL fails the same way for every
+    // address and does not reveal which ones have an account.
+    const origin = getAppOrigin();
+
+    const check = await checkEmailSend(
+      VERIFICATION_EMAIL_BY_ADDRESS,
+      parsed.data,
+    );
+    if (check === "ip-limited") return failure(TOO_MANY_ATTEMPTS_MESSAGE);
+    if (check === "address-limited") return SUCCESS;
+
     const user = await prisma.user.findUnique({
       where: { email: parsed.data },
       select: { password: true, emailVerified: true },
     });
-    if (
-      !user?.password ||
-      user.emailVerified ||
-      (await wasLinkSentRecently(parsed.data))
-    ) {
-      return { success: true, data: null, error: null };
-    }
-
-    const origin = await getRequestOrigin();
-    if (!origin) return failure(GENERIC_ERROR);
+    if (!user?.password || user.emailVerified) return SUCCESS;
 
     const result = await sendVerificationLink(parsed.data, origin);
     if (!result.success) {
       return failure("We couldn't send the email. Please try again later.");
     }
-    return { success: true, data: null, error: null };
+    return SUCCESS;
   } catch (error) {
     console.error("Resending verification email failed:", error);
+    return failure(GENERIC_ERROR);
+  }
+}
+
+// Anyone can register an address they do not own, so holding the emailed link
+// is not enough: the verifier must also know the password the account was
+// created with. The owner of a pre-registered address does not and can use
+// Forgot password instead.
+export async function confirmEmail(
+  input: ConfirmEmailInput,
+): Promise<AuthActionState> {
+  const parsed = confirmEmailSchema.safeParse(input);
+  if (!parsed.success) return failure(parsed.error.issues[0].message);
+  const { email, token, password } = parsed.data;
+
+  try {
+    if (!(await isVerificationTokenValid(email, token))) {
+      return failure(INVALID_LINK_ERROR);
+    }
+    if (!(await consumeRateLimit(CONFIRM_EMAIL_BY_ADDRESS, email))) {
+      return failure(TOO_MANY_ATTEMPTS_MESSAGE);
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: { password: true },
+    });
+    if (!user?.password || !(await bcrypt.compare(password, user.password))) {
+      return failure(WRONG_CONFIRM_PASSWORD_MESSAGE);
+    }
+
+    const result = await verifyEmailToken(email, token);
+    if (!result.success) return failure(result.error ?? GENERIC_ERROR);
+
+    await resetRateLimit(CONFIRM_EMAIL_BY_ADDRESS, email);
+    return SUCCESS;
+  } catch (error) {
+    console.error("Confirming the email failed:", error);
     return failure(GENERIC_ERROR);
   }
 }

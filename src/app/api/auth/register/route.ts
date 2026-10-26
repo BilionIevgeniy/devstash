@@ -1,12 +1,11 @@
-import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { Prisma } from "@/generated/prisma/client";
-import { sendVerificationLink } from "@/features/auth/email-verification";
-import { prisma } from "@/lib/prisma";
-
-const BCRYPT_ROUNDS = 12;
-const EMAIL_NOT_SENT_MESSAGE =
-  "Account created, but we couldn't send the verification email. Request a new one.";
+import {
+  REGISTER_BY_IP,
+  TOO_MANY_ATTEMPTS_MESSAGE,
+} from "@/features/auth/domain/rate-limits";
+import { registerAccount } from "@/features/auth/registration";
+import { getAppOrigin } from "@/lib/app-url";
+import { consumeIpRateLimit } from "@/lib/rate-limit";
 
 const registerSchema = z
   .object({
@@ -27,14 +26,13 @@ const registerSchema = z
     path: ["confirmPassword"],
   });
 
-interface RegisteredUser {
-  id: string;
-  email: string;
-  name: string | null;
-}
-
-function success(data: RegisteredUser) {
-  return Response.json({ success: true, data, error: null }, { status: 201 });
+// New and already registered addresses get this same response, so the route
+// cannot be used to find out who has an account.
+function accepted() {
+  return Response.json(
+    { success: true, data: null, error: null },
+    { status: 201 },
+  );
 }
 
 function failure(error: string, status: number) {
@@ -56,32 +54,13 @@ export async function POST(request: Request) {
   const { name, email, password } = parsed.data;
 
   try {
-    const existing = await prisma.user.findUnique({
-      where: { email },
-      select: { id: true },
-    });
-    if (existing) return failure("User already exists", 409);
-
-    const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
-    const user = await prisma.user.create({
-      data: { name, email, password: hashedPassword },
-      select: { id: true, email: true, name: true },
-    });
-
-    const emailResult = await sendVerificationLink(
-      user.email,
-      new URL(request.url).origin,
-    );
-    if (!emailResult.success) return failure(EMAIL_NOT_SENT_MESSAGE, 502);
-
-    return success(user);
-  } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2002"
-    ) {
-      return failure("User already exists", 409);
+    if (!(await consumeIpRateLimit(REGISTER_BY_IP, request.headers))) {
+      return failure(TOO_MANY_ATTEMPTS_MESSAGE, 429);
     }
+
+    await registerAccount({ name, email, password }, getAppOrigin());
+    return accepted();
+  } catch (error) {
     console.error("Registration failed:", error);
     return failure("Something went wrong", 500);
   }

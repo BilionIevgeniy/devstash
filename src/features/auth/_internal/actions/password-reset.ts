@@ -1,17 +1,21 @@
 "use server";
 
 import { z } from "zod";
-import { getRequestOrigin } from "@/features/auth/_internal/request-origin";
 import {
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
 import {
+  RESET_EMAIL_BY_ADDRESS,
+  TOO_MANY_ATTEMPTS_MESSAGE,
+} from "@/features/auth/domain/rate-limits";
+import { checkEmailSend } from "@/features/auth/email-rate-limit";
+import {
   resetPasswordWithToken,
   sendPasswordResetLink,
-  wasResetLinkSentRecently,
 } from "@/features/auth/password-reset";
 import type { AuthActionState } from "@/features/auth/types";
+import { getAppOrigin } from "@/lib/app-url";
 import { prisma } from "@/lib/prisma";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
@@ -63,16 +67,17 @@ export async function requestPasswordReset(
   if (!parsed.success) return failure(parsed.error.issues[0].message);
 
   try {
-    const origin = await getRequestOrigin();
-    if (!origin) return failure(GENERIC_ERROR);
+    const origin = getAppOrigin();
+
+    const check = await checkEmailSend(RESET_EMAIL_BY_ADDRESS, parsed.data);
+    if (check === "ip-limited") return failure(TOO_MANY_ATTEMPTS_MESSAGE);
+    if (check === "address-limited") return SUCCESS;
 
     const user = await prisma.user.findUnique({
       where: { email: parsed.data },
       select: { password: true },
     });
-    if (!user?.password || (await wasResetLinkSentRecently(parsed.data))) {
-      return SUCCESS;
-    }
+    if (!user?.password) return SUCCESS;
 
     // A send failure is only logged: reporting it would reveal that the
     // account exists.

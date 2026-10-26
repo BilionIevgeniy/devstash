@@ -4,24 +4,18 @@ import { ResendVerificationButton } from "@/features/auth/components/ResendVerif
 
 interface CheckEmailNoticeProps {
   email: string;
-  error: string | null;
 }
 
-export function CheckEmailNotice({ email, error }: CheckEmailNoticeProps) {
+export function CheckEmailNotice({ email }: CheckEmailNoticeProps) {
   return (
     <div className="space-y-4 text-center">
       <h2 className="text-lg font-semibold">Check your email</h2>
-      {error ? (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          We sent a verification link to{" "}
-          <span className="font-medium text-foreground">{email}</span>. Click it
-          to activate your account.
-        </p>
-      )}
+      <p className="text-sm text-muted-foreground">
+        We sent a verification link to{" "}
+        <span className="font-medium text-foreground">{email}</span> if it
+        isn&apos;t registered yet. Click it to activate your account, or sign in
+        if you already have one.
+      </p>
       <ResendVerificationButton email={email} />
       <Link
         href="/sign-in"

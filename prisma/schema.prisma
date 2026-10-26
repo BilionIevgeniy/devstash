@@ -17,6 +17,7 @@ model User {
   isPro                Boolean   @default(false)
   stripeCustomerId     String?
   stripeSubscriptionId String?
+  sessionVersion       Int       @default(0)
 
   accounts    Account[]
   sessions    Session[]
@@ -66,6 +67,14 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model RateLimit {
+  key         String   @id
+  count       Int
+  windowStart DateTime
+
+  @@index([windowStart])
 }
 
 model Item {

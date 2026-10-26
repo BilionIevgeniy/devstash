@@ -6,7 +6,6 @@ export const INVALID_RESET_LINK_MESSAGE =
 
 const IDENTIFIER_PREFIX = "password-reset:";
 const MS_PER_HOUR = 60 * 60 * 1000;
-const RESEND_COOLDOWN_MS = 60 * 1000;
 
 export function getPasswordResetIdentifier(email: string): string {
   return `${IDENTIFIER_PREFIX}${email}`;
@@ -16,12 +15,6 @@ export function getPasswordResetExpiry(now: Date): Date {
   return new Date(
     now.getTime() + PASSWORD_RESET_TOKEN_TTL_HOURS * MS_PER_HOUR,
   );
-}
-
-export function wasResetSentWithinCooldown(expires: Date, now: Date): boolean {
-  const sentAt =
-    expires.getTime() - PASSWORD_RESET_TOKEN_TTL_HOURS * MS_PER_HOUR;
-  return now.getTime() - sentAt < RESEND_COOLDOWN_MS;
 }
 
 export function buildPasswordResetUrl(

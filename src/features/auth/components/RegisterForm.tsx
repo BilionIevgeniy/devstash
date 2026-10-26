@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_PASSWORD_LENGTH = 72;
 const GENERIC_ERROR = "Something went wrong. Please try again.";
-const EMAIL_NOT_SENT_STATUS = 502;
 
 const FIELDS = [
   { name: "name", label: "Name", type: "text", autoComplete: "name" },
@@ -33,16 +32,10 @@ interface RegisterResponse {
   error: string | null;
 }
 
-interface PendingVerification {
-  email: string;
-  error: string | null;
-}
-
 export function RegisterForm() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
-  const [pendingVerification, setPendingVerification] =
-    useState<PendingVerification | null>(null);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -62,13 +55,8 @@ export function RegisterForm() {
         body: JSON.stringify(values),
       });
       const result: RegisterResponse = await response.json();
-      const email = String(values.email);
       if (result.success) {
-        setPendingVerification({ email, error: null });
-        return;
-      }
-      if (response.status === EMAIL_NOT_SENT_STATUS) {
-        setPendingVerification({ email, error: result.error });
+        setPendingEmail(String(values.email));
         return;
       }
       setError(result.error ?? GENERIC_ERROR);
@@ -78,14 +66,7 @@ export function RegisterForm() {
     setIsPending(false);
   }
 
-  if (pendingVerification) {
-    return (
-      <CheckEmailNotice
-        email={pendingVerification.email}
-        error={pendingVerification.error}
-      />
-    );
-  }
+  if (pendingEmail) return <CheckEmailNotice email={pendingEmail} />;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

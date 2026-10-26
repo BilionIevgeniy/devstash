@@ -4,6 +4,7 @@ import { useState, useTransition, type SubmitEvent } from "react";
 import { toast } from "sonner";
 
 import { changePassword } from "@/features/auth/_internal/actions/account";
+import { signOutUser } from "@/features/auth/actions/auth";
 import {
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
@@ -11,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const SUCCESS_MESSAGE = "Password updated.";
+const SUCCESS_MESSAGE = "Password updated. Please sign in again.";
 
 const FIELDS = [
   {
@@ -59,8 +60,10 @@ export function ChangePasswordForm() {
         confirmPassword,
       });
       if (result.success) {
+        // The change revoked every session, this one included; signing out
+        // clears the cookie and redirects to /sign-in.
         toast.success(SUCCESS_MESSAGE);
-        form.reset();
+        await signOutUser();
         return;
       }
       setError(result.error);

@@ -1,12 +1,13 @@
 import { Settings } from "lucide-react";
 
+import { needsReauthentication } from "@/features/auth/account";
 import { ChangePasswordForm } from "@/features/auth/components/ChangePasswordForm";
 import { DeleteAccountDialog } from "@/features/auth/components/DeleteAccountDialog";
 import { getUserProfile } from "@/features/auth/queries";
 import { getSessionUser } from "@/features/auth/session";
 
 export async function AccountActions() {
-  const { id: userId } = await getSessionUser();
+  const { id: userId, authenticatedAt } = await getSessionUser();
   const profile = await getUserProfile(userId);
   if (!profile) return null;
 
@@ -24,7 +25,13 @@ export async function AccountActions() {
             Permanently delete your account and all of your data.
           </p>
         </div>
-        <DeleteAccountDialog />
+        <DeleteAccountDialog
+          hasPassword={profile.hasPassword}
+          requiresReauth={needsReauthentication(
+            profile.hasPassword,
+            authenticatedAt,
+          )}
+        />
       </div>
     </section>
   );
