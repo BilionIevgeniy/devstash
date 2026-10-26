@@ -1,25 +1,16 @@
-# Current Feature: Profile Page
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Profile page at the `/profile` route, protected (requires authentication)
-- Display user info: email, name, avatar (GitHub image or initials) and account creation date
-- Show usage stats: total items, total collections and a count for each item type (snippets, prompts, notes, commands, links, files, images)
-- Account actions: change password (email/password users only) and delete account behind a confirmation dialog
-- Follow existing codebase patterns for data fetching and components
+<!-- Goals for the current feature go here -->
 
 ## Notes
 
-- Spec: `context/features/profile-spec.md`
-- Avatar logic: use the GitHub avatar from OAuth if available, otherwise generate initials from name/email
-- The change password button appears only for users who signed up with email/password (not GitHub OAuth)
-- Delete account needs a confirmation dialog to prevent accidental deletion
-- `/profile` is the first authenticated page outside `/dashboard`: widen the `src/proxy.ts` matcher in the same change and group authenticated routes under an `(app)` route group (see coding-standards.md)
-- Change password and delete account are Server Actions returning `{ success, data, error }`; the `ActionResult<T>` type goes into `src/lib/` when the first non-auth Server Action is written
+<!-- Additional context, constraints or details from the spec go here -->
 
 ## History
 
@@ -43,3 +34,4 @@ In Progress
 - Dashboard Data for the Signed-in User: all dashboard queries (getPinnedItems, getRecentItems, getItemStats, getRecentCollections, getSidebarCollections, getCollectionStats, getSidebarItemTypes) now take a userId and filter by it instead of the hard-coded demo user; new getSessionUser() in src/lib/session.ts (cache() around auth(), redirects to /sign-in without a session) is read by PinnedItems, RecentItems, RecentCollections, StatsCards and the Sidebar (which also passes the user to UserArea), keeping the Suspense boundaries; DEMO_USER_FILTER removed from demo-user.ts (DEMO_USER_EMAIL stays for the seed and the scripts); RecentItems and RecentCollections show "No items yet." and "No collections yet." for a user with no data; no schema change or migration
 - Feature-Based Architecture: code regrouped under src/features (auth, item-types, items, collections, app-shell) with one-way layering (lib and components/ui < item-types and auth < items < collections < app-shell < app) and no barrel files; the public API of a feature is everything outside its _internal/ folder (private: auth errors, messages, the email-verification action and CheckEmailNotice; app-shell TopBar, CollapsibleSection and the sidebar sections); the dashboard page sections (StatsCards, PinnedItems, RecentItems, RecentCollections, DashboardSkeletons) moved to src/app/dashboard/_components; pure rules extracted into domain/ folders (toItemTypeInfo and system type ordering, rankTypesByUsage, verification token expiry, cooldown and URL building, with `now` passed in); auth.ts, auth.config.ts, session.ts and next-auth.d.ts now live in features/auth, EmailResult is inlined in lib/email.ts, src/actions and src/types removed; eslint.config.mjs enforces the layer order, _internal privacy, domain purity (import/no-restricted-paths and no-restricted-imports), import/no-cycle and no Prisma in feature components; server-only package added and imported by every queries.ts, auth.ts, session.ts, email-verification.ts, lib/prisma.ts and lib/email.ts so a leak into a Client Component fails the build; Next.js upgraded to 16.4.2 and React and React DOM to 19.2.9 (eslint-config-next 16.4.2) in a separate commit; coding-standards.md documents the architecture and the list-components skill scans the new folders; no behaviour, route, schema or migration change; deferred: (app) route group with a wider proxy matcher, `ActionResult<T>`, extracting Zod schemas into schemas.ts, test setup, moving PRO_TYPE_NAMES
 - Forgot Password: "Forgot password?" link on sign-in leading to /forgot-password (neutral confirmation for unknown, GitHub-only and cooldown cases; a Resend failure is only logged so it does not reveal registered emails) and /reset-password (token validated on load, password-match check, toast and redirect to /sign-in, error card with a request-a-new-link button for invalid or expired links); reset tokens reuse the VerificationToken model with the identifier prefixed `password-reset:<email>` (no migration), stored as a SHA-256 hash, 1-hour expiry, a newer request replaces the old one, and consuming one deletes it and saves the bcrypt hash (12 rounds) in one transaction after a cheap validity check so bad tokens never pay for a hash; pure rules in features/auth/domain/password-reset.ts, server logic in features/auth/password-reset.ts, Server Actions requestPasswordReset and resetPassword in `_internal/actions`; src/lib/email.ts now shares one send path and layout between the verification and reset emails (content of the verification email unchanged); getRequestOrigin moved to `_internal/request-origin.ts`; review.md prints its verdict as a table; known limitation: JWT sessions are not invalidated by a reset; deferred: shared password length constants with registration, timing-based account enumeration (same as resend-verification), a retry option on the confirmation message
+- Profile Page: `/profile` shows the signed-in user's avatar (GitHub image or initials), name, email and "Member since" date, usage totals (items, collections) with a count for each system item type, a change-password form for users with a password (current password check, 8-72 characters) and delete account behind a shadcn alert dialog (Server Actions `changePassword` and `deleteAccount` in `features/auth/_internal/actions/account.ts`, logic in `features/auth/account.ts`, `getUserProfile` with `hasPassword` in `features/auth/queries.ts`; deleting removes the user, cascaded data and verification/reset tokens, then signs out); authenticated routes now live in the `app/(app)` route group with one shared shell layout and the `src/proxy.ts` matcher covers `/profile`; "Profile" link in the sidebar user menu; `formatLongDate` in `lib/utils.ts`; `coding-standards.md` updated for the route group; no schema change or migration; known limitations: JWT sessions are not invalidated by a password change or account deletion, the demo account can delete itself; deferred: delete items explicitly before the user in `deleteUserAccount` so custom item types never depend on cascade order, shared bcrypt rounds and password schema, `ActionResult<T>`
