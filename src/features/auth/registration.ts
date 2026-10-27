@@ -48,7 +48,7 @@ export async function registerAccount(
     const check = pending
       ? await checkEmailSend(VERIFICATION_EMAIL_BY_ADDRESS, email)
       : null;
-    if (check === "allowed") await sendVerificationLink(email, origin);
+    if (check?.status === "allowed") await sendVerificationLink(email, origin);
     return;
   }
 

@@ -9,7 +9,10 @@ import {
   type RateLimitPolicy,
 } from "@/lib/rate-limit";
 
-export type EmailSendCheck = "allowed" | "address-limited" | "ip-limited";
+export type EmailSendCheck =
+  | { status: "allowed" }
+  | { status: "address-limited" }
+  | { status: "ip-limited"; reset: number };
 
 // A refusal for the address is answered with the same neutral result as a send
 // so the response never reveals whether the address has an account. The IP
@@ -24,13 +27,15 @@ export async function checkEmailSend(
 ): Promise<EmailSendCheck> {
   try {
     const address = await consumeRateLimit(addressPolicy, email);
-    if (!address.success) return "address-limited";
+    if (!address.success) return { status: "address-limited" };
 
     const ip = await consumeIpRateLimit(EMAIL_BY_IP, await headers());
-    if (!ip.success) return "ip-limited";
-    return "allowed";
+    if (!ip.success) return { status: "ip-limited", reset: ip.reset };
+    return { status: "allowed" };
   } catch (error) {
-    if (error instanceof RateLimitUnavailableError) return "address-limited";
+    if (error instanceof RateLimitUnavailableError) {
+      return { status: "address-limited" };
+    }
     throw error;
   }
 }

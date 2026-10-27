@@ -6,8 +6,8 @@ import {
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
 import {
+  getTooManyAttemptsMessage,
   RESET_EMAIL_BY_ADDRESS,
-  TOO_MANY_ATTEMPTS_MESSAGE,
 } from "@/features/auth/domain/rate-limits";
 import { checkEmailSend } from "@/features/auth/email-rate-limit";
 import {
@@ -70,8 +70,10 @@ export async function requestPasswordReset(
     const origin = getAppOrigin();
 
     const check = await checkEmailSend(RESET_EMAIL_BY_ADDRESS, parsed.data);
-    if (check === "ip-limited") return failure(TOO_MANY_ATTEMPTS_MESSAGE);
-    if (check === "address-limited") return SUCCESS;
+    if (check.status === "ip-limited") {
+      return failure(getTooManyAttemptsMessage(check.reset, Date.now()));
+    }
+    if (check.status === "address-limited") return SUCCESS;
 
     const user = await prisma.user.findUnique({
       where: { email: parsed.data },

@@ -1,6 +1,7 @@
 import "server-only";
 
 import bcrypt from "bcryptjs";
+import { revokeGitHubGrant } from "@/features/auth/_internal/github-grant";
 import { getPasswordResetIdentifier } from "@/features/auth/domain/password-reset";
 import {
   isRecentlyAuthenticated,
@@ -82,6 +83,17 @@ export async function deleteUserAccount(
     }
   } else if (!isRecentlyAuthenticated(proof.authenticatedAt, Date.now())) {
     return { success: false, error: REAUTH_REQUIRED_MESSAGE };
+  }
+
+  // Taking the app's authorization away on GitHub makes the next GitHub
+  // sign-in start from GitHub's authorize screen and create a new account. The
+  // stored token is the one from the first link, so it may already be revoked.
+  const githubAccounts = await prisma.account.findMany({
+    where: { userId, provider: "github" },
+    select: { access_token: true },
+  });
+  for (const { access_token } of githubAccounts) {
+    if (access_token) await revokeGitHubGrant(access_token);
   }
 
   await prisma.$transaction([

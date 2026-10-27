@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, type SubmitEvent } from "react";
-import { toast } from "sonner";
 
 import { CheckEmailNotice } from "@/features/auth/_internal/components/CheckEmailNotice";
-import { isTooManyAttemptsMessage } from "@/features/auth/domain/rate-limits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -61,12 +59,7 @@ export function RegisterForm() {
         setPendingEmail(String(values.email));
         return;
       }
-      const message = result.error ?? GENERIC_ERROR;
-      if (isTooManyAttemptsMessage(message)) {
-        toast.error(message);
-      } else {
-        setError(message);
-      }
+      setError(result.error ?? GENERIC_ERROR);
     } catch {
       setError(GENERIC_ERROR);
     }

@@ -10,6 +10,7 @@ import {
   EmailNotVerifiedError,
   TooManyAttemptsError,
 } from "@/features/auth/_internal/errors";
+import { revokeGitHubGrant } from "@/features/auth/_internal/github-grant";
 import { LOGIN_BY_EMAIL, LOGIN_BY_IP } from "@/features/auth/domain/rate-limits";
 import { prisma } from "@/lib/prisma";
 import {
@@ -71,6 +72,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
+  events: {
+    // Auth.js waits for this before it redirects. The grant is removed right
+    // after each GitHub sign-in, while the fresh token is at hand, so the next
+    // GitHub sign-in (after a sign-out too) starts from GitHub's authorize
+    // screen. The token stored by the adapter is not refreshed on later
+    // sign-ins, which is why the revoke cannot wait for the sign-out.
+    async signIn({ account }) {
+      if (account?.provider === "github" && account.access_token) {
+        await revokeGitHubGrant(account.access_token);
+      }
+    },
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user?.id) {

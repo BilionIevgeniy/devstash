@@ -1,15 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { useActionState, useState } from "react";
 
 import { signInWithCredentials } from "@/features/auth/actions/auth";
 import { ResendVerificationButton } from "@/features/auth/components/ResendVerificationButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EMAIL_NOT_VERIFIED_MESSAGE } from "@/features/auth/_internal/messages";
-import { isTooManyAttemptsMessage } from "@/features/auth/domain/rate-limits";
 import type { AuthActionState } from "@/features/auth/types";
 
 const INITIAL_STATE: AuthActionState = {
@@ -28,14 +26,7 @@ export function SignInForm({ initialError }: SignInFormProps) {
     INITIAL_STATE,
   );
   const [email, setEmail] = useState("");
-  const error = isTooManyAttemptsMessage(state.error)
-    ? initialError
-    : (state.error ?? initialError);
-
-  // A new state object arrives with every submission, so each refusal toasts.
-  useEffect(() => {
-    if (isTooManyAttemptsMessage(state.error)) toast.error(state.error);
-  }, [state]);
+  const error = state.error ?? initialError;
 
   return (
     <form action={formAction} className="space-y-4">

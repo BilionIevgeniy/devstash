@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition, type MouseEvent } from "react";
-import { toast } from "sonner";
 
 import { deleteAccount } from "@/features/auth/_internal/actions/account";
 import { reauthenticateWithGitHub } from "@/features/auth/actions/auth";
@@ -35,10 +34,12 @@ export function DeleteAccountDialog({
   const [isPending, startTransition] = useTransition();
   const [password, setPassword] = useState("");
   const [reauthNeeded, setReauthNeeded] = useState(requiresReauth);
+  const [error, setError] = useState<string | null>(null);
 
   function handleConfirm(event: MouseEvent<HTMLButtonElement>) {
     // Keep the dialog open while working; a success redirects away.
     event.preventDefault();
+    setError(null);
     startTransition(async () => {
       if (reauthNeeded) {
         await reauthenticateWithGitHub();
@@ -47,13 +48,23 @@ export function DeleteAccountDialog({
 
       const result = await deleteAccount({ password });
       if (result.success) return;
-      if (result.error === REAUTH_REQUIRED_MESSAGE) setReauthNeeded(true);
-      toast.error(result.error ?? DEFAULT_ERROR);
+      // The dialog text already asks for a fresh GitHub sign-in.
+      if (result.error === REAUTH_REQUIRED_MESSAGE) {
+        setReauthNeeded(true);
+        return;
+      }
+      setError(result.error ?? DEFAULT_ERROR);
     });
   }
 
   return (
-    <AlertDialog onOpenChange={(open) => !open && setPassword("")}>
+    <AlertDialog
+      onOpenChange={(open) => {
+        if (open) return;
+        setPassword("");
+        setError(null);
+      }}
+    >
       <AlertDialogTrigger asChild>
         <Button variant="destructive">Delete account</Button>
       </AlertDialogTrigger>
@@ -80,6 +91,11 @@ export function DeleteAccountDialog({
               onChange={(event) => setPassword(event.target.value)}
             />
           </div>
+        )}
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
         )}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>

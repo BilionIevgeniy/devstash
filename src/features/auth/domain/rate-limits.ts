@@ -77,14 +77,6 @@ export function getTooManyAttemptsMessage(reset: number, now: number): string {
   return formatTooManyAttemptsMessage(getRetryAfterSeconds(reset, now));
 }
 
-// Both refusal messages start with the same words, so a form can tell a rate
-// limit from any other error without a flag on the action result.
-export function isTooManyAttemptsMessage(
-  message: string | null,
-): message is string {
-  return message?.startsWith(TOO_MANY_ATTEMPTS_PREFIX) ?? false;
-}
-
 interface CounterStatus {
   remaining: number;
   reset: number;

@@ -9,7 +9,6 @@ import {
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
-import { isTooManyAttemptsMessage } from "@/features/auth/domain/rate-limits";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -65,10 +64,6 @@ export function ChangePasswordForm() {
         // clears the cookie and redirects to /sign-in.
         toast.success(SUCCESS_MESSAGE);
         await signOutUser();
-        return;
-      }
-      if (isTooManyAttemptsMessage(result.error)) {
-        toast.error(result.error);
         return;
       }
       setError(result.error);

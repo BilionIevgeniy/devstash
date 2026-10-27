@@ -6,7 +6,6 @@ import { MAX_PASSWORD_LENGTH } from "@/features/auth/domain/password-reset";
 import {
   CONFIRM_EMAIL_BY_ADDRESS,
   getTooManyAttemptsMessage,
-  TOO_MANY_ATTEMPTS_MESSAGE,
   VERIFICATION_EMAIL_BY_ADDRESS,
 } from "@/features/auth/domain/rate-limits";
 import {
@@ -67,8 +66,10 @@ export async function resendVerificationEmail(
       VERIFICATION_EMAIL_BY_ADDRESS,
       parsed.data,
     );
-    if (check === "ip-limited") return failure(TOO_MANY_ATTEMPTS_MESSAGE);
-    if (check === "address-limited") return SUCCESS;
+    if (check.status === "ip-limited") {
+      return failure(getTooManyAttemptsMessage(check.reset, Date.now()));
+    }
+    if (check.status === "address-limited") return SUCCESS;
 
     const user = await prisma.user.findUnique({
       where: { email: parsed.data },
