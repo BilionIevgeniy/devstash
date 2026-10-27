@@ -105,6 +105,29 @@ export async function resetRateLimit(
   }
 }
 
+export interface RateLimitStatus {
+  remaining: number;
+  reset: number;
+}
+
+// Reads a counter without using up an attempt, to word a refusal. It does not
+// decide access, so an error is logged and answered with null instead of
+// failing the caller.
+export async function getRateLimitStatus(
+  policy: RateLimitPolicy,
+  identifier: string,
+): Promise<RateLimitStatus | null> {
+  try {
+    const { remaining, reset } = await getLimiter(policy).getRemaining(
+      toIdentifier(identifier),
+    );
+    return { remaining, reset };
+  } catch (error) {
+    console.error("Reading a rate limit failed:", error);
+    return null;
+  }
+}
+
 // Without a client address every request would share one counter and a single
 // client could lock everyone out, so a request with no address skips the
 // per-IP limits; the per-account limits still apply.
@@ -122,4 +145,12 @@ export async function consumeIpRateLimit(
   }
 
   return consumeRateLimit(policy, ip);
+}
+
+export async function getIpRateLimitStatus(
+  policy: RateLimitPolicy,
+  headers: Pick<Headers, "get">,
+): Promise<RateLimitStatus | null> {
+  const ip = getClientIp(headers);
+  return ip ? getRateLimitStatus(policy, ip) : null;
 }

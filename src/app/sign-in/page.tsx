@@ -2,8 +2,8 @@ import Link from "next/link";
 
 import { signInWithGitHub } from "@/features/auth/actions/auth";
 import { AuthCard } from "@/features/auth/components/AuthCard";
+import { GitHubSignInButton } from "@/features/auth/components/GitHubSignInButton";
 import { SignInForm } from "@/features/auth/components/SignInForm";
-import { Button } from "@/components/ui/button";
 
 const AUTH_ERROR_MESSAGES = new Map([
   ["CredentialsSignin", "Invalid email or password"],
@@ -38,9 +38,7 @@ export default async function SignInPage({
       </div>
 
       <form action={signInWithGitHub}>
-        <Button type="submit" variant="outline" size="lg" className="w-full">
-          Sign in with GitHub
-        </Button>
+        <GitHubSignInButton />
       </form>
 
       <p className="text-center text-sm text-muted-foreground">

@@ -15,7 +15,7 @@ export const LOGIN_BY_IP = {
 
 export const LOGIN_BY_EMAIL = {
   name: "login:email",
-  limit: 10,
+  limit: 5,
   windowSeconds: 15 * MINUTE_SECONDS,
 } as const;
 
@@ -83,4 +83,21 @@ export function isTooManyAttemptsMessage(
   message: string | null,
 ): message is string {
   return message?.startsWith(TOO_MANY_ATTEMPTS_PREFIX) ?? false;
+}
+
+interface CounterStatus {
+  remaining: number;
+  reset: number;
+}
+
+// Of the counters that are used up, the latest reset is when the client can
+// try again; a counter with attempts left would only inflate the time. Null
+// when no counter is known to be used up.
+export function getBlockingReset(
+  counters: (CounterStatus | null)[],
+): number | null {
+  const resets = counters.flatMap((counter) =>
+    counter && counter.remaining <= 0 ? [counter.reset] : [],
+  );
+  return resets.length > 0 ? Math.max(...resets) : null;
 }
