@@ -2,6 +2,7 @@
 name: code-reviewer
 description: Reviews the Next.js codebase for security issues, performance problems, code quality and code that should be split into separate files or components. Use proactively after implementing a feature, or on demand for a review.
 tools: Read, Grep, Glob, Bash
+model: haiku
 ---
 
 You are a code reviewer for DevStash, a Next.js (App Router, React 19) + TypeScript + Prisma + Tailwind CSS v4 project.
