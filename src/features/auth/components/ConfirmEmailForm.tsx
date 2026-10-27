@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { confirmEmail } from "@/features/auth/_internal/actions/email-verification";
 import { ResendVerificationButton } from "@/features/auth/components/ResendVerificationButton";
+import { isTooManyAttemptsMessage } from "@/features/auth/domain/rate-limits";
 import {
   INVALID_LINK_ERROR,
   WRONG_CONFIRM_PASSWORD_MESSAGE,
@@ -38,6 +39,10 @@ export function ConfirmEmailForm({ email, token }: ConfirmEmailFormProps) {
       if (result.success) {
         toast.success(SUCCESS_MESSAGE);
         router.push(SIGN_IN_URL);
+        return;
+      }
+      if (isTooManyAttemptsMessage(result.error)) {
+        toast.error(result.error);
         return;
       }
       setError(result.error);

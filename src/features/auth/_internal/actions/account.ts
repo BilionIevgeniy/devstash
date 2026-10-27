@@ -8,8 +8,8 @@ import {
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
 import {
+  getTooManyAttemptsMessage,
   PASSWORD_CHECK_BY_USER,
-  TOO_MANY_ATTEMPTS_MESSAGE,
 } from "@/features/auth/domain/rate-limits";
 import type { AuthActionState } from "@/features/auth/types";
 import { consumeRateLimit, resetRateLimit } from "@/lib/rate-limit";
@@ -72,8 +72,9 @@ export async function changePassword(
   if (!userId) return failure(SIGNED_OUT_ERROR);
 
   try {
-    if (!(await consumeRateLimit(PASSWORD_CHECK_BY_USER, userId))) {
-      return failure(TOO_MANY_ATTEMPTS_MESSAGE);
+    const limit = await consumeRateLimit(PASSWORD_CHECK_BY_USER, userId);
+    if (!limit.success) {
+      return failure(getTooManyAttemptsMessage(limit.reset, Date.now()));
     }
 
     const result = await changeUserPassword(
@@ -101,8 +102,9 @@ export async function deleteAccount(
   if (!userId) return failure(SIGNED_OUT_ERROR);
 
   try {
-    if (!(await consumeRateLimit(PASSWORD_CHECK_BY_USER, userId))) {
-      return failure(TOO_MANY_ATTEMPTS_MESSAGE);
+    const limit = await consumeRateLimit(PASSWORD_CHECK_BY_USER, userId);
+    if (!limit.success) {
+      return failure(getTooManyAttemptsMessage(limit.reset, Date.now()));
     }
 
     const result = await deleteUserAccount(userId, {

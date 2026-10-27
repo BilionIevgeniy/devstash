@@ -5,6 +5,7 @@ import { z } from "zod";
 import { MAX_PASSWORD_LENGTH } from "@/features/auth/domain/password-reset";
 import {
   CONFIRM_EMAIL_BY_ADDRESS,
+  getTooManyAttemptsMessage,
   TOO_MANY_ATTEMPTS_MESSAGE,
   VERIFICATION_EMAIL_BY_ADDRESS,
 } from "@/features/auth/domain/rate-limits";
@@ -101,8 +102,9 @@ export async function confirmEmail(
     if (!(await isVerificationTokenValid(email, token))) {
       return failure(INVALID_LINK_ERROR);
     }
-    if (!(await consumeRateLimit(CONFIRM_EMAIL_BY_ADDRESS, email))) {
-      return failure(TOO_MANY_ATTEMPTS_MESSAGE);
+    const limit = await consumeRateLimit(CONFIRM_EMAIL_BY_ADDRESS, email);
+    if (!limit.success) {
+      return failure(getTooManyAttemptsMessage(limit.reset, Date.now()));
     }
 
     const user = await prisma.user.findUnique({

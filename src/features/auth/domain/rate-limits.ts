@@ -1,4 +1,6 @@
-export const TOO_MANY_ATTEMPTS_MESSAGE = "Too many attempts. Try again later.";
+const TOO_MANY_ATTEMPTS_PREFIX = "Too many attempts.";
+
+export const TOO_MANY_ATTEMPTS_MESSAGE = `${TOO_MANY_ATTEMPTS_PREFIX} Try again later.`;
 
 const MINUTE_SECONDS = 60;
 const HOUR_SECONDS = 60 * MINUTE_SECONDS;
@@ -56,3 +58,29 @@ export const PASSWORD_CHECK_BY_USER = {
   limit: 5,
   windowSeconds: 15 * MINUTE_SECONDS,
 } as const;
+
+// `reset` is the Unix time in milliseconds at which the window ends. Never
+// below one second, so a refusal always tells the client to wait.
+export function getRetryAfterSeconds(reset: number, now: number): number {
+  return Math.max(1, Math.ceil((reset - now) / 1000));
+}
+
+// Rounds up to whole minutes: telling a client to retry earlier than the
+// window ends would only earn it another refusal.
+function formatTooManyAttemptsMessage(retryAfterSeconds: number): string {
+  const minutes = Math.max(1, Math.ceil(retryAfterSeconds / MINUTE_SECONDS));
+  const unit = minutes === 1 ? "minute" : "minutes";
+  return `${TOO_MANY_ATTEMPTS_PREFIX} Please try again in ${minutes} ${unit}.`;
+}
+
+export function getTooManyAttemptsMessage(reset: number, now: number): string {
+  return formatTooManyAttemptsMessage(getRetryAfterSeconds(reset, now));
+}
+
+// Both refusal messages start with the same words, so a form can tell a rate
+// limit from any other error without a flag on the action result.
+export function isTooManyAttemptsMessage(
+  message: string | null,
+): message is string {
+  return message?.startsWith(TOO_MANY_ATTEMPTS_PREFIX) ?? false;
+}

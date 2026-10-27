@@ -49,11 +49,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // Checked here and not in the Server Action so the raw
         // /api/auth/callback/credentials route is throttled too.
-        const [ipAllowed, emailAllowed] = await Promise.all([
+        const [ipLimit, emailLimit] = await Promise.all([
           consumeIpRateLimit(LOGIN_BY_IP, request.headers),
           consumeRateLimit(LOGIN_BY_EMAIL, parsed.data.email),
         ]);
-        if (!ipAllowed || !emailAllowed) throw new TooManyAttemptsError();
+        if (!ipLimit.success || !emailLimit.success) {
+          throw new TooManyAttemptsError();
+        }
 
         const user = await prisma.user.findUnique({
           where: { email: parsed.data.email },

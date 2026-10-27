@@ -1,7 +1,8 @@
 import { z } from "zod";
 import {
+  getRetryAfterSeconds,
+  getTooManyAttemptsMessage,
   REGISTER_BY_IP,
-  TOO_MANY_ATTEMPTS_MESSAGE,
 } from "@/features/auth/domain/rate-limits";
 import { registerAccount } from "@/features/auth/registration";
 import { getAppOrigin } from "@/lib/app-url";
@@ -35,8 +36,11 @@ function accepted() {
   );
 }
 
-function failure(error: string, status: number) {
-  return Response.json({ success: false, data: null, error }, { status });
+function failure(error: string, status: number, headers?: HeadersInit) {
+  return Response.json(
+    { success: false, data: null, error },
+    { status, headers },
+  );
 }
 
 export async function POST(request: Request) {
@@ -54,8 +58,12 @@ export async function POST(request: Request) {
   const { name, email, password } = parsed.data;
 
   try {
-    if (!(await consumeIpRateLimit(REGISTER_BY_IP, request.headers))) {
-      return failure(TOO_MANY_ATTEMPTS_MESSAGE, 429);
+    const limit = await consumeIpRateLimit(REGISTER_BY_IP, request.headers);
+    if (!limit.success) {
+      const now = Date.now();
+      return failure(getTooManyAttemptsMessage(limit.reset, now), 429, {
+        "Retry-After": String(getRetryAfterSeconds(limit.reset, now)),
+      });
     }
 
     await registerAccount({ name, email, password }, getAppOrigin());
