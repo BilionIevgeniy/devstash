@@ -9,11 +9,11 @@ import {
   getTooManyAttemptsMessage,
   RESET_EMAIL_BY_ADDRESS,
 } from "@/features/auth/domain/rate-limits";
-import { checkEmailSend } from "@/features/auth/email-rate-limit";
+import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
 import {
   resetPasswordWithToken,
   sendPasswordResetLink,
-} from "@/features/auth/password-reset";
+} from "@/features/auth/services/password-reset";
 import type { AuthActionState } from "@/features/auth/types";
 import { getAppOrigin } from "@/lib/app-url";
 import { prisma } from "@/lib/prisma";

@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { changeUserPassword, deleteUserAccount } from "@/features/auth/account";
+import { changeUserPassword, deleteUserAccount } from "@/features/auth/services/account";
 import { auth, signOut } from "@/features/auth/auth";
 import {
   MAX_PASSWORD_LENGTH,

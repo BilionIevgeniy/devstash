@@ -10,7 +10,7 @@ import {
   PASSWORD_RESET_TOKEN_TTL_HOURS,
 } from "@/features/auth/domain/password-reset";
 import { isTokenExpired } from "@/features/auth/domain/verification-token";
-import { hashToken } from "@/features/auth/email-verification";
+import { hashToken } from "@/features/auth/services/email-verification";
 import type { PasswordResetResult } from "@/features/auth/types";
 import { type EmailResult, sendPasswordResetEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";

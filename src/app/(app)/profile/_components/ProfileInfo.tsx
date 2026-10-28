@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { UserAvatar } from "@/features/auth/components/UserAvatar";
 import { getUserProfile } from "@/features/auth/queries";
-import { getSessionUser } from "@/features/auth/session";
+import { getSessionUser } from "@/features/auth/services/session";
 import { formatLongDate } from "@/lib/utils";
 
 export async function ProfileInfo() {

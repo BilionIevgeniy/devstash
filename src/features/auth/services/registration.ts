@@ -4,8 +4,8 @@ import bcrypt from "bcryptjs";
 import { Prisma } from "@/generated/prisma/client";
 import { VERIFICATION_EMAIL_BY_ADDRESS } from "@/features/auth/domain/rate-limits";
 import { shouldResendVerification } from "@/features/auth/domain/registration";
-import { checkEmailSend } from "@/features/auth/email-rate-limit";
-import { sendVerificationLink } from "@/features/auth/email-verification";
+import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
+import { sendVerificationLink } from "@/features/auth/services/email-verification";
 import { prisma } from "@/lib/prisma";
 
 const BCRYPT_ROUNDS = 12;

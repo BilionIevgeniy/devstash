@@ -10,7 +10,7 @@ import {
   EmailNotVerifiedError,
   TooManyAttemptsError,
 } from "@/features/auth/_internal/errors";
-import { revokeGitHubGrant } from "@/features/auth/_internal/github-grant";
+import { revokeGitHubGrant } from "@/features/auth/_internal/services/github-grant";
 import { LOGIN_BY_EMAIL, LOGIN_BY_IP } from "@/features/auth/domain/rate-limits";
 import { prisma } from "@/lib/prisma";
 import {

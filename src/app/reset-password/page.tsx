@@ -5,7 +5,7 @@ import { AuthCard } from "@/features/auth/components/AuthCard";
 import { ResetPasswordForm } from "@/features/auth/components/ResetPasswordForm";
 import { Button } from "@/components/ui/button";
 import { INVALID_RESET_LINK_MESSAGE } from "@/features/auth/domain/password-reset";
-import { isPasswordResetTokenValid } from "@/features/auth/password-reset";
+import { isPasswordResetTokenValid } from "@/features/auth/services/password-reset";
 
 const searchParamsSchema = z.object({
   token: z.string().min(1),

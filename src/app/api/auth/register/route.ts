@@ -4,7 +4,7 @@ import {
   getTooManyAttemptsMessage,
   REGISTER_BY_IP,
 } from "@/features/auth/domain/rate-limits";
-import { registerAccount } from "@/features/auth/registration";
+import { registerAccount } from "@/features/auth/services/registration";
 import { getAppOrigin } from "@/lib/app-url";
 import { consumeIpRateLimit } from "@/lib/rate-limit";
 

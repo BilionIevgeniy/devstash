@@ -5,7 +5,7 @@ import { TypesSection } from "@/features/app-shell/_internal/components/sidebar/
 import { UserArea } from "@/features/app-shell/_internal/components/sidebar/UserArea";
 import { getSidebarCollections } from "@/features/collections/queries";
 import { getSidebarItemTypes } from "@/features/item-types/queries";
-import { getSessionUser } from "@/features/auth/session";
+import { getSessionUser } from "@/features/auth/services/session";
 
 export async function Sidebar() {
   const user = await getSessionUser();

@@ -2,7 +2,7 @@ import { Clock } from "lucide-react";
 
 import { ItemRow } from "@/features/items/components/ItemRow";
 import { getRecentItems } from "@/features/items/queries";
-import { getSessionUser } from "@/features/auth/session";
+import { getSessionUser } from "@/features/auth/services/session";
 
 export async function RecentItems() {
   const { id: userId } = await getSessionUser();

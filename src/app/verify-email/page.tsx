@@ -6,7 +6,7 @@ import { ConfirmEmailForm } from "@/features/auth/components/ConfirmEmailForm";
 import { ResendVerificationButton } from "@/features/auth/components/ResendVerificationButton";
 import { Button } from "@/components/ui/button";
 import { INVALID_LINK_ERROR } from "@/features/auth/domain/verification-token";
-import { isVerificationTokenValid } from "@/features/auth/email-verification";
+import { isVerificationTokenValid } from "@/features/auth/services/email-verification";
 
 const searchParamsSchema = z.object({
   token: z.string().min(1),

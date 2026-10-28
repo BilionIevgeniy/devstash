@@ -1,10 +1,10 @@
 import { Settings } from "lucide-react";
 
-import { needsReauthentication } from "@/features/auth/account";
+import { needsReauthentication } from "@/features/auth/services/account";
 import { ChangePasswordForm } from "@/features/auth/components/ChangePasswordForm";
 import { DeleteAccountDialog } from "@/features/auth/components/DeleteAccountDialog";
 import { getUserProfile } from "@/features/auth/queries";
-import { getSessionUser } from "@/features/auth/session";
+import { getSessionUser } from "@/features/auth/services/session";
 
 export async function AccountActions() {
   const { id: userId, authenticatedAt } = await getSessionUser();

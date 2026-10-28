@@ -12,12 +12,12 @@ import {
   INVALID_LINK_ERROR,
   WRONG_CONFIRM_PASSWORD_MESSAGE,
 } from "@/features/auth/domain/verification-token";
-import { checkEmailSend } from "@/features/auth/email-rate-limit";
+import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
 import {
   isVerificationTokenValid,
   sendVerificationLink,
   verifyEmailToken,
-} from "@/features/auth/email-verification";
+} from "@/features/auth/services/email-verification";
 import { getAppOrigin } from "@/lib/app-url";
 import { prisma } from "@/lib/prisma";
 import { consumeRateLimit, resetRateLimit } from "@/lib/rate-limit";

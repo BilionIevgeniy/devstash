@@ -3,7 +3,7 @@ import type { LucideIcon } from "lucide-react";
 
 import { getCollectionStats } from "@/features/collections/queries";
 import { getItemStats } from "@/features/items/queries";
-import { getSessionUser } from "@/features/auth/session";
+import { getSessionUser } from "@/features/auth/services/session";
 
 interface StatCardProps {
   label: string;
