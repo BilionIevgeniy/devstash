@@ -9,17 +9,17 @@ argument-hint: subdirectory
 List all React component files (.tsx, .ts, .jsx, .js) in these folders:
 
 - `src/components/ui` (shared shadcn/ui primitives)
-- `src/features/*/components` (feature components)
-- `src/app/**/_components` (page-specific components)
+- `src/features/**/*` (feature components)
+- `src/app/**/*` (page-specific components)
 
-If a [subdirectory] is provided via $ARGUMENTS, only list files in that subdirectory (for example `auth` for `src/features/auth/components`).
+If a [subdirectory] is provided via $ARGUMENTS, only list files in that subdirectory (for example `auth` for `src/features/auth`).
 
 ## Output Format
 
-- Numbered list of files wit h relative paths
+- Numbered list of files with relative paths
 - Brief one-line description of each (infer from filename)
 - Group them by feature
-- Make shure i can open file
+- Make sure i can open file
 - Summary count at the end
 
 If no files found, say "No components found."
