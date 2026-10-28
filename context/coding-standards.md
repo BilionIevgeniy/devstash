@@ -51,7 +51,7 @@ Example v4 configuration:
 
 ## Architecture & File Organization
 
-A modular monolith: code is grouped by feature, a feature may only depend on features of a lower rank, and the boundaries are checked by ESLint, not by habit. Inside a feature every file has one role, and the role decides what it may import.
+A modular monolith. A guide with an annotated example and a checklist for a new feature is in `docs/architecture.md`; this section holds the rules. Code is grouped by feature, a feature may only depend on features of a lower rank, and the boundaries are checked by ESLint, not by habit. Inside a feature every file has one role, and the role decides what it may import.
 
 ```text
 src/
@@ -63,7 +63,7 @@ src/
     sign-in/, register/, verify-email/, ...
     api/                     route handlers: webhooks, streaming, public API (thin)
   features/
-    auth/                    sign-in, register, account; NextAuth setup (auth.ts, auth.config.ts), session.ts
+    auth/                    sign-in, register, account; nextauth/ (NextAuth setup, session helper, session types)
     item-types/              TypeIcon, ItemTypeInfo, item type select and queries
     items/                   ItemRow, item queries, item types
     collections/             CollectionCard, collection queries, collection types
@@ -82,7 +82,7 @@ prisma/                      schema, migrations, seed (demo-user.ts lives next t
 | Rank | Features | Why it sits there |
 | ---- | -------- | ----------------- |
 | 0 | `lib`, `components/ui` | imports no feature |
-| 1 | `auth` | every feature with Server Actions imports `auth/session`, so `auth` is alone at the bottom |
+| 1 | `auth` | every feature with Server Actions imports `auth/nextauth/session`, so `auth` is alone at the bottom |
 | 2 | `teams` (reserved) | needs only the session |
 | 3 | `billing`, `api-keys`, `audit` (reserved) | `billing` gives the entitlements that the features above read |
 | 4 | `item-types`, `tags`, `files` (`item-types` exists) | Pro gating of custom types and file limits read the entitlements |
@@ -112,11 +112,11 @@ features/[feature]/
   services/<topic>.ts  every write and every operation that touches more than the feature's own tables
   actions/<noun>.ts  Server Actions ("use server" files export only async functions)
   components/        React components (PascalCase files)
-  session.ts         (auth only) the signed-in user for the current request
+  nextauth/          (auth only) NextAuth setup and the signed-in user for the current request
   _internal/         private mirror of the same roles (see "Public API")
 ```
 
-Create only the files a feature actually needs. A role file that passes about 300 lines, or that holds two unrelated topics, becomes a folder of topic files (no `index.ts`). A feature that holds two unrelated nouns is split into two features.
+Create only the files a feature actually needs. `nextauth/` is not a role of the standard: it exists only in `auth`, and no other feature has an equivalent. A role file that passes about 300 lines, or that holds two unrelated topics, becomes a folder of topic files (no `index.ts`). A feature that holds two unrelated nouns is split into two features.
 
 | Role | Responsibility | May import | Never |
 | ---- | -------------- | ---------- | ----- |
@@ -125,7 +125,7 @@ Create only the files a feature actually needs. A role file that passes about 30
 | `types.ts` | View types, DTOs and result types, JSON-safe | `lib/action-result` | Prisma types |
 | `queries.ts` | A read of the feature's own models for a page, a GET route or a service. `userId` first, a DTO out, no writes; a mapper from a Prisma row sits next to its `select` | `domain/`, `types.ts`, `lib/prisma` | services, actions, components (lint) |
 | `services/` | The operation itself: every write, a vendor, Redis, email, NextAuth or `fetch` call, another feature's data, a limit or permission check, a flow of several steps. `verbNoun(userId, input)`; `ip`, `origin` and `userId` come in as parameters | queries, domain, types, schemas, `lib`, features of a lower rank, sibling services (no cycles) | actions, components (lint); `next/headers`, `next/cache`, `next/navigation` (lint) |
-| `actions/`, `route.ts`, pages | Entry points: parse the input with a schema, read the request (session, headers, cookies, searchParams), apply the entry-level rate limit, make the call into a service or a query, shape the result, revalidate or redirect | everything below | Prisma (lint), components (lint) |
+| `actions/`, `route.ts`, pages | Entry points: parse the input with a schema, read the request (session, headers, cookies, searchParams), apply a plain per-IP limit when it does not depend on the operation (registration), make the call into a service or a query, shape the result, revalidate or redirect | everything below | Prisma (lint), components (lint) |
 | `components/` | UI. Data comes through props, or from queries called by a server component; changes go through actions | own `actions/`, `types.ts`, `schemas.ts`, `domain/`, `queries.ts` (server components only), lower features, `components/ui` | Prisma, services (lint) |
 | `_internal/emails/` | Pure builders that return `{ subject, html, text }`; the service sends them through `lib/email.ts` | — | I/O |
 
@@ -138,7 +138,7 @@ Expected failures (wrong password, expired link) are returned as a result; unexp
 3. A Zod input shape: `schemas.ts`. A view or result type: `types.ts`. An email body: `_internal/emails/`.
 4. A standalone read of this feature's own Prisma models, including a read that a flow needs: `queries.ts`. Scope it by `userId`; the one exception is a read before sign-in that is keyed by an email address and a one-time token (`getAccountState`, `isVerificationTokenValid`, `isPasswordResetTokenValid` in `auth`), where holding the token is the authorization
 5. Anything else that does work: `services/<topic>.ts`. That is every write, any call to a vendor, Redis, email, NextAuth or `fetch`, another feature's data, a read that must share a transaction with a write, a decision that needs two sources
-6. Anything that reads the request (session, headers, cookies, searchParams) or is `"use server"`: an entry point (`actions/<noun>.ts`, `route.ts`, a page, `auth/session.ts`). It passes `userId`, `ip` and `origin` as plain values into one call
+6. Anything that reads the request (session, headers, cookies, searchParams) or is `"use server"`: an entry point (`actions/<noun>.ts`, `route.ts`, a page, `auth/nextauth/session.ts`). It passes `userId`, `ip` and `origin` as plain values into one call
 7. A vendor client with no feature knowledge: `lib/<vendor>.ts`
 8. Used only inside this feature: `_internal/<same role>/`. Needed by two features: move it down to the lowest rank both can import
 
@@ -161,9 +161,9 @@ Expected failures (wrong password, expired link) are returned as a result; unexp
 | AI, streaming | `app/api/ai/<operation>/route.ts` calls the same service; the quota is checked before the stream opens |
 | Stripe checkout or portal | `billing/actions/checkout.ts` then a service then `lib/stripe.ts` |
 | Stripe webhook | `app/api/webhooks/stripe/route.ts` verifies the raw body and calls one service in `billing/services/`, idempotent by event id; the route holds no Prisma and no business `if` |
-| Who is signed in | `getSessionUser()` in `auth/session.ts`, read at the entry point and passed down as `userId` |
+| Who is signed in | `getSessionUser()` in `auth/nextauth/session.ts`, read at the entry point and passed down as `userId` |
 | Ownership | `userId` in the `where` of every query and write; a foreign id answers not found |
-| Rate limit | policy in `domain/rate-limits.ts`, mechanism in `lib/rate-limit.ts`; the entry point applies the per-IP limit, a service applies a per-account quota |
+| Rate limit | policy in `domain/rate-limits.ts`, mechanism in `lib/rate-limit.ts`; a limit that needs nothing but the IP is applied by the entry point; a limit that depends on the account or the address (per user, per address, and the per-IP check that must run after the per-address one) lives in the service, which receives `ip` as a parameter |
 | Email | the template in `_internal/emails/`, sent by a service through `lib/email.ts` |
 | Background or long job | see "Background work" |
 | Public API | see "Public API" |
@@ -210,7 +210,7 @@ Each feature keeps its business rules in `features/[feature]/domain/` as pure Ty
 ### Rules
 
 - Import by full path (`@/features/items/components/ItemRow`). No `index.ts` barrel files: they slow down builds (the Next.js docs advise importing from specific files), hide server code leaking into client bundles and hide circular dependencies
-- Server-only modules start with `import "server-only"`: every `queries.ts`, every file in a `services/` folder (also under `_internal/`), `features/auth/auth.ts` and `session.ts`, and the `lib` files that touch secrets or Node (`prisma.ts`, `email.ts`, `hash.ts`, `rate-limit.ts`). Importing one from a Client Component then fails the build instead of leaking into the bundle
+- Server-only modules start with `import "server-only"`: every `queries.ts`, every file in a `services/` folder (also under `_internal/`), `features/auth/nextauth/auth.ts` and `session.ts`, and the `lib` files that touch secrets or Node (`prisma.ts`, `email.ts`, `hash.ts`, `rate-limit.ts`). Importing one from a Client Component then fails the build instead of leaking into the bundle
 - Circular imports are forbidden (`import/no-cycle`)
 - Prisma (`@/lib/prisma`, `@/generated/prisma`) is imported only by `queries.ts`, services and `lib`; never by actions, components or `app/`
 - Route-specific UI lives in `app/[route]/_components/`. When a second route reuses it, move it into the matching feature
@@ -236,7 +236,6 @@ Not checked by lint, so it is on the author and the reviewer: no writes in `quer
 - **ESLint 10.** The rules above rest on `eslint-plugin-import`, whose peer range ends at ESLint 9 (version 2.32.0, the latest on npm when this was written); it comes in through `eslint-config-next`. Stay on ESLint 9 until the plugin supports 10. `eslint-plugin-boundaries` declares `eslint >=6`, but it was not evaluated against these rules, and it was not checked whether it can replace `import/no-cycle`. `FEATURE_RANKS` is plain data, so a change of plugin replaces only the code that generates the zones
 - **Teams.** Every query takes `userId`. Moving to a workspace or an `Actor` parameter touches every query and the schema; decide before the first shared collection
 - **Linear ranks.** One number per feature is easy to read but brittle; past about twelve features an explicit list of allowed dependencies per feature may fit better
-- **Thick actions.** Some auth actions (`confirmEmail`, `changePassword`, `deleteAccount`) still run a sequence of a rate limit, a check and a service call; they hold no Prisma, and they get thinned into services when they are next touched
 - **The services threshold.** Almost every write goes through a service, so some will be a few lines. That is the price of one rule with no exceptions
 
 ## Naming

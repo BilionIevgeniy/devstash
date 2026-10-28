@@ -13,6 +13,8 @@ Read the following to get the full context of the project:
 - @context/ai-interaction.md
 - @context/current-feature.md
 
+The structure of `src/` is explained for newcomers in `docs/architecture.md` (not auto-loaded: read it when adding a feature). The rules stay in `context/coding-standards.md`, and the guide is updated whenever the structure changes.
+
 ## Commands
 
 - `npm run dev` — start the dev server (Turbopack, Next.js 16 default)

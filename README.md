@@ -1,5 +1,9 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Architecture
+
+How the code is organized and where new code goes: [docs/architecture.md](docs/architecture.md). The rules behind it, checked by ESLint, are in [context/coding-standards.md](context/coding-standards.md).
+
 ## Getting Started
 
 First, run the development server:
