@@ -2,7 +2,6 @@
 
 import { AuthError, CredentialsSignin } from "next-auth";
 import { headers } from "next/headers";
-import { z } from "zod";
 import { signIn, signOut } from "@/features/auth/auth";
 import {
   EMAIL_NOT_VERIFIED_CODE,
@@ -16,7 +15,9 @@ import {
   LOGIN_BY_IP,
   TOO_MANY_ATTEMPTS_MESSAGE,
 } from "@/features/auth/domain/rate-limits";
+import { signInSchema } from "@/features/auth/schemas";
 import type { AuthActionState } from "@/features/auth/types";
+import { getClientIp } from "@/lib/client-ip";
 import { getIpRateLimitStatus, getRateLimitStatus } from "@/lib/rate-limit";
 
 const DASHBOARD_URL = "/dashboard";
@@ -25,15 +26,6 @@ const PROFILE_URL = "/profile";
 const CREDENTIALS_ERROR_MESSAGES = new Map([
   [EMAIL_NOT_VERIFIED_CODE, EMAIL_NOT_VERIFIED_MESSAGE],
 ]);
-
-const signInSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .pipe(z.email("Invalid email address")),
-  password: z.string().min(1, "Password is required"),
-});
 
 function failure(error: string): AuthActionState {
   return { success: false, data: null, error };
@@ -45,7 +37,7 @@ async function getLockoutMessage(email: string): Promise<string> {
   const reset = getBlockingReset(
     await Promise.all([
       getRateLimitStatus(LOGIN_BY_EMAIL, email),
-      getIpRateLimitStatus(LOGIN_BY_IP, await headers()),
+      getIpRateLimitStatus(LOGIN_BY_IP, getClientIp(await headers())),
     ]),
   );
   return reset === null

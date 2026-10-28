@@ -1,27 +1,10 @@
-export interface AuthActionState {
-  success: boolean;
-  data: null;
-  error: string | null;
-}
+import type { ActionResult } from "@/lib/action-result";
 
-export interface VerifyEmailResult {
-  success: boolean;
-  error: string | null;
-}
+export type AuthActionState = ActionResult;
 
-export interface PasswordResetResult {
-  success: boolean;
-  error: string | null;
-}
-
-export interface ChangePasswordResult {
-  success: boolean;
-  error: string | null;
-}
-
-export interface DeleteAccountResult {
-  success: boolean;
-  error: string | null;
+export interface AccountState {
+  hasPassword: boolean;
+  isEmailVerified: boolean;
 }
 
 export interface UserProfile {

@@ -1,7 +1,8 @@
 import "server-only";
 
-import { randomBytes } from "node:crypto";
-import bcrypt from "bcryptjs";
+import { buildPasswordResetEmail } from "@/features/auth/_internal/emails/password-reset-email";
+import { hashPassword } from "@/features/auth/_internal/password";
+import { generateToken, hashToken } from "@/features/auth/_internal/token";
 import {
   buildPasswordResetUrl,
   getPasswordResetExpiry,
@@ -10,17 +11,14 @@ import {
   PASSWORD_RESET_TOKEN_TTL_HOURS,
 } from "@/features/auth/domain/password-reset";
 import { isTokenExpired } from "@/features/auth/domain/verification-token";
-import { hashToken } from "@/features/auth/services/email-verification";
-import type { PasswordResetResult } from "@/features/auth/types";
-import { type EmailResult, sendPasswordResetEmail } from "@/lib/email";
+import { isPasswordResetTokenValid } from "@/features/auth/queries";
+import type { OperationResult } from "@/lib/action-result";
+import { sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
-
-const TOKEN_BYTES = 32;
-const BCRYPT_ROUNDS = 12;
 
 async function createPasswordResetToken(email: string): Promise<string> {
   const identifier = getPasswordResetIdentifier(email);
-  const token = randomBytes(TOKEN_BYTES).toString("hex");
+  const token = generateToken();
   const expires = getPasswordResetExpiry(new Date());
 
   await prisma.$transaction([
@@ -35,7 +33,7 @@ async function createPasswordResetToken(email: string): Promise<string> {
 export async function sendPasswordResetLink(
   email: string,
   origin: string,
-): Promise<EmailResult> {
+): Promise<OperationResult> {
   let token: string;
   try {
     token = await createPasswordResetToken(email);
@@ -44,32 +42,20 @@ export async function sendPasswordResetLink(
     return { success: false, error: "Failed to create password reset token" };
   }
 
-  return sendPasswordResetEmail(
-    email,
-    buildPasswordResetUrl(origin, email, token),
-    PASSWORD_RESET_TOKEN_TTL_HOURS,
-  );
-}
-
-export async function isPasswordResetTokenValid(
-  email: string,
-  token: string,
-): Promise<boolean> {
-  const record = await prisma.verificationToken.findUnique({
-    where: { token: hashToken(token) },
+  return sendEmail({
+    to: email,
+    ...buildPasswordResetEmail(
+      buildPasswordResetUrl(origin, email, token),
+      PASSWORD_RESET_TOKEN_TTL_HOURS,
+    ),
   });
-  if (!record || record.identifier !== getPasswordResetIdentifier(email)) {
-    return false;
-  }
-
-  return !isTokenExpired(record.expires, new Date());
 }
 
 export async function resetPasswordWithToken(
   email: string,
   token: string,
   newPassword: string,
-): Promise<PasswordResetResult> {
+): Promise<OperationResult> {
   const hashedToken = hashToken(token);
   const identifier = getPasswordResetIdentifier(email);
 
@@ -80,7 +66,7 @@ export async function resetPasswordWithToken(
       return { success: false, error: INVALID_RESET_LINK_MESSAGE };
     }
 
-    const password = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    const password = await hashPassword(newPassword);
     return await prisma.$transaction(async (tx) => {
       const record = await tx.verificationToken.findUnique({
         where: { token: hashedToken },

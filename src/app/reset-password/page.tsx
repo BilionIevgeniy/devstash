@@ -1,21 +1,16 @@
 import Link from "next/link";
-import { z } from "zod";
 
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { ResetPasswordForm } from "@/features/auth/components/ResetPasswordForm";
 import { Button } from "@/components/ui/button";
 import { INVALID_RESET_LINK_MESSAGE } from "@/features/auth/domain/password-reset";
-import { isPasswordResetTokenValid } from "@/features/auth/services/password-reset";
-
-const searchParamsSchema = z.object({
-  token: z.string().min(1),
-  email: z.string().trim().toLowerCase().pipe(z.email()),
-});
+import { isPasswordResetTokenValid } from "@/features/auth/queries";
+import { emailLinkParamsSchema } from "@/features/auth/schemas";
 
 export default async function ResetPasswordPage({
   searchParams,
 }: PageProps<"/reset-password">) {
-  const parsed = searchParamsSchema.safeParse(await searchParams);
+  const parsed = emailLinkParamsSchema.safeParse(await searchParams);
 
   if (
     !parsed.success ||

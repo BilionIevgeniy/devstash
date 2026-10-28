@@ -1,14 +1,13 @@
 import "server-only";
 
-import bcrypt from "bcryptjs";
 import { Prisma } from "@/generated/prisma/client";
+import { hashPassword } from "@/features/auth/_internal/password";
 import { VERIFICATION_EMAIL_BY_ADDRESS } from "@/features/auth/domain/rate-limits";
 import { shouldResendVerification } from "@/features/auth/domain/registration";
+import { getAccountState } from "@/features/auth/queries";
 import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
 import { sendVerificationLink } from "@/features/auth/services/email-verification";
 import { prisma } from "@/lib/prisma";
-
-const BCRYPT_ROUNDS = 12;
 
 interface RegistrationInput {
   name: string;
@@ -30,23 +29,17 @@ function isUniqueViolation(error: unknown): boolean {
 export async function registerAccount(
   { name, email, password }: RegistrationInput,
   origin: string,
+  ip: string | null,
 ): Promise<void> {
   // Hashed before the lookup so a new and an existing address cost the same.
-  const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
-  const existing = await prisma.user.findUnique({
-    where: { email },
-    select: { password: true, emailVerified: true },
-  });
+  const hashedPassword = await hashPassword(password);
+  const existing = await getAccountState(email);
 
   if (existing) {
     // The submitted password is ignored: only the owner of a pending account
     // gets a fresh link, and confirming it needs the original password.
-    const pending = shouldResendVerification({
-      hasPassword: existing.password !== null,
-      isEmailVerified: existing.emailVerified !== null,
-    });
-    const check = pending
-      ? await checkEmailSend(VERIFICATION_EMAIL_BY_ADDRESS, email)
+    const check = shouldResendVerification(existing)
+      ? await checkEmailSend(VERIFICATION_EMAIL_BY_ADDRESS, email, ip)
       : null;
     if (check?.status === "allowed") await sendVerificationLink(email, origin);
     return;

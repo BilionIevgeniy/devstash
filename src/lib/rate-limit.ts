@@ -1,9 +1,8 @@
 import "server-only";
 
-import { createHash } from "node:crypto";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import { getClientIp } from "@/lib/client-ip";
+import { sha256Hex } from "@/lib/hash";
 
 export interface RateLimitPolicy {
   name: string;
@@ -68,7 +67,7 @@ function getLimiter(policy: RateLimitPolicy): Ratelimit {
 
 function toIdentifier(identifier: string): string {
   // Hashed so Upstash never holds plain emails or IP addresses.
-  return createHash("sha256").update(identifier).digest("hex");
+  return sha256Hex(identifier);
 }
 
 // Sliding-window counter on Upstash, so parallel requests and separate
@@ -133,9 +132,8 @@ export async function getRateLimitStatus(
 // per-IP limits; the per-account limits still apply.
 export async function consumeIpRateLimit(
   policy: RateLimitPolicy,
-  headers: Pick<Headers, "get">,
+  ip: string | null,
 ): Promise<RateLimitResult> {
-  const ip = getClientIp(headers);
   if (!ip) {
     if (!hasWarnedAboutMissingIp) {
       hasWarnedAboutMissingIp = true;
@@ -149,8 +147,7 @@ export async function consumeIpRateLimit(
 
 export async function getIpRateLimitStatus(
   policy: RateLimitPolicy,
-  headers: Pick<Headers, "get">,
+  ip: string | null,
 ): Promise<RateLimitStatus | null> {
-  const ip = getClientIp(headers);
   return ip ? getRateLimitStatus(policy, ip) : null;
 }

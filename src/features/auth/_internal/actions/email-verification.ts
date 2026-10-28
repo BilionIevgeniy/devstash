@@ -1,45 +1,34 @@
 "use server";
 
-import bcrypt from "bcryptjs";
-import { z } from "zod";
-import { MAX_PASSWORD_LENGTH } from "@/features/auth/domain/password-reset";
+import { headers } from "next/headers";
 import {
   CONFIRM_EMAIL_BY_ADDRESS,
   getTooManyAttemptsMessage,
   VERIFICATION_EMAIL_BY_ADDRESS,
 } from "@/features/auth/domain/rate-limits";
+import { shouldResendVerification } from "@/features/auth/domain/registration";
 import {
   INVALID_LINK_ERROR,
   WRONG_CONFIRM_PASSWORD_MESSAGE,
 } from "@/features/auth/domain/verification-token";
+import {
+  getAccountState,
+  isVerificationTokenValid,
+} from "@/features/auth/queries";
+import { confirmEmailSchema, emailSchema } from "@/features/auth/schemas";
+import { verifyPasswordByEmail } from "@/features/auth/services/account";
 import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
 import {
-  isVerificationTokenValid,
   sendVerificationLink,
   verifyEmailToken,
 } from "@/features/auth/services/email-verification";
-import { getAppOrigin } from "@/lib/app-url";
-import { prisma } from "@/lib/prisma";
-import { consumeRateLimit, resetRateLimit } from "@/lib/rate-limit";
 import type { AuthActionState } from "@/features/auth/types";
+import { getAppOrigin } from "@/lib/app-url";
+import { getClientIp } from "@/lib/client-ip";
+import { consumeRateLimit, resetRateLimit } from "@/lib/rate-limit";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 const SUCCESS: AuthActionState = { success: true, data: null, error: null };
-
-const emailSchema = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .pipe(z.email("Invalid email address"));
-
-const confirmEmailSchema = z.object({
-  email: emailSchema,
-  token: z.string().min(1),
-  password: z
-    .string()
-    .min(1, "Password is required")
-    .max(MAX_PASSWORD_LENGTH),
-});
 
 interface ConfirmEmailInput {
   email: string;
@@ -65,17 +54,15 @@ export async function resendVerificationEmail(
     const check = await checkEmailSend(
       VERIFICATION_EMAIL_BY_ADDRESS,
       parsed.data,
+      getClientIp(await headers()),
     );
     if (check.status === "ip-limited") {
       return failure(getTooManyAttemptsMessage(check.reset, Date.now()));
     }
     if (check.status === "address-limited") return SUCCESS;
 
-    const user = await prisma.user.findUnique({
-      where: { email: parsed.data },
-      select: { password: true, emailVerified: true },
-    });
-    if (!user?.password || user.emailVerified) return SUCCESS;
+    const account = await getAccountState(parsed.data);
+    if (!account || !shouldResendVerification(account)) return SUCCESS;
 
     const result = await sendVerificationLink(parsed.data, origin);
     if (!result.success) {
@@ -108,11 +95,7 @@ export async function confirmEmail(
       return failure(getTooManyAttemptsMessage(limit.reset, Date.now()));
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: { password: true },
-    });
-    if (!user?.password || !(await bcrypt.compare(password, user.password))) {
+    if (!(await verifyPasswordByEmail(email, password))) {
       return failure(WRONG_CONFIRM_PASSWORD_MESSAGE);
     }
 

@@ -1,6 +1,7 @@
 import "server-only";
 
 import bcrypt from "bcryptjs";
+import { hashPassword } from "@/features/auth/_internal/password";
 import { revokeGitHubGrant } from "@/features/auth/_internal/services/github-grant";
 import { getPasswordResetIdentifier } from "@/features/auth/domain/password-reset";
 import {
@@ -8,13 +9,9 @@ import {
   REAUTH_REQUIRED_MESSAGE,
   requiresReauthentication,
 } from "@/features/auth/domain/reauth";
-import type {
-  ChangePasswordResult,
-  DeleteAccountResult,
-} from "@/features/auth/types";
+import type { OperationResult } from "@/lib/action-result";
 import { prisma } from "@/lib/prisma";
 
-const BCRYPT_ROUNDS = 12;
 const NO_PASSWORD_MESSAGE = "This account has no password to change";
 const INCORRECT_PASSWORD_MESSAGE = "Current password is incorrect";
 const INCORRECT_DELETE_PASSWORD_MESSAGE = "Password is incorrect";
@@ -30,7 +27,7 @@ export async function changeUserPassword(
   userId: string,
   currentPassword: string,
   newPassword: string,
-): Promise<ChangePasswordResult> {
+): Promise<OperationResult> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { password: true },
@@ -41,12 +38,24 @@ export async function changeUserPassword(
     return { success: false, error: INCORRECT_PASSWORD_MESSAGE };
   }
 
-  const password = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+  const password = await hashPassword(newPassword);
   await prisma.user.update({
     where: { id: userId },
     data: { password, sessionVersion: { increment: 1 } },
   });
   return { success: true, error: null };
+}
+
+// For callers that hold no user id yet, such as the emailed confirmation link.
+export async function verifyPasswordByEmail(
+  email: string,
+  password: string,
+): Promise<boolean> {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { password: true },
+  });
+  return user?.password ? bcrypt.compare(password, user.password) : false;
 }
 
 // The clock is read here and not in the profile component, which must stay pure.
@@ -67,7 +76,7 @@ export function needsReauthentication(
 export async function deleteUserAccount(
   userId: string,
   proof: DeleteAccountProof,
-): Promise<DeleteAccountResult> {
+): Promise<OperationResult> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { email: true, password: true },

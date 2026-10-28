@@ -5,13 +5,14 @@ import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
-import { z } from "zod";
 import {
   EmailNotVerifiedError,
   TooManyAttemptsError,
 } from "@/features/auth/_internal/errors";
 import { revokeGitHubGrant } from "@/features/auth/_internal/services/github-grant";
 import { LOGIN_BY_EMAIL, LOGIN_BY_IP } from "@/features/auth/domain/rate-limits";
+import { credentialsSchema } from "@/features/auth/schemas";
+import { getClientIp } from "@/lib/client-ip";
 import { prisma } from "@/lib/prisma";
 import {
   consumeIpRateLimit,
@@ -19,11 +20,6 @@ import {
   resetRateLimit,
 } from "@/lib/rate-limit";
 import authConfig from "./auth.config";
-
-const credentialsSchema = z.object({
-  email: z.string().trim().toLowerCase().pipe(z.email()),
-  password: z.string().min(1).max(72),
-});
 
 async function getSessionVersion(userId: string): Promise<number | null> {
   const user = await prisma.user.findUnique({
@@ -51,7 +47,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Checked here and not in the Server Action so the raw
         // /api/auth/callback/credentials route is throttled too.
         const [ipLimit, emailLimit] = await Promise.all([
-          consumeIpRateLimit(LOGIN_BY_IP, request.headers),
+          consumeIpRateLimit(LOGIN_BY_IP, getClientIp(request.headers)),
           consumeRateLimit(LOGIN_BY_EMAIL, parsed.data.email),
         ]);
         if (!ipLimit.success || !emailLimit.success) {

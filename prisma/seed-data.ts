@@ -1,4 +1,4 @@
-import { DEMO_USER_EMAIL } from "../src/lib/db/demo-user";
+import { DEMO_USER_EMAIL } from "./demo-user";
 
 export interface SeedItemType {
   name: string;

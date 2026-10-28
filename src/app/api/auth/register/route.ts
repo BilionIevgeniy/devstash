@@ -1,31 +1,13 @@
-import { z } from "zod";
 import {
   getRetryAfterSeconds,
   getTooManyAttemptsMessage,
   REGISTER_BY_IP,
 } from "@/features/auth/domain/rate-limits";
+import { registerSchema } from "@/features/auth/schemas";
 import { registerAccount } from "@/features/auth/services/registration";
 import { getAppOrigin } from "@/lib/app-url";
+import { getClientIp } from "@/lib/client-ip";
 import { consumeIpRateLimit } from "@/lib/rate-limit";
-
-const registerSchema = z
-  .object({
-    name: z.string().trim().min(1, "Name is required"),
-    email: z
-      .string()
-      .trim()
-      .toLowerCase()
-      .pipe(z.email("Invalid email address")),
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .max(72, "Password must be at most 72 characters"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
 
 // New and already registered addresses get this same response, so the route
 // cannot be used to find out who has an account.
@@ -58,7 +40,8 @@ export async function POST(request: Request) {
   const { name, email, password } = parsed.data;
 
   try {
-    const limit = await consumeIpRateLimit(REGISTER_BY_IP, request.headers);
+    const ip = getClientIp(request.headers);
+    const limit = await consumeIpRateLimit(REGISTER_BY_IP, ip);
     if (!limit.success) {
       const now = Date.now();
       return failure(getTooManyAttemptsMessage(limit.reset, now), 429, {
@@ -66,7 +49,7 @@ export async function POST(request: Request) {
       });
     }
 
-    await registerAccount({ name, email, password }, getAppOrigin());
+    await registerAccount({ name, email, password }, getAppOrigin(), ip);
     return accepted();
   } catch (error) {
     console.error("Registration failed:", error);

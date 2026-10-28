@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { CollectionCard } from "@/features/collections/components/CollectionCard";
 import { getRecentCollections } from "@/features/collections/queries";
-import { getSessionUser } from "@/features/auth/services/session";
+import { getSessionUser } from "@/features/auth/session";
 
 export async function RecentCollections() {
   const { id: userId } = await getSessionUser();

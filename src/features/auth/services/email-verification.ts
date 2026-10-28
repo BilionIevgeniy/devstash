@@ -1,6 +1,7 @@
 import "server-only";
 
-import { createHash, randomBytes } from "node:crypto";
+import { buildVerificationEmail } from "@/features/auth/_internal/emails/verification-email";
+import { generateToken, hashToken } from "@/features/auth/_internal/token";
 import {
   buildVerificationUrl,
   getTokenExpiry,
@@ -8,18 +9,12 @@ import {
   isTokenExpired,
   VERIFICATION_TOKEN_TTL_HOURS,
 } from "@/features/auth/domain/verification-token";
-import type { VerifyEmailResult } from "@/features/auth/types";
-import { type EmailResult, sendVerificationEmail } from "@/lib/email";
+import type { OperationResult } from "@/lib/action-result";
+import { sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
-const TOKEN_BYTES = 32;
-
-export function hashToken(token: string): string {
-  return createHash("sha256").update(token).digest("hex");
-}
-
 async function createVerificationToken(email: string): Promise<string> {
-  const token = randomBytes(TOKEN_BYTES).toString("hex");
+  const token = generateToken();
   const expires = getTokenExpiry(new Date());
 
   await prisma.$transaction([
@@ -34,7 +29,7 @@ async function createVerificationToken(email: string): Promise<string> {
 export async function sendVerificationLink(
   email: string,
   origin: string,
-): Promise<EmailResult> {
+): Promise<OperationResult> {
   let token: string;
   try {
     token = await createVerificationToken(email);
@@ -43,30 +38,19 @@ export async function sendVerificationLink(
     return { success: false, error: "Failed to create verification token" };
   }
 
-  return sendVerificationEmail(
-    email,
-    buildVerificationUrl(origin, email, token),
-    VERIFICATION_TOKEN_TTL_HOURS,
-  );
-}
-
-// Read-only, so opening the link (or a mail scanner fetching it) changes nothing.
-export async function isVerificationTokenValid(
-  email: string,
-  token: string,
-): Promise<boolean> {
-  const record = await prisma.verificationToken.findUnique({
-    where: { token: hashToken(token) },
+  return sendEmail({
+    to: email,
+    ...buildVerificationEmail(
+      buildVerificationUrl(origin, email, token),
+      VERIFICATION_TOKEN_TTL_HOURS,
+    ),
   });
-  if (!record || record.identifier !== email) return false;
-
-  return !isTokenExpired(record.expires, new Date());
 }
 
 export async function verifyEmailToken(
   email: string,
   token: string,
-): Promise<VerifyEmailResult> {
+): Promise<OperationResult> {
   const hashedToken = hashToken(token);
 
   try {

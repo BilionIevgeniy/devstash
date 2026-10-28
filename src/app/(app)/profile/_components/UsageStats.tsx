@@ -1,7 +1,7 @@
 import { BarChart3, FolderOpen, Package } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-import { getSessionUser } from "@/features/auth/services/session";
+import { getSessionUser } from "@/features/auth/session";
 import { getCollectionStats } from "@/features/collections/queries";
 import { getItemStats } from "@/features/items/queries";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";

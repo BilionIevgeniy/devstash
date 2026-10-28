@@ -5,9 +5,10 @@ import { useState, type SubmitEvent } from "react";
 import { CheckEmailNotice } from "@/features/auth/_internal/components/CheckEmailNotice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-const MIN_PASSWORD_LENGTH = 8;
-const MAX_PASSWORD_LENGTH = 72;
+import {
+  MAX_PASSWORD_LENGTH,
+  MIN_PASSWORD_LENGTH,
+} from "@/features/auth/domain/password-reset";
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 
 const FIELDS = [

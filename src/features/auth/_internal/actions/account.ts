@@ -1,16 +1,18 @@
 "use server";
 
-import { z } from "zod";
-import { changeUserPassword, deleteUserAccount } from "@/features/auth/services/account";
 import { auth, signOut } from "@/features/auth/auth";
-import {
-  MAX_PASSWORD_LENGTH,
-  MIN_PASSWORD_LENGTH,
-} from "@/features/auth/domain/password-reset";
 import {
   getTooManyAttemptsMessage,
   PASSWORD_CHECK_BY_USER,
 } from "@/features/auth/domain/rate-limits";
+import {
+  changePasswordSchema,
+  deleteAccountSchema,
+} from "@/features/auth/schemas";
+import {
+  changeUserPassword,
+  deleteUserAccount,
+} from "@/features/auth/services/account";
 import type { AuthActionState } from "@/features/auth/types";
 import { consumeRateLimit, resetRateLimit } from "@/lib/rate-limit";
 
@@ -18,30 +20,6 @@ const GENERIC_ERROR = "Something went wrong. Please try again.";
 const SIGNED_OUT_ERROR = "You need to be signed in";
 const SIGN_IN_URL = "/sign-in";
 const SUCCESS: AuthActionState = { success: true, data: null, error: null };
-
-const changePasswordSchema = z
-  .object({
-    currentPassword: z.string().min(1, "Current password is required"),
-    newPassword: z
-      .string()
-      .min(
-        MIN_PASSWORD_LENGTH,
-        `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
-      )
-      .max(
-        MAX_PASSWORD_LENGTH,
-        `Password must be at most ${MAX_PASSWORD_LENGTH} characters`,
-      ),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
-
-const deleteAccountSchema = z.object({
-  password: z.string().max(MAX_PASSWORD_LENGTH).optional(),
-});
 
 interface DeleteAccountInput {
   password?: string;

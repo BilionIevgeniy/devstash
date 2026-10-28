@@ -1,6 +1,5 @@
 import "server-only";
 
-import { headers } from "next/headers";
 import { EMAIL_BY_IP } from "@/features/auth/domain/rate-limits";
 import {
   consumeIpRateLimit,
@@ -24,13 +23,14 @@ export type EmailSendCheck =
 export async function checkEmailSend(
   addressPolicy: RateLimitPolicy,
   email: string,
+  ip: string | null,
 ): Promise<EmailSendCheck> {
   try {
     const address = await consumeRateLimit(addressPolicy, email);
     if (!address.success) return { status: "address-limited" };
 
-    const ip = await consumeIpRateLimit(EMAIL_BY_IP, await headers());
-    if (!ip.success) return { status: "ip-limited", reset: ip.reset };
+    const ipCheck = await consumeIpRateLimit(EMAIL_BY_IP, ip);
+    if (!ipCheck.success) return { status: "ip-limited", reset: ipCheck.reset };
     return { status: "allowed" };
   } catch (error) {
     if (error instanceof RateLimitUnavailableError) {

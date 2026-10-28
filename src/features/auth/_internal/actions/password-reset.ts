@@ -1,14 +1,12 @@
 "use server";
 
-import { z } from "zod";
-import {
-  MAX_PASSWORD_LENGTH,
-  MIN_PASSWORD_LENGTH,
-} from "@/features/auth/domain/password-reset";
+import { headers } from "next/headers";
 import {
   getTooManyAttemptsMessage,
   RESET_EMAIL_BY_ADDRESS,
 } from "@/features/auth/domain/rate-limits";
+import { getAccountState } from "@/features/auth/queries";
+import { emailSchema, resetPasswordSchema } from "@/features/auth/schemas";
 import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
 import {
   resetPasswordWithToken,
@@ -16,37 +14,10 @@ import {
 } from "@/features/auth/services/password-reset";
 import type { AuthActionState } from "@/features/auth/types";
 import { getAppOrigin } from "@/lib/app-url";
-import { prisma } from "@/lib/prisma";
+import { getClientIp } from "@/lib/client-ip";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 const SUCCESS: AuthActionState = { success: true, data: null, error: null };
-
-const emailSchema = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .pipe(z.email("Invalid email address"));
-
-const resetPasswordSchema = z
-  .object({
-    email: emailSchema,
-    token: z.string().min(1),
-    password: z
-      .string()
-      .min(
-        MIN_PASSWORD_LENGTH,
-        `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
-      )
-      .max(
-        MAX_PASSWORD_LENGTH,
-        `Password must be at most ${MAX_PASSWORD_LENGTH} characters`,
-      ),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
 
 interface ResetPasswordInput {
   email: string;
@@ -69,17 +40,18 @@ export async function requestPasswordReset(
   try {
     const origin = getAppOrigin();
 
-    const check = await checkEmailSend(RESET_EMAIL_BY_ADDRESS, parsed.data);
+    const check = await checkEmailSend(
+      RESET_EMAIL_BY_ADDRESS,
+      parsed.data,
+      getClientIp(await headers()),
+    );
     if (check.status === "ip-limited") {
       return failure(getTooManyAttemptsMessage(check.reset, Date.now()));
     }
     if (check.status === "address-limited") return SUCCESS;
 
-    const user = await prisma.user.findUnique({
-      where: { email: parsed.data },
-      select: { password: true },
-    });
-    if (!user?.password) return SUCCESS;
+    const account = await getAccountState(parsed.data);
+    if (!account?.hasPassword) return SUCCESS;
 
     // A send failure is only logged: reporting it would reveal that the
     // account exists.
