@@ -4,7 +4,10 @@ import {
   sortBySystemOrder,
   toItemTypeInfo,
 } from "@/features/item-types/domain/item-type";
-import type { SidebarItemType } from "@/features/item-types/types";
+import type {
+  ItemTypeInfo,
+  SidebarItemType,
+} from "@/features/item-types/types";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
@@ -14,6 +17,16 @@ export const itemTypeSelect = {
   icon: true,
   color: true,
 } satisfies Prisma.ItemTypeSelect;
+
+export async function getItemTypeByName(
+  name: string,
+): Promise<ItemTypeInfo | null> {
+  const type = await prisma.itemType.findFirst({
+    where: { name, isSystem: true },
+    select: itemTypeSelect,
+  });
+  return type ? toItemTypeInfo(type) : null;
+}
 
 export async function getSidebarItemTypes(
   userId: string,

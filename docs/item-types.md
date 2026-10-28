@@ -9,9 +9,9 @@ Status of this document: it describes what the code and the seed do today. Thing
 A type is a row in `ItemType` (`name`, `icon`, `color`, `isSystem`, `userId`). The seven system types are seeded by `prisma/seed.ts` from `systemItemTypes` in `prisma/seed-data.ts`, with `isSystem = true` and `userId = null`. Custom types (Pro) would be rows with `isSystem = false` and a `userId`; no code creates them yet.
 
 - `icon` is the name of a lucide icon. `TypeIcon` (`src/features/item-types/components/TypeIcon.tsx`) maps the name to the component and falls back to `File` for an unknown name.
-- `color` is a hex string. It is applied through inline `style` (icon color, left border of `ItemRow`, icon background mixed at 10%).
+- `color` is a hex string. It is applied through inline `style` (icon color, left border of `ItemRow` and `ItemCard`, icon background mixed at 10%).
 - The sidebar and the usage stats list system types in a fixed order set by `SYSTEM_TYPE_ORDER` in `src/features/item-types/domain/item-type.ts`: snippet, prompt, command, note, file, image, link.
-- The type `name` is lowercase and singular. The UI builds the label and the route by appending `s` (`snippets`, `/items/snippets`).
+- The type `name` is lowercase and singular. The UI builds the label and the route by appending `s` (`snippets`, `/items/snippets`). `typeSlug` and `parseTypeSlug` in `domain/item-type.ts` do this in both directions, so the sidebar and the page share one rule.
 
 ## The seven types
 
@@ -66,7 +66,8 @@ The three content groups from the previous section are the only fields that diff
 Today the type changes only the icon and the color. Nothing else in the UI depends on the type.
 
 - **`ItemRow`** (dashboard, pinned and recent lists) renders every type the same way: title, pin and star marks, description, tags, date. The type shows as the lucide icon in its color, a tinted icon background and a 4px left border in the type color. It does not render `content`, `language`, `url` or file data.
-- **Sidebar "Types"** lists the seven types in `SYSTEM_TYPE_ORDER` with icon, plural label, item count and a PRO badge on `file` and `image`. The badge comes from a hardcoded `PRO_TYPE_NAMES` list in the sidebar component, not from a limit or entitlement check. Each entry links to `/items/{name}s`.
+- **`ItemCard`** (`/items/{name}s`, in a two-column grid from the `md` breakpoint) shows the same fields as `ItemRow`, laid out as a card with the same type icon and 4px left border in the type color.
+- **Sidebar "Types"** lists the seven types in `SYSTEM_TYPE_ORDER` with icon, plural label, item count and a PRO badge on `file` and `image`. The badge comes from a hardcoded `PRO_TYPE_NAMES` list in the sidebar component, not from a limit or entitlement check. Each entry links to `/items/{name}s`, built with `typeSlug`.
 - **Profile usage stats** list the same types with icon and count.
 - **Collection cards and the sidebar collections** take their accent color and icons from the types of the items inside: `rankTypesByUsage` orders a collection's types by item count (ties by name), and the first one gives the accent color.
 
@@ -74,7 +75,7 @@ Today the type changes only the icon and the color. Nothing else in the UI depen
 
 These are the gaps found while researching, to keep the document honest:
 
-- **No `/items/{name}s` routes.** The sidebar links to them, but `src/app/(app)/` has only `dashboard` and `profile`.
+- **Type pages only list.** `/items/{name}s` shows the user's items of one type as cards, newest first, with no pagination and no search. The cards are not links: there is no detail view, drawer or editing yet.
 - **No per-type rendering or editing.** A syntax-highlighted view for snippets and commands, a markdown editor for notes, a link view and an image preview are described in the project overview but do not exist.
 - **No value for the file class of `contentType`.** Decide it together with the upload feature (`files`), and consider an enum or a Zod/domain constant so the three classes cannot drift.
 - **No Pro gating.** The PRO badge is cosmetic. Free-tier limits and Pro-only types (file, image, custom types) belong in `billing` once it exists.

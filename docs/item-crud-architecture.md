@@ -2,7 +2,7 @@
 
 A design for create, read, update and delete of items, one system for all seven item types. Sources: [project-overview.md](../context/project-overview.md), [item-types.md](item-types.md), `prisma/schema.prisma`, the code in `src/`, and the rules in [coding-standards.md](../context/coding-standards.md), which win wherever this guide disagrees with them.
 
-**Status: a proposal. Nothing below is built yet.** Today `features/items` holds `ItemRow`, three dashboard reads (`getPinnedItems`, `getRecentItems`, `getItemStats`) and view types. There is no `/items/...` route, no item action, no service and no schema, although the sidebar already links to `/items/{name}s`.
+**Status: a proposal; only the list route is built.** Built: `/items/[type]` (a read-only grid of `ItemCard` through `ItemList`, not links), `typeSlug` and `parseTypeSlug`, `getItemTypeByName`, `getItemsByType` and the proxy matcher. `features/items` also holds `ItemRow` and three dashboard reads (`getPinnedItems`, `getRecentItems`, `getItemStats`). Not built: the drawer, any item action, service or schema. The tables below still describe the full design, including `ItemRow` as the list element, which the list route replaced with `ItemCard`.
 
 ## The idea in one minute
 
@@ -255,7 +255,7 @@ On the client: after create, open the new item (`router.replace` with `?item=<id
 
 Each slice is one feature cycle from `context/ai-interaction.md`, small enough to review on its own.
 
-1. The route: slug helpers, `getItemTypeByName`, `getItemsByType`, `ItemList`, the page, the proxy matcher, `ItemRow` as a link.
+1. The route: slug helpers, `getItemTypeByName`, `getItemsByType`, `ItemList`, the page, the proxy matcher, `ItemRow` as a link. **Built**, with a grid of `ItemCard` instead of `ItemRow`; the cards become links to `?item=<id>` together with the drawer in slice 2.
 2. The drawer, read-only: `getItemDetail`, `ItemDrawer`, `ItemDetail` with the three content views, mounted on the type page and the dashboard.
 3. Delete and the flags (`deleteItem`, `updateItem` flags variant, `ItemActions`, `DeleteItemDialog`). These are the smallest mutations and set up `actions/item.ts`, `services/item.ts` and the revalidation.
 4. Create: the schema, `createUserItem`, `ItemForm`, `NewItemSheet` and the top bar button.

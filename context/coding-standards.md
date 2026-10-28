@@ -58,14 +58,14 @@ src/
   app/                       entry points only: page, layout, route.ts, loading, error
     (app)/                   authenticated routes (route group, not part of the URL)
       layout.tsx             app shell shared by every authenticated route
-      dashboard/, profile/
+      dashboard/, items/[type]/, profile/
         _components/         page-specific sections (private folder, not routable)
     sign-in/, register/, verify-email/, ...
     api/                     route handlers: webhooks, streaming, public API (thin)
   features/
     auth/                    sign-in, register, account; nextauth/ (NextAuth setup, session helper, session types)
-    item-types/              TypeIcon, ItemTypeInfo, item type select and queries
-    items/                   ItemRow, item queries, item types
+    item-types/              TypeIcon, ItemTypeInfo, type slugs, item type select and queries
+    items/                   ItemRow, ItemCard, ItemList, item queries, item types
     collections/             CollectionCard, collection queries, collection types
     app-shell/               DashboardShell, TopBar, Sidebar (+ sections, skeleton)
   components/ui/             shadcn/ui primitives only
