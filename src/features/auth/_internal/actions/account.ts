@@ -1,6 +1,6 @@
 "use server";
 
-import { auth, signOut } from "@/features/auth/auth";
+import { auth, signOut } from "@/features/auth/nextauth/auth";
 import {
   getTooManyAttemptsMessage,
   PASSWORD_CHECK_BY_USER,

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 
-import { signInWithCredentials } from "@/features/auth/actions/auth";
+import { signInWithCredentials } from "@/features/auth/actions/sign-in";
 import { ResendVerificationButton } from "@/features/auth/components/ResendVerificationButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

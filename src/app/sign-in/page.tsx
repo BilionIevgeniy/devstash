@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { signInWithGitHub } from "@/features/auth/actions/auth";
+import { signInWithGitHub } from "@/features/auth/actions/sign-in";
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { GitHubSignInButton } from "@/features/auth/components/GitHubSignInButton";
 import { SignInForm } from "@/features/auth/components/SignInForm";

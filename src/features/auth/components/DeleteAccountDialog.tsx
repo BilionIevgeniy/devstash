@@ -3,7 +3,7 @@
 import { useState, useTransition, type MouseEvent } from "react";
 
 import { deleteAccount } from "@/features/auth/_internal/actions/account";
-import { reauthenticateWithGitHub } from "@/features/auth/actions/auth";
+import { reauthenticateWithGitHub } from "@/features/auth/actions/sign-in";
 import { REAUTH_REQUIRED_MESSAGE } from "@/features/auth/domain/reauth";
 import {
   AlertDialog,

@@ -4,7 +4,7 @@ import { useState, useTransition, type SubmitEvent } from "react";
 import { toast } from "sonner";
 
 import { changePassword } from "@/features/auth/_internal/actions/account";
-import { signOutUser } from "@/features/auth/actions/auth";
+import { signOutUser } from "@/features/auth/actions/sign-in";
 import {
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,

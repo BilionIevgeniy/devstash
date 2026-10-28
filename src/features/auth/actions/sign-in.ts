@@ -2,7 +2,7 @@
 
 import { AuthError, CredentialsSignin } from "next-auth";
 import { headers } from "next/headers";
-import { signIn, signOut } from "@/features/auth/auth";
+import { signIn, signOut } from "@/features/auth/nextauth/auth";
 import {
   EMAIL_NOT_VERIFIED_CODE,
   TOO_MANY_ATTEMPTS_CODE,

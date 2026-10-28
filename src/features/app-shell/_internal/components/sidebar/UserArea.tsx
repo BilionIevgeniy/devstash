@@ -3,7 +3,7 @@
 import { ChevronsUpDown, LogOut, User } from "lucide-react";
 import Link from "next/link";
 
-import { signOutUser } from "@/features/auth/actions/auth";
+import { signOutUser } from "@/features/auth/actions/sign-in";
 import { UserAvatar } from "@/features/auth/components/UserAvatar";
 import {
   DropdownMenu,
