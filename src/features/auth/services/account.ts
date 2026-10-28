@@ -5,12 +5,17 @@ import { hashPassword } from "@/features/auth/_internal/password";
 import { revokeGitHubGrant } from "@/features/auth/_internal/services/github-grant";
 import { getPasswordResetIdentifier } from "@/features/auth/domain/password-reset";
 import {
+  getTooManyAttemptsMessage,
+  PASSWORD_CHECK_BY_USER,
+} from "@/features/auth/domain/rate-limits";
+import {
   isRecentlyAuthenticated,
   REAUTH_REQUIRED_MESSAGE,
   requiresReauthentication,
 } from "@/features/auth/domain/reauth";
 import type { OperationResult } from "@/lib/action-result";
 import { prisma } from "@/lib/prisma";
+import { consumeRateLimit, resetRateLimit } from "@/lib/rate-limit";
 
 const NO_PASSWORD_MESSAGE = "This account has no password to change";
 const INCORRECT_PASSWORD_MESSAGE = "Current password is incorrect";
@@ -23,11 +28,28 @@ interface DeleteAccountProof {
   authenticatedAt?: number;
 }
 
+// Changing and deleting share one counter per user, so guessing the password
+// through either one uses up the same attempts.
+async function getPasswordCheckRefusal(
+  userId: string,
+): Promise<OperationResult | null> {
+  const limit = await consumeRateLimit(PASSWORD_CHECK_BY_USER, userId);
+  if (limit.success) return null;
+
+  return {
+    success: false,
+    error: getTooManyAttemptsMessage(limit.reset, Date.now()),
+  };
+}
+
 export async function changeUserPassword(
   userId: string,
   currentPassword: string,
   newPassword: string,
 ): Promise<OperationResult> {
+  const refusal = await getPasswordCheckRefusal(userId);
+  if (refusal) return refusal;
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { password: true },
@@ -43,6 +65,7 @@ export async function changeUserPassword(
     where: { id: userId },
     data: { password, sessionVersion: { increment: 1 } },
   });
+  await resetRateLimit(PASSWORD_CHECK_BY_USER, userId);
   return { success: true, error: null };
 }
 
@@ -77,6 +100,9 @@ export async function deleteUserAccount(
   userId: string,
   proof: DeleteAccountProof,
 ): Promise<OperationResult> {
+  const refusal = await getPasswordCheckRefusal(userId);
+  if (refusal) return refusal;
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { email: true, password: true },

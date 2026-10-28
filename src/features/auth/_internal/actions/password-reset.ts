@@ -1,16 +1,10 @@
 "use server";
 
 import { headers } from "next/headers";
-import {
-  getTooManyAttemptsMessage,
-  RESET_EMAIL_BY_ADDRESS,
-} from "@/features/auth/domain/rate-limits";
-import { getAccountState } from "@/features/auth/queries";
 import { emailSchema, resetPasswordSchema } from "@/features/auth/schemas";
-import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
 import {
+  requestPasswordResetLink,
   resetPasswordWithToken,
-  sendPasswordResetLink,
 } from "@/features/auth/services/password-reset";
 import type { AuthActionState } from "@/features/auth/types";
 import { getAppOrigin } from "@/lib/app-url";
@@ -40,23 +34,12 @@ export async function requestPasswordReset(
   try {
     const origin = getAppOrigin();
 
-    const check = await checkEmailSend(
-      RESET_EMAIL_BY_ADDRESS,
+    const result = await requestPasswordResetLink(
       parsed.data,
+      origin,
       getClientIp(await headers()),
     );
-    if (check.status === "ip-limited") {
-      return failure(getTooManyAttemptsMessage(check.reset, Date.now()));
-    }
-    if (check.status === "address-limited") return SUCCESS;
-
-    const account = await getAccountState(parsed.data);
-    if (!account?.hasPassword) return SUCCESS;
-
-    // A send failure is only logged: reporting it would reveal that the
-    // account exists.
-    await sendPasswordResetLink(parsed.data, origin);
-    return SUCCESS;
+    return result.success ? SUCCESS : failure(result.error ?? GENERIC_ERROR);
   } catch (error) {
     console.error("Requesting a password reset failed:", error);
     return failure(GENERIC_ERROR);

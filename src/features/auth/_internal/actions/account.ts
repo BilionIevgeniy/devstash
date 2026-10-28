@@ -2,10 +2,6 @@
 
 import { auth, signOut } from "@/features/auth/nextauth/auth";
 import {
-  getTooManyAttemptsMessage,
-  PASSWORD_CHECK_BY_USER,
-} from "@/features/auth/domain/rate-limits";
-import {
   changePasswordSchema,
   deleteAccountSchema,
 } from "@/features/auth/schemas";
@@ -14,7 +10,6 @@ import {
   deleteUserAccount,
 } from "@/features/auth/services/account";
 import type { AuthActionState } from "@/features/auth/types";
-import { consumeRateLimit, resetRateLimit } from "@/lib/rate-limit";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 const SIGNED_OUT_ERROR = "You need to be signed in";
@@ -35,34 +30,23 @@ function failure(error: string): AuthActionState {
   return { success: false, data: null, error };
 }
 
-async function getSignedInUserId(): Promise<string | null> {
-  const session = await auth();
-  return session?.user?.id ?? null;
-}
-
 export async function changePassword(
   input: ChangePasswordInput,
 ): Promise<AuthActionState> {
   const parsed = changePasswordSchema.safeParse(input);
   if (!parsed.success) return failure(parsed.error.issues[0].message);
 
-  const userId = await getSignedInUserId();
+  const session = await auth();
+  const userId = session?.user?.id;
   if (!userId) return failure(SIGNED_OUT_ERROR);
 
   try {
-    const limit = await consumeRateLimit(PASSWORD_CHECK_BY_USER, userId);
-    if (!limit.success) {
-      return failure(getTooManyAttemptsMessage(limit.reset, Date.now()));
-    }
-
     const result = await changeUserPassword(
       userId,
       parsed.data.currentPassword,
       parsed.data.newPassword,
     );
-    if (!result.success) return failure(result.error ?? GENERIC_ERROR);
-    await resetRateLimit(PASSWORD_CHECK_BY_USER, userId);
-    return SUCCESS;
+    return result.success ? SUCCESS : failure(result.error ?? GENERIC_ERROR);
   } catch (error) {
     console.error("Changing the password failed:", error);
     return failure(GENERIC_ERROR);
@@ -80,11 +64,6 @@ export async function deleteAccount(
   if (!userId) return failure(SIGNED_OUT_ERROR);
 
   try {
-    const limit = await consumeRateLimit(PASSWORD_CHECK_BY_USER, userId);
-    if (!limit.success) {
-      return failure(getTooManyAttemptsMessage(limit.reset, Date.now()));
-    }
-
     const result = await deleteUserAccount(userId, {
       password: parsed.data.password,
       authenticatedAt: session.user.authenticatedAt,

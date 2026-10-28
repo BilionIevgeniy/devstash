@@ -10,8 +10,16 @@ import {
   INVALID_RESET_LINK_MESSAGE,
   PASSWORD_RESET_TOKEN_TTL_HOURS,
 } from "@/features/auth/domain/password-reset";
+import {
+  getTooManyAttemptsMessage,
+  RESET_EMAIL_BY_ADDRESS,
+} from "@/features/auth/domain/rate-limits";
 import { isTokenExpired } from "@/features/auth/domain/verification-token";
-import { isPasswordResetTokenValid } from "@/features/auth/queries";
+import {
+  getAccountState,
+  isPasswordResetTokenValid,
+} from "@/features/auth/queries";
+import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
 import type { OperationResult } from "@/lib/action-result";
 import { sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
@@ -49,6 +57,30 @@ export async function sendPasswordResetLink(
       PASSWORD_RESET_TOKEN_TTL_HOURS,
     ),
   });
+}
+
+// Every outcome except an exhausted per-IP limit is the same neutral success,
+// so the answer never shows whether the address has an account. For the same
+// reason a send failure is only logged.
+export async function requestPasswordResetLink(
+  email: string,
+  origin: string,
+  ip: string | null,
+): Promise<OperationResult> {
+  const check = await checkEmailSend(RESET_EMAIL_BY_ADDRESS, email, ip);
+  if (check.status === "ip-limited") {
+    return {
+      success: false,
+      error: getTooManyAttemptsMessage(check.reset, Date.now()),
+    };
+  }
+  if (check.status === "address-limited") return { success: true, error: null };
+
+  const account = await getAccountState(email);
+  if (!account?.hasPassword) return { success: true, error: null };
+
+  await sendPasswordResetLink(email, origin);
+  return { success: true, error: null };
 }
 
 export async function resetPasswordWithToken(
