@@ -216,7 +216,7 @@ Each feature keeps its business rules in `features/[feature]/domain/` as pure Ty
 - Route-specific UI lives in `app/[route]/_components/`. When a second route reuses it, move it into the matching feature
 - Authenticated routes live in the `app/(app)/` route group under its shared shell layout. Every authenticated route must also be covered by the matcher in `src/proxy.ts`: widen it in the same change as the new route
 - Server Actions return `ActionResult<T>` and services return `OperationResult`, both from `src/lib/action-result.ts`
-- Tests, when added, are colocated as `[name].test.ts`
+- Tests are colocated as `[name].test.ts` (see "Testing")
 - Specs in `context/features/` and in `featuresDRAFT/` record what was planned when they were written and may name old paths (`lib/db/*.ts`, `src/auth.ts`, `src/lib/usage.ts`, `app/api/upload`). Where they disagree with this file, this file wins
 
 ### What the lint enforces
@@ -225,7 +225,7 @@ Each feature keeps its business rules in `features/[feature]/domain/` as pure Ty
 
 - the layer order and the `_internal/` boundary (`import/no-restricted-paths`)
 - the direction of the roles inside a feature: queries and schemas do not import services, actions or components; services do not import actions or components; actions do not import components; components do not import services
-- the domain core: no package import, only `domain/`, `types.ts` and `lib/utils`
+- the domain core: no package import (colocated `*.test.ts` files are excepted), only `domain/`, `types.ts` and `lib/utils`
 - no Prisma in actions, components and `app/`; no `next/headers`, `next/cache` or `next/navigation` in services; vendor SDKs only in `lib`
 - import cycles (`import/no-cycle`)
 
@@ -277,3 +277,14 @@ Not checked by lint, so it is on the author and the reviewer: no writes in `quer
 - No commented-out code unless specified
 - No unused imports or variables
 - Keep functions under 50 lines when possible
+
+## Testing
+
+Vitest, run with `npm run test` (one run) or `npm run test:watch`. Tests are colocated as `[name].test.ts`, run in the node environment, and import `describe`, `it` and `expect` from `vitest` explicitly.
+
+- **Every test must be green, and `npm run test` must be run before every commit**, together with `npx tsc --noEmit`, `npm run lint` and `npm run build`. A failing test is fixed, or corrected on purpose when the rule changed; it is never skipped, disabled or deleted to get a commit through
+- Test pure code first, without mocks: `domain/` files, `schemas.ts` and pure helpers in `lib` (for example `client-ip.ts`). A new business rule in `domain/` comes with its test in the same change
+- Services come next, with their boundaries mocked (`@/lib/prisma`, `@/lib/rate-limit`, `@/lib/email`, `fetch`); assert the decision the service makes, not the mock calls for their own sake. This needs `server-only` stubbed in `vitest.config.mts`, which is not set up yet
+- Not unit-tested: layer and import rules and domain purity (ESLint enforces them), thin `actions/`, pages and `components/ui`. Vitest cannot render async Server Components, so pages belong to end-to-end tests when those are added
+- A `*.test.ts` file inside `domain/` may import `vitest`: the package allowlist of the domain core applies to the rules, not to their tests
+- Each test pins a rule or an edge case that would hurt if it broke; do not write tests just to have them

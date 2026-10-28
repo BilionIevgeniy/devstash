@@ -128,7 +128,7 @@ The full table with every operation (uploads, AI, Stripe, imports, background jo
 4. **Add the pages** under `src/app/(app)/<route>/` and widen the `matcher` in `src/proxy.ts` so the route is protected. Pages only compose.
 5. **Change the database** in `prisma/schema.prisma` and run `npx prisma migrate dev --name <what>` (never `db push`); update `prisma/seed.ts` if the demo data needs it.
 6. **Write the code by role:** reads in `queries.ts` (scoped by `userId`), writes in `services/`, inputs in `schemas.ts`, rules in `domain/`, the form handler in `actions/`.
-7. **Check:** `npx tsc --noEmit`, `npm run lint` and `npm run build`. The build also runs `prisma migrate deploy`, which applies pending migrations to the database named in `.env`.
+7. **Check:** `npx tsc --noEmit`, `npm run lint`, `npm run test` (all green before a commit) and `npm run build`. The build also runs `prisma migrate deploy`, which applies pending migrations to the database named in `.env`.
 8. **Record it** in `context/feature-history.md` when the feature is done (see `context/ai-interaction.md` for the workflow).
 
 Adding an operation to an existing feature is the same without steps 1 to 5: input schema, then the service, then the action, then the component that calls it.
@@ -140,7 +140,7 @@ Adding an operation to an existing feature is the same without steps 1 to 5: inp
 - a feature imports a feature of the same or a higher rank, or `app/`;
 - code outside a feature imports its `_internal/`;
 - a role imports a role above it (a service importing an action, a component importing a service);
-- a `domain/` file imports any package;
+- a `domain/` file imports any package (its colocated `*.test.ts` files may import `vitest`);
 - an action, a component or a page imports Prisma;
 - a service imports `next/headers`, `next/cache` or `next/navigation`;
 - an SDK of a vendor (Resend, Upstash, Stripe, OpenAI, AWS) is imported outside `lib/`;

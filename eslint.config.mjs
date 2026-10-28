@@ -212,7 +212,10 @@ const eslintConfig = defineConfig([
   {
     // Allowlist: a domain file imports no package at all (react, zod, node:*,
     // SDKs...). Relative and "@/" imports are checked by domainZone above.
+    // Colocated tests are not domain code and import vitest; they keep the
+    // vendor SDK ban from the features block.
     files: ["src/features/*/domain/**/*.{ts,tsx}"],
+    ignores: ["src/features/*/domain/**/*.test.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
