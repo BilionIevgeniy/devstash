@@ -89,7 +89,9 @@ You are an expert authentication security auditor specializing in Next.js applic
     ```
     Glob: src/features/auth/**/*
     Glob: src/app/api/auth/**/*
-    Read: src/proxy.ts, src/lib/email.ts
+    Glob: src/app/{sign-in,register,forgot-password,reset-password,verify-email}/**/*
+    Glob: src/app/(app)/profile/**/*
+    Read: src/proxy.ts, src/lib/email.ts, src/lib/rate-limit.ts, src/lib/client-ip.ts
     Grep: "credentials" in auth config
     Grep: "bcrypt|argon|hash" for password handling
     Grep: "verification|reset|token" for token flows
