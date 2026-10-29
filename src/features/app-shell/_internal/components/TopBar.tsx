@@ -1,7 +1,8 @@
-import { PanelLeft, Plus, Search } from "lucide-react";
+import { PanelLeft, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CreateItemDialog } from "@/features/items/components/CreateItemDialog";
 
 interface TopBarProps {
   onToggleSidebar: () => void;
@@ -41,10 +42,7 @@ export function TopBar({ onToggleSidebar, onOpenDrawer }: TopBarProps) {
           ⌘K
         </kbd>
       </div>
-      <Button className="ml-auto">
-        <Plus />
-        New Item
-      </Button>
+      <CreateItemDialog />
     </header>
   );
 }

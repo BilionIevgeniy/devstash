@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+  CREATABLE_TYPES,
+  editableFields,
+} from "@/features/items/domain/item-fields";
+
 export const itemIdSchema = z.cuid("Invalid item id");
 
 function emptyToNull(value: string): string | null {
@@ -43,3 +48,19 @@ export const updateItemSchema = z.object({
 });
 
 export type UpdateItemInput = z.infer<typeof updateItemSchema>;
+
+// The same fields as an update plus the type. A type that has a URL field
+// needs one; fields its type does not have are dropped by the service.
+export const createItemSchema = updateItemSchema
+  .extend({ typeName: z.enum(CREATABLE_TYPES, "Choose an item type") })
+  .superRefine((input, ctx) => {
+    if (editableFields(input.typeName).url && !input.url) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["url"],
+        message: "URL is required",
+      });
+    }
+  });
+
+export type CreateItemInput = z.infer<typeof createItemSchema>;

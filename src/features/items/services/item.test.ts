@@ -1,16 +1,26 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { update, remove, findFirst } = vi.hoisted(() => ({
-  update: vi.fn(),
-  remove: vi.fn(),
-  findFirst: vi.fn(),
-}));
+const { create, update, remove, findFirst, getItemTypeByName } = vi.hoisted(
+  () => ({
+    create: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+    findFirst: vi.fn(),
+    getItemTypeByName: vi.fn(),
+  }),
+);
 vi.mock("@/lib/prisma", () => ({
-  prisma: { item: { update, delete: remove, findFirst } },
+  prisma: { item: { create, update, delete: remove, findFirst } },
+}));
+// Partial: the items queries also use the real itemTypeSelect.
+vi.mock("@/features/item-types/queries", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/features/item-types/queries")>()),
+  getItemTypeByName,
 }));
 
 import { Prisma } from "@/generated/prisma/client";
 import {
+  createUserItem,
   deleteUserItem,
   updateUserItem,
 } from "@/features/items/services/item";
@@ -41,6 +51,102 @@ function prismaError(code: string) {
     clientVersion: "test",
   });
 }
+
+describe("createUserItem", () => {
+  const snippet = {
+    typeName: "snippet" as const,
+    title: "useDebounce",
+    description: null,
+    content: "export function useDebounce() {}",
+    language: "ts",
+    url: null,
+    tags: [],
+  };
+
+  beforeEach(() => {
+    create.mockReset().mockResolvedValue({ id: "item-1" });
+    getItemTypeByName.mockReset().mockImplementation(async (name: string) => ({
+      id: `type-${name}`,
+      name,
+      icon: "Code",
+    }));
+  });
+
+  it("writes the item for the caller with its type and content type", async () => {
+    const result = await createUserItem("user-1", snippet);
+
+    expect(create.mock.calls[0][0].data).toMatchObject({
+      userId: "user-1",
+      typeId: "type-snippet",
+      contentType: "TEXT",
+      title: "useDebounce",
+      content: "export function useDebounce() {}",
+      language: "ts",
+    });
+    expect(result).toEqual({
+      success: true,
+      error: null,
+      data: { id: "item-1" },
+    });
+  });
+
+  it("stores a link as a URL item", async () => {
+    await createUserItem("user-1", {
+      ...snippet,
+      typeName: "link",
+      url: "https://react.dev",
+    });
+
+    expect(create.mock.calls[0][0].data).toMatchObject({
+      typeId: "type-link",
+      contentType: "URL",
+      url: "https://react.dev",
+    });
+  });
+
+  it("drops the fields the type does not have", async () => {
+    await createUserItem("user-1", {
+      ...snippet,
+      typeName: "note",
+      url: "https://react.dev",
+    });
+
+    const { data } = create.mock.calls[0][0];
+    expect(data).toHaveProperty("content");
+    expect(data).not.toHaveProperty("language");
+    expect(data).not.toHaveProperty("url");
+  });
+
+  it("links tags of the caller", async () => {
+    await createUserItem("user-1", { ...snippet, tags: ["react"] });
+
+    expect(create.mock.calls[0][0].data.tags).toEqual({
+      create: [
+        {
+          tag: {
+            connectOrCreate: {
+              where: { userId_name: { userId: "user-1", name: "react" } },
+              create: { userId: "user-1", name: "react" },
+            },
+          },
+        },
+      ],
+    });
+  });
+
+  it("writes nothing when the system type is missing", async () => {
+    getItemTypeByName.mockResolvedValue(null);
+
+    const result = await createUserItem("user-1", snippet);
+
+    expect(result).toEqual({
+      success: false,
+      error: "Invalid item type",
+      data: null,
+    });
+    expect(create).not.toHaveBeenCalled();
+  });
+});
 
 describe("updateUserItem", () => {
   beforeEach(() => {

@@ -3,8 +3,13 @@
 import { refresh } from "next/cache";
 
 import { getSessionUser } from "@/features/auth/nextauth/session";
-import { itemIdSchema, updateItemSchema } from "@/features/items/schemas";
 import {
+  createItemSchema,
+  itemIdSchema,
+  updateItemSchema,
+} from "@/features/items/schemas";
+import {
+  createUserItem,
   deleteUserItem,
   updateUserItem,
 } from "@/features/items/services/item";
@@ -17,6 +22,25 @@ type UpdateItemActionResult = ActionResult<ItemDetailJson | null>;
 
 function failure(error: string): ActionResult<null> {
   return { success: false, data: null, error };
+}
+
+export async function createItem(data: unknown): Promise<ActionResult> {
+  const parsed = createItemSchema.safeParse(data);
+  if (!parsed.success) return failure(parsed.error.issues[0].message);
+
+  // Outside the try: a signed-out caller is redirected by a thrown error.
+  const { id: userId } = await getSessionUser();
+
+  try {
+    const result = await createUserItem(userId, parsed.data);
+    if (!result.success) return failure(result.error ?? GENERIC_ERROR);
+    // The new item comes back with this response's fresh page.
+    refresh();
+    return { success: true, error: null, data: null };
+  } catch (error) {
+    console.error("Creating the item failed:", error);
+    return failure(GENERIC_ERROR);
+  }
 }
 
 // The dates go out as ISO strings, the shape GET /api/items/[id] answers with,
