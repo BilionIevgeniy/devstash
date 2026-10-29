@@ -2,7 +2,11 @@ import "server-only";
 
 import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
 import { itemTypeSelect } from "@/features/item-types/queries";
-import type { DashboardItem, ItemStats } from "@/features/items/types";
+import type {
+  DashboardItem,
+  ItemDetail,
+  ItemStats,
+} from "@/features/items/types";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
@@ -29,6 +33,40 @@ function toDashboardItem({ type, tags, ...item }: RawItem): DashboardItem {
     ...item,
     type: toItemTypeInfo(type),
     tags: tags.map(({ tag }) => tag.name),
+  };
+}
+
+const itemDetailSelect = {
+  ...dashboardItemSelect,
+  contentType: true,
+  content: true,
+  url: true,
+  fileUrl: true,
+  fileName: true,
+  fileSize: true,
+  language: true,
+  updatedAt: true,
+  collections: {
+    select: { collection: { select: { id: true, name: true } } },
+    orderBy: { collection: { name: "asc" } },
+  },
+} satisfies Prisma.ItemSelect;
+
+type RawItemDetail = Prisma.ItemGetPayload<{
+  select: typeof itemDetailSelect;
+}>;
+
+function toItemDetail({
+  type,
+  tags,
+  collections,
+  ...item
+}: RawItemDetail): ItemDetail {
+  return {
+    ...item,
+    type: toItemTypeInfo(type),
+    tags: tags.map(({ tag }) => tag.name),
+    collections: collections.map(({ collection }) => collection),
   };
 }
 
@@ -61,6 +99,17 @@ export async function getItemsByType(
     select: dashboardItemSelect,
   });
   return items.map(toDashboardItem);
+}
+
+export async function getItemDetail(
+  userId: string,
+  id: string,
+): Promise<ItemDetail | null> {
+  const item = await prisma.item.findFirst({
+    where: { id, userId },
+    select: itemDetailSelect,
+  });
+  return item ? toItemDetail(item) : null;
 }
 
 export async function getItemStats(userId: string): Promise<ItemStats> {

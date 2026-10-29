@@ -7,6 +7,7 @@ import {
   typeSlug,
 } from "@/features/item-types/domain/item-type";
 import { getItemTypeByName } from "@/features/item-types/queries";
+import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvider";
 import { ItemList } from "@/features/items/components/ItemList";
 import { getItemsByType } from "@/features/items/queries";
 
@@ -26,23 +27,25 @@ export default async function ItemsByTypePage({
 
   return (
     <div className="space-y-8">
-      <header>
-        <h1 className="flex items-center gap-3 text-3xl font-bold capitalize">
-          <TypeIcon
-            name={type.icon}
-            className="size-7"
-            style={{ color: type.color }}
-          />
-          {typeSlug(type.name)}
-        </h1>
-        <p className="text-muted-foreground">
-          {items.length} {itemLabel}
-        </p>
-      </header>
-      <ItemList
-        items={items}
-        emptyMessage={`No ${typeSlug(type.name)} yet.`}
-      />
+      <ItemDrawerProvider>
+        <header>
+          <h1 className="flex items-center gap-3 text-3xl font-bold capitalize">
+            <TypeIcon
+              name={type.icon}
+              className="size-7"
+              style={{ color: type.color }}
+            />
+            {typeSlug(type.name)}
+          </h1>
+          <p className="text-muted-foreground">
+            {items.length} {itemLabel}
+          </p>
+        </header>
+        <ItemList
+          items={items}
+          emptyMessage={`No ${typeSlug(type.name)} yet.`}
+        />
+      </ItemDrawerProvider>
     </div>
   );
 }

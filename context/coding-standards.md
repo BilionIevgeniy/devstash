@@ -99,7 +99,7 @@ Vitest, run with `npm run test` (one run) or `npm run test:watch`. Tests are col
 
 - **Every test must be green, and `npm run test` must be run before every commit**, together with `npx tsc --noEmit`, `npm run lint` and `npm run build`. A failing test is fixed, or corrected on purpose when the rule changed; it is never skipped, disabled or deleted to get a commit through
 - Test pure code first, without mocks: `domain/` files, `schemas.ts` and pure helpers in `lib` (for example `client-ip.ts`). A new business rule in `domain/` comes with its test in the same change
-- Services come next, with their boundaries mocked (`@/lib/prisma`, `@/lib/rate-limit`, `@/lib/email`, `fetch`); assert the decision the service makes, not the mock calls for their own sake. This needs `server-only` stubbed in `vitest.config.mts`, which is not set up yet
+- Services come next, with their boundaries mocked (`@/lib/prisma`, `@/lib/rate-limit`, `@/lib/email`, `fetch`); assert the decision the service makes, not the mock calls for their own sake. `server-only` is aliased to the empty stub `test/server-only.ts` in `vitest.config.mts`, so queries, services and routes import normally
 - Not unit-tested: layer and import rules and domain purity (ESLint enforces them), thin `actions/`, pages and `components/ui`. Vitest cannot render async Server Components, so pages belong to end-to-end tests when those are added
 - A `*.test.ts` file inside `domain/` may import `vitest`: the package allowlist of the domain core applies to the rules, not to their tests
 - Each test pins a rule or an edge case that would hurt if it broke; do not write tests just to have them

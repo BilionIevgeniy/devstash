@@ -1,5 +1,6 @@
 import { Pin } from "lucide-react";
 
+import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
 import { ItemRow } from "@/features/items/components/ItemRow";
 import { getPinnedItems } from "@/features/items/queries";
 import { getSessionUser } from "@/features/auth/nextauth/session";
@@ -18,7 +19,9 @@ export async function PinnedItems() {
       </h2>
       <div className="space-y-3">
         {items.map((item) => (
-          <ItemRow key={item.id} item={item} />
+          <ItemDrawerTrigger key={item.id} item={item}>
+            <ItemRow item={item} />
+          </ItemDrawerTrigger>
         ))}
       </div>
     </section>

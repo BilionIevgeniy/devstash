@@ -16,7 +16,7 @@ How DevStash is organized, where each kind of code lives, and what to create whe
 src/
   app/            routes: page.tsx, layout.tsx, route.ts. Composes features, no business logic
     (app)/        authenticated pages (dashboard, items/[type], profile) under one shared layout
-    api/          route handlers: NextAuth, registration, later webhooks and streaming
+    api/          route handlers: NextAuth, registration, item detail, later webhooks and streaming
   features/       the product, one folder per feature
     auth/         sign-in, registration, email verification, password reset, account
     item-types/   item type icons, info, URL slugs and queries

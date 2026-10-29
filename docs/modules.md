@@ -15,7 +15,7 @@ A module gets its section here in the commit with its first real code, together 
 | Subscription, StripeEvent | `billing` (planned) | `isPro` is derived from the subscription status; nothing reads the old `User` columns yet |
 | UserPreference | `editor` (planned) | One row per user, typed columns, an absent row means defaults, created by upsert |
 
-A module writes only the models it owns and reads only its own models. A relation `select` of scalar columns through its own relation is fine (`items` selects the type name, icon and color through `Item.type`). Everything else goes through the owner's queries or services.
+A module writes only the models it owns and reads only its own models. A relation `select` of scalar columns through its own relation is fine (`items` selects the type name, icon and color through `Item.type`, and the id and name of each collection through `Item.collections`). Everything else goes through the owner's queries or services.
 
 ## Existing modules
 
@@ -37,10 +37,11 @@ A module writes only the models it owns and reads only its own models. A relatio
 
 ### items
 
-- **Owns:** `Item`, `Tag`, `ItemTag`; the list, cards and rows of items; the item queries
+- **Owns:** `Item`, `Tag`, `ItemTag`; the list, cards and rows of items; the item drawer (the detail view, fetched from `app/api/items/[id]`); the item queries
 - **Uses today:** `item-types`
-- **Entry points used from outside:** `components/ItemList`, `components/ItemRow`; `queries` (`getPinnedItems`, `getRecentItems`, `getItemsByType`, `getItemStats`)
-- **Will grow with** (from the specs, not built): create and edit forms, the drawer, pin and favorite flags, the file and image views, pagination of items. It will use `item-types`, `files`, `editor`, `ai` and `billing`
+- **Entry points used from outside:** `components/ItemList`, `components/ItemRow`, `components/ItemDrawerProvider` (wraps a page), `components/ItemDrawerTrigger` (wraps a card); `queries` (`getPinnedItems`, `getRecentItems`, `getItemsByType`, `getItemDetail`, `getItemStats`); `schemas` (`itemIdSchema`)
+- **Private:** the drawer content, its action bar and skeleton
+- **Will grow with** (from the specs, not built): create and edit forms, the drawer actions, pin and favorite flags, the file and image views, pagination of items. It will use `item-types`, `files`, `editor`, `ai` and `billing`
 
 ### collections
 

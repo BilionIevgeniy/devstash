@@ -16,7 +16,7 @@ export function ItemCard({ item }: ItemCardProps) {
 
   return (
     <article
-      className="flex flex-col gap-3 rounded-lg border border-l-4 bg-card p-4"
+      className="flex h-full flex-col gap-3 rounded-lg border border-l-4 bg-card p-4 transition-colors hover:bg-accent/50"
       style={{ borderLeftColor: type.color }}
     >
       <div className="flex items-start gap-3">

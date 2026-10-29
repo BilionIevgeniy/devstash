@@ -1,4 +1,5 @@
 import { ItemCard } from "@/features/items/components/ItemCard";
+import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
 import type { DashboardItem } from "@/features/items/types";
 
 interface ItemListProps {
@@ -14,7 +15,9 @@ export function ItemList({ items, emptyMessage }: ItemListProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {items.map((item) => (
-        <ItemCard key={item.id} item={item} />
+        <ItemDrawerTrigger key={item.id} item={item}>
+          <ItemCard item={item} />
+        </ItemDrawerTrigger>
       ))}
     </div>
   );

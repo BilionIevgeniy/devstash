@@ -16,7 +16,7 @@ export function ItemRow({ item }: ItemRowProps) {
 
   return (
     <article
-      className="flex items-start gap-4 rounded-lg border border-l-4 bg-card p-4"
+      className="flex items-start gap-4 rounded-lg border border-l-4 bg-card p-4 transition-colors hover:bg-accent/50"
       style={{ borderLeftColor: type.color }}
     >
       <div
