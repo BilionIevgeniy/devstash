@@ -72,15 +72,27 @@ features/<name>/
 
 1. `app/` composes only: session, queries, feature components. No Prisma, no business `if`
 2. A pure rule, limit or constant (no I/O, clock, env or package) goes in `domain/`, with its test
-3. An input shape goes in `schemas.ts`; a view or result type in `types.ts`; an email body in `_internal/emails/`
+3. An input shape goes in `schemas.ts`; a view or result type in `types.ts` (every other type: see "Where types live"); an email body in `_internal/emails/`
 4. A read of the feature's own models goes in `queries.ts`, scoped by `userId` (the one exception: a read before sign-in keyed by email and a one-time token)
 5. A write, a vendor call, a multi-step flow or another feature's data goes in `services/<topic>.ts`
 6. `"use server"` files, `route.ts` and pages are thin: session, schema, one service call, revalidate. Webhooks and streams are routes
 7. UI of one route goes in `app/<route>/_components/`; UI used across routes in the feature's `components/`
 8. A vendor SDK goes in `lib/<vendor>.ts`; what the vendor means for the product (prices, prompts) stays in the feature's `domain/`
 9. A file starts in `_internal/`; unsure means `_internal/`. Move it to the public folder of the same role when a second consumer, including `app/`, needs it
-10. A type lives with the value it comes from: a view or result type (what a query or service returns) in `types.ts`; an input type as `z.infer` next to its schema in `schemas.ts`; a type derived from a `domain/` constant, or the shape a `domain/` rule returns, in that `domain/` file; a type used by one file stays unexported in that file. There is no `types/` folder; `types.ts` splits into `types/<topic>.ts` only when it grows
-11. A new module is a folder, a `FEATURE_RANKS` row and a section in `docs/modules.md`, in the commit with its first code. If a rule blocks you, change the rule on purpose with a record in `docs/adr/`; never work around it
+10. A new module is a folder, a `FEATURE_RANKS` row and a section in `docs/modules.md`, in the commit with its first code. If a rule blocks you, change the rule on purpose with a record in `docs/adr/`; never work around it
+
+## Where types live
+
+A type lives with the value it comes from.
+
+| Type | Where | Examples |
+| ---- | ----- | -------- |
+| What a query or service hands to pages and components (view, DTO, action state) | `types.ts` | `ItemDetail` (items), `UserProfile` (auth), `DashboardCollection` (collections) |
+| An input | `schemas.ts`, as `z.infer` next to its schema | `CreateItemInput` (items) |
+| Derived from a constant, or the arguments or result of one function | the file of that constant or function | `CreatableTypeName`, `EditableFields` (items/domain), `ItemTypeRow` (item-types/domain), `EmailSendCheck` (auth/services), `ActionEmailCopy` (auth/_internal/emails) |
+| Used by one file only | that file, not exported | `UpdateItemActionResult` (items/actions) |
+
+There is no `types/` folder; `types.ts` splits into `types/<topic>.ts` only when it grows.
 
 ## Old paths in specs
 
