@@ -79,7 +79,8 @@ features/<name>/
 7. UI of one route goes in `app/<route>/_components/`; UI used across routes in the feature's `components/`
 8. A vendor SDK goes in `lib/<vendor>.ts`; what the vendor means for the product (prices, prompts) stays in the feature's `domain/`
 9. A file starts in `_internal/`; unsure means `_internal/`. Move it to the public folder of the same role when a second consumer, including `app/`, needs it
-10. A new module is a folder, a `FEATURE_RANKS` row and a section in `docs/modules.md`, in the commit with its first code. If a rule blocks you, change the rule on purpose with a record in `docs/adr/`; never work around it
+10. A type lives with the value it comes from: a view or result type (what a query or service returns) in `types.ts`; an input type as `z.infer` next to its schema in `schemas.ts`; a type derived from a `domain/` constant, or the shape a `domain/` rule returns, in that `domain/` file; a type used by one file stays unexported in that file. There is no `types/` folder; `types.ts` splits into `types/<topic>.ts` only when it grows
+11. A new module is a folder, a `FEATURE_RANKS` row and a section in `docs/modules.md`, in the commit with its first code. If a rule blocks you, change the rule on purpose with a record in `docs/adr/`; never work around it
 
 ## Old paths in specs
 
@@ -109,6 +110,6 @@ Course specs name the paths of the original layout. Put the code here instead:
 
 ## What the lint enforces
 
-`eslint.config.mjs` checks the layer order and `_internal/` boundary, the role directions inside a feature, the pure domain core, no Prisma in actions, components and `app/`, no request APIs in services, vendor SDKs only in `lib`, and import cycles.
+`eslint.config.mjs` checks the layer order and `_internal/` boundary, the role directions inside a feature, the pure domain core, no Prisma in actions, components and `app/`, no request APIs in services, vendor SDKs only in `lib`, import cycles, and deprecated APIs of the installed packages (`@typescript-eslint/no-deprecated`).
 
 Not checked by lint, so it is on the author and the reviewer: `userId` in every `where`, no writes in `queries.ts`, one service call per entry point, idempotent background jobs, and the ban on foreign models (planned as a lint rule).

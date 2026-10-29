@@ -187,7 +187,7 @@ Expected failures (wrong password, expired link) are returned as a result; unexp
 
 1. No I/O, clock, environment or package (including `node:*` and `zod`), plain values in and out: `domain/<topic>.ts`.
 2. A helper that needs a package or `node:*` (hashing, crypto): `lib/<name>.ts` when it is generic and has no product words, otherwise `_internal/<name>.ts`.
-3. A Zod input shape: `schemas.ts`. A view or result type: `types.ts`. An email body: `_internal/emails/`.
+3. A Zod input shape: `schemas.ts`. A view or result type: `types.ts`. An email body: `_internal/emails/`. A type lives with the value it comes from: an input type is `z.infer` next to its schema, a type derived from a `domain/` constant (`CreatableTypeName` from `CREATABLE_TYPES`) stays in that `domain/` file, and a type used by one file stays unexported there.
 4. A standalone read of this feature's own Prisma models, including a read that a flow needs: `queries.ts`. Scope it by `userId`; the one exception is a read before sign-in that is keyed by an email address and a one-time token (`getAccountState`, `isVerificationTokenValid`, `isPasswordResetTokenValid` in `auth`), where holding the token is the authorization.
 5. Anything else that does work: `services/<topic>.ts`. That is every write, any call to a vendor, Redis, email, NextAuth or `fetch`, another feature's data, a read that must share a transaction with a write, a decision that needs two sources.
 6. Anything that reads the request (session, headers, cookies, searchParams) or is `"use server"`: an entry point (`actions/<noun>.ts`, `route.ts`, a page, `auth/nextauth/session.ts`). It passes `userId`, `ip` and `origin` as plain values into one call.
@@ -268,6 +268,7 @@ Each feature keeps its business rules in `features/[feature]/domain/` as pure Ty
 - the domain core: no package import (colocated `*.test.ts` files are excepted), only `domain/`, `types.ts` and `lib/utils`
 - no Prisma in actions, components and `app/`; no `next/headers`, `next/cache` or `next/navigation` in services; vendor SDKs only in `lib`
 - import cycles (`import/no-cycle`)
+- deprecated APIs of the installed packages (`@typescript-eslint/no-deprecated`, with type information from `projectService`)
 
 Not checked by lint, so it is on the author and the reviewer: no writes in `queries.ts`, one call into a service per entry point, `userId` in every `where`, a service taking `userId`, `ip` and `origin` as parameters, idempotent background jobs, and reads of another feature's models (see "Known risks").
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
+import { useState, useTransition, type SubmitEvent } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -81,7 +81,7 @@ function CreateItemForm({ onCreated }: CreateItemFormProps) {
 
   // Only the fields of the chosen type are sent; the others keep their input
   // in case the type is switched back.
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     startCreating(async () => {
       const result = await createItem({
