@@ -6,10 +6,17 @@ import { cn } from "@/lib/utils";
 interface ItemActionBarProps {
   isFavorite: boolean;
   isPinned: boolean;
+  canEdit: boolean;
+  onEdit: () => void;
 }
 
-// Display only: the actions are wired up in a later feature.
-export function ItemActionBar({ isFavorite, isPinned }: ItemActionBarProps) {
+// Only Edit works so far: the other actions are wired up in a later feature.
+export function ItemActionBar({
+  isFavorite,
+  isPinned,
+  canEdit,
+  onEdit,
+}: ItemActionBarProps) {
   return (
     <div className="flex items-center gap-1 border-b px-6 py-3">
       <Button
@@ -29,7 +36,13 @@ export function ItemActionBar({ isFavorite, isPinned }: ItemActionBarProps) {
         <Copy />
         Copy
       </Button>
-      <Button type="button" variant="ghost" className="ml-auto">
+      <Button
+        type="button"
+        variant="ghost"
+        className="ml-auto"
+        disabled={!canEdit}
+        onClick={onEdit}
+      >
         <Pencil />
         Edit
       </Button>

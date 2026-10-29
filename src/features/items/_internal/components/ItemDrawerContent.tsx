@@ -7,6 +7,7 @@ import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { typeSlug } from "@/features/item-types/domain/item-type";
 import { ItemActionBar } from "@/features/items/_internal/components/ItemActionBar";
 import { ItemDrawerSkeleton } from "@/features/items/_internal/components/ItemDrawerSkeleton";
+import { ItemEditForm } from "@/features/items/_internal/components/ItemEditForm";
 import { formatLongDate } from "@/lib/utils";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
@@ -18,17 +19,49 @@ export type ItemDetailState =
 interface ItemDrawerContentProps {
   item: DashboardItem;
   state: ItemDetailState;
+  isEditing: boolean;
+  onEdit: () => void;
+  onCancelEdit: () => void;
+  onSaved: (detail: ItemDetailJson) => void;
 }
 
 // The header and tags come from the card the user clicked, so they show at
 // once; the rest waits for GET /api/items/[id].
-export function ItemDrawerContent({ item, state }: ItemDrawerContentProps) {
+export function ItemDrawerContent({
+  item,
+  state,
+  isEditing,
+  onEdit,
+  onCancelEdit,
+  onSaved,
+}: ItemDrawerContentProps) {
   const detail = state.status === "ready" ? state.detail : null;
+
+  if (isEditing && detail) {
+    return (
+      <>
+        <ItemDrawerHeader item={item} language={detail.language} />
+        <ItemEditForm
+          item={item}
+          detail={detail}
+          onCancel={onCancelEdit}
+          onSaved={onSaved}
+        >
+          <ItemMeta detail={detail} />
+        </ItemEditForm>
+      </>
+    );
+  }
 
   return (
     <>
       <ItemDrawerHeader item={item} language={detail?.language ?? null} />
-      <ItemActionBar isFavorite={item.isFavorite} isPinned={item.isPinned} />
+      <ItemActionBar
+        isFavorite={item.isFavorite}
+        isPinned={item.isPinned}
+        canEdit={detail !== null}
+        onEdit={onEdit}
+      />
       <div className="flex-1 space-y-6 overflow-y-auto px-6 pb-6">
         {item.description && (
           <Section title="Description">
