@@ -69,14 +69,6 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-model RateLimit {
-  key         String   @id
-  count       Int
-  windowStart DateTime
-
-  @@index([windowStart])
-}
-
 model Item {
   id          String  @id @default(cuid())
   title       String
