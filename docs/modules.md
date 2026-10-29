@@ -37,12 +37,12 @@ A module writes only the models it owns and reads only its own models. A relatio
 
 ### items
 
-- **Owns:** `Item`, `Tag`, `ItemTag`; the list, cards and rows of items; the item drawer (the detail view, fetched from `app/api/items/[id]`, and editing it in place, deleting it); the item queries, the item update and delete
-- **Uses today:** `item-types`, `auth` (`getSessionUser` in the update and delete actions)
-- **Entry points used from outside:** `components/ItemList`, `components/ItemRow`, `components/ItemDrawerProvider` (wraps a page), `components/ItemDrawerTrigger` (wraps a card); `queries` (`getPinnedItems`, `getRecentItems`, `getItemsByType`, `getItemDetail`, `getItemStats`); `schemas` (`itemIdSchema`)
-- **Inside the feature only, so far:** `actions/item` (`updateItem`, `deleteItem`), `services/item` (`updateUserItem`, `deleteUserItem`), `schemas` (`updateItemSchema`), `domain/item-fields` (the editable fields per type, the tag input parser)
-- **Private:** the drawer content, its action bar, edit form, delete dialog and skeleton
-- **Will grow with** (from the specs, not built): the create form, the other drawer actions (favorite, pin, copy), pin and favorite flags, the file and image views, pagination of items. It will use `item-types`, `files`, `editor`, `ai` and `billing`
+- **Owns:** `Item`, `Tag`, `ItemTag`; the list, cards and rows of items; the create dialog; the item drawer (the detail view, fetched from `app/api/items/[id]`, and editing it in place, deleting it); the item queries, the item create, update and delete
+- **Uses today:** `item-types` (types, `itemTypeSelect`, `getItemTypeByName` in the create service), `auth` (`getSessionUser` in the actions)
+- **Entry points used from outside:** `components/ItemList`, `components/ItemRow`, `components/ItemDrawerProvider` (wraps a page), `components/ItemDrawerTrigger` (wraps a card), `components/CreateItemDialog` (the top bar's New Item button); `queries` (`getPinnedItems`, `getRecentItems`, `getItemsByType`, `getItemDetail`, `getItemStats`); `schemas` (`itemIdSchema`)
+- **Inside the feature only, so far:** `actions/item` (`createItem`, `updateItem`, `deleteItem`), `services/item` (`createUserItem`, `updateUserItem`, `deleteUserItem`), `schemas` (`createItemSchema`, `updateItemSchema`), `domain/item-fields` (the editable fields per type, the creatable types, the content type of a new item, the tag input parser)
+- **Private:** the drawer content, its action bar, edit form, delete dialog and skeleton; the `Field` wrapper shared by the create and edit forms
+- **Will grow with** (from the specs, not built): the other drawer actions (favorite, pin, copy), pin and favorite flags, the file and image views, pagination of items. It will use `item-types`, `files`, `editor`, `ai` and `billing`
 
 ### collections
 
@@ -55,7 +55,7 @@ A module writes only the models it owns and reads only its own models. A relatio
 ### app-shell
 
 - **Owns:** nothing in the database; the frame of every authenticated page: `DashboardShell`, top bar, sidebar
-- **Uses today:** `auth` (session, `UserAvatar`, sign-out), `item-types`, `collections`
+- **Uses today:** `auth` (session, `UserAvatar`, sign-out), `item-types`, `items` (`CreateItemDialog` in the top bar), `collections`
 - **Entry points used from outside:** `components/DashboardShell`, `components/Sidebar`, `components/SidebarSkeleton`
 - **Will grow with:** the Cmd+K trigger in the top bar
 - **Today:** the PRO label next to the file and image types is a private component of the sidebar's types section; it is not shared

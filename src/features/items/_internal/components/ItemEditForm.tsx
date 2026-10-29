@@ -1,18 +1,13 @@
 "use client";
 
-import {
-  useId,
-  useState,
-  useTransition,
-  type FormEvent,
-  type ReactNode,
-} from "react";
+import { useState, useTransition, type FormEvent, type ReactNode } from "react";
 import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Field } from "@/features/items/_internal/components/Field";
 import { updateItem } from "@/features/items/actions/item";
 import {
   editableFields,
@@ -154,28 +149,5 @@ export function ItemEditForm({
         {children}
       </div>
     </form>
-  );
-}
-
-interface FieldProps {
-  label: string;
-  hint?: string;
-  children: (id: string) => ReactNode;
-}
-
-function Field({ label, hint, children }: FieldProps) {
-  const id = useId();
-
-  return (
-    <div className="space-y-2">
-      <label
-        htmlFor={id}
-        className="block text-sm font-medium text-muted-foreground"
-      >
-        {label}
-      </label>
-      {children(id)}
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
-    </div>
   );
 }

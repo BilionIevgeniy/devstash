@@ -1,8 +1,29 @@
 import { describe, expect, it } from "vitest";
 import {
+  CREATABLE_TYPES,
+  contentTypeFor,
   editableFields,
   parseTagInput,
 } from "@/features/items/domain/item-fields";
+
+describe("CREATABLE_TYPES", () => {
+  it("leaves out the types that need an upload", () => {
+    expect(CREATABLE_TYPES).not.toContain("file");
+    expect(CREATABLE_TYPES).not.toContain("image");
+  });
+});
+
+describe("contentTypeFor", () => {
+  it.each([
+    ["link", "URL"],
+    ["snippet", "TEXT"],
+    ["command", "TEXT"],
+    ["prompt", "TEXT"],
+    ["note", "TEXT"],
+  ])("stores a %s as %s", (typeName, contentType) => {
+    expect(contentTypeFor(typeName)).toBe(contentType);
+  });
+});
 
 describe("editableFields", () => {
   it.each([
