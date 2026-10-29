@@ -10,10 +10,11 @@ Read the following to get the full context of the project:
 
 - @context/project-overview.md
 - @context/coding-standards.md
+- @context/architecture-rules.md
 - @context/ai-interaction.md
 - @context/current-feature.md
 
-The structure of `src/` is explained for newcomers in `docs/architecture.md` (not auto-loaded: read it when adding a feature). The rules stay in `context/coding-standards.md`, and the guide is updated whenever the structure changes.
+The structure of `src/` is explained for newcomers in `docs/architecture.md` (not auto-loaded: read it when adding a feature; its Reference section holds the operations table, background work, public API and known risks). The short rulebook is `context/architecture-rules.md`, and the guide is updated whenever the structure changes.
 
 Work deferred on purpose is listed in `context/todo.md` (not auto-loaded: read it when the project is feature-complete or when asked what is left).
 

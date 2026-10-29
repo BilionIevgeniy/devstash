@@ -5,18 +5,18 @@ import nextTs from "eslint-config-next/typescript";
 
 const APP = "./src/app";
 
-// Layer order, lowest to highest (see context/coding-standards.md):
+// Layer order, lowest to highest (see context/architecture-rules.md):
 // lib and components/ui < features by rank < app.
 // A feature may import only features of a lower rank; features of the same rank
 // must not import each other. Only folders that exist are listed: a planned
-// feature keeps its reserved rank in coding-standards.md and gets a row here in
+// feature keeps its planned rank in architecture-rules.md and gets a row here in
 // the commit that creates its folder.
 const FEATURE_RANKS = {
   auth: 1,
-  "item-types": 4,
-  items: 6,
-  collections: 7,
-  "app-shell": 10,
+  "item-types": 3,
+  items: 5,
+  collections: 6,
+  "app-shell": 9,
 };
 const FEATURE_NAMES = Object.keys(FEATURE_RANKS);
 
@@ -156,7 +156,7 @@ const eslintConfig = defineConfig([
   {
     // These rules rely on eslint-plugin-import, which declares ESLint up to
     // ^9: keep ESLint on 9 until it supports 10 (see "Known risks" in
-    // context/coding-standards.md).
+    // docs/architecture.md).
     files: ["src/**/*.{ts,tsx}"],
     rules: {
       "import/no-restricted-paths": [

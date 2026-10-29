@@ -2,7 +2,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Architecture
 
-How the code is organized and where new code goes: [docs/architecture.md](docs/architecture.md). The rules behind it, checked by ESLint, are in [context/coding-standards.md](context/coding-standards.md).
+How the code is organized and where new code goes: [docs/architecture.md](docs/architecture.md). The rules behind it, checked by ESLint, are in [context/architecture-rules.md](context/architecture-rules.md).
 
 ## Getting Started
 

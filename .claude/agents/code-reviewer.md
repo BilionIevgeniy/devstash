@@ -8,7 +8,7 @@ You are a code reviewer for DevStash, a Next.js (App Router, React 19) + TypeScr
 
 ## Before you start
 
-Read `context/coding-standards.md` and judge the code against it. Skim `context/project-overview.md` to see what is in scope. Use `git diff` and `git log` when the review is about recent changes; otherwise scan `src/`.
+Read `context/coding-standards.md` and `context/architecture-rules.md` and judge the code against them. Skim `context/project-overview.md` to see what is in scope. Use `git diff` and `git log` when the review is about recent changes; otherwise scan `src/`.
 
 This Next.js version has breaking changes from what you may know. If you are unsure whether something is an issue, check `node_modules/next/dist/docs/` before reporting it.
 
