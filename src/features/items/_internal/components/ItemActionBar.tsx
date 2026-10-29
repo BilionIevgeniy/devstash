@@ -1,21 +1,29 @@
-import { Copy, Pencil, Pin, Star, Trash2 } from "lucide-react";
+import { Copy, Pencil, Pin, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { DeleteItemDialog } from "@/features/items/_internal/components/DeleteItemDialog";
 import { cn } from "@/lib/utils";
 
 interface ItemActionBarProps {
+  itemId: string;
+  title: string;
   isFavorite: boolean;
   isPinned: boolean;
   canEdit: boolean;
   onEdit: () => void;
+  onDelete: (id: string) => void;
 }
 
-// Only Edit works so far: the other actions are wired up in a later feature.
+// Only Edit and Delete work so far: the other actions are wired up in a later
+// feature.
 export function ItemActionBar({
+  itemId,
+  title,
   isFavorite,
   isPinned,
   canEdit,
   onEdit,
+  onDelete,
 }: ItemActionBarProps) {
   return (
     <div className="flex items-center gap-1 border-b px-6 py-3">
@@ -46,15 +54,12 @@ export function ItemActionBar({
         <Pencil />
         Edit
       </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="text-destructive hover:text-destructive"
-      >
-        <Trash2 />
-        <span className="sr-only">Delete</span>
-      </Button>
+      <DeleteItemDialog
+        itemId={itemId}
+        title={title}
+        disabled={!canEdit}
+        onDelete={onDelete}
+      />
     </div>
   );
 }
