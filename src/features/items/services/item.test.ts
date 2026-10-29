@@ -1,13 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { update, findFirst } = vi.hoisted(() => ({
+const { update, remove, findFirst } = vi.hoisted(() => ({
   update: vi.fn(),
+  remove: vi.fn(),
   findFirst: vi.fn(),
 }));
-vi.mock("@/lib/prisma", () => ({ prisma: { item: { update, findFirst } } }));
+vi.mock("@/lib/prisma", () => ({
+  prisma: { item: { update, delete: remove, findFirst } },
+}));
 
 import { Prisma } from "@/generated/prisma/client";
-import { updateUserItem } from "@/features/items/services/item";
+import {
+  deleteUserItem,
+  updateUserItem,
+} from "@/features/items/services/item";
 
 const rawItem = {
   id: "item-1",
@@ -131,5 +137,34 @@ describe("updateUserItem", () => {
     await expect(
       updateUserItem("user-1", "item-1", { title: "Renamed", tags: [] }),
     ).rejects.toThrow("failed");
+  });
+});
+
+describe("deleteUserItem", () => {
+  beforeEach(() => {
+    remove.mockReset().mockResolvedValue({ id: "item-1" });
+  });
+
+  it("deletes only an item that belongs to the caller", async () => {
+    const result = await deleteUserItem("user-1", "item-1");
+
+    expect(remove).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: "item-1", userId: "user-1" } }),
+    );
+    expect(result).toEqual({ success: true, error: null });
+  });
+
+  it("answers not found when the item is missing or someone else's", async () => {
+    remove.mockRejectedValue(prismaError("P2025"));
+
+    const result = await deleteUserItem("user-1", "item-1");
+
+    expect(result).toEqual({ success: false, error: "Item not found" });
+  });
+
+  it("throws errors other than not found", async () => {
+    remove.mockRejectedValue(prismaError("P2003"));
+
+    await expect(deleteUserItem("user-1", "item-1")).rejects.toThrow("failed");
   });
 });

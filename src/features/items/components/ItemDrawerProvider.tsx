@@ -2,25 +2,35 @@
 
 import {
   createContext,
+  startTransition,
   useCallback,
   useContext,
   useMemo,
+  useOptimistic,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
   ItemDrawerContent,
   type ItemDetailState,
 } from "@/features/items/_internal/components/ItemDrawerContent";
+import { deleteItem } from "@/features/items/actions/item";
 import type { ActionResult } from "@/lib/action-result";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
+const DELETED_MESSAGE = "Item deleted";
+const DELETE_FAILED_MESSAGE = "Couldn't delete the item.";
+const NO_HIDDEN_IDS: ReadonlySet<string> = new Set();
+
 interface ItemDrawerContextValue {
   open: (item: DashboardItem) => void;
+  /** Items being deleted: their cards are hidden until the fresh page arrives. */
+  hiddenIds: ReadonlySet<string>;
 }
 
 const ItemDrawerContext = createContext<ItemDrawerContextValue | null>(null);
@@ -53,6 +63,10 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
   const requestRef = useRef<AbortController | null>(null);
   const openItemIdRef = useRef<string | null>(null);
   const router = useRouter();
+  const [hiddenIds, hideItem] = useOptimistic(
+    NO_HIDDEN_IDS,
+    (ids, id: string): ReadonlySet<string> => new Set(ids).add(id),
+  );
 
   const open = useCallback(async (next: DashboardItem) => {
     requestRef.current?.abort();
@@ -101,7 +115,24 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
     setIsEditing(false);
   }
 
-  const value = useMemo(() => ({ open }), [open]);
+  // The card is hidden while the transition runs. On success the action's
+  // refresh brings the page without the item before the transition ends; on
+  // failure the optimistic set reverts and the card comes back.
+  function handleDelete(id: string) {
+    startTransition(async () => {
+      hideItem(id);
+      handleOpenChange(false);
+      try {
+        const result = await deleteItem(id);
+        if (result.success) toast.success(DELETED_MESSAGE);
+        else toast.error(result.error ?? DELETE_FAILED_MESSAGE);
+      } catch {
+        toast.error(DELETE_FAILED_MESSAGE);
+      }
+    });
+  }
+
+  const value = useMemo(() => ({ open, hiddenIds }), [open, hiddenIds]);
 
   return (
     <ItemDrawerContext.Provider value={value}>
@@ -119,6 +150,7 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
               onEdit={() => setIsEditing(true)}
               onCancelEdit={() => setIsEditing(false)}
               onSaved={handleSaved}
+              onDelete={handleDelete}
             />
           )}
         </SheetContent>

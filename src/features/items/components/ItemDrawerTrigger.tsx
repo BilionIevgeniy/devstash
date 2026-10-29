@@ -13,7 +13,9 @@ interface ItemDrawerTriggerProps {
 // A div with role="button" rather than a <button>: the cards are <article>
 // elements, which a button may not contain.
 export function ItemDrawerTrigger({ item, children }: ItemDrawerTriggerProps) {
-  const { open } = useItemDrawer();
+  const { open, hiddenIds } = useItemDrawer();
+
+  if (hiddenIds.has(item.id)) return null;
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Enter" || event.key === " ") {

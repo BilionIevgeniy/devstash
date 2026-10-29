@@ -61,3 +61,24 @@ export async function updateUserItem(
   if (!item) return { success: false, error: ITEM_NOT_FOUND, data: null };
   return { success: true, error: null, data: item };
 }
+
+// As in the update, the owner in the where makes someone else's item look
+// missing. Its tag and collection links go with it (onDelete: Cascade).
+export async function deleteUserItem(
+  userId: string,
+  itemId: string,
+): Promise<OperationResult> {
+  try {
+    await prisma.item.delete({
+      where: { id: itemId, userId },
+      select: { id: true },
+    });
+  } catch (error) {
+    if (isRecordNotFound(error)) {
+      return { success: false, error: ITEM_NOT_FOUND };
+    }
+    throw error;
+  }
+
+  return { success: true, error: null };
+}

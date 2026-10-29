@@ -37,12 +37,12 @@ A module writes only the models it owns and reads only its own models. A relatio
 
 ### items
 
-- **Owns:** `Item`, `Tag`, `ItemTag`; the list, cards and rows of items; the item drawer (the detail view, fetched from `app/api/items/[id]`, and editing it in place); the item queries and the item update
-- **Uses today:** `item-types`, `auth` (`getSessionUser` in the update action)
+- **Owns:** `Item`, `Tag`, `ItemTag`; the list, cards and rows of items; the item drawer (the detail view, fetched from `app/api/items/[id]`, and editing it in place, deleting it); the item queries, the item update and delete
+- **Uses today:** `item-types`, `auth` (`getSessionUser` in the update and delete actions)
 - **Entry points used from outside:** `components/ItemList`, `components/ItemRow`, `components/ItemDrawerProvider` (wraps a page), `components/ItemDrawerTrigger` (wraps a card); `queries` (`getPinnedItems`, `getRecentItems`, `getItemsByType`, `getItemDetail`, `getItemStats`); `schemas` (`itemIdSchema`)
-- **Inside the feature only, so far:** `actions/item` (`updateItem`), `services/item` (`updateUserItem`), `schemas` (`updateItemSchema`), `domain/item-fields` (the editable fields per type, the tag input parser)
-- **Private:** the drawer content, its action bar, edit form and skeleton
-- **Will grow with** (from the specs, not built): the create form, the other drawer actions (favorite, pin, copy, delete), pin and favorite flags, the file and image views, pagination of items. It will use `item-types`, `files`, `editor`, `ai` and `billing`
+- **Inside the feature only, so far:** `actions/item` (`updateItem`, `deleteItem`), `services/item` (`updateUserItem`, `deleteUserItem`), `schemas` (`updateItemSchema`), `domain/item-fields` (the editable fields per type, the tag input parser)
+- **Private:** the drawer content, its action bar, edit form, delete dialog and skeleton
+- **Will grow with** (from the specs, not built): the create form, the other drawer actions (favorite, pin, copy), pin and favorite flags, the file and image views, pagination of items. It will use `item-types`, `files`, `editor`, `ai` and `billing`
 
 ### collections
 

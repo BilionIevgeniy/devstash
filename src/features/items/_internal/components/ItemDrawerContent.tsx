@@ -23,6 +23,7 @@ interface ItemDrawerContentProps {
   onEdit: () => void;
   onCancelEdit: () => void;
   onSaved: (detail: ItemDetailJson) => void;
+  onDelete: (id: string) => void;
 }
 
 // The header and tags come from the card the user clicked, so they show at
@@ -34,6 +35,7 @@ export function ItemDrawerContent({
   onEdit,
   onCancelEdit,
   onSaved,
+  onDelete,
 }: ItemDrawerContentProps) {
   const detail = state.status === "ready" ? state.detail : null;
 
@@ -57,10 +59,13 @@ export function ItemDrawerContent({
     <>
       <ItemDrawerHeader item={item} language={detail?.language ?? null} />
       <ItemActionBar
+        itemId={item.id}
+        title={item.title}
         isFavorite={item.isFavorite}
         isPinned={item.isPinned}
         canEdit={detail !== null}
         onEdit={onEdit}
+        onDelete={onDelete}
       />
       <div className="flex-1 space-y-6 overflow-y-auto px-6 pb-6">
         {item.description && (
