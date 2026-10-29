@@ -6,6 +6,7 @@
 - No `any` types - use proper typing or `unknown`
 - Define interfaces for all props, API responses, and data models
 - Use type inference where obvious, explicit types where helpful
+- No deprecated APIs: before using a library API, check it against the installed version (its `.d.ts` in `node_modules`, or Context7), not memory. `npm run lint` fails on `@deprecated` APIs
 
 ## React
 

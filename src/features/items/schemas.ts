@@ -5,7 +5,8 @@ import {
   editableFields,
 } from "@/features/items/domain/item-fields";
 
-export const itemIdSchema = z.cuid("Invalid item id");
+// Prisma generates CUID v1 ids, which also match the cuid2 format.
+export const itemIdSchema = z.cuid2("Invalid item id");
 
 function emptyToNull(value: string): string | null {
   return value === "" ? null : value;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, type FormEvent, type ReactNode } from "react";
+import { useState, useTransition, type SubmitEvent, type ReactNode } from "react";
 import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -45,7 +45,7 @@ export function ItemEditForm({
   const [isSaving, startSaving] = useTransition();
 
   // Only the fields of this type are sent, so a hidden field is never cleared.
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     startSaving(async () => {
       const result = await updateItem(item.id, {

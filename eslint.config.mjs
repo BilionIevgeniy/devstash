@@ -173,6 +173,15 @@ const eslintConfig = defineConfig([
       "import/no-cycle": ["error", { ignoreExternal: true }],
     },
   },
+  {
+    // no-deprecated reads the @deprecated tags of the installed packages, so it
+    // needs type information.
+    files: ["src/**/*.{ts,tsx}"],
+    languageOptions: {
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+    rules: { "@typescript-eslint/no-deprecated": "error" },
+  },
   // no-restricted-imports: a later block replaces an earlier one for the files
   // it matches, so every block repeats the vendor SDK ban through restrictImports.
   {
