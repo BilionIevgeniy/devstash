@@ -42,7 +42,7 @@ export function TopBar({ onToggleSidebar, onOpenDrawer }: TopBarProps) {
           ⌘K
         </kbd>
       </div>
-      <CreateItemDialog />
+      <CreateItemDialog className="ml-auto" />
     </header>
   );
 }

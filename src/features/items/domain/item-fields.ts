@@ -1,10 +1,13 @@
 export interface EditableFields {
   content: boolean;
+  /** The content is code: shown and edited in the code editor. */
+  codeEditor: boolean;
   language: boolean;
   url: boolean;
 }
 
 const CONTENT_TYPES = ["snippet", "prompt", "command", "note"];
+const CODE_TYPES = ["snippet", "command"];
 const LANGUAGE_TYPES = ["snippet", "command"];
 const URL_TYPES = ["link"];
 const TAG_SEPARATOR = ",";
@@ -22,11 +25,16 @@ export const CREATABLE_TYPES = [
 
 export type CreatableTypeName = (typeof CREATABLE_TYPES)[number];
 
+export function isCreatableType(typeName: string): typeName is CreatableTypeName {
+  return (CREATABLE_TYPES as readonly string[]).includes(typeName);
+}
+
 // Which type-specific fields the edit form shows. File, image and custom types
 // edit only the fields every item has.
 export function editableFields(typeName: string): EditableFields {
   return {
     content: CONTENT_TYPES.includes(typeName),
+    codeEditor: CODE_TYPES.includes(typeName),
     language: LANGUAGE_TYPES.includes(typeName),
     url: URL_TYPES.includes(typeName),
   };

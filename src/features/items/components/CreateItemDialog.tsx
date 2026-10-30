@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { CodeEditor } from "@/features/editor/components/CodeEditor";
 import { Field } from "@/features/items/_internal/components/Field";
 import { createItem } from "@/features/items/actions/item";
 import {
@@ -37,37 +38,51 @@ const DEFAULT_TYPE: CreatableTypeName = "snippet";
 const CREATED_MESSAGE = "Item created";
 const CREATE_FAILED_MESSAGE = "Couldn't create the item";
 
-export function CreateItemDialog() {
+interface CreateItemDialogProps {
+  /** The type chosen when the dialog opens; also names the button. */
+  defaultType?: CreatableTypeName;
+  className?: string;
+}
+
+export function CreateItemDialog({
+  defaultType,
+  className,
+}: CreateItemDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const label = `New ${defaultType ?? "item"}`;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="ml-auto">
+        <Button className={className}>
           <Plus />
-          New Item
+          <span className="capitalize">{label}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New Item</DialogTitle>
+          <DialogTitle className="capitalize">{label}</DialogTitle>
           <DialogDescription>
             Save a snippet, prompt, command, note or link.
           </DialogDescription>
         </DialogHeader>
         {/* Unmounted with the closed dialog, so every open starts empty. */}
-        <CreateItemForm onCreated={() => setIsOpen(false)} />
+        <CreateItemForm
+          initialType={defaultType ?? DEFAULT_TYPE}
+          onCreated={() => setIsOpen(false)}
+        />
       </DialogContent>
     </Dialog>
   );
 }
 
 interface CreateItemFormProps {
+  initialType: CreatableTypeName;
   onCreated: () => void;
 }
 
-function CreateItemForm({ onCreated }: CreateItemFormProps) {
-  const [typeName, setTypeName] = useState<CreatableTypeName>(DEFAULT_TYPE);
+function CreateItemForm({ initialType, onCreated }: CreateItemFormProps) {
+  const [typeName, setTypeName] = useState<CreatableTypeName>(initialType);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
@@ -173,14 +188,23 @@ function CreateItemForm({ onCreated }: CreateItemFormProps) {
       )}
       {fields.content && (
         <Field label="Content">
-          {(id) => (
-            <Textarea
-              id={id}
-              value={content}
-              onChange={(event) => setContent(event.target.value)}
-              className="min-h-40 font-mono text-xs md:text-xs"
-            />
-          )}
+          {(id) =>
+            fields.codeEditor ? (
+              <CodeEditor
+                value={content}
+                language={language}
+                onChange={setContent}
+                ariaLabel="Content"
+              />
+            ) : (
+              <Textarea
+                id={id}
+                value={content}
+                onChange={(event) => setContent(event.target.value)}
+                className="min-h-40 font-mono text-xs md:text-xs"
+              />
+            )
+          }
         </Field>
       )}
       <Field label="Tags" hint="Separate tags with commas">

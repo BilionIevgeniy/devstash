@@ -7,8 +7,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { CodeEditor } from "@/features/editor/components/CodeEditor";
 import { Field } from "@/features/items/_internal/components/Field";
 import { updateItem } from "@/features/items/actions/item";
+import {
+  hasItemChanges,
+  type ItemFormValues,
+} from "@/features/items/domain/item-changes";
 import {
   editableFields,
   parseTagInput,
@@ -36,17 +41,34 @@ export function ItemEditForm({
   children,
 }: ItemEditFormProps) {
   const fields = editableFields(item.type.name);
-  const [title, setTitle] = useState(item.title);
-  const [description, setDescription] = useState(item.description ?? "");
-  const [tags, setTags] = useState(item.tags.join(TAG_JOINER));
-  const [content, setContent] = useState(detail.content ?? "");
-  const [language, setLanguage] = useState(detail.language ?? "");
-  const [url, setUrl] = useState(detail.url ?? "");
+  const initial: ItemFormValues = {
+    title: item.title,
+    description: item.description ?? "",
+    tags: item.tags.join(TAG_JOINER),
+    content: detail.content ?? "",
+    language: detail.language ?? "",
+    url: detail.url ?? "",
+  };
+  const [title, setTitle] = useState(initial.title);
+  const [description, setDescription] = useState(initial.description);
+  const [tags, setTags] = useState(initial.tags);
+  const [content, setContent] = useState(initial.content);
+  const [language, setLanguage] = useState(initial.language);
+  const [url, setUrl] = useState(initial.url);
   const [isSaving, startSaving] = useTransition();
+  const isChanged = hasItemChanges(fields, initial, {
+    title,
+    description,
+    tags,
+    content,
+    language,
+    url,
+  });
 
   // Only the fields of this type are sent, so a hidden field is never cleared.
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!isChanged) return;
     startSaving(async () => {
       const result = await updateItem(item.id, {
         title,
@@ -77,7 +99,10 @@ export function ItemEditForm({
           <X />
           Cancel
         </Button>
-        <Button type="submit" disabled={isSaving || title.trim() === ""}>
+        <Button
+          type="submit"
+          disabled={isSaving || title.trim() === "" || !isChanged}
+        >
           <Check />
           {isSaving ? "Saving..." : "Save"}
         </Button>
@@ -127,14 +152,23 @@ export function ItemEditForm({
         )}
         {fields.content && (
           <Field label="Content">
-            {(id) => (
-              <Textarea
-                id={id}
-                value={content}
-                onChange={(event) => setContent(event.target.value)}
-                className="min-h-40 font-mono text-xs md:text-xs"
-              />
-            )}
+            {(id) =>
+              fields.codeEditor ? (
+                <CodeEditor
+                  value={content}
+                  language={language}
+                  onChange={setContent}
+                  ariaLabel="Content"
+                />
+              ) : (
+                <Textarea
+                  id={id}
+                  value={content}
+                  onChange={(event) => setContent(event.target.value)}
+                  className="min-h-40 font-mono text-xs md:text-xs"
+                />
+              )
+            }
           </Field>
         )}
         <Field label="Tags" hint="Separate tags with commas">

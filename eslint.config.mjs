@@ -14,6 +14,7 @@ const APP = "./src/app";
 const FEATURE_RANKS = {
   auth: 1,
   "item-types": 3,
+  editor: 3,
   items: 5,
   collections: 6,
   "app-shell": 9,
