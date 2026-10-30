@@ -13,7 +13,7 @@ A module gets its section here in the commit with its first real code, together 
 | Item, Tag, ItemTag | `items` | `Tag` becomes its own module only when a second feature needs it |
 | Collection, ItemCollection | `collections` | |
 | Subscription, StripeEvent | `billing` (planned) | `isPro` is derived from the subscription status; nothing reads the old `User` columns yet |
-| UserPreference | `editor` (planned) | One row per user, typed columns, an absent row means defaults, created by upsert |
+| UserPreference | `editor` (model planned) | One row per user, typed columns, an absent row means defaults, created by upsert |
 
 A module writes only the models it owns and reads only its own models. A relation `select` of scalar columns through its own relation is fine (`items` selects the type name, icon and color through `Item.type`, and the id and name of each collection through `Item.collections`). Everything else goes through the owner's queries or services.
 
@@ -38,9 +38,9 @@ A module writes only the models it owns and reads only its own models. A relatio
 ### items
 
 - **Owns:** `Item`, `Tag`, `ItemTag`; the list, cards and rows of items; the create dialog; the item drawer (the detail view, fetched from `app/api/items/[id]`, and editing it in place, deleting it); the item queries, the item create, update and delete
-- **Uses today:** `item-types` (types, `itemTypeSelect`, `getItemTypeByName` in the create service), `auth` (`getSessionUser` in the actions)
-- **Entry points used from outside:** `components/ItemList`, `components/ItemRow`, `components/ItemDrawerProvider` (wraps a page), `components/ItemDrawerTrigger` (wraps a card), `components/CreateItemDialog` (the top bar's New Item button); `queries` (`getPinnedItems`, `getRecentItems`, `getItemsByType`, `getItemDetail`, `getItemStats`); `schemas` (`itemIdSchema`)
-- **Inside the feature only, so far:** `actions/item` (`createItem`, `updateItem`, `deleteItem`), `services/item` (`createUserItem`, `updateUserItem`, `deleteUserItem`), `schemas` (`createItemSchema`, `updateItemSchema`), `domain/item-fields` (the editable fields per type, the creatable types, the content type of a new item, the tag input parser)
+- **Uses today:** `item-types` (types, `itemTypeSelect`, `getItemTypeByName` in the create service), `auth` (`getSessionUser` in the actions), `editor` (`CodeEditor` for the content of snippets and commands, in the create dialog, the edit form and the drawer)
+- **Entry points used from outside:** `components/ItemList`, `components/ItemRow`, `components/ItemDrawerProvider` (wraps a page), `components/ItemDrawerTrigger` (wraps a card), `components/CreateItemDialog` (the top bar's New Item button, and the New &lt;Type&gt; button of a type page through `defaultType`); `domain/item-fields` (`isCreatableType`, which decides whether a type page shows that button); `queries` (`getPinnedItems`, `getRecentItems`, `getItemsByType`, `getItemDetail`, `getItemStats`); `schemas` (`itemIdSchema`)
+- **Inside the feature only, so far:** `actions/item` (`createItem`, `updateItem`, `deleteItem`), `services/item` (`createUserItem`, `updateUserItem`, `deleteUserItem`), `schemas` (`createItemSchema`, `updateItemSchema`), `domain/item-fields` (the editable fields per type, including which use the code editor, the creatable types, the content type of a new item, the tag input parser), `domain/item-changes` (whether the edit form differs from the saved item, so an unchanged form is not saved)
 - **Private:** the drawer content, its action bar, edit form, delete dialog and skeleton; the `Field` wrapper shared by the create and edit forms
 - **Will grow with** (from the specs, not built): the other drawer actions (favorite, pin, copy), pin and favorite flags, the file and image views, pagination of items. It will use `item-types`, `files`, `editor`, `ai` and `billing`
 
@@ -51,6 +51,14 @@ A module writes only the models it owns and reads only its own models. A relatio
 - **Entry points used from outside:** `components/CollectionCard`; `queries` (`getRecentCollections`, `getSidebarCollections`, `getCollectionStats`); `types`
 - **Known deviation:** `queries.ts` calls `prisma.itemType` directly; it should use a query of `item-types`
 - **Will grow with:** the `/collections` and `/collections/[id]` pages, the collection favorite, pagination
+
+### editor
+
+- **Owns:** the editors of item content: `CodeEditor` (Monaco, loaded from the jsDelivr CDN by `@monaco-editor/react`) with its dark theme, header (window dots, language, copy) and fluid height up to 400px; the mapping from the free-text language field to the editor's language id
+- **Uses today:** nothing
+- **Entry points used from outside:** `components/CodeEditor` (used by `items`)
+- **Private:** `_internal/domain/code-language` (`editorLanguage`)
+- **Will grow with** (from the specs, not built): `UserPreference` and the preferences provider, form and action (`EditorPreferencesProvider` mounted in `app/(app)/layout.tsx`, `EditorPreferencesSection`), `MarkdownEditor`, `MarkdownPreview`. It will use `auth`. It cannot import `ai`: the Explain button reaches the editor header through a slot that `items` fills
 
 ### app-shell
 
@@ -78,13 +86,6 @@ Each one is created in the commit with its first code. "Expects to use" is what 
 - **Expects to use:** `auth`, `billing`
 - **Entry points:** the upload action, `components/FileUpload`
 - **First code:** the file and image upload spec. The browser sends the file straight to R2; deletes remove the object first, then the row ([ADR 0004](adr/0004-direct-upload-to-r2.md)). A `FileDeletion` outbox is the upgrade path, not built
-
-### editor
-
-- **Owns:** `UserPreference`; `CodeEditor` (Monaco), `MarkdownEditor`, `MarkdownPreview`; the preferences provider, form and action
-- **Expects to use:** `auth`
-- **Entry points:** the editor components, `EditorPreferencesProvider` (mounted in `app/(app)/layout.tsx`, fed by a cached read), `EditorPreferencesSection`
-- **First code:** the code editor spec. It cannot import `ai`: the Explain button reaches the editor header through a slot that `items` fills
 
 ### ai
 

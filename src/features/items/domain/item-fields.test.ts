@@ -3,6 +3,7 @@ import {
   CREATABLE_TYPES,
   contentTypeFor,
   editableFields,
+  isCreatableType,
   parseTagInput,
 } from "@/features/items/domain/item-fields";
 
@@ -10,6 +11,19 @@ describe("CREATABLE_TYPES", () => {
   it("leaves out the types that need an upload", () => {
     expect(CREATABLE_TYPES).not.toContain("file");
     expect(CREATABLE_TYPES).not.toContain("image");
+  });
+});
+
+describe("isCreatableType", () => {
+  it.each(["snippet", "prompt", "command", "note", "link"])(
+    "accepts a %s",
+    (typeName) => {
+      expect(isCreatableType(typeName)).toBe(true);
+    },
+  );
+
+  it.each(["file", "image", "recipe", ""])("rejects %j", (typeName) => {
+    expect(isCreatableType(typeName)).toBe(false);
   });
 });
 
@@ -27,13 +41,13 @@ describe("contentTypeFor", () => {
 
 describe("editableFields", () => {
   it.each([
-    ["snippet", { content: true, language: true, url: false }],
-    ["command", { content: true, language: true, url: false }],
-    ["prompt", { content: true, language: false, url: false }],
-    ["note", { content: true, language: false, url: false }],
-    ["link", { content: false, language: false, url: true }],
-    ["file", { content: false, language: false, url: false }],
-    ["image", { content: false, language: false, url: false }],
+    ["snippet", { content: true, codeEditor: true, language: true, url: false }],
+    ["command", { content: true, codeEditor: true, language: true, url: false }],
+    ["prompt", { content: true, codeEditor: false, language: false, url: false }],
+    ["note", { content: true, codeEditor: false, language: false, url: false }],
+    ["link", { content: false, codeEditor: false, language: false, url: true }],
+    ["file", { content: false, codeEditor: false, language: false, url: false }],
+    ["image", { content: false, codeEditor: false, language: false, url: false }],
   ])("gives the fields of a %s", (typeName, fields) => {
     expect(editableFields(typeName)).toEqual(fields);
   });
@@ -41,6 +55,7 @@ describe("editableFields", () => {
   it("gives no type-specific fields to a type it does not know", () => {
     expect(editableFields("recipe")).toEqual({
       content: false,
+      codeEditor: false,
       language: false,
       url: false,
     });

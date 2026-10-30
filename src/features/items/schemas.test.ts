@@ -12,6 +12,18 @@ describe("itemIdSchema", () => {
     );
   });
 
+  it("accepts the cuid-shaped ids data migrations generate", () => {
+    expect(itemIdSchema.safeParse("c3f2a9b0e1d4c5b6a7980f1e2").success).toBe(
+      true,
+    );
+  });
+
+  it("rejects a UUID", () => {
+    expect(
+      itemIdSchema.safeParse("6659b32e-547a-435b-8f98-25b192d3111f").success,
+    ).toBe(false);
+  });
+
   it("rejects an empty id", () => {
     expect(itemIdSchema.safeParse("").success).toBe(false);
   });

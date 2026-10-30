@@ -5,9 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { typeSlug } from "@/features/item-types/domain/item-type";
+import { CodeEditor } from "@/features/editor/components/CodeEditor";
 import { ItemActionBar } from "@/features/items/_internal/components/ItemActionBar";
 import { ItemDrawerSkeleton } from "@/features/items/_internal/components/ItemDrawerSkeleton";
 import { ItemEditForm } from "@/features/items/_internal/components/ItemEditForm";
+import { editableFields } from "@/features/items/domain/item-fields";
 import { formatLongDate } from "@/lib/utils";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
@@ -77,7 +79,7 @@ export function ItemDrawerContent({
         {state.status === "error" && (
           <p className="text-destructive">Couldn&apos;t load this item.</p>
         )}
-        {detail && <ItemBody detail={detail} />}
+        {detail && <ItemBody typeName={item.type.name} detail={detail} />}
         {item.tags.length > 0 && (
           <Section title="Tags" icon={Tag}>
             <ul className="flex flex-wrap gap-2">
@@ -134,7 +136,14 @@ function ItemDrawerHeader({ item, language }: ItemDrawerHeaderProps) {
   );
 }
 
-function ItemBody({ detail }: { detail: ItemDetailJson }) {
+interface ItemBodyProps {
+  typeName: string;
+  detail: ItemDetailJson;
+}
+
+function ItemBody({ typeName, detail }: ItemBodyProps) {
+  const fields = editableFields(typeName);
+
   return (
     <>
       {detail.url && (
@@ -151,9 +160,18 @@ function ItemBody({ detail }: { detail: ItemDetailJson }) {
       )}
       {detail.content && (
         <Section title="Content">
-          <pre className="overflow-x-auto rounded-md border bg-muted/40 p-4 font-mono text-xs">
-            {detail.content}
-          </pre>
+          {fields.codeEditor ? (
+            <CodeEditor
+              value={detail.content}
+              language={detail.language}
+              readOnly
+              ariaLabel="Content"
+            />
+          ) : (
+            <pre className="overflow-x-auto rounded-md border bg-muted/40 p-4 font-mono text-xs">
+              {detail.content}
+            </pre>
+          )}
         </Section>
       )}
     </>
