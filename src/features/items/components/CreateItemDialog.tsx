@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, type SubmitEvent } from "react";
+import { useRef, useState, useTransition, type SubmitEvent } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -49,7 +49,23 @@ export function CreateItemDialog({
   className,
 }: CreateItemDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const createdRef = useRef(false);
   const label = `New ${defaultType ?? "item"}`;
+
+  function handleCreated() {
+    createdRef.current = true;
+    setIsOpen(false);
+  }
+
+  // Sonner is outside the transition, so a toast in the form would show
+  // before the refreshed page closes the dialog. Radix calls this once the
+  // dialog has closed, with or without an animation; focus still returns to
+  // the trigger.
+  function handleCloseAutoFocus() {
+    if (!createdRef.current) return;
+    createdRef.current = false;
+    toast.success(CREATED_MESSAGE);
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -59,7 +75,10 @@ export function CreateItemDialog({
           <span className="capitalize">{label}</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="max-h-[90vh] overflow-y-auto"
+        onCloseAutoFocus={handleCloseAutoFocus}
+      >
         <DialogHeader>
           <DialogTitle className="capitalize">{label}</DialogTitle>
           <DialogDescription>
@@ -69,7 +88,7 @@ export function CreateItemDialog({
         {/* Unmounted with the closed dialog, so every open starts empty. */}
         <CreateItemForm
           initialType={defaultType ?? DEFAULT_TYPE}
-          onCreated={() => setIsOpen(false)}
+          onCreated={handleCreated}
         />
       </DialogContent>
     </Dialog>
@@ -112,10 +131,7 @@ function CreateItemForm({ initialType, onCreated }: CreateItemFormProps) {
         // After the await this is no longer part of the transition, so it is
         // wrapped again: the dialog closes in the commit that brings the
         // refreshed page with the new item, not before it.
-        startCreating(() => {
-          toast.success(CREATED_MESSAGE);
-          onCreated();
-        });
+        startCreating(onCreated);
       } else {
         toast.error(result.error ?? CREATE_FAILED_MESSAGE);
       }
