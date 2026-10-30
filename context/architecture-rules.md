@@ -22,20 +22,22 @@ prisma/                 schema, migrations, seed
 
 `lib` and `components/ui` < features by rank < `app`. A feature imports only features of a lower rank; features of the same rank never import each other. `features/**` never imports `@/app/**`; `lib` and `components/ui` never import a feature.
 
-| Rank | Feature | Owns (Prisma models) | Status |
-| ---- | ------- | -------------------- | ------ |
+| Rank | Feature | Owns (Prisma models) | Status (planned: created by) |
+| ---- | ------- | -------------------- | ---------------------------- |
 | 1 | `auth` | User, Account, Session, VerificationToken | exists |
-| 2 | `billing` | Subscription, StripeEvent | planned |
+| 2 | `billing` | Subscription, StripeEvent | planned: the Stripe specs |
 | 3 | `item-types` | ItemType | exists |
-| 3 | `files` | none (objects in R2 under `users/<userId>/`) | planned |
+| 3 | `files` | none (objects in R2 under `users/<userId>/`) | planned: the file and image upload spec |
 | 3 | `editor` | UserPreference | exists |
-| 4 | `ai` | none | planned |
+| 4 | `ai` | none | planned: the auto-tagging or Explain Code spec |
 | 5 | `items` | Item, Tag, ItemTag | exists |
 | 6 | `collections` | Collection, ItemCollection | exists |
-| 7 | `search`, `import-export` | none | planned |
-| 8 | `account` | none (delete-account flow: cancel Stripe, purge files, delete rows) | planned |
+| 7 | `search`, `import-export` | none | planned: the search spec; the import or export spec |
+| 8 | `account` | none (delete-account flow: cancel Stripe, purge files, delete rows) | planned: the change that adds its first higher dependency |
 | 9 | `app-shell` | none | exists |
 | 10 | `app` | routes only | exists |
+
+- Before placing a new file, check [docs/modules.md](../docs/modules.md): what each module **Owns** there (components and flows, not only models) decides where the file goes. "Where does this go" below applies when no module claims it
 
 - The numbers live in `FEATURE_RANKS` in `eslint.config.mjs`, which lists only folders that exist; a guard fails the lint when it and `src/features` differ. A planned feature gets its folder, its row and a section in [docs/modules.md](../docs/modules.md) in the commit with its first real code
 - Not modules: `tags` (stay in `items` until a second feature needs them), `marketing` (`app/(marketing)/`), favorites, pagination, settings, dashboard (pages that compose features)
