@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const auth = vi.hoisted(() => vi.fn());
-const getItemDetail = vi.hoisted(() => vi.fn());
+const getUserItemDetail = vi.hoisted(() => vi.fn());
 vi.mock("@/features/auth/nextauth/auth", () => ({ auth }));
-vi.mock("@/features/items/queries", () => ({ getItemDetail }));
+vi.mock("@/features/items/services/item-detail", () => ({
+  getUserItemDetail,
+}));
 
 import { GET } from "@/app/api/items/[id]/route";
 
@@ -18,7 +20,7 @@ function callGet(id: string) {
 describe("GET /api/items/[id]", () => {
   beforeEach(() => {
     auth.mockReset();
-    getItemDetail.mockReset();
+    getUserItemDetail.mockReset();
     auth.mockResolvedValue({ user: { id: "user-1" } });
   });
 
@@ -28,27 +30,30 @@ describe("GET /api/items/[id]", () => {
     const response = await callGet(VALID_ID);
 
     expect(response.status).toBe(401);
-    expect(getItemDetail).not.toHaveBeenCalled();
+    expect(getUserItemDetail).not.toHaveBeenCalled();
   });
 
   it("answers 400 for an id that is not a cuid", async () => {
     const response = await callGet("not-an-id");
 
     expect(response.status).toBe(400);
-    expect(getItemDetail).not.toHaveBeenCalled();
+    expect(getUserItemDetail).not.toHaveBeenCalled();
   });
 
   it("answers 404 when the item is missing or someone else's", async () => {
-    getItemDetail.mockResolvedValue(null);
+    getUserItemDetail.mockResolvedValue(null);
 
     const response = await callGet(VALID_ID);
 
     expect(response.status).toBe(404);
-    expect(getItemDetail).toHaveBeenCalledWith("user-1", VALID_ID);
+    expect(getUserItemDetail).toHaveBeenCalledWith("user-1", VALID_ID);
   });
 
   it("returns the item for its owner", async () => {
-    getItemDetail.mockResolvedValue({ id: VALID_ID, title: "useAuth Hook" });
+    getUserItemDetail.mockResolvedValue({
+      id: VALID_ID,
+      title: "useAuth Hook",
+    });
 
     const response = await callGet(VALID_ID);
 

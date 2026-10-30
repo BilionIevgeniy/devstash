@@ -1,8 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import { Skeleton } from "@/components/ui/skeleton";
+import { parseTypeSlug } from "@/features/item-types/domain/item-type";
+import { ItemDrawerSkeleton } from "@/features/items/_internal/components/ItemDrawerSkeleton";
 import {
   DELETED_MESSAGE,
   DELETE_FAILED_MESSAGE,
@@ -57,6 +60,25 @@ export function ItemDetailPage({
         variant="page"
         onDelete={handleDelete}
       />
+    </div>
+  );
+}
+
+// The page's loading.tsx gets no params, so the type is read from the URL
+// here, for a file or image skeleton of the right size.
+export function ItemDetailPageSkeleton() {
+  const { type } = useParams<{ type: string }>();
+
+  return (
+    <div className="mx-auto max-w-3xl space-y-6 rounded-lg border bg-card p-6">
+      <div className="flex items-start gap-3">
+        <Skeleton className="size-12 rounded-md" />
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-56" />
+          <Skeleton className="h-5 w-20" />
+        </div>
+      </div>
+      <ItemDrawerSkeleton typeName={parseTypeSlug(type) ?? undefined} />
     </div>
   );
 }

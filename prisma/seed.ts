@@ -49,6 +49,15 @@ async function seedDemoUser() {
   });
 }
 
+// Until Stripe exists, the demo user is the only way to try the Pro features.
+async function seedDemoSubscription(userId: string) {
+  await prisma.subscription.upsert({
+    where: { userId },
+    update: { status: "active" },
+    create: { userId, status: "active" },
+  });
+}
+
 async function seedCollections(userId: string) {
   const idsByName = new Map<string, string>();
   for (const collection of demoCollections) {
@@ -124,6 +133,7 @@ async function seedItems(
 async function main() {
   const typeIds = await seedSystemItemTypes();
   const user = await seedDemoUser();
+  await seedDemoSubscription(user.id);
   const collectionIds = await seedCollections(user.id);
   const tagIds = await seedTags(user.id);
   await seedItems(user.id, typeIds, collectionIds, tagIds);

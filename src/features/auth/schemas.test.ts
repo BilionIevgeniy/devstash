@@ -6,7 +6,6 @@ import {
 import {
   changePasswordSchema,
   credentialsSchema,
-  deleteAccountSchema,
   emailLinkParamsSchema,
   emailSchema,
   registerSchema,
@@ -87,8 +86,11 @@ describe("registerSchema", () => {
   it("accepts a password of exactly the minimum length", () => {
     const password = "a".repeat(MIN_PASSWORD_LENGTH);
     expect(
-      registerSchema.safeParse({ ...valid, password, confirmPassword: password })
-        .success,
+      registerSchema.safeParse({
+        ...valid,
+        password,
+        confirmPassword: password,
+      }).success,
     ).toBe(true);
   });
 
@@ -105,8 +107,11 @@ describe("registerSchema", () => {
   it("accepts a password of exactly the maximum length", () => {
     const password = "a".repeat(MAX_PASSWORD_LENGTH);
     expect(
-      registerSchema.safeParse({ ...valid, password, confirmPassword: password })
-        .success,
+      registerSchema.safeParse({
+        ...valid,
+        password,
+        confirmPassword: password,
+      }).success,
     ).toBe(true);
   });
 
@@ -139,7 +144,10 @@ describe("resetPasswordSchema", () => {
   };
 
   it("accepts a complete reset and normalises the email", () => {
-    const result = resetPasswordSchema.parse({ ...valid, email: " ADA@example.com" });
+    const result = resetPasswordSchema.parse({
+      ...valid,
+      email: " ADA@example.com",
+    });
     expect(result.email).toBe("ada@example.com");
   });
 
@@ -179,7 +187,10 @@ describe("changePasswordSchema", () => {
   });
 
   it("requires the current password", () => {
-    const result = changePasswordSchema.safeParse({ ...valid, currentPassword: "" });
+    const result = changePasswordSchema.safeParse({
+      ...valid,
+      currentPassword: "",
+    });
     expect(messagesAt(result, "currentPassword")).toContain(
       "Current password is required",
     );
@@ -268,19 +279,6 @@ describe("emailLinkParamsSchema", () => {
     const result = emailLinkParamsSchema.safeParse({
       token: "",
       email: "ada@example.com",
-    });
-    expect(result.success).toBe(false);
-  });
-});
-
-describe("deleteAccountSchema", () => {
-  it("accepts a missing password, for accounts that have none", () => {
-    expect(deleteAccountSchema.safeParse({}).success).toBe(true);
-  });
-
-  it("refuses a password longer than the maximum", () => {
-    const result = deleteAccountSchema.safeParse({
-      password: "a".repeat(MAX_PASSWORD_LENGTH + 1),
     });
     expect(result.success).toBe(false);
   });

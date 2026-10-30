@@ -13,10 +13,16 @@ import { cn } from "@/lib/utils";
 
 interface DashboardShellProps {
   sidebar: ReactNode;
+  /** The top bar's New Item button, filled by the layout with the user's plan. */
+  newItemButton: ReactNode;
   children: ReactNode;
 }
 
-export function DashboardShell({ sidebar, children }: DashboardShellProps) {
+export function DashboardShell({
+  sidebar,
+  newItemButton,
+  children,
+}: DashboardShellProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -49,6 +55,7 @@ export function DashboardShell({ sidebar, children }: DashboardShellProps) {
         <TopBar
           onToggleSidebar={() => setIsSidebarOpen((open) => !open)}
           onOpenDrawer={() => setIsDrawerOpen(true)}
+          newItemButton={newItemButton}
         />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>

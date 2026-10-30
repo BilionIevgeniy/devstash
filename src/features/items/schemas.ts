@@ -1,6 +1,10 @@
 import { z } from "zod";
 
 import {
+  fileExtension,
+  FILE_NAME_MAX,
+} from "@/features/files/domain/file-rules";
+import {
   CREATABLE_TYPES,
   editableFields,
 } from "@/features/items/domain/item-fields";
@@ -55,16 +59,57 @@ export const updateItemSchema = z.object({
 
 export type UpdateItemInput = z.infer<typeof updateItemSchema>;
 
+// A finished upload: the key the presign service built and the name the file
+// had. The service confirms the object itself; the name is shown and goes
+// into the download header, so it is bounded here.
+const uploadedFile = z.object({
+  key: z.string().min(1).max(512),
+  name: z
+    .string()
+    .trim()
+    .min(1, "The file needs a name")
+    .max(FILE_NAME_MAX, "The file name is too long"),
+});
+
 // The same fields as an update plus the type. A type that has a URL field
-// needs one; fields its type does not have are dropped by the service.
+// needs one, a file or image type needs its upload, and only those types may
+// carry one; other fields its type does not have are dropped by the service.
 export const createItemSchema = updateItemSchema
-  .extend({ typeName: z.enum(CREATABLE_TYPES, "Choose an item type") })
+  .extend({
+    typeName: z.enum(CREATABLE_TYPES, "Choose an item type"),
+    file: uploadedFile.optional(),
+  })
   .superRefine((input, ctx) => {
-    if (editableFields(input.typeName).url && !input.url) {
+    const fields = editableFields(input.typeName);
+    if (fields.url && !input.url) {
       ctx.addIssue({
         code: "custom",
         path: ["url"],
         message: "URL is required",
+      });
+    }
+    if (fields.file && !input.file) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["file"],
+        message: `Upload the ${fields.file} first`,
+      });
+    }
+    if (!fields.file && input.file) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["file"],
+        message: "This item type has no file",
+      });
+    }
+    if (
+      input.file &&
+      fileExtension(input.file.name) !== fileExtension(input.file.key)
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["file", "name"],
+        message: "The file name does not match the upload",
       });
     }
   });

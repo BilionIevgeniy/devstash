@@ -13,10 +13,13 @@ const APP = "./src/app";
 // the commit that creates its folder.
 const FEATURE_RANKS = {
   auth: 1,
+  billing: 2,
   "item-types": 3,
+  files: 3,
   editor: 3,
   items: 5,
   collections: 6,
+  account: 8,
   "app-shell": 9,
 };
 const FEATURE_NAMES = Object.keys(FEATURE_RANKS);

@@ -1,24 +1,15 @@
 import Link from "next/link";
 
 import { CollapsibleSection } from "@/features/app-shell/_internal/components/CollapsibleSection";
-import { ItemCount, LINK_CLASS } from "@/features/app-shell/_internal/components/sidebar/shared";
+import {
+  ItemCount,
+  LINK_CLASS,
+} from "@/features/app-shell/_internal/components/sidebar/shared";
+import { ProBadge } from "@/features/billing/components/ProBadge";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { typeSlug } from "@/features/item-types/domain/item-type";
-import { Badge } from "@/components/ui/badge";
+import { requiresPro } from "@/features/items/domain/item-fields";
 import type { SidebarItemType } from "@/features/item-types/types";
-
-const PRO_TYPE_NAMES = ["file", "image"];
-
-function ProBadge() {
-  return (
-    <Badge
-      variant="outline"
-      className="h-4 px-1.5 text-[10px] uppercase tracking-wide text-muted-foreground"
-    >
-      PRO
-    </Badge>
-  );
-}
 
 export function TypesSection({ itemTypes }: { itemTypes: SidebarItemType[] }) {
   return (
@@ -33,7 +24,7 @@ export function TypesSection({ itemTypes }: { itemTypes: SidebarItemType[] }) {
                 style={{ color: type.color }}
               />
               <span className="capitalize">{typeSlug(type.name)}</span>
-              {PRO_TYPE_NAMES.includes(type.name) && <ProBadge />}
+              {requiresPro(type.name) && <ProBadge />}
               <ItemCount value={type.itemCount} />
             </Link>
           </li>

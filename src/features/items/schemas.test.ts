@@ -132,9 +132,38 @@ describe("createItemSchema", () => {
     return parse(input).error?.issues[0].message;
   }
 
-  it("rejects a type it does not know or that needs an upload", () => {
+  it("rejects a type it does not know", () => {
     expect(parse({ typeName: "recipe" }).success).toBe(false);
-    expect(parse({ typeName: "file" }).success).toBe(false);
+  });
+
+  describe("file", () => {
+    const file = { key: "users/u1/abc.pdf", name: "Report.PDF" };
+
+    it("requires the upload for a file or image", () => {
+      expect(firstError({ typeName: "file" })).toBe("Upload the file first");
+      expect(firstError({ typeName: "image" })).toBe("Upload the image first");
+    });
+
+    it("accepts a file whose name has the extension of its key", () => {
+      expect(parse({ typeName: "file", file }).data?.file).toEqual(file);
+    });
+
+    it("rejects an upload on a type without one", () => {
+      expect(firstError({ file })).toBe("This item type has no file");
+    });
+
+    it("rejects a name whose extension differs from the key", () => {
+      expect(
+        firstError({ typeName: "file", file: { ...file, name: "notes.txt" } }),
+      ).toBe("The file name does not match the upload");
+    });
+
+    it("rejects a name over 255 characters", () => {
+      const name = `${"a".repeat(252)}.pdf`;
+      expect(parse({ typeName: "file", file: { ...file, name } }).success).toBe(
+        false,
+      );
+    });
   });
 
   it("requires a URL for a link", () => {

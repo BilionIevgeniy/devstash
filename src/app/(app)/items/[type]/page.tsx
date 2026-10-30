@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { getSessionUser } from "@/features/auth/nextauth/session";
+import { getEntitlements } from "@/features/billing/queries";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import {
   parseTypeSlug,
@@ -23,7 +24,10 @@ export default async function ItemsByTypePage({
   const type = await getItemTypeByName(typeName);
   if (!type) notFound();
 
-  const items = await getItemsByType(userId, type.id);
+  const [items, { isPro }] = await Promise.all([
+    getItemsByType(userId, type.id),
+    getEntitlements(userId),
+  ]);
   const itemLabel = items.length === 1 ? "item" : "items";
 
   return (
@@ -43,7 +47,7 @@ export default async function ItemsByTypePage({
           </p>
         </div>
         {isCreatableType(type.name) && (
-          <CreateItemDialog defaultType={type.name} />
+          <CreateItemDialog defaultType={type.name} isPro={isPro} />
         )}
       </header>
       <ItemList items={items} emptyMessage={`No ${typeSlug(type.name)} yet.`} />

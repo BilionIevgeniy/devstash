@@ -1,5 +1,5 @@
 import { auth } from "@/features/auth/nextauth/auth";
-import { getItemDetail } from "@/features/items/queries";
+import { getUserItemDetail } from "@/features/items/services/item-detail";
 import { itemIdSchema } from "@/features/items/schemas";
 
 function failure(error: string, status: number) {
@@ -20,7 +20,7 @@ export async function GET(
   if (!parsed.success) return failure(parsed.error.issues[0].message, 400);
 
   try {
-    const item = await getItemDetail(userId, parsed.data);
+    const item = await getUserItemDetail(userId, parsed.data);
     if (!item) return failure("Item not found", 404);
     return Response.json({ success: true, data: item, error: null });
   } catch (error) {

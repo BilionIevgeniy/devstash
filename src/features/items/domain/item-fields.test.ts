@@ -1,29 +1,47 @@
 import { describe, expect, it } from "vitest";
 import {
-  CREATABLE_TYPES,
+  canCreateType,
   contentTypeFor,
   editableFields,
   isCreatableType,
   parseTagInput,
+  requiresPro,
 } from "@/features/items/domain/item-fields";
 
-describe("CREATABLE_TYPES", () => {
-  it("leaves out the types that need an upload", () => {
-    expect(CREATABLE_TYPES).not.toContain("file");
-    expect(CREATABLE_TYPES).not.toContain("image");
-  });
-});
-
 describe("isCreatableType", () => {
-  it.each(["snippet", "prompt", "command", "note", "link"])(
+  it.each(["snippet", "prompt", "command", "note", "link", "file", "image"])(
     "accepts a %s",
     (typeName) => {
       expect(isCreatableType(typeName)).toBe(true);
     },
   );
 
-  it.each(["file", "image", "recipe", ""])("rejects %j", (typeName) => {
+  it.each(["recipe", ""])("rejects %j", (typeName) => {
     expect(isCreatableType(typeName)).toBe(false);
+  });
+});
+
+describe("requiresPro", () => {
+  it.each([
+    ["file", true],
+    ["image", true],
+    ["snippet", false],
+    ["link", false],
+    ["recipe", false],
+  ])("%s needs Pro: %s", (typeName, expected) => {
+    expect(requiresPro(typeName)).toBe(expected);
+  });
+});
+
+describe("canCreateType", () => {
+  it("lets a Free user create the text types but not file or image", () => {
+    expect(canCreateType("note", false)).toBe(true);
+    expect(canCreateType("file", false)).toBe(false);
+    expect(canCreateType("image", false)).toBe(false);
+  });
+
+  it("lets a Pro user create every type", () => {
+    expect(canCreateType("image", true)).toBe(true);
   });
 });
 
@@ -34,31 +52,36 @@ describe("contentTypeFor", () => {
     ["command", "TEXT"],
     ["prompt", "TEXT"],
     ["note", "TEXT"],
+    ["file", "FILE"],
+    ["image", "FILE"],
   ])("stores a %s as %s", (typeName, contentType) => {
     expect(contentTypeFor(typeName)).toBe(contentType);
   });
 });
 
 describe("editableFields", () => {
+  const none = {
+    content: false,
+    codeEditor: false,
+    language: false,
+    url: false,
+    file: null,
+  };
+
   it.each([
-    ["snippet", { content: true, codeEditor: true, language: true, url: false }],
-    ["command", { content: true, codeEditor: true, language: true, url: false }],
-    ["prompt", { content: true, codeEditor: false, language: false, url: false }],
-    ["note", { content: true, codeEditor: false, language: false, url: false }],
-    ["link", { content: false, codeEditor: false, language: false, url: true }],
-    ["file", { content: false, codeEditor: false, language: false, url: false }],
-    ["image", { content: false, codeEditor: false, language: false, url: false }],
+    ["snippet", { ...none, content: true, codeEditor: true, language: true }],
+    ["command", { ...none, content: true, codeEditor: true, language: true }],
+    ["prompt", { ...none, content: true }],
+    ["note", { ...none, content: true }],
+    ["link", { ...none, url: true }],
+    ["file", { ...none, file: "file" }],
+    ["image", { ...none, file: "image" }],
   ])("gives the fields of a %s", (typeName, fields) => {
     expect(editableFields(typeName)).toEqual(fields);
   });
 
   it("gives no type-specific fields to a type it does not know", () => {
-    expect(editableFields("recipe")).toEqual({
-      content: false,
-      codeEditor: false,
-      language: false,
-      url: false,
-    });
+    expect(editableFields("recipe")).toEqual(none);
   });
 });
 

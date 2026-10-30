@@ -74,10 +74,6 @@ export const changePasswordSchema = z
     path: ["confirmPassword"],
   });
 
-export const deleteAccountSchema = z.object({
-  password: z.string().max(MAX_PASSWORD_LENGTH).optional(),
-});
-
 // The query string of the emailed links.
 export const emailLinkParamsSchema = z.object({
   token: z.string().min(1),

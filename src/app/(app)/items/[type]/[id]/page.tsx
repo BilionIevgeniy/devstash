@@ -4,7 +4,7 @@ import { getSessionUser } from "@/features/auth/nextauth/session";
 import { parseTypeSlug } from "@/features/item-types/domain/item-type";
 import { ItemDetailPage } from "@/features/items/components/ItemDetailPage";
 import { toItemDetailJson } from "@/features/items/domain/item-detail";
-import { getItemDetailOfType } from "@/features/items/queries";
+import { getUserItemDetailOfType } from "@/features/items/services/item-detail";
 
 export default async function ItemPage({
   params,
@@ -14,7 +14,7 @@ export default async function ItemPage({
   if (!typeName) notFound();
 
   const { id: userId } = await getSessionUser();
-  const item = await getItemDetailOfType(userId, id, typeName);
+  const item = await getUserItemDetailOfType(userId, id, typeName);
   if (!item) notFound();
 
   return (

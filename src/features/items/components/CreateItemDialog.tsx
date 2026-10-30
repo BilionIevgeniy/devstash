@@ -24,11 +24,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ProBadge } from "@/features/billing/components/ProBadge";
 import { CodeEditor } from "@/features/editor/components/CodeEditor";
 import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
+import { FileUpload } from "@/features/files/components/FileUpload";
+import type { UploadedFile } from "@/features/files/types";
 import { Field } from "@/features/items/_internal/components/Field";
 import { createItem } from "@/features/items/actions/item";
 import {
+  canCreateType,
   CREATABLE_TYPES,
   editableFields,
   parseTagInput,
@@ -42,16 +46,22 @@ const CREATE_FAILED_MESSAGE = "Couldn't create the item";
 interface CreateItemDialogProps {
   /** The type chosen when the dialog opens; also names the button. */
   defaultType?: CreatableTypeName;
+  /** From getEntitlements on the server; the server checks again on create. */
+  isPro: boolean;
   className?: string;
 }
 
 export function CreateItemDialog({
   defaultType,
+  isPro,
   className,
 }: CreateItemDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const createdRef = useRef(false);
   const label = `New ${defaultType ?? "item"}`;
+  // A type page of a Pro type keeps its button for a Free user, disabled.
+  const isLocked =
+    defaultType !== undefined && !canCreateType(defaultType, isPro);
 
   function handleCreated() {
     createdRef.current = true;
@@ -71,9 +81,10 @@ export function CreateItemDialog({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className={className}>
+        <Button className={className} disabled={isLocked}>
           <Plus />
           <span className="capitalize">{label}</span>
+          {isLocked && <ProBadge />}
         </Button>
       </DialogTrigger>
       <DialogContent
@@ -83,12 +94,14 @@ export function CreateItemDialog({
         <DialogHeader>
           <DialogTitle className="capitalize">{label}</DialogTitle>
           <DialogDescription>
-            Save a snippet, prompt, command, note or link.
+            Save a snippet, prompt, command, note, link, file or image.
           </DialogDescription>
         </DialogHeader>
-        {/* Unmounted with the closed dialog, so every open starts empty. */}
+        {/* Unmounted with the closed dialog, so every open starts empty and
+            a running upload is aborted. */}
         <CreateItemForm
           initialType={defaultType ?? DEFAULT_TYPE}
+          isPro={isPro}
           onCreated={handleCreated}
         />
       </DialogContent>
@@ -98,10 +111,15 @@ export function CreateItemDialog({
 
 interface CreateItemFormProps {
   initialType: CreatableTypeName;
+  isPro: boolean;
   onCreated: () => void;
 }
 
-function CreateItemForm({ initialType, onCreated }: CreateItemFormProps) {
+function CreateItemForm({
+  initialType,
+  isPro,
+  onCreated,
+}: CreateItemFormProps) {
   const [typeName, setTypeName] = useState<CreatableTypeName>(initialType);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -109,10 +127,20 @@ function CreateItemForm({ initialType, onCreated }: CreateItemFormProps) {
   const [language, setLanguage] = useState("");
   const [url, setUrl] = useState("");
   const [tags, setTags] = useState("");
+  const [upload, setUpload] = useState<UploadedFile | null>(null);
   const [isCreating, startCreating] = useTransition();
   const fields = editableFields(typeName);
   const isMissingRequired =
-    title.trim() === "" || (fields.url && url.trim() === "");
+    title.trim() === "" ||
+    (fields.url && url.trim() === "") ||
+    (fields.file !== null && upload === null);
+
+  // An upload belongs to the kind it was made for, so a type switch drops it;
+  // the key on FileUpload remounts it, which aborts a running PUT.
+  function handleTypeChange(value: string) {
+    setTypeName(value as CreatableTypeName);
+    setUpload(null);
+  }
 
   // Only the fields of the chosen type are sent; the others keep their input
   // in case the type is switched back.
@@ -127,6 +155,8 @@ function CreateItemForm({ initialType, onCreated }: CreateItemFormProps) {
         ...(fields.content && { content }),
         ...(fields.language && { language }),
         ...(fields.url && { url }),
+        ...(fields.file &&
+          upload && { file: { key: upload.key, name: upload.fileName } }),
       });
       if (result.success) {
         // After the await this is no longer part of the transition, so it is
@@ -145,21 +175,46 @@ function CreateItemForm({ initialType, onCreated }: CreateItemFormProps) {
         {(id) => (
           <Select
             value={typeName}
-            onValueChange={(value) => setTypeName(value as CreatableTypeName)}
+            onValueChange={handleTypeChange}
+            disabled={isCreating}
           >
             <SelectTrigger id={id} className="w-full capitalize">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {CREATABLE_TYPES.map((type) => (
-                <SelectItem key={type} value={type} className="capitalize">
-                  {type}
-                </SelectItem>
-              ))}
+              {CREATABLE_TYPES.map((type) => {
+                const isAllowed = canCreateType(type, isPro);
+                return (
+                  <SelectItem
+                    key={type}
+                    value={type}
+                    disabled={!isAllowed}
+                    className="capitalize"
+                  >
+                    {type}
+                    {!isAllowed && <ProBadge />}
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         )}
       </Field>
+      {fields.file && (
+        // Not a Field: its label points at an input, and the drop zone is
+        // named by its own aria-label.
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-muted-foreground capitalize">
+            {fields.file}
+          </p>
+          <FileUpload
+            key={typeName}
+            kind={fields.file}
+            onChange={setUpload}
+            disabled={isCreating}
+          />
+        </div>
+      )}
       <Field label="Title">
         {(id) => (
           <Input

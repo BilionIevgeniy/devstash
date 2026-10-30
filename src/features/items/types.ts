@@ -1,3 +1,4 @@
+import type { FileUrls } from "@/features/files/types";
 import type { ItemTypeInfo } from "@/features/item-types/types";
 
 export interface DashboardItem {
@@ -16,16 +17,31 @@ export interface ItemCollectionRef {
   name: string;
 }
 
-export interface ItemDetail extends DashboardItem {
+interface ItemDetailFields extends DashboardItem {
   contentType: string;
   content: string | null;
   url: string | null;
-  fileUrl: string | null;
-  fileName: string | null;
-  fileSize: number | null;
   language: string | null;
   updatedAt: Date;
   collections: ItemCollectionRef[];
+}
+
+// What the queries read. The object key stays on the server: only the item
+// detail service sees it, to sign the URLs.
+export interface ItemDetailRecord extends ItemDetailFields {
+  fileKey: string | null;
+  fileName: string | null;
+  fileSize: number | null;
+}
+
+export interface ItemFile extends FileUrls {
+  name: string;
+  size: number;
+}
+
+// What pages, routes and the drawer get: the upload as signed URLs.
+export interface ItemDetail extends ItemDetailFields {
+  file: ItemFile | null;
 }
 
 // ItemDetail as it arrives from GET /api/items/[id]: dates become ISO strings.
