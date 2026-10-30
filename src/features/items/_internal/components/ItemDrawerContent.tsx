@@ -6,11 +6,12 @@ import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { typeSlug } from "@/features/item-types/domain/item-type";
 import { CodeEditor } from "@/features/editor/components/CodeEditor";
+import type { ItemDeleteHandler } from "@/features/items/_internal/components/DeleteItemDialog";
 import { ItemActionBar } from "@/features/items/_internal/components/ItemActionBar";
 import { ItemDrawerSkeleton } from "@/features/items/_internal/components/ItemDrawerSkeleton";
 import { ItemEditForm } from "@/features/items/_internal/components/ItemEditForm";
 import { editableFields } from "@/features/items/domain/item-fields";
-import { formatLongDate } from "@/lib/utils";
+import { cn, formatLongDate } from "@/lib/utils";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
 export type ItemDetailState =
@@ -25,11 +26,14 @@ interface ItemDrawerContentProps {
   onEdit: () => void;
   onCancelEdit: () => void;
   onSaved: (detail: ItemDetailJson) => void;
-  onDelete: (id: string) => void;
+  onDelete: ItemDeleteHandler;
+  /** "page" renders outside a Sheet, where SheetTitle cannot be used. */
+  variant?: "sheet" | "page";
 }
 
 // The header and tags come from the card the user clicked, so they show at
-// once; the rest waits for GET /api/items/[id].
+// once; the rest waits for GET /api/items/[id]. On the item routes the server
+// passes the detail in, so the state starts ready.
 export function ItemDrawerContent({
   item,
   state,
@@ -38,13 +42,18 @@ export function ItemDrawerContent({
   onCancelEdit,
   onSaved,
   onDelete,
+  variant = "sheet",
 }: ItemDrawerContentProps) {
   const detail = state.status === "ready" ? state.detail : null;
 
   if (isEditing && detail) {
     return (
       <>
-        <ItemDrawerHeader item={item} language={detail.language} />
+        <ItemDrawerHeader
+          item={item}
+          language={detail.language}
+          variant={variant}
+        />
         <ItemEditForm
           item={item}
           detail={detail}
@@ -59,7 +68,11 @@ export function ItemDrawerContent({
 
   return (
     <>
-      <ItemDrawerHeader item={item} language={detail?.language ?? null} />
+      <ItemDrawerHeader
+        item={item}
+        language={detail?.language ?? null}
+        variant={variant}
+      />
       <ItemActionBar
         itemId={item.id}
         title={item.title}
@@ -103,16 +116,22 @@ export function ItemDrawerContent({
 interface ItemDrawerHeaderProps {
   item: DashboardItem;
   language: string | null;
+  variant: "sheet" | "page";
 }
 
-function ItemDrawerHeader({ item, language }: ItemDrawerHeaderProps) {
+function ItemDrawerHeader({ item, language, variant }: ItemDrawerHeaderProps) {
   const { type } = item;
   const iconBackground = type.color
     ? `color-mix(in oklab, ${type.color} 10%, transparent)`
     : undefined;
 
   return (
-    <SheetHeader className="flex-row items-start gap-3 p-6 pr-12 pb-2">
+    <SheetHeader
+      className={cn(
+        "flex-row items-start gap-3 p-6 pb-2",
+        variant === "sheet" ? "pr-12" : "pr-6",
+      )}
+    >
       <div
         className="flex size-12 shrink-0 items-center justify-center rounded-md"
         style={{ backgroundColor: iconBackground }}
@@ -124,7 +143,13 @@ function ItemDrawerHeader({ item, language }: ItemDrawerHeaderProps) {
         />
       </div>
       <div className="min-w-0 space-y-2">
-        <SheetTitle className="text-lg">{item.title}</SheetTitle>
+        {variant === "sheet" ? (
+          <SheetTitle className="text-lg">{item.title}</SheetTitle>
+        ) : (
+          <h1 className="font-heading text-lg font-medium text-foreground">
+            {item.title}
+          </h1>
+        )}
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary" className="capitalize">
             {typeSlug(type.name)}

@@ -112,6 +112,20 @@ export async function getItemDetail(
   return item ? toItemDetail(item) : null;
 }
 
+// The item routes carry the type in the URL: an item of another type is not
+// found there, the same as a missing one.
+export async function getItemDetailOfType(
+  userId: string,
+  id: string,
+  typeName: string,
+): Promise<ItemDetail | null> {
+  const item = await prisma.item.findFirst({
+    where: { id, userId, type: { name: typeName } },
+    select: itemDetailSelect,
+  });
+  return item ? toItemDetail(item) : null;
+}
+
 export async function getItemStats(userId: string): Promise<ItemStats> {
   const [total, favorites] = await Promise.all([
     prisma.item.count({ where: { userId } }),
