@@ -6,6 +6,7 @@ import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { typeSlug } from "@/features/item-types/domain/item-type";
 import { CodeEditor } from "@/features/editor/components/CodeEditor";
+import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
 import type { ItemDeleteHandler } from "@/features/items/_internal/components/DeleteItemDialog";
 import { ItemActionBar } from "@/features/items/_internal/components/ItemActionBar";
 import { ItemDrawerSkeleton } from "@/features/items/_internal/components/ItemDrawerSkeleton";
@@ -82,7 +83,7 @@ export function ItemDrawerContent({
         onEdit={onEdit}
         onDelete={onDelete}
       />
-      <div className="flex-1 space-y-6 overflow-y-auto px-6 pb-6">
+      <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
         {item.description && (
           <Section title="Description">
             <p>{item.description}</p>
@@ -193,9 +194,7 @@ function ItemBody({ typeName, detail }: ItemBodyProps) {
               ariaLabel="Content"
             />
           ) : (
-            <pre className="overflow-x-auto rounded-md border bg-muted/40 p-4 font-mono text-xs">
-              {detail.content}
-            </pre>
+            <MarkdownEditor value={detail.content} readOnly />
           )}
         </Section>
       )}
