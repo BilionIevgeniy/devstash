@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { CodeEditor } from "@/features/editor/components/CodeEditor";
+import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
 import { Field } from "@/features/items/_internal/components/Field";
 import { createItem } from "@/features/items/actions/item";
 import {
@@ -213,12 +214,7 @@ function CreateItemForm({ initialType, onCreated }: CreateItemFormProps) {
                 ariaLabel="Content"
               />
             ) : (
-              <Textarea
-                id={id}
-                value={content}
-                onChange={(event) => setContent(event.target.value)}
-                className="min-h-40 font-mono text-xs md:text-xs"
-              />
+              <MarkdownEditor id={id} value={content} onChange={setContent} />
             )
           }
         </Field>

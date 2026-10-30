@@ -1,6 +1,11 @@
 "use client";
 
-import { useState, useTransition, type SubmitEvent, type ReactNode } from "react";
+import {
+  useState,
+  useTransition,
+  type SubmitEvent,
+  type ReactNode,
+} from "react";
 import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -8,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CodeEditor } from "@/features/editor/components/CodeEditor";
+import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
 import { Field } from "@/features/items/_internal/components/Field";
 import { updateItem } from "@/features/items/actions/item";
 import {
@@ -161,12 +167,7 @@ export function ItemEditForm({
                   ariaLabel="Content"
                 />
               ) : (
-                <Textarea
-                  id={id}
-                  value={content}
-                  onChange={(event) => setContent(event.target.value)}
-                  className="min-h-40 font-mono text-xs md:text-xs"
-                />
+                <MarkdownEditor id={id} value={content} onChange={setContent} />
               )
             }
           </Field>
