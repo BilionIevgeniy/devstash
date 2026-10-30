@@ -14,6 +14,7 @@
 - Use hooks for state and side effects
 - Keep components focused - one job per component
 - Extract reusable logic into custom hooks
+- React Compiler is on (`reactCompiler` in `next.config.ts`) and memoizes components, functions and values itself: no `useMemo`, `useCallback` or `memo`. The one exception is a value whose identity must be exact (an effect dependency the compiler cannot keep stable), with a comment saying why
 
 ## Next.js
 
@@ -68,6 +69,19 @@ The architecture rules (layout, ranks, roles inside a feature, where new code go
 - Use shadcn/ui components where applicable
 - No inline styles
 - Dark mode first, light mode as option
+
+## UI/UX
+
+Check every UI change against these before writing it; the plan names which ones apply.
+
+- Feedback at once: a button that starts a request shows its pending state (`Creating…`, `Deleting…`) and is disabled until the result, so it cannot be sent twice
+- A notification never runs ahead of the screen: a "created" toast does not show while the form is still open. Sonner sits outside React transitions, so a toast waits for the same commit or event as the UI it confirms
+- Optimistic only where the rollback is cheap and the result is known in advance (hiding a deleted card). Not where the server decides the data (ids, dates, order) or where a failure would lose the user's input (creating)
+- When an action changes the page itself, wait for the result before leaving, and keep the history honest: `router.replace` so Back does not lead to something deleted
+- No layout shift: a skeleton mirrors the size of the content it stands for, and each route segment that loads on its own has its own `loading.tsx`
+- Exit animations finish before the navigation they lead to, so nothing vanishes mid-slide
+- Keyboard and focus: Esc closes, focus returns to the trigger, every dialog and sheet has a title (hidden if need be)
+- Errors in plain words, and the form with the user's input stays open so they can retry
 
 ## Database
 
