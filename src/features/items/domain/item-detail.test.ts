@@ -15,9 +15,7 @@ const detail: ItemDetail = {
   contentType: "text",
   content: "const x = 1;",
   url: null,
-  fileUrl: null,
-  fileName: null,
-  fileSize: null,
+  file: null,
   language: "typescript",
   collections: [{ id: "col-1", name: "React Patterns" }],
 };

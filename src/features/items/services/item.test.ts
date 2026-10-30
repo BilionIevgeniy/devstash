@@ -1,16 +1,34 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { create, update, remove, findFirst, getItemTypeByName } = vi.hoisted(
-  () => ({
-    create: vi.fn(),
-    update: vi.fn(),
-    remove: vi.fn(),
-    findFirst: vi.fn(),
-    getItemTypeByName: vi.fn(),
-  }),
-);
+const {
+  create,
+  update,
+  remove,
+  findFirst,
+  getItemTypeByName,
+  getEntitlements,
+  confirmUpload,
+  deleteUserObject,
+  signFileUrls,
+} = vi.hoisted(() => ({
+  create: vi.fn(),
+  update: vi.fn(),
+  remove: vi.fn(),
+  findFirst: vi.fn(),
+  getItemTypeByName: vi.fn(),
+  getEntitlements: vi.fn(),
+  confirmUpload: vi.fn(),
+  deleteUserObject: vi.fn(),
+  signFileUrls: vi.fn(),
+}));
 vi.mock("@/lib/prisma", () => ({
   prisma: { item: { create, update, delete: remove, findFirst } },
+}));
+vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
+vi.mock("@/features/files/services/objects", () => ({
+  confirmUpload,
+  deleteUserObject,
+  signFileUrls,
 }));
 // Partial: the items queries also use the real itemTypeSelect.
 vi.mock("@/features/item-types/queries", async (importOriginal) => ({
@@ -36,7 +54,7 @@ const rawItem = {
   contentType: "text",
   content: "echo hi",
   url: null,
-  fileUrl: null,
+  fileKey: null,
   fileName: null,
   fileSize: null,
   language: "bash",
@@ -146,6 +164,74 @@ describe("createUserItem", () => {
     });
     expect(create).not.toHaveBeenCalled();
   });
+
+  describe("with an upload", () => {
+    const upload = { key: "users/user-1/abc.png", name: "cat.png" };
+    const image = { ...snippet, typeName: "image" as const, file: upload };
+
+    beforeEach(() => {
+      getEntitlements.mockReset().mockResolvedValue({ isPro: true });
+      confirmUpload.mockReset().mockResolvedValue({
+        success: true,
+        error: null,
+        data: { size: 4096 },
+      });
+    });
+
+    it("stores the key, the name and the size R2 reports", async () => {
+      await createUserItem("user-1", image);
+
+      expect(confirmUpload).toHaveBeenCalledWith("user-1", upload.key, "image");
+      expect(create.mock.calls[0][0].data).toMatchObject({
+        contentType: "FILE",
+        fileKey: upload.key,
+        fileName: "cat.png",
+        fileSize: 4096,
+      });
+    });
+
+    it("refuses a Free user before looking at the upload", async () => {
+      getEntitlements.mockResolvedValue({ isPro: false });
+
+      const result = await createUserItem("user-1", image);
+
+      expect(result.success).toBe(false);
+      expect(confirmUpload).not.toHaveBeenCalled();
+      expect(create).not.toHaveBeenCalled();
+    });
+
+    it("writes no row when the upload is not confirmed", async () => {
+      confirmUpload.mockResolvedValue({
+        success: false,
+        error: "Images can be up to 5 MB",
+        data: null,
+      });
+
+      const result = await createUserItem("user-1", image);
+
+      expect(result.error).toBe("Images can be up to 5 MB");
+      expect(create).not.toHaveBeenCalled();
+    });
+
+    it("answers in plain words when the upload is already on another item", async () => {
+      create.mockRejectedValue(prismaError("P2002"));
+
+      const result = await createUserItem("user-1", image);
+
+      expect(result).toEqual({
+        success: false,
+        error: "This file is already saved on another item",
+        data: null,
+      });
+    });
+
+    it("never writes a file on a type without one", async () => {
+      await createUserItem("user-1", { ...snippet, file: upload });
+
+      expect(confirmUpload).not.toHaveBeenCalled();
+      expect(create.mock.calls[0][0].data).not.toHaveProperty("fileKey");
+    });
+  });
 });
 
 describe("updateUserItem", () => {
@@ -249,6 +335,62 @@ describe("updateUserItem", () => {
 describe("deleteUserItem", () => {
   beforeEach(() => {
     remove.mockReset().mockResolvedValue({ id: "item-1" });
+    findFirst.mockReset().mockResolvedValue({ fileKey: null });
+    deleteUserObject
+      .mockReset()
+      .mockResolvedValue({ success: true, error: null });
+  });
+
+  it("answers not found without deleting when the read finds nothing", async () => {
+    findFirst.mockResolvedValue(null);
+
+    const result = await deleteUserItem("user-1", "item-1");
+
+    expect(result).toEqual({ success: false, error: "Item not found" });
+    expect(remove).not.toHaveBeenCalled();
+  });
+
+  it("deletes the file in R2 before the row", async () => {
+    findFirst.mockResolvedValue({ fileKey: "users/user-1/abc.pdf" });
+
+    await deleteUserItem("user-1", "item-1");
+
+    expect(deleteUserObject).toHaveBeenCalledWith(
+      "user-1",
+      "users/user-1/abc.pdf",
+    );
+    expect(deleteUserObject.mock.invocationCallOrder[0]).toBeLessThan(
+      remove.mock.invocationCallOrder[0],
+    );
+  });
+
+  it("keeps the row when the key is outside the owner's prefix", async () => {
+    findFirst.mockResolvedValue({ fileKey: "users/someone-else/abc.pdf" });
+    deleteUserObject.mockResolvedValue({ success: false, error: "not found" });
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const result = await deleteUserItem("user-1", "item-1");
+
+    expect(result).toEqual({
+      success: false,
+      error: "Couldn't delete the file. Please try again.",
+    });
+    expect(remove).not.toHaveBeenCalled();
+    expect(log).toHaveBeenCalled();
+  });
+
+  it("keeps the row when R2 fails, so the delete can be retried", async () => {
+    findFirst.mockResolvedValue({ fileKey: "users/user-1/abc.pdf" });
+    deleteUserObject.mockRejectedValue(new Error("R2 down"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const result = await deleteUserItem("user-1", "item-1");
+
+    expect(result).toEqual({
+      success: false,
+      error: "Couldn't delete the file. Please try again.",
+    });
+    expect(remove).not.toHaveBeenCalled();
   });
 
   it("deletes only an item that belongs to the caller", async () => {

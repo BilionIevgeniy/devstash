@@ -25,15 +25,15 @@ prisma/                 schema, migrations, seed
 | Rank | Feature | Owns (Prisma models) | Status (planned: created by) |
 | ---- | ------- | -------------------- | ---------------------------- |
 | 1 | `auth` | User, Account, Session, VerificationToken | exists |
-| 2 | `billing` | Subscription, StripeEvent | planned: the Stripe specs |
+| 2 | `billing` | Subscription, StripeEvent | exists (Subscription and `getEntitlements`; StripeEvent, checkout and the webhook: the Stripe specs) |
 | 3 | `item-types` | ItemType | exists |
-| 3 | `files` | none (objects in R2 under `users/<userId>/`) | planned: the file and image upload spec |
+| 3 | `files` | none (objects in R2 under `users/<userId>/`) | exists |
 | 3 | `editor` | UserPreference | exists |
 | 4 | `ai` | none | planned: the auto-tagging or Explain Code spec |
 | 5 | `items` | Item, Tag, ItemTag | exists |
 | 6 | `collections` | Collection, ItemCollection | exists |
 | 7 | `search`, `import-export` | none | planned: the search spec; the import or export spec |
-| 8 | `account` | none (delete-account flow: cancel Stripe, purge files, delete rows) | planned: the change that adds its first higher dependency |
+| 8 | `account` | none (delete-account flow: cancel Stripe, purge files, delete rows) | exists |
 | 9 | `app-shell` | none | exists |
 | 10 | `app` | routes only | exists |
 
@@ -42,9 +42,8 @@ prisma/                 schema, migrations, seed
 - The numbers live in `FEATURE_RANKS` in `eslint.config.mjs`, which lists only folders that exist; a guard fails the lint when it and `src/features` differ. A planned feature gets its folder, its row and a section in [docs/modules.md](../docs/modules.md) in the commit with its first real code
 - Not modules: `tags` (stay in `items` until a second feature needs them), `marketing` (`app/(marketing)/`), favorites, pagination, settings, dashboard (pages that compose features)
 - Two features need the same code: move it down to the lowest rank both can import. Never sideways or up; compose in `app/` through props or slots (`items` fills the editor header slot with the `ai` Explain button)
-- Until `billing` and `files` exist, `deleteUserAccount` stays in `auth`; create `account` in the change that adds the first higher dependency
 - A feature writes only the models it owns and reads only its own models: no `prisma.<foreign model>`. Scalar columns through its own relation are fine; other features' data comes through their queries or services
-- Limits and Pro checks read `billing/queries.ts` `getEntitlements`, never the JWT or the session. The Stripe columns still sit on `User` and nothing reads them; billing's first migration moves them to `Subscription`
+- Limits and Pro checks read `billing/queries.ts` `getEntitlements`, never the JWT or the session. The Stripe columns live on `Subscription`, owned by `billing`; a user with no row is on the Free plan. The old columns on `User` are read by nothing and wait for their drop (`context/todo.md`)
 
 ## Inside a feature
 

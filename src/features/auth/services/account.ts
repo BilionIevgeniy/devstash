@@ -21,11 +21,26 @@ const NO_PASSWORD_MESSAGE = "This account has no password to change";
 const INCORRECT_PASSWORD_MESSAGE = "Current password is incorrect";
 const INCORRECT_DELETE_PASSWORD_MESSAGE = "Password is incorrect";
 
-interface DeleteAccountProof {
+export interface DeleteAccountProof {
   /** Required for accounts that have a password. */
   password?: string;
   /** Epoch ms of the session's sign-in; checked for accounts without one. */
   authenticatedAt?: number;
+}
+
+// Not exported: only verifyAccountDeletion can build a VerifiedDeletion, so
+// deleteVerifiedUserRows cannot be called without the proof check.
+declare const verified: unique symbol;
+
+export interface VerifiedDeletion {
+  readonly userId: string;
+  readonly email: string;
+  readonly [verified]: true;
+}
+
+export interface VerifyAccountDeletionResult extends OperationResult {
+  /** null with success: the user is already gone, so there is nothing to do. */
+  data: VerifiedDeletion | null;
 }
 
 // Changing and deleting share one counter per user, so guessing the password
@@ -91,35 +106,54 @@ export function needsReauthentication(
 
 // A valid session alone is not enough to delete an account: the caller proves
 // it is the owner with the password, or with a recent sign-in when the account
-// has none.
-//
-// Items, collections, tags, custom types, accounts and sessions go with the
-// user through the schema's onDelete: Cascade. Verification and reset tokens
-// have no relation to User, so they are removed by identifier.
-export async function deleteUserAccount(
+// has none. A passed check resets the shared counter, as a password change
+// does, so a delete that fails later (R2 down) and is retried with the right
+// password cannot lock the user out.
+export async function verifyAccountDeletion(
   userId: string,
   proof: DeleteAccountProof,
-): Promise<OperationResult> {
+): Promise<VerifyAccountDeletionResult> {
   const refusal = await getPasswordCheckRefusal(userId);
-  if (refusal) return refusal;
+  if (refusal) return { ...refusal, data: null };
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { email: true, password: true },
   });
-  if (!user) return { success: true, error: null };
+  if (!user) return { success: true, error: null, data: null };
 
   if (user.password) {
     if (
       !proof.password ||
       !(await bcrypt.compare(proof.password, user.password))
     ) {
-      return { success: false, error: INCORRECT_DELETE_PASSWORD_MESSAGE };
+      return {
+        success: false,
+        error: INCORRECT_DELETE_PASSWORD_MESSAGE,
+        data: null,
+      };
     }
   } else if (!isRecentlyAuthenticated(proof.authenticatedAt, Date.now())) {
-    return { success: false, error: REAUTH_REQUIRED_MESSAGE };
+    return { success: false, error: REAUTH_REQUIRED_MESSAGE, data: null };
   }
 
+  await resetRateLimit(PASSWORD_CHECK_BY_USER, userId);
+  return {
+    success: true,
+    error: null,
+    data: { userId, email: user.email } as VerifiedDeletion,
+  };
+}
+
+// Called only by account's delete flow, after it has purged the user's files.
+//
+// Items, collections, tags, custom types, accounts and sessions go with the
+// user through the schema's onDelete: Cascade. Verification and reset tokens
+// have no relation to User, so they are removed by identifier.
+export async function deleteVerifiedUserRows({
+  userId,
+  email,
+}: VerifiedDeletion): Promise<void> {
   // Taking the app's authorization away on GitHub makes the next GitHub
   // sign-in start from GitHub's authorize screen and create a new account. The
   // stored token is the one from the first link, so it may already be revoked.
@@ -134,10 +168,9 @@ export async function deleteUserAccount(
   await prisma.$transaction([
     prisma.verificationToken.deleteMany({
       where: {
-        identifier: { in: [user.email, getPasswordResetIdentifier(user.email)] },
+        identifier: { in: [email, getPasswordResetIdentifier(email)] },
       },
     }),
     prisma.user.delete({ where: { id: userId } }),
   ]);
-  return { success: true, error: null };
 }

@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type MouseEvent } from "react";
 
-import { deleteAccount } from "@/features/auth/_internal/actions/account";
+import { deleteAccount } from "@/features/account/_internal/actions/delete-account";
 import { reauthenticateWithGitHub } from "@/features/auth/actions/sign-in";
 import { REAUTH_REQUIRED_MESSAGE } from "@/features/auth/domain/reauth";
 import {
@@ -73,7 +73,7 @@ export function DeleteAccountDialog({
           <AlertDialogTitle>Delete your account?</AlertDialogTitle>
           <AlertDialogDescription>
             This permanently deletes your account and all of your items,
-            collections and tags. This cannot be undone.
+            collections, tags, files and images. This cannot be undone.
             {reauthNeeded &&
               ` ${REAUTH_REQUIRED_MESSAGE}, then come back here to finish.`}
           </AlertDialogDescription>

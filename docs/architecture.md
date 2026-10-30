@@ -18,10 +18,14 @@ src/
     (app)/        authenticated pages (dashboard, items/[type], items/[type]/[id], profile) under one shared layout
     api/          route handlers: NextAuth, registration, item detail, later webhooks and streaming
   features/       the product, one folder per feature
-    auth/         sign-in, registration, email verification, password reset, account
+    auth/         sign-in, registration, email verification, password reset, change password
+    billing/      the subscription and the plan (getEntitlements), the PRO badge
     item-types/   item type icons, info, URL slugs and queries
-    items/        item rows, cards, the item list and queries
+    files/        uploads to R2: file rules, presigned upload, confirm, signed downloads, purge
+    editor/       the code and Markdown editors of item content
+    items/        item rows, cards, the item list and queries, create, drawer, file and image items
     collections/  collection cards and queries
+    account/      the delete-account flow: verify, purge the files, delete the rows
     app-shell/    dashboard shell, top bar, sidebar
   components/ui/  shadcn/ui primitives only
   lib/            feature-neutral infrastructure and vendor clients (prisma, email, rate-limit, hash, ...)
@@ -88,7 +92,8 @@ features/auth/
   domain/                    pure rules: password length, token expiry and links, rate-limit policies,
                              the recent-sign-in window, when to resend a verification
   services/                  operations: registration, email verification, password reset, account
-                             (change password, delete), the email-send rate limit
+                             (change password; the proof check and row deletion `account` uses to
+                             delete an account), the email-send rate limit
   queries.ts                 reads: getUserProfile, and the reads made before sign-in (see the standard)
   schemas.ts                 Zod schemas of every input
   types.ts                   AuthActionState, AccountState, UserProfile
@@ -172,7 +177,7 @@ The detailed rules, moved here from `context/coding-standards.md` so that the al
 - **5 `items`:** uses item types, files, the editor and `ai`
 - **6 `collections`:** uses items
 - **7 `search`, `import-export`:** read and compose items and collections; they call the owners' queries and services and never read the tables themselves
-- **8 `account`:** orchestrates deleting an account: cancel the Stripe subscription, purge the files, then delete the rows
+- **8 `account`:** orchestrates deleting an account: verify the proof (`auth`), purge the files (`files`), then delete the rows (`auth`); cancelling the Stripe subscription (`billing`) comes with the Stripe specs
 - **9 `app-shell`:** composes the others for every authenticated page
 
 `teams`, `api-keys`, `audit` and `sharing` had no spec and no row. They get a rank when their first code exists.
@@ -292,6 +297,10 @@ Not checked by lint, so it is on the author and the reviewer: no writes in `quer
 - **Reads of another feature's models.** The rulebook forbids `prisma.<foreign model>` in a `queries.ts`, but lint does not check it yet. The planned rule is a per-feature `no-restricted-syntax` selector generated from a model-to-owner map; it must also match transaction clients (`tx.item`). The one known deviation today: `collections/queries.ts` calls `prisma.itemType` directly and should use an `item-types` query
 - **Revalidation.** The item actions call `refresh()`, which renders the page the action was called from again, sidebar counts included (they are read in the `force-dynamic` `(app)/layout.tsx`). Two traps: refreshing the item page of a deleted item renders its 404, so a caller that leaves the page passes `refresh: false` to `deleteItem`; and a navigation does not fetch the shared layout again, so that caller runs `router.refresh()` after it. Settle a wider policy against the Next.js 16 docs when collections get their actions
 - **Ownership is only reviewed.** `userId` in every `where` is checked by the reviewer, and tests with a mocked Prisma cannot prove it. The first service tests should run against a real database
+- **Unclaimed uploads.** An object uploaded to R2 that never becomes an item (the create dialog closed, the file removed, the type switched, the create failing after the upload) stays until the account is purged, and an upload from another tab can land up to 10 minutes after an account delete. It costs storage, not correctness: no row points to it. The fix is a staging prefix with an R2 lifecycle rule, or a sweep of keys no item holds ([ADR 0004](adr/0004-direct-upload-to-r2.md))
+- **SVG from R2.** An uploaded SVG is served as `image/svg+xml`. In the drawer's `<img>` its scripts do not run, but opening the preview in a tab renders it as a document on the R2 endpoint's origin, where a script would run. That origin holds none of the app's cookies and the URL is signed for its owner only, so the reach is the uploader's own file. If shared links arrive, sign the SVG's view URL as `attachment` or serve it with a `Content-Security-Policy` response header
+- **Signed URLs in client state.** The drawer and the item page keep the detail they were rendered with. Their URLs are valid for at least an hour after the render; a page left open longer shows an R2 error on Download until it is reloaded
+- **Superseded columns.** `User.isPro`, `User.stripeCustomerId`, `User.stripeSubscriptionId` and `Item.fileUrl` are read by nothing and wait for their contract migration (`context/todo.md`). Code must not start reading them again
 
 ## Glossary
 

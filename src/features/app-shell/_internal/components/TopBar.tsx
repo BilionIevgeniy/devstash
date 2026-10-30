@@ -1,15 +1,20 @@
+import type { ReactNode } from "react";
 import { PanelLeft, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CreateItemDialog } from "@/features/items/components/CreateItemDialog";
 
 interface TopBarProps {
   onToggleSidebar: () => void;
   onOpenDrawer: () => void;
+  newItemButton: ReactNode;
 }
 
-export function TopBar({ onToggleSidebar, onOpenDrawer }: TopBarProps) {
+export function TopBar({
+  onToggleSidebar,
+  onOpenDrawer,
+  newItemButton,
+}: TopBarProps) {
   return (
     <header className="flex h-16 shrink-0 items-center gap-4 border-b px-4">
       <Button
@@ -42,7 +47,7 @@ export function TopBar({ onToggleSidebar, onOpenDrawer }: TopBarProps) {
           ⌘K
         </kbd>
       </div>
-      <CreateItemDialog className="ml-auto" />
+      {newItemButton}
     </header>
   );
 }

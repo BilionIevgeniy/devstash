@@ -8,11 +8,12 @@ A module gets its section here in the commit with its first real code, together 
 
 | Model | Owner | Note |
 | ----- | ----- | ---- |
-| User, Account, Session, VerificationToken | `auth` | The Stripe columns on `User` move to `billing` (see below) |
+| User, Account, Session, VerificationToken | `auth` | |
 | ItemType | `item-types` | |
 | Item, Tag, ItemTag | `items` | `Tag` becomes its own module only when a second feature needs it |
 | Collection, ItemCollection | `collections` | |
-| Subscription, StripeEvent | `billing` (planned) | `isPro` is derived from the subscription status; nothing reads the old `User` columns yet |
+| Subscription | `billing` | `isPro` is derived from the subscription status; no row means the Free plan |
+| StripeEvent | `billing` (planned) | The webhook's idempotency record, with the Stripe specs |
 | UserPreference | `editor` (model planned) | One row per user, typed columns, an absent row means defaults, created by upsert |
 
 A module writes only the models it owns and reads only its own models. A relation `select` of scalar columns through its own relation is fine (`items` selects the type name, icon and color through `Item.type`, and the id and name of each collection through `Item.collections`). Everything else goes through the owner's queries or services.
@@ -21,13 +22,22 @@ A module writes only the models it owns and reads only its own models. A relatio
 
 ### auth
 
-- **Owns:** the identity and the session: sign-in, registration, email verification, password reset, change password, delete account (until `account` exists)
+- **Owns:** the identity and the session: sign-in, registration, email verification, password reset, change password; for deleting an account, the proof check and the deletion of its rows (the flow itself is `account`'s)
 - **Uses today:** `lib` only
 - **Entry points used from outside:**
   - `nextauth/session` (`getSessionUser`), `nextauth/auth` (route handlers, `signIn`, `signOut`), `nextauth/auth.config` (used by `proxy.ts`)
   - `actions/sign-in`, `queries`, `schemas`, `services/registration`, `services/account`, and the `domain/` files for tokens, rate limits and reset links, all called by pages and routes
-  - `components/`: `AuthCard`, the forms (`SignInForm`, `RegisterForm`, `ForgotPasswordForm`, `ResetPasswordForm`, `ConfirmEmailForm`, `ChangePasswordForm`), `ResendVerificationButton`, `GitHubSignInButton`, `DeleteAccountDialog`, `UserAvatar`
+  - `services/account` for `account` only: `verifyAccountDeletion` returns a `VerifiedDeletion` that only it can build, and `deleteVerifiedUserRows` takes nothing else, so the rows cannot be deleted without the proof check
+  - `components/`: `AuthCard`, the forms (`SignInForm`, `RegisterForm`, `ForgotPasswordForm`, `ResetPasswordForm`, `ConfirmEmailForm`, `ChangePasswordForm`), `ResendVerificationButton`, `GitHubSignInButton`, `UserAvatar`
 - **Private:** the actions of its own forms, emails, token and password helpers, error classes, messages, the GitHub grant service
+
+### billing
+
+- **Owns:** `Subscription` (later `StripeEvent`); the entitlements (limits, Pro) as `domain/limits.ts` plus `queries.ts` `getEntitlements`, read through `cache()` and never from the JWT or the session; later checkout, portal and the webhook service, and the billing section of the settings page
+- **Uses today:** nothing
+- **Entry points used from outside:** `queries` (`getEntitlements`), `domain/limits` (`entitlementsFor`, `Entitlements`), `components/ProBadge` (the sidebar's file and image types, the same types in the create dialog)
+- **Today:** created by the file upload spec for the Pro check. Its first migration created `Subscription`; the old `isPro`, `stripeCustomerId` and `stripeSubscriptionId` on `User` stay, read by nothing, until the contract migration in `context/todo.md` drops them. Nobody can become Pro in production until the Stripe specs; in development the seed gives the demo user an active subscription
+- **Will grow with** (from the two Stripe specs, not built): `StripeEvent`, checkout, portal, the webhook service behind the thin route `app/api/webhooks/stripe/route.ts`, `components/BillingSection`, the Free limits in `domain/limits` (also used by the homepage pricing). It will use `auth`
 
 ### item-types
 
@@ -35,14 +45,24 @@ A module writes only the models it owns and reads only its own models. A relatio
 - **Uses today:** nothing
 - **Entry points used from outside:** `components/TypeIcon`; `domain/item-type` (`typeSlug`, `parseTypeSlug`, the mapping from row to `ItemTypeInfo`); `queries` (`itemTypeSelect`, `getItemTypeByName`, `getSidebarItemTypes`); `types`
 
+### files
+
+- **Owns:** no model; the objects in R2 under `users/<userId>/`: the file rules (kinds, sizes, the extension → Content-Type map; the browser's `File.type` is never used), the key scheme, presigned upload, the confirm step after the PUT, signed download URLs, deleting and purging objects; `lib/r2.ts` is the vendor client ([ADR 0004](adr/0004-direct-upload-to-r2.md))
+- **Uses today:** `billing` (`getEntitlements` in the presign service), `auth` (`getSessionUser` in the action)
+- **Entry points used from outside:** `components/FileUpload` (drop zone, the browser's PUT with progress, aborted on unmount); `services/objects` (`confirmUpload`, `deleteUserObject`, `purgeUserObjects`, `signFileUrls`); `domain/file-rules` (`FileKind`, `formatFileSize`); `types` (`UploadedFile`, `FileUrls`)
+- **Inside the feature only, so far:** `actions/upload` (`requestUpload`), `services/presign-upload`, `schemas`
+- **Download URLs:** signed at the start of a one-hour window and valid for two, so they repeat across renders (the browser caches images) and stay valid for at least an hour after any render. The caller checks that the key belongs to the user before it asks for them
+- **Upgrade path, not built:** a `FileDeletion` outbox processed by a cron route, if deletions start to fail in practice
+
 ### items
 
 - **Owns:** `Item`, `Tag`, `ItemTag`; the list, cards and rows of items; the create dialog; the item drawer (the detail view, editing it in place, deleting it): on the dashboard it is fetched from `app/api/items/[id]`, on a type page it is the intercepted route `/items/[type]/[id]` read on the server; the full item page the same URL shows on a reload; the item queries, the item create, update and delete
-- **Uses today:** `item-types` (types, `itemTypeSelect`, `getItemTypeByName` in the create service), `auth` (`getSessionUser` in the actions), `editor` (`CodeEditor` for the content of snippets and commands, `MarkdownEditor` for the content of notes and prompts, in the create dialog, the edit form and the drawer)
-- **Entry points used from outside:** `components/ItemList`, `components/ItemRow`, `components/ItemDrawerProvider` (wraps the dashboard page; with `basePath`, wraps the `items/[type]` layout, where opening a card navigates to the item URL), `components/ItemDrawerTrigger` (wraps a card), `components/ItemRouteDrawer` (the sheet, content, skeleton and missing state of the intercepted item route), `components/ItemDetailPage` (the full item page), `components/CreateItemDialog` (the top bar's New Item button, and the New &lt;Type&gt; button of a type page through `defaultType`); `domain/item-fields` (`isCreatableType`, which decides whether a type page shows that button); `domain/item-detail` (`toItemDetailJson`, the detail with ISO dates the client components take); `queries` (`getPinnedItems`, `getRecentItems`, `getItemsByType`, `getItemDetail`, `getItemDetailOfType`, `getItemStats`); `schemas` (`itemIdSchema`)
-- **Inside the feature only, so far:** `actions/item` (`createItem`, `updateItem`, `deleteItem`), `services/item` (`createUserItem`, `updateUserItem`, `deleteUserItem`), `schemas` (`createItemSchema`, `updateItemSchema`, `deleteItemOptionsSchema`), `domain/item-fields` (the editable fields per type, including which use the code editor, the creatable types, the content type of a new item, the tag input parser), `domain/item-changes` (whether the edit form differs from the saved item, so an unchanged form is not saved)
-- **Private:** the drawer content, its action bar, edit form, delete dialog and skeleton; `ItemDetailView`, the edit state shared by the route drawer and the full item page; the `Field` wrapper shared by the create and edit forms
-- **Will grow with** (from the specs, not built): the other drawer actions (favorite, pin, copy), pin and favorite flags, the file and image views, pagination of items. It will use `item-types`, `files`, `editor`, `ai` and `billing`
+- **Uses today:** `item-types` (types, `itemTypeSelect`, `getItemTypeByName` in the create service), `auth` (`getSessionUser` in the actions), `editor` (`CodeEditor` for the content of snippets and commands, `MarkdownEditor` for the content of notes and prompts, in the create dialog, the edit form and the drawer), `files` (`FileUpload` in the create dialog; `confirmUpload` in the create, `deleteUserObject` in the delete, `signFileUrls` in the item detail service; `formatFileSize` in the drawer), `billing` (`getEntitlements` in the create service, `ProBadge` in the create dialog)
+- **Entry points used from outside:** `components/ItemList`, `components/ItemRow`, `components/ItemDrawerProvider` (wraps the dashboard page; with `basePath`, wraps the `items/[type]` layout, where opening a card navigates to the item URL), `components/ItemDrawerTrigger` (wraps a card), `components/ItemRouteDrawer` (the sheet, content, skeleton and missing state of the intercepted item route), `components/ItemDetailPage` (the full item page, and `ItemDetailPageSkeleton` for its `loading.tsx`), `components/CreateItemDialog` (the top bar's New Item button through `app/(app)/_components/NewItemButton`, and the New &lt;Type&gt; button of a type page through `defaultType`; both pass `isPro`, and a Free user sees File and Image disabled with a PRO badge); `domain/item-fields` (`isCreatableType`, which decides whether a type page shows that button; `requiresPro`, also used by the sidebar); `domain/item-detail` (`toItemDetailJson`, the detail with ISO dates the client components take); `services/item-detail` (`getUserItemDetail`, `getUserItemDetailOfType`: the detail with the upload as signed URLs, for `app/api/items/[id]` and the item routes); `queries` (`getPinnedItems`, `getRecentItems`, `getItemsByType`, `getItemStats`); `schemas` (`itemIdSchema`)
+- **Inside the feature only, so far:** `actions/item` (`createItem`, `updateItem`, `deleteItem`), `services/item` (`createUserItem`, `updateUserItem`, `deleteUserItem`), `queries` (`getItemDetail`, `getItemDetailOfType`: the `ItemDetailRecord` with the object key, read only by the item detail service), `schemas` (`createItemSchema`, `updateItemSchema`, `deleteItemOptionsSchema`), `domain/item-fields` (the editable fields per type, including which use the code editor and which store an upload, the creatable types, the content type of a new item, the tag input parser), `domain/item-changes` (whether the edit form differs from the saved item, so an unchanged form is not saved)
+- **Files and images:** the item stores the R2 key (`fileKey`, unique), the name and the size R2 reported; the key never leaves the server. The upload is set on create and not edited afterwards. Deleting the item deletes the object first ([ADR 0004](adr/0004-direct-upload-to-r2.md))
+- **Private:** the drawer content (with the file view: an image preview in a fixed-height frame, the file row with Download), its action bar, edit form, delete dialog and skeleton; `ItemDetailView`, the edit state shared by the route drawer and the full item page; the `Field` wrapper shared by the create and edit forms
+- **Will grow with** (from the specs, not built): the other drawer actions (favorite, pin, copy), pin and favorite flags, pagination of items. It will use `ai`
 
 ### collections
 
@@ -60,32 +80,24 @@ A module writes only the models it owns and reads only its own models. A relatio
 - **Private:** `_internal/domain/code-language` (`editorLanguage`); `_internal/components/EditorHeader` (window dots, a slot for the language label or the tabs, the copy button), shared by both editors; `_internal/components/MarkdownPreview` (moves to `components/` when `ai` needs it)
 - **Will grow with** (from the specs, not built): `UserPreference` and the preferences provider, form and action (`EditorPreferencesProvider` mounted in `app/(app)/layout.tsx`, `EditorPreferencesSection`). It will use `auth`. It cannot import `ai`: the Explain button reaches the editor header through a slot that `items` fills
 
+### account
+
+- **Owns:** no model; the delete-account flow: verify the proof (`auth`), purge the user's files (`files`) and abort if that fails, delete the rows (`auth`), then purge once more as best effort for an upload from another tab that landed in between ([ADR 0004](adr/0004-direct-upload-to-r2.md))
+- **Uses today:** `auth` (`verifyAccountDeletion`, `deleteVerifiedUserRows`, `auth`/`signOut` in the action, `reauthenticateWithGitHub` and `REAUTH_REQUIRED_MESSAGE` in the dialog), `files` (`purgeUserObjects`)
+- **Entry points used from outside:** `components/DeleteAccountDialog` (the profile page)
+- **Private:** `_internal/actions/delete-account` (signs out after a delete, outside its `try`), `_internal/services/delete-account`; `schemas` (`deleteAccountSchema`)
+- **Will grow with** (from the Stripe specs, not built): cancelling the Stripe subscription through `billing` before the purge
+
 ### app-shell
 
 - **Owns:** nothing in the database; the frame of every authenticated page: `DashboardShell`, top bar, sidebar
-- **Uses today:** `auth` (session, `UserAvatar`, sign-out), `item-types`, `items` (`CreateItemDialog` in the top bar), `collections`
-- **Entry points used from outside:** `components/DashboardShell`, `components/Sidebar`, `components/SidebarSkeleton`
+- **Uses today:** `auth` (session, `UserAvatar`, sign-out), `item-types`, `items` (`requiresPro` for the sidebar's PRO labels), `billing` (`ProBadge`), `collections`
+- **Entry points used from outside:** `components/DashboardShell` (takes the sidebar and the top bar's New Item button as slots: `app/(app)/layout.tsx` streams the button in under `Suspense`, so the shell does not wait for the plan), `components/Sidebar`, `components/SidebarSkeleton`
 - **Will grow with:** the Cmd+K trigger in the top bar
-- **Today:** the PRO label next to the file and image types is a private component of the sidebar's types section; it is not shared
 
 ## Planned modules
 
 Each one is created in the commit with its first code. "Expects to use" is what the rank order allows and the specs need.
-
-### billing
-
-- **Owns:** `Subscription`, `StripeEvent`; the entitlements (limits, Pro) as `domain/limits.ts` plus `queries.ts` `getEntitlements`, read through `cache()` and never from the JWT or the session; checkout, portal and the webhook service; the billing section of the settings page
-- **Expects to use:** `auth`
-- **Entry points:** `queries.getEntitlements`, `domain/limits` (pure, also used by the homepage pricing), `components/BillingSection`; the thin route `app/api/webhooks/stripe/route.ts`
-- **Pro badge:** the sidebar's PRO label stays private to `app-shell`; it moves into `billing` only when a second place needs it
-- **First code:** its first migration moves `isPro`, `stripeCustomerId` and `stripeSubscriptionId` out of `User` into `Subscription`. Specs: the two Stripe phases
-
-### files
-
-- **Owns:** no model; the file rules, the key scheme (`users/<userId>/`), presigned upload and download, deleting objects; `lib/r2.ts` is the vendor client
-- **Expects to use:** `auth`, `billing`
-- **Entry points:** the upload action, `components/FileUpload`
-- **First code:** the file and image upload spec. The browser sends the file straight to R2; deletes remove the object first, then the row ([ADR 0004](adr/0004-direct-upload-to-r2.md)). A `FileDeletion` outbox is the upgrade path, not built
 
 ### ai
 
@@ -105,12 +117,6 @@ Each one is created in the commit with its first code. "Expects to use" is what 
 - **Owns:** no model; the export format (versioned, pure), the import and export services, the data section of the settings page
 - **Expects to use:** `items`, `collections`, `files`, `billing` (ZIP is Pro). Imports write through the owners' services, never straight to Prisma
 - **Entry points:** `components/DataSection`; the thin route `app/api/export/route.ts` only sets headers
-
-### account
-
-- **Owns:** no model; the delete-account flow: cancel the Stripe subscription, purge the files, then delete the rows
-- **Expects to use:** `auth`, `billing`, `files`
-- **First code:** the change that adds the first higher dependency. `deleteUserAccount` and `DeleteAccountDialog` move here from `auth`
 
 ## Not modules
 

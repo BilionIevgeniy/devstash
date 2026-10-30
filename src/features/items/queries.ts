@@ -4,7 +4,7 @@ import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
 import { itemTypeSelect } from "@/features/item-types/queries";
 import type {
   DashboardItem,
-  ItemDetail,
+  ItemDetailRecord,
   ItemStats,
 } from "@/features/items/types";
 import type { Prisma } from "@/generated/prisma/client";
@@ -41,7 +41,7 @@ const itemDetailSelect = {
   contentType: true,
   content: true,
   url: true,
-  fileUrl: true,
+  fileKey: true,
   fileName: true,
   fileSize: true,
   language: true,
@@ -61,7 +61,7 @@ function toItemDetail({
   tags,
   collections,
   ...item
-}: RawItemDetail): ItemDetail {
+}: RawItemDetail): ItemDetailRecord {
   return {
     ...item,
     type: toItemTypeInfo(type),
@@ -104,7 +104,7 @@ export async function getItemsByType(
 export async function getItemDetail(
   userId: string,
   id: string,
-): Promise<ItemDetail | null> {
+): Promise<ItemDetailRecord | null> {
   const item = await prisma.item.findFirst({
     where: { id, userId },
     select: itemDetailSelect,
@@ -118,7 +118,7 @@ export async function getItemDetailOfType(
   userId: string,
   id: string,
   typeName: string,
-): Promise<ItemDetail | null> {
+): Promise<ItemDetailRecord | null> {
   const item = await prisma.item.findFirst({
     where: { id, userId, type: { name: typeName } },
     select: itemDetailSelect,
