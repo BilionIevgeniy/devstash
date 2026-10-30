@@ -3,9 +3,7 @@
 import {
   createContext,
   startTransition,
-  useCallback,
   useContext,
-  useMemo,
   useOptimistic,
   useRef,
   useState,
@@ -16,6 +14,10 @@ import { toast } from "sonner";
 
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
+  DELETED_MESSAGE,
+  DELETE_FAILED_MESSAGE,
+} from "@/features/items/_internal/components/DeleteItemDialog";
+import {
   ItemDrawerContent,
   type ItemDetailState,
 } from "@/features/items/_internal/components/ItemDrawerContent";
@@ -23,14 +25,23 @@ import { deleteItem } from "@/features/items/actions/item";
 import type { ActionResult } from "@/lib/action-result";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
-const DELETED_MESSAGE = "Item deleted";
-const DELETE_FAILED_MESSAGE = "Couldn't delete the item.";
 const NO_HIDDEN_IDS: ReadonlySet<string> = new Set();
 
 interface ItemDrawerContextValue {
   open: (item: DashboardItem) => void;
+  /** Deletes the item and hides its card until the fresh page arrives. */
+  remove: (id: string) => void;
   /** Items being deleted: their cards are hidden until the fresh page arrives. */
   hiddenIds: ReadonlySet<string>;
+}
+
+interface ItemDrawerProviderProps {
+  /**
+   * When set, opening an item navigates to `${basePath}/${id}` and the route
+   * draws the drawer; this provider then renders no sheet of its own.
+   */
+  basePath?: string;
+  children: ReactNode;
 }
 
 const ItemDrawerContext = createContext<ItemDrawerContextValue | null>(null);
@@ -55,7 +66,10 @@ async function fetchItemDetail(
   return body.data;
 }
 
-export function ItemDrawerProvider({ children }: { children: ReactNode }) {
+export function ItemDrawerProvider({
+  basePath,
+  children,
+}: ItemDrawerProviderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [item, setItem] = useState<DashboardItem | null>(null);
   const [state, setState] = useState<ItemDetailState>({ status: "loading" });
@@ -68,7 +82,7 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
     (ids, id: string): ReadonlySet<string> => new Set(ids).add(id),
   );
 
-  const open = useCallback(async (next: DashboardItem) => {
+  async function openSheet(next: DashboardItem) {
     requestRef.current?.abort();
     const controller = new AbortController();
     requestRef.current = controller;
@@ -86,7 +100,17 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
     } catch {
       if (!controller.signal.aborted) setState({ status: "error" });
     }
-  }, []);
+  }
+
+  function open(next: DashboardItem) {
+    if (basePath === undefined) {
+      void openSheet(next);
+      return;
+    }
+    router.push(`${basePath}/${encodeURIComponent(next.id)}`, {
+      scroll: false,
+    });
+  }
 
   // The item stays in state after closing so the content does not vanish
   // while the sheet slides out.
@@ -118,10 +142,9 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
   // The card is hidden while the transition runs. On success the action's
   // refresh brings the page without the item before the transition ends; on
   // failure the optimistic set reverts and the card comes back.
-  function handleDelete(id: string) {
+  function remove(id: string) {
     startTransition(async () => {
       hideItem(id);
-      handleOpenChange(false);
       try {
         const result = await deleteItem(id);
         if (result.success) toast.success(DELETED_MESSAGE);
@@ -132,7 +155,20 @@ export function ItemDrawerProvider({ children }: { children: ReactNode }) {
     });
   }
 
-  const value = useMemo(() => ({ open, hiddenIds }), [open, hiddenIds]);
+  function handleDelete(id: string) {
+    handleOpenChange(false);
+    remove(id);
+  }
+
+  const value = { open, remove, hiddenIds };
+
+  if (basePath !== undefined) {
+    return (
+      <ItemDrawerContext.Provider value={value}>
+        {children}
+      </ItemDrawerContext.Provider>
+    );
+  }
 
   return (
     <ItemDrawerContext.Provider value={value}>

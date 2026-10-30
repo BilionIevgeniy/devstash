@@ -3,8 +3,10 @@
 import { refresh } from "next/cache";
 
 import { getSessionUser } from "@/features/auth/nextauth/session";
+import { toItemDetailJson } from "@/features/items/domain/item-detail";
 import {
   createItemSchema,
+  deleteItemOptionsSchema,
   itemIdSchema,
   updateItemSchema,
 } from "@/features/items/schemas";
@@ -43,8 +45,7 @@ export async function createItem(data: unknown): Promise<ActionResult> {
   }
 }
 
-// The dates go out as ISO strings, the shape GET /api/items/[id] answers with,
-// so the drawer keeps one type for its detail.
+// The detail goes out JSON-safe (see toItemDetailJson).
 export async function updateItem(
   itemId: string,
   data: unknown,
@@ -64,25 +65,26 @@ export async function updateItem(
       return failure(result.error ?? GENERIC_ERROR);
     }
 
-    const { createdAt, updatedAt, ...item } = result.data;
-    return {
-      success: true,
-      error: null,
-      data: {
-        ...item,
-        createdAt: createdAt.toISOString(),
-        updatedAt: updatedAt.toISOString(),
-      },
-    };
+    return { success: true, error: null, data: toItemDetailJson(result.data) };
   } catch (error) {
     console.error("Updating the item failed:", error);
     return failure(GENERIC_ERROR);
   }
 }
 
-export async function deleteItem(itemId: string): Promise<ActionResult> {
+// `refresh: false` is for a caller that leaves the page itself: refreshing the
+// item page of a deleted item would render its 404.
+export async function deleteItem(
+  itemId: string,
+  options?: unknown,
+): Promise<ActionResult> {
   const parsedId = itemIdSchema.safeParse(itemId);
   if (!parsedId.success) return failure(parsedId.error.issues[0].message);
+
+  const parsedOptions = deleteItemOptionsSchema.safeParse(options);
+  if (!parsedOptions.success) {
+    return failure(parsedOptions.error.issues[0].message);
+  }
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
@@ -92,7 +94,7 @@ export async function deleteItem(itemId: string): Promise<ActionResult> {
     if (!result.success) return failure(result.error ?? GENERIC_ERROR);
     // The fresh page comes back with this response, so the drawer's
     // optimistic removal hands over to it without a flicker.
-    refresh();
+    if (parsedOptions.data.refresh) refresh();
     return { success: true, error: null, data: null };
   } catch (error) {
     console.error("Deleting the item failed:", error);

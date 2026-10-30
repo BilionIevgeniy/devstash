@@ -8,6 +8,11 @@ import {
 // Prisma generates CUID v1 ids, which also match the cuid2 format.
 export const itemIdSchema = z.cuid2("Invalid item id");
 
+// `refresh: false` is for a caller that leaves the page itself.
+export const deleteItemOptionsSchema = z
+  .object({ refresh: z.boolean().default(true) })
+  .default({ refresh: true });
+
 function emptyToNull(value: string): string | null {
   return value === "" ? null : value;
 }

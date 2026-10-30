@@ -1,7 +1,10 @@
 import { Copy, Pencil, Pin, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { DeleteItemDialog } from "@/features/items/_internal/components/DeleteItemDialog";
+import {
+  DeleteItemDialog,
+  type ItemDeleteHandler,
+} from "@/features/items/_internal/components/DeleteItemDialog";
 import { cn } from "@/lib/utils";
 
 interface ItemActionBarProps {
@@ -11,7 +14,7 @@ interface ItemActionBarProps {
   isPinned: boolean;
   canEdit: boolean;
   onEdit: () => void;
-  onDelete: (id: string) => void;
+  onDelete: ItemDeleteHandler;
 }
 
 // Only Edit and Delete work so far: the other actions are wired up in a later

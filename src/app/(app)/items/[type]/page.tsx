@@ -8,7 +8,6 @@ import {
 } from "@/features/item-types/domain/item-type";
 import { getItemTypeByName } from "@/features/item-types/queries";
 import { CreateItemDialog } from "@/features/items/components/CreateItemDialog";
-import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvider";
 import { isCreatableType } from "@/features/items/domain/item-fields";
 import { ItemList } from "@/features/items/components/ItemList";
 import { getItemsByType } from "@/features/items/queries";
@@ -29,30 +28,25 @@ export default async function ItemsByTypePage({
 
   return (
     <div className="space-y-8">
-      <ItemDrawerProvider>
-        <header className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="flex items-center gap-3 text-3xl font-bold capitalize">
-              <TypeIcon
-                name={type.icon}
-                className="size-7"
-                style={{ color: type.color }}
-              />
-              {typeSlug(type.name)}
-            </h1>
-            <p className="text-muted-foreground">
-              {items.length} {itemLabel}
-            </p>
-          </div>
-          {isCreatableType(type.name) && (
-            <CreateItemDialog defaultType={type.name} />
-          )}
-        </header>
-        <ItemList
-          items={items}
-          emptyMessage={`No ${typeSlug(type.name)} yet.`}
-        />
-      </ItemDrawerProvider>
+      <header className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="flex items-center gap-3 text-3xl font-bold capitalize">
+            <TypeIcon
+              name={type.icon}
+              className="size-7"
+              style={{ color: type.color }}
+            />
+            {typeSlug(type.name)}
+          </h1>
+          <p className="text-muted-foreground">
+            {items.length} {itemLabel}
+          </p>
+        </div>
+        {isCreatableType(type.name) && (
+          <CreateItemDialog defaultType={type.name} />
+        )}
+      </header>
+      <ItemList items={items} emptyMessage={`No ${typeSlug(type.name)} yet.`} />
     </div>
   );
 }

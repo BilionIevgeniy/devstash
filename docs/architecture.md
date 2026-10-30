@@ -15,7 +15,7 @@ How DevStash is organized, where each kind of code lives, and what to create whe
 ```text
 src/
   app/            routes: page.tsx, layout.tsx, route.ts. Composes features, no business logic
-    (app)/        authenticated pages (dashboard, items/[type], profile) under one shared layout
+    (app)/        authenticated pages (dashboard, items/[type], items/[type]/[id], profile) under one shared layout
     api/          route handlers: NextAuth, registration, item detail, later webhooks and streaming
   features/       the product, one folder per feature
     auth/         sign-in, registration, email verification, password reset, account
@@ -55,6 +55,17 @@ components/ForgotPasswordForm.tsx       client component
         -> sendPasswordResetLink        auth/services/password-reset.ts            token, database, email
            -> buildPasswordResetEmail   auth/_internal/emails/                     pure: builds subject, html, text
            -> sendEmail                 lib/email.ts                               the only place that talks to Resend
+```
+
+**Opening an item from a type page** (an intercepted route in a parallel slot):
+
+```text
+app/(app)/items/[type]/layout.tsx       ItemDrawerProvider basePath=/items/<type>, wraps {children} and {drawer}
+  click on a card                       router.push(/items/<type>/<id>)
+  -> @drawer/(.)[id]/layout.tsx         ItemRouteDrawer: the sheet, kept while loading gives way to the page
+     -> @drawer/(.)[id]/page.tsx        getItemDetailOfType(userId, id, type)   items/queries.ts
+  children keeps the list               on a reload the same URL renders [id]/page.tsx, the full item page
+  closing the sheet                     router.back() once it has slid out; @drawer falls back to default.tsx (null)
 ```
 
 **Registration** is a route handler (`app/api/auth/register/route.ts`) instead of a Server Action: it parses with `registerSchema`, applies the per-IP limit and calls the `registerAccount` service.
@@ -279,7 +290,7 @@ Not checked by lint, so it is on the author and the reviewer: no writes in `quer
 - **Linear ranks.** One number per feature is easy to read but brittle; past about twelve features an explicit list of allowed dependencies per feature may fit better
 - **The services threshold.** Almost every write goes through a service, so some will be a few lines. That is the price of one rule with no exceptions
 - **Reads of another feature's models.** The rulebook forbids `prisma.<foreign model>` in a `queries.ts`, but lint does not check it yet. The planned rule is a per-feature `no-restricted-syntax` selector generated from a model-to-owner map; it must also match transaction clients (`tx.item`). The one known deviation today: `collections/queries.ts` calls `prisma.itemType` directly and should use an `item-types` query
-- **Revalidation.** No Server Action revalidates anything yet. Sidebar counts are read in the `force-dynamic` `(app)/layout.tsx`, so revalidating only the narrowest path may not refresh them. Settle the policy against the Next.js 16 docs before the first item action
+- **Revalidation.** The item actions call `refresh()`, which renders the page the action was called from again, sidebar counts included (they are read in the `force-dynamic` `(app)/layout.tsx`). Two traps: refreshing the item page of a deleted item renders its 404, so a caller that leaves the page passes `refresh: false` to `deleteItem`; and a navigation does not fetch the shared layout again, so that caller runs `router.refresh()` after it. Settle a wider policy against the Next.js 16 docs when collections get their actions
 - **Ownership is only reviewed.** `userId` in every `where` is checked by the reviewer, and tests with a mocked Prisma cannot prove it. The first service tests should run against a real database
 
 ## Glossary

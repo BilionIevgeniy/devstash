@@ -1,9 +1,26 @@
 import { describe, expect, it } from "vitest";
 import {
   createItemSchema,
+  deleteItemOptionsSchema,
   itemIdSchema,
   updateItemSchema,
 } from "@/features/items/schemas";
+
+describe("deleteItemOptionsSchema", () => {
+  it("refreshes the page unless the caller opts out", () => {
+    expect(deleteItemOptionsSchema.parse(undefined)).toEqual({ refresh: true });
+    expect(deleteItemOptionsSchema.parse({})).toEqual({ refresh: true });
+    expect(deleteItemOptionsSchema.parse({ refresh: false })).toEqual({
+      refresh: false,
+    });
+  });
+
+  it("rejects a refresh flag that is not a boolean", () => {
+    expect(deleteItemOptionsSchema.safeParse({ refresh: "no" }).success).toBe(
+      false,
+    );
+  });
+});
 
 describe("itemIdSchema", () => {
   it("accepts a cuid as Prisma generates it", () => {
