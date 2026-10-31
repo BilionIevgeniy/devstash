@@ -337,8 +337,8 @@ git switch -c lesson-01-setup
 
 ## 📌 Status
 
-- In planning
-- Ready for environment setup & UI scaffolding
+- In development: MVP features and the start of the Pro phase are built (items CRUD, collections, auth, editors, file and image uploads, billing groundwork)
+- Completed features are logged in `context/feature-history.md`; deferred work is in `context/todo.md`
 
 ---
 
