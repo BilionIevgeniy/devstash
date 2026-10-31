@@ -28,7 +28,7 @@ prisma/                 schema, migrations, seed
 | 2 | `billing` | Subscription, StripeEvent | exists (Subscription and `getEntitlements`; StripeEvent, checkout and the webhook: the Stripe specs) |
 | 3 | `item-types` | ItemType | exists |
 | 3 | `files` | none (objects in R2 under `users/<userId>/`) | exists |
-| 3 | `editor` | UserPreference | exists |
+| 3 | `editor` | UserPreference (planned) | exists |
 | 4 | `ai` | none | planned: the auto-tagging or Explain Code spec |
 | 5 | `items` | Item, Tag, ItemTag | exists |
 | 6 | `collections` | Collection, ItemCollection | exists |

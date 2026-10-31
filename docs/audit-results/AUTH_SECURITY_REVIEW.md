@@ -1,5 +1,7 @@
 # Authentication Security Audit
 
+> **Historical.** This audit predates Auth Security Hardening, which fixed findings 1-6, and the move of the auth code into `features/auth/`, so its file paths and open findings are out of date. Run the `auth-auditor` agent for a current audit; it overwrites this file.
+
 **Last Audit Date**: 2026-10-26
 **Auditor**: Auth Security Agent
 
