@@ -17,12 +17,13 @@ import {
   DELETED_MESSAGE,
   DELETE_FAILED_MESSAGE,
 } from "@/features/items/_internal/components/DeleteItemDialog";
+import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
 import {
   ItemDrawerContent,
   type ItemDetailState,
 } from "@/features/items/_internal/components/ItemDrawerContent";
+import { fetchItemDetail } from "@/features/items/_internal/components/fetch-item-detail";
 import { deleteItem } from "@/features/items/actions/item";
-import type { ActionResult } from "@/lib/action-result";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
 const NO_HIDDEN_IDS: ReadonlySet<string> = new Set();
@@ -54,18 +55,6 @@ export function useItemDrawer(): ItemDrawerContextValue {
   return context;
 }
 
-async function fetchItemDetail(
-  id: string,
-  signal: AbortSignal,
-): Promise<ItemDetailJson | null> {
-  const response = await fetch(`/api/items/${encodeURIComponent(id)}`, {
-    signal,
-  });
-  if (!response.ok) return null;
-  const body = (await response.json()) as ActionResult<ItemDetailJson | null>;
-  return body.data;
-}
-
 export function ItemDrawerProvider({
   basePath,
   children,
@@ -74,8 +63,11 @@ export function ItemDrawerProvider({
   const [item, setItem] = useState<DashboardItem | null>(null);
   const [state, setState] = useState<ItemDetailState>({ status: "loading" });
   const [isEditing, setIsEditing] = useState(false);
+  const [isConfirmingClose, setIsConfirmingClose] = useState(false);
   const requestRef = useRef<AbortController | null>(null);
   const openItemIdRef = useRef<string | null>(null);
+  // Whether the edit form holds unsaved edits; read only when the sheet closes.
+  const isDirtyRef = useRef(false);
   const router = useRouter();
   const [hiddenIds, hideItem] = useOptimistic(
     NO_HIDDEN_IDS,
@@ -117,6 +109,20 @@ export function ItemDrawerProvider({
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) requestRef.current?.abort();
     setIsOpen(nextOpen);
+  }
+
+  // Esc, the overlay and the close button all land here: with unsaved edits
+  // the sheet stays open until the user discards them.
+  function requestOpenChange(nextOpen: boolean) {
+    if (!nextOpen && isDirtyRef.current) {
+      setIsConfirmingClose(true);
+      return;
+    }
+    handleOpenChange(nextOpen);
+  }
+
+  function setDirty(isDirty: boolean) {
+    isDirtyRef.current = isDirty;
   }
 
   // The header, description and tags come from the card's item, so it is
@@ -173,7 +179,7 @@ export function ItemDrawerProvider({
   return (
     <ItemDrawerContext.Provider value={value}>
       {children}
-      <Sheet open={isOpen} onOpenChange={handleOpenChange}>
+      <Sheet open={isOpen} onOpenChange={requestOpenChange}>
         <SheetContent
           aria-describedby={undefined}
           className="gap-0 data-[side=right]:sm:max-w-xl"
@@ -187,10 +193,19 @@ export function ItemDrawerProvider({
               onCancelEdit={() => setIsEditing(false)}
               onSaved={handleSaved}
               onDelete={handleDelete}
+              onDirtyChange={setDirty}
             />
           )}
         </SheetContent>
       </Sheet>
+      <DiscardChangesDialog
+        open={isConfirmingClose}
+        onOpenChange={setIsConfirmingClose}
+        onDiscard={() => {
+          isDirtyRef.current = false;
+          handleOpenChange(false);
+        }}
+      />
     </ItemDrawerContext.Provider>
   );
 }

@@ -21,6 +21,19 @@ const TEXT_CONTENT_TYPE = "TEXT";
 const URL_CONTENT_TYPE = "URL";
 const FILE_CONTENT_TYPE = "FILE";
 
+// Upper bounds of what an item stores, far above real use (the longest demo
+// content is about 1 500 characters) and low enough that one request cannot
+// fill the database or turn into thousands of tag writes.
+export const TITLE_MAX = 200;
+export const DESCRIPTION_MAX = 2_000;
+export const CONTENT_MAX = 100_000;
+export const LANGUAGE_MAX = 50;
+export const URL_MAX = 2_048;
+export const TAGS_MAX = 20;
+export const TAG_MAX = 50;
+
+export const URL_REQUIRED_MESSAGE = "URL is required";
+
 // The types the create dialog offers. File and image need Pro (requiresPro).
 export const CREATABLE_TYPES = [
   "snippet",
@@ -50,6 +63,38 @@ export function editableFields(typeName: string): EditableFields {
     language: LANGUAGE_TYPES.includes(typeName),
     url: URL_TYPES.includes(typeName),
     file: FILE_TYPES[typeName] ?? null,
+  };
+}
+
+interface TypeSpecificUpdate {
+  title: string;
+  content?: string | null;
+  language?: string | null;
+  url?: string | null;
+}
+
+export type EditableUpdate<T extends TypeSpecificUpdate> =
+  | { data: T }
+  | { error: string };
+
+// Keeps an update to the fields its type has, so a stray url on a note or
+// content on an image never lands in the row. A field left out stays as it
+// is; only an explicit null clears it, which a type with a URL field refuses.
+export function editableUpdate<T extends TypeSpecificUpdate>(
+  typeName: string,
+  input: T,
+): EditableUpdate<T> {
+  const fields = editableFields(typeName);
+  if (fields.url && input.url === null) return { error: URL_REQUIRED_MESSAGE };
+
+  const { content, language, url, ...common } = input;
+  return {
+    data: {
+      ...common,
+      ...(fields.content && content !== undefined && { content }),
+      ...(fields.language && language !== undefined && { language }),
+      ...(fields.url && url !== undefined && { url }),
+    } as T,
   };
 }
 

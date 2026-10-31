@@ -19,7 +19,7 @@ export function ItemRow({ item }: ItemRowProps) {
     <article
       className={cn(
         "flex items-start gap-4 rounded-lg border border-l-4 bg-card p-4 transition-colors hover:bg-accent/50",
-        item.copyValue && "pr-14",
+        item.canCopy && "pr-14",
       )}
       style={{ borderLeftColor: type.color }}
     >

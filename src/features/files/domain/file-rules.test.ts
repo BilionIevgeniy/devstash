@@ -13,6 +13,7 @@ import {
   objectKey,
   signingWindowFor,
   UNSUPPORTED_FILE_MESSAGE,
+  viewDisposition,
 } from "@/features/files/domain/file-rules";
 
 const MB = 1024 * 1024;
@@ -140,6 +141,18 @@ describe("signingWindowFor", () => {
     expect(expiresAt - now.getTime()).toBeGreaterThanOrEqual(
       DOWNLOAD_WINDOW_SECONDS * 1000,
     );
+  });
+});
+
+describe("viewDisposition", () => {
+  it("downloads an SVG instead of opening it as a page", () => {
+    expect(viewDisposition("users/u1/abc.svg")).toBe("attachment");
+    expect(viewDisposition("users/u1/abc.SVG")).toBe("attachment");
+  });
+
+  it("opens other images and files inline", () => {
+    expect(viewDisposition("users/u1/abc.png")).toBe("inline");
+    expect(viewDisposition("users/u1/abc.pdf")).toBe("inline");
   });
 });
 

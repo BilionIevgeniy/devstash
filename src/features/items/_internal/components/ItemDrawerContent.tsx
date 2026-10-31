@@ -46,6 +46,8 @@ interface ItemDrawerContentProps {
   onCancelEdit: () => void;
   onSaved: (detail: ItemDetailJson) => void;
   onDelete: ItemDeleteHandler;
+  /** Whether the edit form holds unsaved edits (see ItemEditForm). */
+  onDirtyChange?: (isDirty: boolean) => void;
   /** "page" renders outside a Sheet, where SheetTitle cannot be used. */
   variant?: "sheet" | "page";
 }
@@ -61,6 +63,7 @@ export function ItemDrawerContent({
   onCancelEdit,
   onSaved,
   onDelete,
+  onDirtyChange,
   variant = "sheet",
 }: ItemDrawerContentProps) {
   const detail = state.status === "ready" ? state.detail : null;
@@ -78,6 +81,7 @@ export function ItemDrawerContent({
           detail={detail}
           onCancel={onCancelEdit}
           onSaved={onSaved}
+          onDirtyChange={onDirtyChange}
         >
           <ItemMeta detail={detail} />
         </ItemEditForm>

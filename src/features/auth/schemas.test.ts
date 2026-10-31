@@ -3,6 +3,7 @@ import {
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
+import { NAME_MAX } from "@/features/auth/domain/registration";
 import {
   changePasswordSchema,
   credentialsSchema,
@@ -44,6 +45,12 @@ describe("emailSchema", () => {
       expect(messagesAt(result, "")).toContain("Invalid email address");
     },
   );
+
+  it("rejects an address longer than SMTP can deliver to", () => {
+    const local = "a".repeat(64);
+    const domain = `${"b".repeat(63)}.${"c".repeat(63)}.${"d".repeat(63)}.dev`;
+    expect(emailSchema.safeParse(`${local}@${domain}`).success).toBe(false);
+  });
 });
 
 describe("registerSchema", () => {
@@ -56,6 +63,16 @@ describe("registerSchema", () => {
 
   it("accepts a complete registration", () => {
     expect(registerSchema.safeParse(valid).success).toBe(true);
+  });
+
+  it("bounds the name", () => {
+    expect(
+      registerSchema.safeParse({ ...valid, name: "n".repeat(NAME_MAX) }).success,
+    ).toBe(true);
+    expect(
+      registerSchema.safeParse({ ...valid, name: "n".repeat(NAME_MAX + 1) })
+        .success,
+    ).toBe(false);
   });
 
   it("trims the name and normalises the email", () => {

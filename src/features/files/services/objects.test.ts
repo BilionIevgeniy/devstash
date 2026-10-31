@@ -133,4 +133,14 @@ describe("signFileUrls", () => {
     );
     expect(new Set(dates.map((date: Date) => date.getTime())).size).toBe(1);
   });
+
+  it("never signs an SVG to open inline", async () => {
+    signGetUrl.mockReset().mockResolvedValue("https://r2.example/get");
+
+    await signFileUrls("users/user-1/abc.svg", "logo.png", new Date());
+
+    for (const [, options] of signGetUrl.mock.calls) {
+      expect(options.contentDisposition).toMatch(/^attachment;/);
+    }
+  });
 });

@@ -10,6 +10,7 @@ import { getItemTypeByName } from "@/features/item-types/queries";
 import {
   contentTypeFor,
   editableFields,
+  editableUpdate,
 } from "@/features/items/domain/item-fields";
 import type {
   CreateItemInput,
@@ -141,16 +142,40 @@ export async function createUserItem(
   }
 }
 
+// Removes the caller's tags no item uses any more, after an update or delete
+// unlinked them. Best effort: the item is already saved, so a failure is only
+// logged. A create in another tab that links one of these tags at the same
+// moment can lose that link (accepted, see "Known risks" in architecture.md).
+async function deleteOrphanTags(userId: string): Promise<void> {
+  try {
+    await prisma.tag.deleteMany({ where: { userId, items: { none: {} } } });
+  } catch (error) {
+    console.error(`Deleting the unused tags of user ${userId} failed:`, error);
+  }
+}
+
 // The owner is part of the where, so an id of someone else's item fails the
-// same way as a missing one. Fields left out of the input stay as they are;
-// the tags are replaced as a whole.
+// same way as a missing one. Only the fields of the item's type are written;
+// fields left out of the input stay as they are; the tags are replaced as a
+// whole.
 export async function updateUserItem(
   userId: string,
   itemId: string,
   input: UpdateItemInput,
 ): Promise<UpdateItemResult> {
-  const { tags, ...fields } = input;
+  const current = await prisma.item.findFirst({
+    where: { id: itemId, userId },
+    select: { type: { select: { name: true } } },
+  });
+  if (!current) return { success: false, error: ITEM_NOT_FOUND, data: null };
 
+  const update = editableUpdate(current.type.name, input);
+  if ("error" in update) {
+    return { success: false, error: update.error, data: null };
+  }
+  const { tags, ...fields } = update.data;
+
+  // A delete can win between the read and here: P2025 below.
   try {
     await prisma.item.update({
       where: { id: itemId, userId },
@@ -166,6 +191,7 @@ export async function updateUserItem(
     }
     throw error;
   }
+  await deleteOrphanTags(userId);
 
   const item = await getUserItemDetail(userId, itemId);
   if (!item) return { success: false, error: ITEM_NOT_FOUND, data: null };
@@ -222,6 +248,7 @@ export async function deleteUserItem(
     }
     throw error;
   }
+  await deleteOrphanTags(userId);
 
   return { success: true, error: null };
 }

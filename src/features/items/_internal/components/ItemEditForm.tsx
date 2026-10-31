@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useEffect,
   useState,
   useTransition,
   type SubmitEvent,
@@ -14,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CodeEditor } from "@/features/editor/components/CodeEditor";
 import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
+import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
 import { Field } from "@/features/items/_internal/components/Field";
 import { updateItem } from "@/features/items/actions/item";
 import {
@@ -21,8 +23,12 @@ import {
   type ItemFormValues,
 } from "@/features/items/domain/item-changes";
 import {
+  DESCRIPTION_MAX,
   editableFields,
+  LANGUAGE_MAX,
   parseTagInput,
+  TITLE_MAX,
+  URL_MAX,
 } from "@/features/items/domain/item-fields";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
@@ -35,6 +41,11 @@ interface ItemEditFormProps {
   detail: ItemDetailJson;
   onCancel: () => void;
   onSaved: (detail: ItemDetailJson) => void;
+  /**
+   * Told whether the form holds unsaved edits, and false once it unmounts, so
+   * the sheet around it can ask before closing.
+   */
+  onDirtyChange?: (isDirty: boolean) => void;
   /** Shown read-only under the fields: collections and dates. */
   children?: ReactNode;
 }
@@ -44,6 +55,7 @@ export function ItemEditForm({
   detail,
   onCancel,
   onSaved,
+  onDirtyChange,
   children,
 }: ItemEditFormProps) {
   const fields = editableFields(item.type.name);
@@ -62,6 +74,7 @@ export function ItemEditForm({
   const [language, setLanguage] = useState(initial.language);
   const [url, setUrl] = useState(initial.url);
   const [isSaving, startSaving] = useTransition();
+  const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
   const isChanged = hasItemChanges(fields, initial, {
     title,
     description,
@@ -70,6 +83,31 @@ export function ItemEditForm({
     language,
     url,
   });
+  const isMissingRequired =
+    title.trim() === "" || (fields.url && url.trim() === "");
+
+  // Reported from an effect: the owner keeps it in a ref, and setting a
+  // parent's state during this render is not allowed. The cleanup clears it
+  // after a save or Cancel unmounts the form.
+  useEffect(() => {
+    onDirtyChange?.(isChanged);
+    return () => onDirtyChange?.(false);
+  }, [isChanged, onDirtyChange]);
+
+  // A reload or a closed tab would drop the edits without a word.
+  useEffect(() => {
+    if (!isChanged) return;
+    function warn(event: BeforeUnloadEvent) {
+      event.preventDefault();
+    }
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [isChanged]);
+
+  function handleCancel() {
+    if (isChanged) setIsConfirmingCancel(true);
+    else onCancel();
+  }
 
   // Only the fields of this type are sent, so a hidden field is never cleared.
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
@@ -99,7 +137,7 @@ export function ItemEditForm({
         <Button
           type="button"
           variant="ghost"
-          onClick={onCancel}
+          onClick={handleCancel}
           disabled={isSaving}
         >
           <X />
@@ -107,11 +145,16 @@ export function ItemEditForm({
         </Button>
         <Button
           type="submit"
-          disabled={isSaving || title.trim() === "" || !isChanged}
+          disabled={isSaving || isMissingRequired || !isChanged}
         >
           <Check />
-          {isSaving ? "Saving..." : "Save"}
+          {isSaving ? "Saving…" : "Save"}
         </Button>
+        <DiscardChangesDialog
+          open={isConfirmingCancel}
+          onOpenChange={setIsConfirmingCancel}
+          onDiscard={onCancel}
+        />
       </div>
       <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
         <Field label="Title">
@@ -120,6 +163,7 @@ export function ItemEditForm({
               id={id}
               value={title}
               onChange={(event) => setTitle(event.target.value)}
+              maxLength={TITLE_MAX}
               required
             />
           )}
@@ -130,6 +174,7 @@ export function ItemEditForm({
               id={id}
               value={description}
               onChange={(event) => setDescription(event.target.value)}
+              maxLength={DESCRIPTION_MAX}
             />
           )}
         </Field>
@@ -141,6 +186,8 @@ export function ItemEditForm({
                 type="url"
                 value={url}
                 onChange={(event) => setUrl(event.target.value)}
+                maxLength={URL_MAX}
+                required
               />
             )}
           </Field>
@@ -152,6 +199,7 @@ export function ItemEditForm({
                 id={id}
                 value={language}
                 onChange={(event) => setLanguage(event.target.value)}
+                maxLength={LANGUAGE_MAX}
               />
             )}
           </Field>

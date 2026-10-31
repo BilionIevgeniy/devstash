@@ -4,13 +4,18 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import bcrypt from "bcryptjs";
 import {
   EmailNotVerifiedError,
   TooManyAttemptsError,
 } from "@/features/auth/_internal/errors";
+import { verifyPassword } from "@/features/auth/_internal/password";
 import { revokeGitHubGrant } from "@/features/auth/_internal/services/github-grant";
-import { LOGIN_BY_EMAIL, LOGIN_BY_IP } from "@/features/auth/domain/rate-limits";
+import {
+  LOGIN_BY_EMAIL_GLOBAL,
+  LOGIN_BY_EMAIL_IP,
+  LOGIN_BY_IP,
+  loginEmailKey,
+} from "@/features/auth/domain/rate-limits";
 import { credentialsSchema } from "@/features/auth/schemas";
 import { getClientIp } from "@/lib/client-ip";
 import { prisma } from "@/lib/prisma";
@@ -46,22 +51,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // Checked here and not in the Server Action so the raw
         // /api/auth/callback/credentials route is throttled too.
-        const [ipLimit, emailLimit] = await Promise.all([
-          consumeIpRateLimit(LOGIN_BY_IP, getClientIp(request.headers)),
-          consumeRateLimit(LOGIN_BY_EMAIL, parsed.data.email),
+        const { email } = parsed.data;
+        const ip = getClientIp(request.headers);
+        const emailKey = loginEmailKey(email, ip);
+        const limits = await Promise.all([
+          consumeIpRateLimit(LOGIN_BY_IP, ip),
+          consumeRateLimit(LOGIN_BY_EMAIL_IP, emailKey),
+          consumeRateLimit(LOGIN_BY_EMAIL_GLOBAL, email),
         ]);
-        if (!ipLimit.success || !emailLimit.success) {
+        if (limits.some((limit) => !limit.success)) {
           throw new TooManyAttemptsError();
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: parsed.data.email },
-        });
-        if (!user?.password) return null;
-
-        const isValid = await bcrypt.compare(parsed.data.password, user.password);
-        if (!isValid) return null;
-        await resetRateLimit(LOGIN_BY_EMAIL, parsed.data.email);
+        const user = await prisma.user.findUnique({ where: { email } });
+        // A missing account pays the same bcrypt round as a wrong password.
+        const isValid = await verifyPassword(
+          parsed.data.password,
+          user?.password,
+        );
+        if (!user || !isValid) return null;
+        await resetRateLimit(LOGIN_BY_EMAIL_IP, emailKey);
         if (!user.emailVerified) throw new EmailNotVerifiedError();
 
         return { id: user.id, email: user.email, name: user.name };

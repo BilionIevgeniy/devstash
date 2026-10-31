@@ -5,19 +5,35 @@ export const TOO_MANY_ATTEMPTS_MESSAGE = `${TOO_MANY_ATTEMPTS_PREFIX} Try again 
 const MINUTE_SECONDS = 60;
 const HOUR_SECONDS = 60 * MINUTE_SECONDS;
 
-// Credentials sign-in counts every attempt; the per-email counter is reset
-// after a successful sign-in.
+// Credentials sign-in counts every attempt. The lockout a user meets is per
+// email and client address, so one stranger guessing from elsewhere cannot
+// lock the owner out; it is reset after a successful sign-in. The per-email
+// ceiling stops guessing spread over many addresses and is never reset by a
+// success, which says nothing about the guesser. It can still be used up by
+// someone with enough addresses (see "Known risks" in architecture.md).
 export const LOGIN_BY_IP = {
   name: "login:ip",
   limit: 20,
   windowSeconds: 15 * MINUTE_SECONDS,
 } as const;
 
-export const LOGIN_BY_EMAIL = {
-  name: "login:email",
+export const LOGIN_BY_EMAIL_IP = {
+  name: "login:email-ip",
   limit: 5,
   windowSeconds: 15 * MINUTE_SECONDS,
 } as const;
+
+export const LOGIN_BY_EMAIL_GLOBAL = {
+  name: "login:email-global",
+  limit: 50,
+  windowSeconds: 15 * MINUTE_SECONDS,
+} as const;
+
+// The identifier of LOGIN_BY_EMAIL_IP. Without a client address it falls back
+// to the email alone, which is the stricter count.
+export function loginEmailKey(email: string, ip: string | null): string {
+  return ip ? `${email}|${ip}` : email;
+}
 
 export const REGISTER_BY_IP = {
   name: "register:ip",

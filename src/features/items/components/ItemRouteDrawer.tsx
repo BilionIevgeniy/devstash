@@ -11,14 +11,18 @@ import { useParams, useRouter } from "next/navigation";
 
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { parseTypeSlug } from "@/features/item-types/domain/item-type";
+import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
 import { ItemDetailView } from "@/features/items/_internal/components/ItemDetailView";
 import { ItemDrawerSkeleton } from "@/features/items/_internal/components/ItemDrawerSkeleton";
 import { useItemDrawer } from "@/features/items/components/ItemDrawerProvider";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
-const CloseAndDeleteContext = createContext<((id: string) => void) | null>(
-  null,
-);
+interface RouteDrawerContextValue {
+  closeAndDelete: (id: string) => void;
+  setDirty: (isDirty: boolean) => void;
+}
+
+const RouteDrawerContext = createContext<RouteDrawerContextValue | null>(null);
 
 // The sheet of the intercepted item route. It lives in the route's layout, so
 // it stays mounted while the loading skeleton gives way to the page. Closing
@@ -29,10 +33,14 @@ const CloseAndDeleteContext = createContext<((id: string) => void) | null>(
 //
 // Radix also calls it when the route itself goes away (browser Back), with
 // the sheet still open: the history has already moved, so going back again
-// would leave the list.
+// would leave the list. Unsaved edits are lost on that Back, since the route
+// is already gone when the sheet hears of it.
 export function ItemRouteDrawer({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(true);
+  const [isConfirmingClose, setIsConfirmingClose] = useState(false);
   const pendingDeleteRef = useRef<string | null>(null);
+  // Whether the edit form holds unsaved edits; read only when the sheet closes.
+  const isDirtyRef = useRef(false);
   const { remove } = useItemDrawer();
   const router = useRouter();
 
@@ -43,23 +51,47 @@ export function ItemRouteDrawer({ children }: { children: ReactNode }) {
     if (pendingDeleteRef.current) remove(pendingDeleteRef.current);
   }
 
+  // Esc, the overlay and the close button all land here: with unsaved edits
+  // the sheet stays open until the user discards them.
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen && isDirtyRef.current) {
+      setIsConfirmingClose(true);
+      return;
+    }
+    setIsOpen(nextOpen);
+  }
+
   function closeAndDelete(id: string) {
     pendingDeleteRef.current = id;
     setIsOpen(false);
   }
 
+  function setDirty(isDirty: boolean) {
+    isDirtyRef.current = isDirty;
+  }
+
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetContent
-        aria-describedby={undefined}
-        className="gap-0 data-[side=right]:sm:max-w-xl"
-        onCloseAutoFocus={handleCloseAutoFocus}
-      >
-        <CloseAndDeleteContext.Provider value={closeAndDelete}>
-          {children}
-        </CloseAndDeleteContext.Provider>
-      </SheetContent>
-    </Sheet>
+    <>
+      <Sheet open={isOpen} onOpenChange={handleOpenChange}>
+        <SheetContent
+          aria-describedby={undefined}
+          className="gap-0 data-[side=right]:sm:max-w-xl"
+          onCloseAutoFocus={handleCloseAutoFocus}
+        >
+          <RouteDrawerContext.Provider value={{ closeAndDelete, setDirty }}>
+            {children}
+          </RouteDrawerContext.Provider>
+        </SheetContent>
+      </Sheet>
+      <DiscardChangesDialog
+        open={isConfirmingClose}
+        onOpenChange={setIsConfirmingClose}
+        onDiscard={() => {
+          isDirtyRef.current = false;
+          setIsOpen(false);
+        }}
+      />
+    </>
   );
 }
 
@@ -72,8 +104,8 @@ export function ItemRouteDrawerView({
   item,
   detail,
 }: ItemRouteDrawerViewProps) {
-  const closeAndDelete = useContext(CloseAndDeleteContext);
-  if (!closeAndDelete) {
+  const context = useContext(RouteDrawerContext);
+  if (!context) {
     throw new Error("ItemRouteDrawerView must be used inside ItemRouteDrawer");
   }
 
@@ -82,7 +114,8 @@ export function ItemRouteDrawerView({
       item={item}
       detail={detail}
       variant="sheet"
-      onDelete={closeAndDelete}
+      onDelete={context.closeAndDelete}
+      onDirtyChange={context.setDirty}
     />
   );
 }

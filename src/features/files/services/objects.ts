@@ -9,6 +9,7 @@ import {
   signingWindowFor,
   tooLargeMessage,
   userPrefix,
+  viewDisposition,
   type FileKind,
 } from "@/features/files/domain/file-rules";
 import type { FileUrls } from "@/features/files/types";
@@ -86,7 +87,7 @@ export async function signFileUrls(
     });
 
   const [viewUrl, downloadUrl] = await Promise.all([
-    sign("inline"),
+    sign(viewDisposition(key)),
     sign("attachment"),
   ]);
   return { viewUrl, downloadUrl };

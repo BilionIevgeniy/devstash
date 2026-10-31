@@ -1,7 +1,10 @@
 import "server-only";
 
 import bcrypt from "bcryptjs";
-import { hashPassword } from "@/features/auth/_internal/password";
+import {
+  hashPassword,
+  verifyPassword,
+} from "@/features/auth/_internal/password";
 import { revokeGitHubGrant } from "@/features/auth/_internal/services/github-grant";
 import { getPasswordResetIdentifier } from "@/features/auth/domain/password-reset";
 import {
@@ -93,7 +96,7 @@ export async function verifyPasswordByEmail(
     where: { email },
     select: { password: true },
   });
-  return user?.password ? bcrypt.compare(password, user.password) : false;
+  return verifyPassword(password, user?.password);
 }
 
 // The clock is read here and not in the profile component, which must stay pure.

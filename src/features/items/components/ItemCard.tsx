@@ -31,7 +31,7 @@ export function ItemCard({ item }: ItemCardProps) {
           />
         </div>
         {/* Room for the copy button over the corner (ItemCardTrigger). */}
-        <div className={cn("min-w-0 flex-1", item.copyValue && "pr-8")}>
+        <div className={cn("min-w-0 flex-1", item.canCopy && "pr-8")}>
           <div className="flex items-center gap-2">
             <h2 className="truncate font-medium">{item.title}</h2>
             {item.isPinned && (
