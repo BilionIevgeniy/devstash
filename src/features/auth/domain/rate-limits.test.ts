@@ -4,6 +4,9 @@ import {
   getBlockingReset,
   getRetryAfterSeconds,
   getTooManyAttemptsMessage,
+  LOGIN_BY_EMAIL_GLOBAL,
+  LOGIN_BY_EMAIL_IP,
+  loginEmailKey,
   RESET_EMAIL_BY_ADDRESS,
   TOO_MANY_ATTEMPTS_MESSAGE,
   VERIFICATION_EMAIL_BY_ADDRESS,
@@ -62,6 +65,22 @@ describe("rate limit policies", () => {
 
   it("keeps the generic message free of any time", () => {
     expect(TOO_MANY_ATTEMPTS_MESSAGE).toBe("Too many attempts. Try again later.");
+  });
+
+  it("puts the per-email ceiling above the lockout a user meets", () => {
+    expect(LOGIN_BY_EMAIL_GLOBAL.limit).toBeGreaterThan(LOGIN_BY_EMAIL_IP.limit);
+  });
+});
+
+describe("loginEmailKey", () => {
+  it("counts an email separately for each client address", () => {
+    expect(loginEmailKey("a@b.dev", "1.2.3.4")).not.toBe(
+      loginEmailKey("a@b.dev", "5.6.7.8"),
+    );
+  });
+
+  it("falls back to the email alone without a client address", () => {
+    expect(loginEmailKey("a@b.dev", null)).toBe("a@b.dev");
   });
 });
 

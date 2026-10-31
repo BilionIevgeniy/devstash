@@ -34,8 +34,12 @@ import { createItem } from "@/features/items/actions/item";
 import {
   canCreateType,
   CREATABLE_TYPES,
+  DESCRIPTION_MAX,
   editableFields,
+  LANGUAGE_MAX,
   parseTagInput,
+  TITLE_MAX,
+  URL_MAX,
   type CreatableTypeName,
 } from "@/features/items/domain/item-fields";
 
@@ -221,6 +225,7 @@ function CreateItemForm({
             id={id}
             value={title}
             onChange={(event) => setTitle(event.target.value)}
+            maxLength={TITLE_MAX}
             required
           />
         )}
@@ -231,6 +236,7 @@ function CreateItemForm({
             id={id}
             value={description}
             onChange={(event) => setDescription(event.target.value)}
+            maxLength={DESCRIPTION_MAX}
           />
         )}
       </Field>
@@ -242,6 +248,7 @@ function CreateItemForm({
               type="url"
               value={url}
               onChange={(event) => setUrl(event.target.value)}
+              maxLength={URL_MAX}
               required
             />
           )}
@@ -254,6 +261,7 @@ function CreateItemForm({
               id={id}
               value={language}
               onChange={(event) => setLanguage(event.target.value)}
+              maxLength={LANGUAGE_MAX}
             />
           )}
         </Field>
@@ -290,7 +298,7 @@ function CreateItemForm({
           </Button>
         </DialogClose>
         <Button type="submit" disabled={isCreating || isMissingRequired}>
-          {isCreating ? "Creating..." : "Create"}
+          {isCreating ? "Creating…" : "Create"}
         </Button>
       </DialogFooter>
     </form>

@@ -11,8 +11,10 @@ import { EMAIL_NOT_VERIFIED_MESSAGE } from "@/features/auth/_internal/messages";
 import {
   getBlockingReset,
   getTooManyAttemptsMessage,
-  LOGIN_BY_EMAIL,
+  LOGIN_BY_EMAIL_GLOBAL,
+  LOGIN_BY_EMAIL_IP,
   LOGIN_BY_IP,
+  loginEmailKey,
   TOO_MANY_ATTEMPTS_MESSAGE,
 } from "@/features/auth/domain/rate-limits";
 import { signInSchema } from "@/features/auth/schemas";
@@ -34,10 +36,12 @@ function failure(error: string): AuthActionState {
 // The sign-in error only carries a code, so the time to wait is read from the
 // counters; when none can be read the message simply has no time in it.
 async function getLockoutMessage(email: string): Promise<string> {
+  const ip = getClientIp(await headers());
   const reset = getBlockingReset(
     await Promise.all([
-      getRateLimitStatus(LOGIN_BY_EMAIL, email),
-      getIpRateLimitStatus(LOGIN_BY_IP, getClientIp(await headers())),
+      getRateLimitStatus(LOGIN_BY_EMAIL_IP, loginEmailKey(email, ip)),
+      getRateLimitStatus(LOGIN_BY_EMAIL_GLOBAL, email),
+      getIpRateLimitStatus(LOGIN_BY_IP, ip),
     ]),
   );
   return reset === null

@@ -1,16 +1,19 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
+import { getTooManyAttemptsMessage } from "@/features/auth/domain/rate-limits";
 import { getEntitlements } from "@/features/billing/queries";
 import {
   checkDeclaredFile,
   fileExtension,
   objectKey,
+  PRESIGN_BY_USER,
 } from "@/features/files/domain/file-rules";
 import type { RequestUploadInput } from "@/features/files/schemas";
 import type { PresignedUpload } from "@/features/files/types";
 import type { OperationResult } from "@/lib/action-result";
 import { signPutUrl } from "@/lib/r2";
+import { consumeRateLimit } from "@/lib/rate-limit";
 
 export const PRO_ONLY_MESSAGE = "File uploads are a Pro feature";
 const UPLOAD_URL_TTL_SECONDS = 10 * 60;
@@ -32,6 +35,18 @@ export async function presignUpload(
   const check = checkDeclaredFile(kind, fileName, size);
   if ("error" in check)
     return { success: false, error: check.error, data: null };
+
+  // Counted only for a file that would be signed, so a refused type does not
+  // use up the quota. Fails closed: an Upstash outage throws and the action
+  // answers with its generic error.
+  const limit = await consumeRateLimit(PRESIGN_BY_USER, userId);
+  if (!limit.success) {
+    return {
+      success: false,
+      error: getTooManyAttemptsMessage(limit.reset, Date.now()),
+      data: null,
+    };
+  }
 
   const key = objectKey(userId, randomUUID(), fileExtension(fileName));
   const uploadUrl = await signPutUrl(

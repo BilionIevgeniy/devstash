@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { signInWithGitHub } from "@/features/auth/actions/sign-in";
+import { auth } from "@/features/auth/nextauth/auth";
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { GitHubSignInButton } from "@/features/auth/components/GitHubSignInButton";
 import { SignInForm } from "@/features/auth/components/SignInForm";
@@ -22,9 +24,15 @@ function getErrorMessage(
   return AUTH_ERROR_MESSAGES.get(code) ?? DEFAULT_ERROR_MESSAGE;
 }
 
+// A signed-in user goes to the dashboard. Checked here and not in the proxy:
+// auth() also checks the session version, so a revoked session is signed out
+// here instead of bouncing between the proxy and the pages.
 export default async function SignInPage({
   searchParams,
 }: PageProps<"/sign-in">) {
+  const session = await auth();
+  if (session?.user) redirect("/dashboard");
+
   const { error } = await searchParams;
 
   return (

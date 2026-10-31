@@ -1,3 +1,7 @@
+export const NAME_MAX = 100;
+// The longest address SMTP can deliver to (RFC 5321 path limit).
+export const EMAIL_MAX = 254;
+
 interface ExistingAccount {
   hasPassword: boolean;
   isEmailVerified: boolean;

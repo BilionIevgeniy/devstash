@@ -12,6 +12,8 @@ interface ItemDetailViewProps {
   detail: ItemDetailJson;
   variant: "sheet" | "page";
   onDelete: ItemDeleteHandler;
+  /** Whether the edit form holds unsaved edits (see ItemEditForm). */
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 // The item routes get the detail from the server, so there is no loading
@@ -22,6 +24,7 @@ export function ItemDetailView({
   detail: initialDetail,
   variant,
   onDelete,
+  onDirtyChange,
 }: ItemDetailViewProps) {
   const [item, setItem] = useState(initialItem);
   const [detail, setDetail] = useState(initialDetail);
@@ -49,6 +52,7 @@ export function ItemDetailView({
       onCancelEdit={() => setIsEditing(false)}
       onSaved={handleSaved}
       onDelete={onDelete}
+      onDirtyChange={onDirtyChange}
       variant={variant}
     />
   );

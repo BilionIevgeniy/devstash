@@ -118,7 +118,9 @@ model Item {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId])
+  // The lists read a user's items newest first, all of them or of one type.
+  @@index([userId, createdAt])
+  @@index([userId, typeId, createdAt])
   @@index([typeId])
 }
 

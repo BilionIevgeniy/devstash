@@ -4,6 +4,7 @@ import {
   contentTypeFor,
   copyValueOf,
   editableFields,
+  editableUpdate,
   isCreatableType,
   parseTagInput,
   requiresPro,
@@ -144,5 +145,48 @@ describe("parseTagInput", () => {
   it("returns an empty list for an empty or blank input", () => {
     expect(parseTagInput("")).toEqual([]);
     expect(parseTagInput("  ,  ")).toEqual([]);
+  });
+});
+
+describe("editableUpdate", () => {
+  const base = { title: "Title", tags: ["react"] };
+
+  it("drops the fields a link does not have", () => {
+    expect(
+      editableUpdate("link", {
+        ...base,
+        content: "stray",
+        language: "ts",
+        url: "https://react.dev",
+      }),
+    ).toEqual({ data: { ...base, url: "https://react.dev" } });
+  });
+
+  it("drops a URL sent for a note", () => {
+    expect(
+      editableUpdate("note", { ...base, content: "hi", url: "https://a.dev" }),
+    ).toEqual({ data: { ...base, content: "hi" } });
+  });
+
+  it("applies a cleared language on a snippet", () => {
+    expect(editableUpdate("snippet", { ...base, language: null })).toEqual({
+      data: { ...base, language: null },
+    });
+  });
+
+  it("refuses to clear the URL of a link", () => {
+    expect(editableUpdate("link", { ...base, url: null })).toEqual({
+      error: "URL is required",
+    });
+  });
+
+  it("leaves the URL of a link alone when it is not sent", () => {
+    expect(editableUpdate("link", base)).toEqual({ data: base });
+  });
+
+  it("keeps only the common fields for an image", () => {
+    expect(
+      editableUpdate("image", { ...base, content: "x", url: "https://a.dev" }),
+    ).toEqual({ data: base });
   });
 });

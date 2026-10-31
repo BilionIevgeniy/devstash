@@ -12,10 +12,11 @@ export interface DashboardItem {
   type: ItemTypeInfo;
 }
 
-// What the item cards and rows get: the text their copy button puts on the
-// clipboard, or null when there is nothing to copy.
+// What the item cards and rows get: whether their copy button has something
+// to copy. The text itself is fetched on click, so a list never carries the
+// content of every item to the browser.
 export interface ItemCardData extends DashboardItem {
-  copyValue: string | null;
+  canCopy: boolean;
 }
 
 export interface ItemCollectionRef {

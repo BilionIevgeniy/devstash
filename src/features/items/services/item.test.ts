@@ -5,6 +5,7 @@ const {
   update,
   remove,
   findFirst,
+  deleteTags,
   getItemTypeByName,
   getEntitlements,
   confirmUpload,
@@ -15,6 +16,7 @@ const {
   update: vi.fn(),
   remove: vi.fn(),
   findFirst: vi.fn(),
+  deleteTags: vi.fn(),
   getItemTypeByName: vi.fn(),
   getEntitlements: vi.fn(),
   confirmUpload: vi.fn(),
@@ -22,7 +24,10 @@ const {
   signFileUrls: vi.fn(),
 }));
 vi.mock("@/lib/prisma", () => ({
-  prisma: { item: { create, update, delete: remove, findFirst } },
+  prisma: {
+    item: { create, update, delete: remove, findFirst },
+    tag: { deleteMany: deleteTags },
+  },
 }));
 vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
 vi.mock("@/features/files/services/objects", () => ({
@@ -238,17 +243,38 @@ describe("updateUserItem", () => {
   beforeEach(() => {
     update.mockReset().mockResolvedValue({ id: "item-1" });
     findFirst.mockReset().mockResolvedValue(rawItem);
+    deleteTags.mockReset().mockResolvedValue({ count: 0 });
   });
 
   it("writes only an item that belongs to the caller", async () => {
     await updateUserItem("user-1", "item-1", { title: "Renamed", tags: [] });
 
+    expect(findFirst.mock.calls[0][0].where).toEqual({
+      id: "item-1",
+      userId: "user-1",
+    });
     expect(update).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: "item-1", userId: "user-1" } }),
     );
   });
 
-  it("answers not found when the item is missing or someone else's", async () => {
+  it("answers not found without writing when the item is missing or someone else's", async () => {
+    findFirst.mockResolvedValue(null);
+
+    const result = await updateUserItem("user-1", "item-1", {
+      title: "Renamed",
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Item not found",
+      data: null,
+    });
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it("answers not found when a delete wins between the read and the write", async () => {
     update.mockRejectedValue(prismaError("P2025"));
 
     const result = await updateUserItem("user-1", "item-1", {
@@ -261,7 +287,60 @@ describe("updateUserItem", () => {
       error: "Item not found",
       data: null,
     });
-    expect(findFirst).not.toHaveBeenCalled();
+  });
+
+  it("drops the fields the item's type does not have", async () => {
+    findFirst.mockResolvedValue({ ...rawItem, type: { name: "link" } });
+
+    await updateUserItem("user-1", "item-1", {
+      title: "Renamed",
+      content: "stray",
+      language: "ts",
+      url: "https://react.dev",
+      tags: [],
+    });
+
+    const { data } = update.mock.calls[0][0];
+    expect(data).toMatchObject({ url: "https://react.dev" });
+    expect(data).not.toHaveProperty("content");
+    expect(data).not.toHaveProperty("language");
+  });
+
+  it("refuses to clear the URL of a link", async () => {
+    findFirst.mockResolvedValue({ ...rawItem, type: { name: "link" } });
+
+    const result = await updateUserItem("user-1", "item-1", {
+      title: "Renamed",
+      url: null,
+      tags: [],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "URL is required",
+      data: null,
+    });
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it("removes the caller's tags no item uses any more", async () => {
+    await updateUserItem("user-1", "item-1", { title: "Renamed", tags: [] });
+
+    expect(deleteTags).toHaveBeenCalledWith({
+      where: { userId: "user-1", items: { none: {} } },
+    });
+  });
+
+  it("still reports the save when the tag cleanup fails", async () => {
+    deleteTags.mockRejectedValue(new Error("db down"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const result = await updateUserItem("user-1", "item-1", {
+      title: "Renamed",
+      tags: [],
+    });
+
+    expect(result.success).toBe(true);
   });
 
   it("replaces the tags with tags of the caller", async () => {
@@ -309,7 +388,7 @@ describe("updateUserItem", () => {
   });
 
   it("answers not found when the item is gone by the time it is read back", async () => {
-    findFirst.mockResolvedValue(null);
+    findFirst.mockResolvedValueOnce(rawItem).mockResolvedValueOnce(null);
 
     const result = await updateUserItem("user-1", "item-1", {
       title: "Renamed",
@@ -336,6 +415,7 @@ describe("deleteUserItem", () => {
   beforeEach(() => {
     remove.mockReset().mockResolvedValue({ id: "item-1" });
     findFirst.mockReset().mockResolvedValue({ fileKey: null });
+    deleteTags.mockReset().mockResolvedValue({ count: 0 });
     deleteUserObject
       .mockReset()
       .mockResolvedValue({ success: true, error: null });
@@ -400,6 +480,9 @@ describe("deleteUserItem", () => {
       expect.objectContaining({ where: { id: "item-1", userId: "user-1" } }),
     );
     expect(result).toEqual({ success: true, error: null });
+    expect(deleteTags).toHaveBeenCalledWith({
+      where: { userId: "user-1", items: { none: {} } },
+    });
   });
 
   it("answers not found when the item is missing or someone else's", async () => {

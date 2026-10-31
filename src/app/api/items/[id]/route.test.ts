@@ -64,4 +64,13 @@ describe("GET /api/items/[id]", () => {
       error: null,
     });
   });
+
+  // The answer holds the user's content and signed URLs.
+  it("keeps the answer out of every cache", async () => {
+    getUserItemDetail.mockResolvedValue({ id: VALID_ID, title: "x" });
+
+    const response = await callGet(VALID_ID);
+
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store");
+  });
 });

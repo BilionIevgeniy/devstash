@@ -48,6 +48,8 @@ const cardItemSelect = {
 
 type RawCardItem = Prisma.ItemGetPayload<{ select: typeof cardItemSelect }>;
 
+// The content is read only to tell whether there is something to copy; it
+// stays on the server, and the copy button fetches it on click.
 function toItemCardData({
   contentType,
   content,
@@ -56,7 +58,7 @@ function toItemCardData({
 }: RawCardItem): ItemCardData {
   return {
     ...toDashboardItem(item),
-    copyValue: copyValueOf({ contentType, content, url }),
+    canCopy: copyValueOf({ contentType, content, url }) !== null,
   };
 }
 

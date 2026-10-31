@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  CONTENT_MAX,
+  DESCRIPTION_MAX,
+  LANGUAGE_MAX,
+  TAG_MAX,
+  TAGS_MAX,
+  TITLE_MAX,
+  URL_MAX,
+} from "@/features/items/domain/item-fields";
+import {
   createItemSchema,
   deleteItemOptionsSchema,
   itemIdSchema,
@@ -118,6 +127,49 @@ describe("updateItemSchema", () => {
   it("leaves out the fields that were not sent", () => {
     const { data } = parse({});
     expect(data).toEqual({ title: "Title", tags: [] });
+  });
+
+  describe("limits", () => {
+    it("accepts every field at its limit", () => {
+      const result = parse({
+        title: "t".repeat(TITLE_MAX),
+        description: "d".repeat(DESCRIPTION_MAX),
+        content: "c".repeat(CONTENT_MAX),
+        language: "l".repeat(LANGUAGE_MAX),
+        tags: Array.from({ length: TAGS_MAX }, (_, i) => `tag-${i}`),
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("rejects a field one character over its limit", () => {
+      expect(parse({ title: "t".repeat(TITLE_MAX + 1) }).success).toBe(false);
+      expect(
+        parse({ description: "d".repeat(DESCRIPTION_MAX + 1) }).success,
+      ).toBe(false);
+      expect(parse({ content: "c".repeat(CONTENT_MAX + 1) }).success).toBe(
+        false,
+      );
+      expect(parse({ language: "l".repeat(LANGUAGE_MAX + 1) }).success).toBe(
+        false,
+      );
+      expect(
+        parse({ url: `https://a.dev/${"p".repeat(URL_MAX)}` }).success,
+      ).toBe(false);
+    });
+
+    it("rejects a tag over its limit and a list over the tag count", () => {
+      expect(parse({ tags: ["x".repeat(TAG_MAX + 1)] }).success).toBe(false);
+      const tooMany = Array.from({ length: TAGS_MAX + 1 }, (_, i) => `t${i}`);
+      expect(parse({ tags: tooMany }).success).toBe(false);
+    });
+
+    it("counts the tags after dropping duplicates", () => {
+      const tags = [
+        ...Array.from({ length: TAGS_MAX }, (_, i) => `t${i}`),
+        "t0",
+      ];
+      expect(parse({ tags }).data?.tags).toHaveLength(TAGS_MAX);
+    });
   });
 });
 

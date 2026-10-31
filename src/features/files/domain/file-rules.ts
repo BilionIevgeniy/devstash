@@ -56,6 +56,14 @@ export const EMPTY_FILE_MESSAGE = "The file is empty";
 export const DOWNLOAD_WINDOW_SECONDS = HOUR_SECONDS;
 export const DOWNLOAD_CACHE_CONTROL = `private, max-age=${DOWNLOAD_WINDOW_SECONDS}`;
 
+// Signing an upload is cheap for the caller but each one can leave up to
+// 10 MB in R2 that no item points to, so it is counted per user.
+export const PRESIGN_BY_USER = {
+  name: "presign:user",
+  limit: 30,
+  windowSeconds: HOUR_SECONDS,
+} as const;
+
 export type DeclaredFileCheck = { contentType: string } | { error: string };
 
 export interface SigningWindow {
@@ -166,6 +174,15 @@ export function signingWindowFor(now: Date): SigningWindow {
     signingDate: new Date(Math.floor(now.getTime() / windowMs) * windowMs),
     expiresIn: 2 * DOWNLOAD_WINDOW_SECONDS,
   };
+}
+
+// How the view URL opens. An SVG can carry scripts, so opened on its own it is
+// downloaded instead of rendered; an <img> still shows it, since images ignore
+// the header. Decided by the key, which set the stored Content-Type, not by
+// the display name. The scripts would run on the R2 origin, which holds no
+// app cookies, so this is defence in depth.
+export function viewDisposition(key: string): "inline" | "attachment" {
+  return fileExtension(key) === "svg" ? "attachment" : "inline";
 }
 
 // RFC 6266: a plain ASCII filename for old clients, and filename* with the

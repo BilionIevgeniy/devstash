@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getEntitlements, signPutUrl } = vi.hoisted(() => ({
+const { getEntitlements, signPutUrl, consumeRateLimit } = vi.hoisted(() => ({
   getEntitlements: vi.fn(),
   signPutUrl: vi.fn(),
+  consumeRateLimit: vi.fn(),
 }));
 vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
 vi.mock("@/lib/r2", () => ({ signPutUrl }));
+vi.mock("@/lib/rate-limit", () => ({ consumeRateLimit }));
 
 import {
   presignUpload,
@@ -19,6 +21,35 @@ describe("presignUpload", () => {
     vi.clearAllMocks();
     getEntitlements.mockResolvedValue({ isPro: true });
     signPutUrl.mockResolvedValue("https://r2.example/signed");
+    consumeRateLimit.mockResolvedValue({
+      success: true,
+      remaining: 29,
+      reset: Date.now(),
+    });
+  });
+
+  it("refuses a user over the upload quota without signing", async () => {
+    consumeRateLimit.mockResolvedValue({
+      success: false,
+      remaining: 0,
+      reset: Date.now() + 10 * 60 * 1000,
+    });
+
+    const result = await presignUpload("user-1", input);
+
+    expect(consumeRateLimit).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "presign:user" }),
+      "user-1",
+    );
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/^Too many attempts/);
+    expect(signPutUrl).not.toHaveBeenCalled();
+  });
+
+  it("does not count a file the rules reject", async () => {
+    await presignUpload("user-1", { ...input, fileName: "a.exe" });
+
+    expect(consumeRateLimit).not.toHaveBeenCalled();
   });
 
   it("refuses a Free user without signing anything", async () => {

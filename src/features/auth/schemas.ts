@@ -3,6 +3,7 @@ import {
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
+import { EMAIL_MAX, NAME_MAX } from "@/features/auth/domain/registration";
 
 const PASSWORDS_DO_NOT_MATCH = "Passwords do not match";
 
@@ -10,6 +11,7 @@ export const emailSchema = z
   .string()
   .trim()
   .toLowerCase()
+  .max(EMAIL_MAX, "Invalid email address")
   .pipe(z.email("Invalid email address"));
 
 const newPasswordSchema = z
@@ -35,7 +37,11 @@ export const signInSchema = z.object({
 
 export const registerSchema = z
   .object({
-    name: z.string().trim().min(1, "Name is required"),
+    name: z
+      .string()
+      .trim()
+      .min(1, "Name is required")
+      .max(NAME_MAX, `Name can be up to ${NAME_MAX} characters`),
     email: emailSchema,
     password: newPasswordSchema,
     confirmPassword: z.string(),
