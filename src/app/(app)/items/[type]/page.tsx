@@ -20,15 +20,15 @@ import { getItemsByType } from "@/features/items/queries";
 import { getUserFileListItems } from "@/features/items/services/file-list";
 import { getUserGalleryItems } from "@/features/items/services/gallery";
 import type {
-  DashboardItem,
   FileListItem,
   GalleryItem,
+  ItemCardData,
 } from "@/features/items/types";
 
 type Listing =
   | { kind: "gallery"; items: GalleryItem[] }
   | { kind: "files"; items: FileListItem[] }
-  | { kind: "cards"; items: DashboardItem[] };
+  | { kind: "cards"; items: ItemCardData[] };
 
 // An image type shows its items as thumbnails, a file type as rows of files,
 // every other type as cards.

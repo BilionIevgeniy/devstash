@@ -2,8 +2,10 @@ import "server-only";
 
 import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
 import { itemTypeSelect } from "@/features/item-types/queries";
+import { copyValueOf } from "@/features/items/domain/item-fields";
 import type {
   DashboardItem,
+  ItemCardData,
   ItemDetailRecord,
   ItemStats,
   UploadItemRecord,
@@ -34,6 +36,27 @@ function toDashboardItem({ type, tags, ...item }: RawItem): DashboardItem {
     ...item,
     type: toItemTypeInfo(type),
     tags: tags.map(({ tag }) => tag.name),
+  };
+}
+
+const cardItemSelect = {
+  ...dashboardItemSelect,
+  contentType: true,
+  content: true,
+  url: true,
+} satisfies Prisma.ItemSelect;
+
+type RawCardItem = Prisma.ItemGetPayload<{ select: typeof cardItemSelect }>;
+
+function toItemCardData({
+  contentType,
+  content,
+  url,
+  ...item
+}: RawCardItem): ItemCardData {
+  return {
+    ...toDashboardItem(item),
+    copyValue: copyValueOf({ contentType, content, url }),
   };
 }
 
@@ -91,35 +114,35 @@ function toItemDetail({
   };
 }
 
-export async function getPinnedItems(userId: string): Promise<DashboardItem[]> {
+export async function getPinnedItems(userId: string): Promise<ItemCardData[]> {
   const items = await prisma.item.findMany({
     where: { userId, isPinned: true },
     orderBy: { createdAt: "desc" },
-    select: dashboardItemSelect,
+    select: cardItemSelect,
   });
-  return items.map(toDashboardItem);
+  return items.map(toItemCardData);
 }
 
-export async function getRecentItems(userId: string): Promise<DashboardItem[]> {
+export async function getRecentItems(userId: string): Promise<ItemCardData[]> {
   const items = await prisma.item.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
     take: RECENT_ITEMS_LIMIT,
-    select: dashboardItemSelect,
+    select: cardItemSelect,
   });
-  return items.map(toDashboardItem);
+  return items.map(toItemCardData);
 }
 
 export async function getItemsByType(
   userId: string,
   typeId: string,
-): Promise<DashboardItem[]> {
+): Promise<ItemCardData[]> {
   const items = await prisma.item.findMany({
     where: { userId, typeId },
     orderBy: { createdAt: "desc" },
-    select: dashboardItemSelect,
+    select: cardItemSelect,
   });
-  return items.map(toDashboardItem);
+  return items.map(toItemCardData);
 }
 
 // The items of a file or image type with their uploads, read only by the

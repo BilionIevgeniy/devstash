@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   canCreateType,
   contentTypeFor,
+  copyValueOf,
   editableFields,
   isCreatableType,
   parseTagInput,
@@ -68,6 +69,32 @@ describe("contentTypeFor", () => {
     ["image", "FILE"],
   ])("stores a %s as %s", (typeName, contentType) => {
     expect(contentTypeFor(typeName)).toBe(contentType);
+  });
+});
+
+describe("copyValueOf", () => {
+  const item = { content: "npm run dev", url: "https://nextjs.org" };
+
+  it("copies the content of a text item", () => {
+    expect(copyValueOf({ ...item, contentType: "TEXT" })).toBe("npm run dev");
+  });
+
+  it("copies the URL of a link", () => {
+    expect(copyValueOf({ ...item, contentType: "URL" })).toBe(
+      "https://nextjs.org",
+    );
+  });
+
+  it("copies nothing when the field is empty", () => {
+    expect(copyValueOf({ ...item, contentType: "TEXT", content: null })).toBe(
+      null,
+    );
+    expect(copyValueOf({ ...item, contentType: "URL", url: null })).toBe(null);
+  });
+
+  it("copies nothing from an upload or an unknown content type", () => {
+    expect(copyValueOf({ ...item, contentType: "FILE" })).toBe(null);
+    expect(copyValueOf({ ...item, contentType: "OTHER" })).toBe(null);
   });
 });
 

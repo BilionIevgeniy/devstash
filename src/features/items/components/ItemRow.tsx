@@ -1,11 +1,11 @@
 import { Pin, Star } from "lucide-react";
 
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
-import { formatShortDate } from "@/lib/utils";
-import type { DashboardItem } from "@/features/items/types";
+import { cn, formatShortDate } from "@/lib/utils";
+import type { ItemCardData } from "@/features/items/types";
 
 interface ItemRowProps {
-  item: DashboardItem;
+  item: ItemCardData;
 }
 
 export function ItemRow({ item }: ItemRowProps) {
@@ -14,9 +14,13 @@ export function ItemRow({ item }: ItemRowProps) {
     ? `color-mix(in oklab, ${type.color} 10%, transparent)`
     : undefined;
 
+  // pr-14 leaves room for the copy button over the corner (ItemCardTrigger).
   return (
     <article
-      className="flex items-start gap-4 rounded-lg border border-l-4 bg-card p-4 transition-colors hover:bg-accent/50"
+      className={cn(
+        "flex items-start gap-4 rounded-lg border border-l-4 bg-card p-4 transition-colors hover:bg-accent/50",
+        item.copyValue && "pr-14",
+      )}
       style={{ borderLeftColor: type.color }}
     >
       <div

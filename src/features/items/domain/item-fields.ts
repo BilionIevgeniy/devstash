@@ -86,6 +86,18 @@ export function contentTypeFor(typeName: string): string {
   return TEXT_CONTENT_TYPE;
 }
 
+// What a card's copy button puts on the clipboard: a text item's content, a
+// link's URL. An upload has only a signed URL that expires, so nothing.
+export function copyValueOf(item: {
+  contentType: string;
+  content: string | null;
+  url: string | null;
+}): string | null {
+  if (item.contentType === TEXT_CONTENT_TYPE) return item.content;
+  if (item.contentType === URL_CONTENT_TYPE) return item.url;
+  return null;
+}
+
 // "react, hooks, ,react" becomes ["react", "hooks"]: trimmed, no empty entries,
 // the first of each duplicate kept.
 export function parseTagInput(input: string): string[] {

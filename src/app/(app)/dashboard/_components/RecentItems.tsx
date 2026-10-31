@@ -1,6 +1,6 @@
 import { Clock } from "lucide-react";
 
-import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
+import { ItemCardTrigger } from "@/features/items/components/ItemCardTrigger";
 import { ItemRow } from "@/features/items/components/ItemRow";
 import { getRecentItems } from "@/features/items/queries";
 import { getSessionUser } from "@/features/auth/nextauth/session";
@@ -20,9 +20,9 @@ export async function RecentItems() {
       ) : (
         <div className="space-y-3">
           {items.map((item) => (
-            <ItemDrawerTrigger key={item.id} item={item}>
+            <ItemCardTrigger key={item.id} item={item}>
               <ItemRow item={item} />
-            </ItemDrawerTrigger>
+            </ItemCardTrigger>
           ))}
         </div>
       )}

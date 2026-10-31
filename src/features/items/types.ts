@@ -12,6 +12,12 @@ export interface DashboardItem {
   type: ItemTypeInfo;
 }
 
+// What the item cards and rows get: the text their copy button puts on the
+// clipboard, or null when there is nothing to copy.
+export interface ItemCardData extends DashboardItem {
+  copyValue: string | null;
+}
+
 export interface ItemCollectionRef {
   id: string;
   name: string;
