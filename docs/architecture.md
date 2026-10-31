@@ -28,6 +28,7 @@ src/
     account/      the delete-account flow: verify, purge the files, delete the rows
     app-shell/    dashboard shell, top bar, sidebar
   components/ui/  shadcn/ui primitives only
+  components/common/  hand-written UI with no feature knowledge, used by several features (CopyButton)
   lib/            feature-neutral infrastructure and vendor clients (prisma, email, rate-limit, hash, ...)
   proxy.ts        guards /dashboard, /profile and /items; must stay at the src root
 prisma/           schema, migrations, seed
@@ -301,6 +302,7 @@ Not checked by lint, so it is on the author and the reviewer: no writes in `quer
 - **SVG from R2.** An uploaded SVG is served as `image/svg+xml`. In the drawer's `<img>` its scripts do not run, but opening the preview in a tab renders it as a document on the R2 endpoint's origin, where a script would run. That origin holds none of the app's cookies and the URL is signed for its owner only, so the reach is the uploader's own file. If shared links arrive, sign the SVG's view URL as `attachment` or serve it with a `Content-Security-Policy` response header
 - **Signed URLs in client state.** The drawer and the item page keep the detail they were rendered with. Their URLs are valid for at least an hour after the render; a page left open longer shows an R2 error on Download until it is reloaded. The gallery of an image type page has the same window: a thumbnail loaded later (lazily on scroll, or revalidated after its `max-age`) shows the type icon instead until the page is reloaded. The file list of a file type page has the same window, and it is felt more: the list stays mounted while the drawer opens and closes, so after an hour a click on a row's Download opens R2's XML error page in the app's tab (Back returns to the list). The fix not taken: sign the download when it is clicked, which costs a request per click where the spec asks for a direct download
 - **Originals as thumbnails.** The gallery loads each original upload (up to the image size limit in `files/domain/file-rules.ts`) into a card a few hundred pixels wide, and the type page has no pagination. `loading="lazy"` delays the cards below the fold but does not shrink them. Accepted until resized thumbnails or the planned pagination of items exist; `next/image` is not the fix, since it would send every short-lived signed URL through its optimizer
+- **Content in the card lists.** The copy button of an item card needs the text at the click (an `await` before `navigator.clipboard.writeText` can lose the user activation in Safari), so `getPinnedItems`, `getRecentItems` and `getItemsByType` read each item's full content, and a type page has no pagination. `ItemCardTrigger` sends the value to the copy button only, once per card. Accepted until the planned pagination of items; then a type page sends one page of content at a time
 - **Superseded columns.** `User.isPro`, `User.stripeCustomerId`, `User.stripeSubscriptionId` and `Item.fileUrl` are read by nothing and wait for their contract migration (`context/todo.md`). Code must not start reading them again
 
 ## Glossary

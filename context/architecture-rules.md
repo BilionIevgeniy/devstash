@@ -12,7 +12,7 @@ src/
     api/                route handlers: NextAuth, registration; later webhooks, export, AI streaming
   features/             the product, one folder per feature (see Ranks)
   components/ui/        shadcn/ui primitives only
-  components/common/    hand-written UI with no feature knowledge: PaginationNav, EmptyState (planned)
+  components/common/    hand-written UI with no feature knowledge: CopyButton; PaginationNav, EmptyState (planned)
   lib/                  feature-neutral infrastructure and vendor clients
   proxy.ts              Next.js proxy, stays at the src root; its matcher must cover every authenticated route
 prisma/                 schema, migrations, seed

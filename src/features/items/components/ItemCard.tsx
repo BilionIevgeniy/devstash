@@ -1,11 +1,11 @@
 import { Pin, Star } from "lucide-react";
 
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
-import { formatShortDate } from "@/lib/utils";
-import type { DashboardItem } from "@/features/items/types";
+import { cn, formatShortDate } from "@/lib/utils";
+import type { ItemCardData } from "@/features/items/types";
 
 interface ItemCardProps {
-  item: DashboardItem;
+  item: ItemCardData;
 }
 
 export function ItemCard({ item }: ItemCardProps) {
@@ -30,7 +30,8 @@ export function ItemCard({ item }: ItemCardProps) {
             style={{ color: type.color }}
           />
         </div>
-        <div className="min-w-0 flex-1">
+        {/* Room for the copy button over the corner (ItemCardTrigger). */}
+        <div className={cn("min-w-0 flex-1", item.copyValue && "pr-8")}>
           <div className="flex items-center gap-2">
             <h2 className="truncate font-medium">{item.title}</h2>
             {item.isPinned && (
