@@ -44,16 +44,22 @@ export interface ItemDetail extends ItemDetailFields {
   file: ItemFile | null;
 }
 
-// What the gallery query reads. The object key stays on the server: only the
-// gallery service sees it, to sign the thumbnail URL.
-export interface GalleryItemRecord extends DashboardItem {
+// What the query of a file or image type reads. The object key stays on the
+// server: only the gallery and file list services see it, to sign the URLs.
+export interface UploadItemRecord extends DashboardItem {
   fileKey: string | null;
   fileName: string | null;
+  fileSize: number | null;
 }
 
 // What the gallery of an image type page gets: the upload as a signed URL.
 export interface GalleryItem extends DashboardItem {
   imageUrl: string | null;
+}
+
+// What the file list of a file type page gets: the upload as signed URLs.
+export interface FileListItem extends DashboardItem {
+  file: ItemFile | null;
 }
 
 // ItemDetail as it arrives from GET /api/items/[id]: dates become ISO strings.

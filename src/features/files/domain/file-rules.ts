@@ -69,6 +69,26 @@ export function fileExtension(fileName: string): string {
   return dot === -1 ? "" : fileName.slice(dot + 1).toLowerCase();
 }
 
+export type FileIconKind = "pdf" | "text" | "code" | "spreadsheet" | "other";
+
+// The extensions of the "file" kind by the icon a list row shows for them.
+// A test checks that every accepted extension has one, so a new extension
+// added above does not silently fall back to "other".
+const FILE_ICON_EXTENSIONS: Record<Exclude<FileIconKind, "other">, string[]> = {
+  pdf: ["pdf"],
+  text: ["txt", "md", "ini"],
+  code: ["json", "yaml", "yml", "xml", "toml"],
+  spreadsheet: ["csv"],
+};
+
+export function fileIconKind(fileName: string): FileIconKind {
+  const extension = fileExtension(fileName);
+  for (const [kind, extensions] of Object.entries(FILE_ICON_EXTENSIONS)) {
+    if (extensions.includes(extension)) return kind as FileIconKind;
+  }
+  return "other";
+}
+
 export function contentTypeFor(
   kind: FileKind,
   fileName: string,

@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  acceptedExtensions,
   checkDeclaredFile,
   contentDisposition,
   contentTypeFor,
   DOWNLOAD_WINDOW_SECONDS,
   fileExtension,
+  fileIconKind,
   formatFileSize,
   isUserKey,
   objectKey,
@@ -22,6 +24,27 @@ describe("fileExtension", () => {
 
   it("gives an empty string for a name without a dot", () => {
     expect(fileExtension("Makefile")).toBe("");
+  });
+});
+
+describe("fileIconKind", () => {
+  it.each([
+    ["manual.pdf", "pdf"],
+    ["README.MD", "text"],
+    ["config.yml", "code"],
+    ["data.csv", "spreadsheet"],
+    ["Makefile", "other"],
+    ["archive.zip", "other"],
+  ])("%s gets the %s icon", (fileName, expected) => {
+    expect(fileIconKind(fileName)).toBe(expected);
+  });
+
+  it("has a specific icon for every extension a file upload accepts", () => {
+    const extensions = acceptedExtensions("file").split(",");
+
+    for (const extension of extensions) {
+      expect(fileIconKind(`a${extension}`), extension).not.toBe("other");
+    }
   });
 });
 

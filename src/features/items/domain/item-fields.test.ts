@@ -4,9 +4,9 @@ import {
   contentTypeFor,
   editableFields,
   isCreatableType,
-  isGalleryType,
   parseTagInput,
   requiresPro,
+  typeListing,
 } from "@/features/items/domain/item-fields";
 
 describe("isCreatableType", () => {
@@ -34,14 +34,14 @@ describe("requiresPro", () => {
   });
 });
 
-describe("isGalleryType", () => {
+describe("typeListing", () => {
   it.each([
-    ["image", true],
-    ["file", false],
-    ["snippet", false],
-    ["recipe", false],
-  ])("%s shows a gallery: %s", (typeName, expected) => {
-    expect(isGalleryType(typeName)).toBe(expected);
+    ["image", "gallery"],
+    ["file", "files"],
+    ["snippet", "cards"],
+    ["recipe", "cards"],
+  ])("%s is listed as %s", (typeName, expected) => {
+    expect(typeListing(typeName)).toBe(expected);
   });
 });
 

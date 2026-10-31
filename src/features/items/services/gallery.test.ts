@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getGalleryItemsByType, signFileUrls } = vi.hoisted(() => ({
-  getGalleryItemsByType: vi.fn(),
+const { getUploadItemsByType, signFileUrls } = vi.hoisted(() => ({
+  getUploadItemsByType: vi.fn(),
   signFileUrls: vi.fn(),
 }));
-vi.mock("@/features/items/queries", () => ({ getGalleryItemsByType }));
+vi.mock("@/features/items/queries", () => ({ getUploadItemsByType }));
 vi.mock("@/features/files/services/objects", () => ({ signFileUrls }));
 
 import { getUserGalleryItems } from "@/features/items/services/gallery";
@@ -20,6 +20,7 @@ const record = {
   type: { id: "type-1", name: "image", icon: "Image", color: "#ec4899" },
   fileKey: null,
   fileName: null,
+  fileSize: null,
 };
 
 describe("getUserGalleryItems", () => {
@@ -32,7 +33,7 @@ describe("getUserGalleryItems", () => {
   });
 
   it("signs nothing for an item without a file", async () => {
-    getGalleryItemsByType.mockResolvedValue([record]);
+    getUploadItemsByType.mockResolvedValue([record]);
 
     const [item] = await getUserGalleryItems("user-1", "type-1");
 
@@ -41,7 +42,7 @@ describe("getUserGalleryItems", () => {
   });
 
   it("hands out the view URL and never the key or the file name", async () => {
-    getGalleryItemsByType.mockResolvedValue([
+    getUploadItemsByType.mockResolvedValue([
       { ...record, fileKey: "users/user-1/a.png", fileName: "cat.png" },
     ]);
 
@@ -55,7 +56,7 @@ describe("getUserGalleryItems", () => {
   // The drawer signs with the same name, so both URLs match and the browser
   // loads the image once.
   it("signs a file without a name under its key, like the item detail", async () => {
-    getGalleryItemsByType.mockResolvedValue([
+    getUploadItemsByType.mockResolvedValue([
       { ...record, fileKey: "users/user-1/a.png" },
     ]);
 
@@ -69,7 +70,7 @@ describe("getUserGalleryItems", () => {
   });
 
   it("keeps the order of the query", async () => {
-    getGalleryItemsByType.mockResolvedValue([
+    getUploadItemsByType.mockResolvedValue([
       { ...record, id: "b", fileKey: "users/user-1/b.png" },
       { ...record, id: "a" },
     ]);
