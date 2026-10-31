@@ -14,6 +14,7 @@ import { parseTypeSlug } from "@/features/item-types/domain/item-type";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
 import { ItemDetailView } from "@/features/items/_internal/components/ItemDetailView";
 import { ItemDrawerSkeleton } from "@/features/items/_internal/components/ItemDrawerSkeleton";
+import { useDirtyCloseGuard } from "@/features/items/_internal/components/hooks/use-dirty-close-guard";
 import { useItemDrawer } from "@/features/items/components/ItemDrawerProvider";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
@@ -37,10 +38,9 @@ const RouteDrawerContext = createContext<RouteDrawerContextValue | null>(null);
 // is already gone when the sheet hears of it.
 export function ItemRouteDrawer({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(true);
-  const [isConfirmingClose, setIsConfirmingClose] = useState(false);
   const pendingDeleteRef = useRef<string | null>(null);
-  // Whether the edit form holds unsaved edits; read only when the sheet closes.
-  const isDirtyRef = useRef(false);
+  const { guardOpenChange, setDirty, discardDialogProps } =
+    useDirtyCloseGuard(setIsOpen);
   const { remove } = useItemDrawer();
   const router = useRouter();
 
@@ -51,28 +51,14 @@ export function ItemRouteDrawer({ children }: { children: ReactNode }) {
     if (pendingDeleteRef.current) remove(pendingDeleteRef.current);
   }
 
-  // Esc, the overlay and the close button all land here: with unsaved edits
-  // the sheet stays open until the user discards them.
-  function handleOpenChange(nextOpen: boolean) {
-    if (!nextOpen && isDirtyRef.current) {
-      setIsConfirmingClose(true);
-      return;
-    }
-    setIsOpen(nextOpen);
-  }
-
   function closeAndDelete(id: string) {
     pendingDeleteRef.current = id;
     setIsOpen(false);
   }
 
-  function setDirty(isDirty: boolean) {
-    isDirtyRef.current = isDirty;
-  }
-
   return (
     <>
-      <Sheet open={isOpen} onOpenChange={handleOpenChange}>
+      <Sheet open={isOpen} onOpenChange={guardOpenChange}>
         <SheetContent
           aria-describedby={undefined}
           className="gap-0 data-[side=right]:sm:max-w-xl"
@@ -83,14 +69,7 @@ export function ItemRouteDrawer({ children }: { children: ReactNode }) {
           </RouteDrawerContext.Provider>
         </SheetContent>
       </Sheet>
-      <DiscardChangesDialog
-        open={isConfirmingClose}
-        onOpenChange={setIsConfirmingClose}
-        onDiscard={() => {
-          isDirtyRef.current = false;
-          setIsOpen(false);
-        }}
-      />
+      <DiscardChangesDialog {...discardDialogProps} />
     </>
   );
 }

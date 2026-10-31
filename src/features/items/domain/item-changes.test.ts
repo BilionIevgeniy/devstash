@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   hasItemChanges,
+  typeFieldValues,
   type ItemFormValues,
 } from "@/features/items/domain/item-changes";
 import { editableFields } from "@/features/items/domain/item-fields";
@@ -70,8 +71,37 @@ describe("hasItemChanges", () => {
   });
 
   it("sees a change of the URL of a link", () => {
-    expect(changed({ url: "https://example.com" }, editableFields("link"))).toBe(
-      true,
-    );
+    expect(
+      changed({ url: "https://example.com" }, editableFields("link")),
+    ).toBe(true);
+  });
+});
+
+describe("typeFieldValues", () => {
+  const values = { ...initial, url: "https://example.com" };
+
+  it("sends content and language of a snippet, without a url key", () => {
+    const sent = typeFieldValues(snippet, values);
+    expect(sent).toEqual({ content: values.content, language: "typescript" });
+    expect(sent).not.toHaveProperty("url");
+  });
+
+  it("sends only the content of a note", () => {
+    const sent = typeFieldValues(editableFields("note"), values);
+    expect(sent).toEqual({ content: values.content });
+    expect(sent).not.toHaveProperty("language");
+    expect(sent).not.toHaveProperty("url");
+  });
+
+  it("sends only the url of a link", () => {
+    const sent = typeFieldValues(editableFields("link"), values);
+    expect(sent).toEqual({ url: "https://example.com" });
+    expect(sent).not.toHaveProperty("content");
+    expect(sent).not.toHaveProperty("language");
+  });
+
+  it("sends nothing type-specific for a file or a custom type", () => {
+    expect(typeFieldValues(editableFields("file"), values)).toEqual({});
+    expect(typeFieldValues(editableFields("custom"), values)).toEqual({});
   });
 });

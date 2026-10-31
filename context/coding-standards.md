@@ -106,7 +106,34 @@ Check every UI change against these before writing it; the plan names which ones
 
 - No commented-out code unless specified
 - No unused imports or variables
-- Keep functions under 50 lines when possible
+
+## Size limits
+
+Small units with one job each, in the spirit of Clean Code and the usual SonarQube quality gates. ESLint enforces the numbers (`max-lines-per-function`, `max-lines`, `complexity` in `eslint.config.mjs`); blank lines and comments do not count, and tests, `components/ui` and `src/generated` are exempt.
+
+| What                                                                                                                                                                          | Limit                           |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| A function in `domain/`, `schemas.ts`, `queries.ts`, `services/`, `actions/`, `lib/`, `route.ts`                                                                              | 50 lines                        |
+| A component (`.tsx`) or hook (`components/hooks/use-*.ts`), anything in `components/common`, a page or layout. Browser helpers in `components/` (`put-file.ts`) are logic: 50 | 80 lines (JSX is long but flat) |
+| A file                                                                                                                                                                        | 250 lines                       |
+| Cyclomatic complexity of a function                                                                                                                                           | 15                              |
+
+How to split when a unit grows past its limit, or has more than one job before it gets there:
+
+- State, refs and effects that belong together go to a hook, `components/hooks/use-<topic>.ts` (`_internal/components/hooks/` while it is private: `useFileUpload`, `useDirtyCloseGuard`). A hook has the same imports as a component, so it is part of the `components/` role; it never imports a `.tsx` (lint), and a type it shares with its component lives in the hook's file ([ADR 0007](../docs/adr/0007-client-hooks-in-the-components-role.md)). There is no `hooks/` folder beside `components/`
+- A block of JSX with its own condition or its own state becomes a subcomponent (`UploadProgress`, `DropZone`). Small helpers used by one component stay private in its file
+- One exported component per file. A file that collects several components that each work alone is split into one file each (`ItemDrawerHeader`, `ItemBody`, `ItemMeta`)
+- A pure rule found inside a component moves to `domain/` with its test (`typeFieldValues`)
+- Markup repeated in two places becomes one component, with the differences as props (`ItemFields` in the create and edit forms)
+- Browser-only I/O (an XHR, a `fetch` to our API) goes to a plain function in `components/` (`put-file.ts`, `fetch-item-detail.ts`) that the hook calls. It starts with `import "client-only"`, never with `"use client"`
+- A hook or component starts in the feature's `_internal/components/`; it moves to a shared place only when a second feature needs it (rule 9 in [architecture-rules.md](architecture-rules.md)). A hook with no feature knowledge goes to `src/components/common/hooks/`
+- Never split just to hit the number: a part that cannot be named by what it does stays where it is
+
+## React patterns
+
+- A form with several fields keeps them in one state object and updates it with a function: `setValues((current) => ({ ...current, [name]: value }))`. The setter stays stable, so a subscriber like Monaco never writes from stale values
+- A hook that aborts a request (unmount, reset, a new attempt) gets no callback for the abort: the code that aborts has already moved on, and a late "failed" would flash an error
+- A refactor keeps behaviour as it is: a split does not lock, unlock, reorder or rename anything the user sees
 
 ## Testing
 

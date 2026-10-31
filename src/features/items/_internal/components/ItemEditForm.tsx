@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  useEffect,
   useState,
   useTransition,
   type SubmitEvent,
@@ -11,24 +10,18 @@ import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { CodeEditor } from "@/features/editor/components/CodeEditor";
-import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
-import { Field } from "@/features/items/_internal/components/Field";
+import { ItemFields } from "@/features/items/_internal/components/ItemFields";
+import { useUnsavedChanges } from "@/features/items/_internal/components/hooks/use-unsaved-changes";
 import { updateItem } from "@/features/items/actions/item";
 import {
   hasItemChanges,
+  typeFieldValues,
   type ItemFormValues,
 } from "@/features/items/domain/item-changes";
 import {
-  DESCRIPTION_MAX,
   editableFields,
-  LANGUAGE_MAX,
   parseTagInput,
-  TITLE_MAX,
-  URL_MAX,
 } from "@/features/items/domain/item-fields";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
@@ -50,6 +43,20 @@ interface ItemEditFormProps {
   children?: ReactNode;
 }
 
+function initialValues(
+  item: DashboardItem,
+  detail: ItemDetailJson,
+): ItemFormValues {
+  return {
+    title: item.title,
+    description: item.description ?? "",
+    tags: item.tags.join(TAG_JOINER),
+    content: detail.content ?? "",
+    language: detail.language ?? "",
+    url: detail.url ?? "",
+  };
+}
+
 export function ItemEditForm({
   item,
   detail,
@@ -59,50 +66,18 @@ export function ItemEditForm({
   children,
 }: ItemEditFormProps) {
   const fields = editableFields(item.type.name);
-  const initial: ItemFormValues = {
-    title: item.title,
-    description: item.description ?? "",
-    tags: item.tags.join(TAG_JOINER),
-    content: detail.content ?? "",
-    language: detail.language ?? "",
-    url: detail.url ?? "",
-  };
-  const [title, setTitle] = useState(initial.title);
-  const [description, setDescription] = useState(initial.description);
-  const [tags, setTags] = useState(initial.tags);
-  const [content, setContent] = useState(initial.content);
-  const [language, setLanguage] = useState(initial.language);
-  const [url, setUrl] = useState(initial.url);
+  const initial = initialValues(item, detail);
+  const [values, setValues] = useState(initial);
   const [isSaving, startSaving] = useTransition();
   const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
-  const isChanged = hasItemChanges(fields, initial, {
-    title,
-    description,
-    tags,
-    content,
-    language,
-    url,
-  });
+  const isChanged = hasItemChanges(fields, initial, values);
   const isMissingRequired =
-    title.trim() === "" || (fields.url && url.trim() === "");
+    values.title.trim() === "" || (fields.url && values.url.trim() === "");
+  useUnsavedChanges(isChanged, onDirtyChange);
 
-  // Reported from an effect: the owner keeps it in a ref, and setting a
-  // parent's state during this render is not allowed. The cleanup clears it
-  // after a save or Cancel unmounts the form.
-  useEffect(() => {
-    onDirtyChange?.(isChanged);
-    return () => onDirtyChange?.(false);
-  }, [isChanged, onDirtyChange]);
-
-  // A reload or a closed tab would drop the edits without a word.
-  useEffect(() => {
-    if (!isChanged) return;
-    function warn(event: BeforeUnloadEvent) {
-      event.preventDefault();
-    }
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [isChanged]);
+  function setField(name: keyof ItemFormValues, value: string) {
+    setValues((current) => ({ ...current, [name]: value }));
+  }
 
   function handleCancel() {
     if (isChanged) setIsConfirmingCancel(true);
@@ -115,12 +90,10 @@ export function ItemEditForm({
     if (!isChanged) return;
     startSaving(async () => {
       const result = await updateItem(item.id, {
-        title,
-        description,
-        tags: parseTagInput(tags),
-        ...(fields.content && { content }),
-        ...(fields.language && { language }),
-        ...(fields.url && { url }),
+        title: values.title,
+        description: values.description,
+        tags: parseTagInput(values.tags),
+        ...typeFieldValues(fields, values),
       });
       if (result.success && result.data) {
         toast.success(SAVED_MESSAGE);
@@ -157,78 +130,7 @@ export function ItemEditForm({
         />
       </div>
       <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
-        <Field label="Title">
-          {(id) => (
-            <Input
-              id={id}
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              maxLength={TITLE_MAX}
-              required
-            />
-          )}
-        </Field>
-        <Field label="Description">
-          {(id) => (
-            <Textarea
-              id={id}
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              maxLength={DESCRIPTION_MAX}
-            />
-          )}
-        </Field>
-        {fields.url && (
-          <Field label="URL">
-            {(id) => (
-              <Input
-                id={id}
-                type="url"
-                value={url}
-                onChange={(event) => setUrl(event.target.value)}
-                maxLength={URL_MAX}
-                required
-              />
-            )}
-          </Field>
-        )}
-        {fields.language && (
-          <Field label="Language">
-            {(id) => (
-              <Input
-                id={id}
-                value={language}
-                onChange={(event) => setLanguage(event.target.value)}
-                maxLength={LANGUAGE_MAX}
-              />
-            )}
-          </Field>
-        )}
-        {fields.content && (
-          <Field label="Content">
-            {(id) =>
-              fields.codeEditor ? (
-                <CodeEditor
-                  value={content}
-                  language={language}
-                  onChange={setContent}
-                  ariaLabel="Content"
-                />
-              ) : (
-                <MarkdownEditor id={id} value={content} onChange={setContent} />
-              )
-            }
-          </Field>
-        )}
-        <Field label="Tags" hint="Separate tags with commas">
-          {(id) => (
-            <Input
-              id={id}
-              value={tags}
-              onChange={(event) => setTags(event.target.value)}
-            />
-          )}
-        </Field>
+        <ItemFields fields={fields} values={values} onChange={setField} />
         {children}
       </div>
     </form>

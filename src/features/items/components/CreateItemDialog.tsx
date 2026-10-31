@@ -15,35 +15,32 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { ProBadge } from "@/features/billing/components/ProBadge";
-import { CodeEditor } from "@/features/editor/components/CodeEditor";
-import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
 import { FileUpload } from "@/features/files/components/FileUpload";
 import type { UploadedFile } from "@/features/files/types";
-import { Field } from "@/features/items/_internal/components/Field";
+import { ItemFields } from "@/features/items/_internal/components/ItemFields";
+import { ItemTypeSelect } from "@/features/items/_internal/components/ItemTypeSelect";
 import { createItem } from "@/features/items/actions/item";
 import {
+  typeFieldValues,
+  type ItemFormValues,
+} from "@/features/items/domain/item-changes";
+import {
   canCreateType,
-  CREATABLE_TYPES,
-  DESCRIPTION_MAX,
   editableFields,
-  LANGUAGE_MAX,
   parseTagInput,
-  TITLE_MAX,
-  URL_MAX,
   type CreatableTypeName,
 } from "@/features/items/domain/item-fields";
 
 const DEFAULT_TYPE: CreatableTypeName = "snippet";
+const EMPTY_VALUES: ItemFormValues = {
+  title: "",
+  description: "",
+  content: "",
+  language: "",
+  url: "",
+  tags: "",
+};
 const CREATED_MESSAGE = "Item created";
 const CREATE_FAILED_MESSAGE = "Couldn't create the item";
 
@@ -125,24 +122,23 @@ function CreateItemForm({
   onCreated,
 }: CreateItemFormProps) {
   const [typeName, setTypeName] = useState<CreatableTypeName>(initialType);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [content, setContent] = useState("");
-  const [language, setLanguage] = useState("");
-  const [url, setUrl] = useState("");
-  const [tags, setTags] = useState("");
+  const [values, setValues] = useState<ItemFormValues>(EMPTY_VALUES);
   const [upload, setUpload] = useState<UploadedFile | null>(null);
   const [isCreating, startCreating] = useTransition();
   const fields = editableFields(typeName);
   const isMissingRequired =
-    title.trim() === "" ||
-    (fields.url && url.trim() === "") ||
+    values.title.trim() === "" ||
+    (fields.url && values.url.trim() === "") ||
     (fields.file !== null && upload === null);
+
+  function setField(name: keyof ItemFormValues, value: string) {
+    setValues((current) => ({ ...current, [name]: value }));
+  }
 
   // An upload belongs to the kind it was made for, so a type switch drops it;
   // the key on FileUpload remounts it, which aborts a running PUT.
-  function handleTypeChange(value: string) {
-    setTypeName(value as CreatableTypeName);
+  function handleTypeChange(value: CreatableTypeName) {
+    setTypeName(value);
     setUpload(null);
   }
 
@@ -153,12 +149,10 @@ function CreateItemForm({
     startCreating(async () => {
       const result = await createItem({
         typeName,
-        title,
-        description,
-        tags: parseTagInput(tags),
-        ...(fields.content && { content }),
-        ...(fields.language && { language }),
-        ...(fields.url && { url }),
+        title: values.title,
+        description: values.description,
+        tags: parseTagInput(values.tags),
+        ...typeFieldValues(fields, values),
         ...(fields.file &&
           upload && { file: { key: upload.key, name: upload.fileName } }),
       });
@@ -175,35 +169,12 @@ function CreateItemForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Field label="Type">
-        {(id) => (
-          <Select
-            value={typeName}
-            onValueChange={handleTypeChange}
-            disabled={isCreating}
-          >
-            <SelectTrigger id={id} className="w-full capitalize">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {CREATABLE_TYPES.map((type) => {
-                const isAllowed = canCreateType(type, isPro);
-                return (
-                  <SelectItem
-                    key={type}
-                    value={type}
-                    disabled={!isAllowed}
-                    className="capitalize"
-                  >
-                    {type}
-                    {!isAllowed && <ProBadge />}
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-        )}
-      </Field>
+      <ItemTypeSelect
+        value={typeName}
+        onChange={handleTypeChange}
+        isPro={isPro}
+        disabled={isCreating}
+      />
       {fields.file && (
         // Not a Field: its label points at an input, and the drop zone is
         // named by its own aria-label.
@@ -219,78 +190,7 @@ function CreateItemForm({
           />
         </div>
       )}
-      <Field label="Title">
-        {(id) => (
-          <Input
-            id={id}
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            maxLength={TITLE_MAX}
-            required
-          />
-        )}
-      </Field>
-      <Field label="Description">
-        {(id) => (
-          <Textarea
-            id={id}
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            maxLength={DESCRIPTION_MAX}
-          />
-        )}
-      </Field>
-      {fields.url && (
-        <Field label="URL">
-          {(id) => (
-            <Input
-              id={id}
-              type="url"
-              value={url}
-              onChange={(event) => setUrl(event.target.value)}
-              maxLength={URL_MAX}
-              required
-            />
-          )}
-        </Field>
-      )}
-      {fields.language && (
-        <Field label="Language">
-          {(id) => (
-            <Input
-              id={id}
-              value={language}
-              onChange={(event) => setLanguage(event.target.value)}
-              maxLength={LANGUAGE_MAX}
-            />
-          )}
-        </Field>
-      )}
-      {fields.content && (
-        <Field label="Content">
-          {(id) =>
-            fields.codeEditor ? (
-              <CodeEditor
-                value={content}
-                language={language}
-                onChange={setContent}
-                ariaLabel="Content"
-              />
-            ) : (
-              <MarkdownEditor id={id} value={content} onChange={setContent} />
-            )
-          }
-        </Field>
-      )}
-      <Field label="Tags" hint="Separate tags with commas">
-        {(id) => (
-          <Input
-            id={id}
-            value={tags}
-            onChange={(event) => setTags(event.target.value)}
-          />
-        )}
-      </Field>
+      <ItemFields fields={fields} values={values} onChange={setField} />
       <DialogFooter>
         <DialogClose asChild>
           <Button type="button" variant="ghost" disabled={isCreating}>

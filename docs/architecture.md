@@ -195,7 +195,7 @@ Create only the files a feature actually needs. `nextauth/` is not a role of the
 | `queries.ts` | A read of the feature's own models for a page, a GET route or a service. `userId` first, a DTO out, no writes; a mapper from a Prisma row sits next to its `select` | `domain/`, `types.ts`, `lib/prisma` | services, actions, components (lint) |
 | `services/` | The operation itself: every write, a vendor, Redis, email, NextAuth or `fetch` call, another feature's data, a limit or permission check, a flow of several steps. `verbNoun(userId, input)`; `ip`, `origin` and `userId` come in as parameters | queries, domain, types, schemas, `lib`, features of a lower rank, sibling services (no cycles) | actions, components (lint); `next/headers`, `next/cache`, `next/navigation` (lint) |
 | `actions/`, `route.ts`, pages | Entry points: parse the input with a schema, read the request (session, headers, cookies, searchParams), apply a plain per-IP limit when it does not depend on the operation (registration), make the call into a service or a query, shape the result, revalidate or redirect | everything below | Prisma (lint), components (lint) |
-| `components/` | UI. Data comes through props, or from queries called by a server component; changes go through actions | own `actions/`, `types.ts`, `schemas.ts`, `domain/`, `queries.ts` (server components only), lower features, `components/ui` | Prisma, services (lint) |
+| `components/` | UI, including hooks in `components/hooks/use-*.ts` and browser-only helpers (`fetch-item-detail`, `put-file`, starting with `import "client-only"`), with the same import rules ([ADR 0007](adr/0007-client-hooks-in-the-components-role.md)). Data comes through props, or from queries called by a server component; changes go through actions | own `actions/`, `types.ts`, `schemas.ts`, `domain/`, `queries.ts` (server components only), lower features, `components/ui` | Prisma, services (lint); in a hook, any `.tsx` (lint) |
 | `_internal/emails/` | Pure builders that return `{ subject, html, text }`; the service sends them through `lib/email.ts` | — | I/O |
 
 Expected failures (wrong password, expired link) are returned as a result; unexpected ones throw and are caught by the entry point.
@@ -281,11 +281,12 @@ Each feature keeps its business rules in `features/[feature]/domain/` as pure Ty
 `eslint.config.mjs` builds its zones from one rank table (`FEATURE_RANKS`) and checks:
 
 - the layer order and the `_internal/` boundary (`import/no-restricted-paths`)
-- the direction of the roles inside a feature: queries and schemas do not import services, actions or components; services do not import actions or components; actions do not import components; components do not import services
+- the direction of the roles inside a feature: queries and schemas do not import services, actions or components; services do not import actions or components; actions do not import components; components do not import services; hooks in `components/hooks/` do not import any `.tsx`
 - the domain core: no package import (colocated `*.test.ts` files are excepted), only `domain/`, `types.ts` and `lib/utils`
-- no Prisma in actions, components and `app/`; no `next/headers`, `next/cache` or `next/navigation` in services; vendor SDKs only in `lib`
+- no Prisma in actions, components (including `components/common`) and `app/`; no `next/headers`, `next/cache` or `next/navigation` in services; vendor SDKs only in `lib`
 - import cycles (`import/no-cycle`)
 - deprecated APIs of the installed packages (`@typescript-eslint/no-deprecated`, with type information from `projectService`)
+- size: 50 lines per function in the logic roles and the browser helpers, 80 per component (`.tsx`), hook (`components/hooks/use-*.ts`) and page, 250 per file, cyclomatic complexity 15 (`max-lines-per-function`, `max-lines`, `complexity`; blank lines and comments not counted; see "Size limits" in `context/coding-standards.md`)
 
 Not checked by lint, so it is on the author and the reviewer: no writes in `queries.ts`, one call into a service per entry point, `userId` in every `where`, a service taking `userId`, `ip` and `origin` as parameters, idempotent background jobs, and reads of another feature's models (see "Known risks").
 
