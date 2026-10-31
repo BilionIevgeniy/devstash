@@ -4,9 +4,9 @@ import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
 import { itemTypeSelect } from "@/features/item-types/queries";
 import type {
   DashboardItem,
-  GalleryItemRecord,
   ItemDetailRecord,
   ItemStats,
+  UploadItemRecord,
 } from "@/features/items/types";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -37,22 +37,24 @@ function toDashboardItem({ type, tags, ...item }: RawItem): DashboardItem {
   };
 }
 
-const galleryItemSelect = {
+const uploadItemSelect = {
   ...dashboardItemSelect,
   fileKey: true,
   fileName: true,
+  fileSize: true,
 } satisfies Prisma.ItemSelect;
 
-type RawGalleryItem = Prisma.ItemGetPayload<{
-  select: typeof galleryItemSelect;
+type RawUploadItem = Prisma.ItemGetPayload<{
+  select: typeof uploadItemSelect;
 }>;
 
-function toGalleryItem({
+function toUploadItem({
   fileKey,
   fileName,
+  fileSize,
   ...item
-}: RawGalleryItem): GalleryItemRecord {
-  return { ...toDashboardItem(item), fileKey, fileName };
+}: RawUploadItem): UploadItemRecord {
+  return { ...toDashboardItem(item), fileKey, fileName, fileSize };
 }
 
 const itemDetailSelect = {
@@ -120,18 +122,18 @@ export async function getItemsByType(
   return items.map(toDashboardItem);
 }
 
-// The items of an image type with their object keys, read only by the gallery
-// service.
-export async function getGalleryItemsByType(
+// The items of a file or image type with their uploads, read only by the
+// gallery and file list services.
+export async function getUploadItemsByType(
   userId: string,
   typeId: string,
-): Promise<GalleryItemRecord[]> {
+): Promise<UploadItemRecord[]> {
   const items = await prisma.item.findMany({
     where: { userId, typeId },
     orderBy: { createdAt: "desc" },
-    select: galleryItemSelect,
+    select: uploadItemSelect,
   });
-  return items.map(toGalleryItem);
+  return items.map(toUploadItem);
 }
 
 export async function getItemDetail(

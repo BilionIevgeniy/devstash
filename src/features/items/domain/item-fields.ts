@@ -58,9 +58,15 @@ export function requiresPro(typeName: string): boolean {
   return editableFields(typeName).file !== null;
 }
 
-// The types whose page shows thumbnails in a gallery instead of item cards.
-export function isGalleryType(typeName: string): boolean {
-  return editableFields(typeName).file === "image";
+export type TypeListing = "gallery" | "files" | "cards";
+
+// How a type page lists its items: an image type as thumbnails in a gallery,
+// a file type as rows of files, every other type as item cards.
+export function typeListing(typeName: string): TypeListing {
+  const file = editableFields(typeName).file;
+  if (file === "image") return "gallery";
+  if (file === "file") return "files";
+  return "cards";
 }
 
 // Whether the user may create an item of this type now: a type the dialog

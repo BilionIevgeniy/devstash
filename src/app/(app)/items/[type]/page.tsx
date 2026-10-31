@@ -9,14 +9,52 @@ import {
 } from "@/features/item-types/domain/item-type";
 import { getItemTypeByName } from "@/features/item-types/queries";
 import { CreateItemDialog } from "@/features/items/components/CreateItemDialog";
+import { FileList } from "@/features/items/components/FileList";
 import { ImageGallery } from "@/features/items/components/ImageGallery";
 import {
   isCreatableType,
-  isGalleryType,
+  typeListing,
 } from "@/features/items/domain/item-fields";
 import { ItemList } from "@/features/items/components/ItemList";
 import { getItemsByType } from "@/features/items/queries";
+import { getUserFileListItems } from "@/features/items/services/file-list";
 import { getUserGalleryItems } from "@/features/items/services/gallery";
+import type {
+  DashboardItem,
+  FileListItem,
+  GalleryItem,
+} from "@/features/items/types";
+
+type Listing =
+  | { kind: "gallery"; items: GalleryItem[] }
+  | { kind: "files"; items: FileListItem[] }
+  | { kind: "cards"; items: DashboardItem[] };
+
+// An image type shows its items as thumbnails, a file type as rows of files,
+// every other type as cards.
+async function loadListing(
+  userId: string,
+  typeId: string,
+  typeName: string,
+): Promise<Listing> {
+  switch (typeListing(typeName)) {
+    case "gallery":
+      return {
+        kind: "gallery",
+        items: await getUserGalleryItems(userId, typeId),
+      };
+    case "files":
+      return {
+        kind: "files",
+        items: await getUserFileListItems(userId, typeId),
+      };
+    case "cards":
+      return {
+        kind: "cards",
+        items: await getItemsByType(userId, typeId),
+      };
+  }
+}
 
 export default async function ItemsByTypePage({
   params,
@@ -29,18 +67,8 @@ export default async function ItemsByTypePage({
   const type = await getItemTypeByName(typeName);
   if (!type) notFound();
 
-  // An image type shows its items as thumbnails, every other type as cards.
-  const listing = isGalleryType(type.name)
-    ? getUserGalleryItems(userId, type.id).then((items) => ({
-        gallery: true as const,
-        items,
-      }))
-    : getItemsByType(userId, type.id).then((items) => ({
-        gallery: false as const,
-        items,
-      }));
   const [list, { isPro }] = await Promise.all([
-    listing,
+    loadListing(userId, type.id, type.name),
     getEntitlements(userId),
   ]);
   const { items } = list;
@@ -67,9 +95,13 @@ export default async function ItemsByTypePage({
           <CreateItemDialog defaultType={type.name} isPro={isPro} />
         )}
       </header>
-      {list.gallery ? (
+      {list.kind === "gallery" && (
         <ImageGallery items={list.items} emptyMessage={emptyMessage} />
-      ) : (
+      )}
+      {list.kind === "files" && (
+        <FileList items={list.items} emptyMessage={emptyMessage} />
+      )}
+      {list.kind === "cards" && (
         <ItemList items={list.items} emptyMessage={emptyMessage} />
       )}
     </div>
