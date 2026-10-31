@@ -88,7 +88,7 @@ export function CreateItemDialog({
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="max-h-[90vh] overflow-y-auto"
+        className="max-h-[90vh] grid-cols-1 overflow-y-auto"
         onCloseAutoFocus={handleCloseAutoFocus}
       >
         <DialogHeader>
