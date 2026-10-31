@@ -1,3 +1,5 @@
+import "client-only";
+
 import type { ActionResult } from "@/lib/action-result";
 import type { ItemDetailJson } from "@/features/items/types";
 

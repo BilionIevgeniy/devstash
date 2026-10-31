@@ -120,6 +120,13 @@ const intraFeatureZones = FEATURE_NAMES.flatMap((name) => {
       from: roleFolders(name, "services"),
       message: "components cannot import services: read data through queries in a server component or call an action.",
     },
+    {
+      // A hook feeds components, so it points down to them, never up: a type
+      // they share lives in the hook's file or types.ts (ADR 0007).
+      target: roleFolders(name, "components/hooks"),
+      from: ["./src/**/*.tsx"],
+      message: "Hooks cannot import components (.tsx): a type they share lives in the hook's file or types.ts.",
+    },
   ];
 });
 
@@ -153,6 +160,19 @@ const restrictImports = ({ paths = [], patterns = [] } = {}) => [
 
 const NO_PRISMA_MESSAGE =
   "Only queries.ts, services and lib touch Prisma: read through a query or call a service.";
+
+// Size limits ("Size limits" in context/coding-standards.md), counted without
+// blank lines and comments. UI code (components with their hooks, pages) gets
+// 80 lines per function, since JSX is long but flat; every other role gets 50.
+const SIZE_IGNORES = [
+  "src/**/*.test.ts",
+  "src/components/ui/**",
+  "src/generated/**",
+];
+const maxFunctionLines = (max) => [
+  "error",
+  { max, skipBlankLines: true, skipComments: true, IIFEs: true },
+];
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -196,6 +216,7 @@ const eslintConfig = defineConfig([
     files: [
       "src/features/**/components/**/*.{ts,tsx}",
       "src/features/**/actions/**/*.{ts,tsx}",
+      "src/components/common/**/*.{ts,tsx}",
       "src/app/**/*.{ts,tsx}",
     ],
     rules: {
@@ -243,6 +264,30 @@ const eslintConfig = defineConfig([
         },
       ],
     },
+  },
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: SIZE_IGNORES,
+    rules: {
+      "max-lines-per-function": maxFunctionLines(50),
+      "max-lines": [
+        "error",
+        { max: 250, skipBlankLines: true, skipComments: true },
+      ],
+      complexity: ["error", 15],
+    },
+  },
+  {
+    // Browser helpers in components/ (put-file, fetch-item-detail) are plain
+    // functions and keep the 50 lines of the logic roles.
+    files: [
+      "src/features/**/components/**/*.tsx",
+      "src/features/**/components/hooks/use-*.ts",
+      "src/components/common/**/*.{ts,tsx}",
+      "src/app/**/*.tsx",
+    ],
+    ignores: SIZE_IGNORES,
+    rules: { "max-lines-per-function": maxFunctionLines(80) },
   },
   // Override default ignores of eslint-config-next.
   globalIgnores([

@@ -5,8 +5,6 @@ import {
   startTransition,
   useContext,
   useOptimistic,
-  useRef,
-  useState,
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -18,13 +16,11 @@ import {
   DELETE_FAILED_MESSAGE,
 } from "@/features/items/_internal/components/DeleteItemDialog";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
-import {
-  ItemDrawerContent,
-  type ItemDetailState,
-} from "@/features/items/_internal/components/ItemDrawerContent";
-import { fetchItemDetail } from "@/features/items/_internal/components/fetch-item-detail";
+import { ItemDrawerContent } from "@/features/items/_internal/components/ItemDrawerContent";
+import { useDirtyCloseGuard } from "@/features/items/_internal/components/hooks/use-dirty-close-guard";
+import { useItemSheet } from "@/features/items/_internal/components/hooks/use-item-sheet";
 import { deleteItem } from "@/features/items/actions/item";
-import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
+import type { DashboardItem } from "@/features/items/types";
 
 const NO_HIDDEN_IDS: ReadonlySet<string> = new Set();
 
@@ -59,90 +55,22 @@ export function ItemDrawerProvider({
   basePath,
   children,
 }: ItemDrawerProviderProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [item, setItem] = useState<DashboardItem | null>(null);
-  const [state, setState] = useState<ItemDetailState>({ status: "loading" });
-  const [isEditing, setIsEditing] = useState(false);
-  const [isConfirmingClose, setIsConfirmingClose] = useState(false);
-  const requestRef = useRef<AbortController | null>(null);
-  const openItemIdRef = useRef<string | null>(null);
-  // Whether the edit form holds unsaved edits; read only when the sheet closes.
-  const isDirtyRef = useRef(false);
   const router = useRouter();
+  const sheet = useItemSheet();
+  const guard = useDirtyCloseGuard(sheet.onOpenChange);
   const [hiddenIds, hideItem] = useOptimistic(
     NO_HIDDEN_IDS,
     (ids, id: string): ReadonlySet<string> => new Set(ids).add(id),
   );
 
-  async function openSheet(next: DashboardItem) {
-    requestRef.current?.abort();
-    const controller = new AbortController();
-    requestRef.current = controller;
-
-    openItemIdRef.current = next.id;
-    setItem(next);
-    setState({ status: "loading" });
-    setIsEditing(false);
-    setIsOpen(true);
-
-    try {
-      const detail = await fetchItemDetail(next.id, controller.signal);
-      if (controller.signal.aborted) return;
-      setState(detail ? { status: "ready", detail } : { status: "error" });
-    } catch {
-      if (!controller.signal.aborted) setState({ status: "error" });
-    }
-  }
-
   function open(next: DashboardItem) {
     if (basePath === undefined) {
-      void openSheet(next);
+      void sheet.openSheet(next);
       return;
     }
     router.push(`${basePath}/${encodeURIComponent(next.id)}`, {
       scroll: false,
     });
-  }
-
-  // The item stays in state after closing so the content does not vanish
-  // while the sheet slides out.
-  function handleOpenChange(nextOpen: boolean) {
-    if (!nextOpen) requestRef.current?.abort();
-    setIsOpen(nextOpen);
-  }
-
-  // Esc, the overlay and the close button all land here: with unsaved edits
-  // the sheet stays open until the user discards them.
-  function requestOpenChange(nextOpen: boolean) {
-    if (!nextOpen && isDirtyRef.current) {
-      setIsConfirmingClose(true);
-      return;
-    }
-    handleOpenChange(nextOpen);
-  }
-
-  function setDirty(isDirty: boolean) {
-    isDirtyRef.current = isDirty;
-  }
-
-  // The header, description and tags come from the card's item, so it is
-  // updated along with the detail; the refresh updates the cards behind. The
-  // ref, not the item in this closure, tells whether another card was opened
-  // while the save was running.
-  function handleSaved(detail: ItemDetailJson) {
-    router.refresh();
-    if (openItemIdRef.current !== detail.id) return;
-
-    setItem((current) =>
-      current && {
-        ...current,
-        title: detail.title,
-        description: detail.description,
-        tags: detail.tags,
-      },
-    );
-    setState({ status: "ready", detail });
-    setIsEditing(false);
   }
 
   // The card is hidden while the transition runs. On success the action's
@@ -162,7 +90,7 @@ export function ItemDrawerProvider({
   }
 
   function handleDelete(id: string) {
-    handleOpenChange(false);
+    sheet.onOpenChange(false);
     remove(id);
   }
 
@@ -179,33 +107,26 @@ export function ItemDrawerProvider({
   return (
     <ItemDrawerContext.Provider value={value}>
       {children}
-      <Sheet open={isOpen} onOpenChange={requestOpenChange}>
+      <Sheet open={sheet.isOpen} onOpenChange={guard.guardOpenChange}>
         <SheetContent
           aria-describedby={undefined}
           className="gap-0 data-[side=right]:sm:max-w-xl"
         >
-          {item && (
+          {sheet.item && (
             <ItemDrawerContent
-              item={item}
-              state={state}
-              isEditing={isEditing}
-              onEdit={() => setIsEditing(true)}
-              onCancelEdit={() => setIsEditing(false)}
-              onSaved={handleSaved}
+              item={sheet.item}
+              state={sheet.state}
+              isEditing={sheet.isEditing}
+              onEdit={() => sheet.setIsEditing(true)}
+              onCancelEdit={() => sheet.setIsEditing(false)}
+              onSaved={sheet.handleSaved}
               onDelete={handleDelete}
-              onDirtyChange={setDirty}
+              onDirtyChange={guard.setDirty}
             />
           )}
         </SheetContent>
       </Sheet>
-      <DiscardChangesDialog
-        open={isConfirmingClose}
-        onOpenChange={setIsConfirmingClose}
-        onDiscard={() => {
-          isDirtyRef.current = false;
-          handleOpenChange(false);
-        }}
-      />
+      <DiscardChangesDialog {...guard.discardDialogProps} />
     </ItemDrawerContext.Provider>
   );
 }

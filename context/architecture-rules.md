@@ -56,6 +56,7 @@ features/<name>/
   services/<topic>.ts    every write and every multi-step operation
   actions/<noun>.ts      Server Actions ("use server" files export only async functions)
   components/            React components, grouped by topic when the folder grows
+    hooks/use-<topic>.ts client hooks of those components (same role; never import a .tsx, lint)
   _internal/             private files, with the same role folders inside
   nextauth/              (auth only) NextAuth setup and the signed-in user
 ```
@@ -67,7 +68,7 @@ features/<name>/
 | `queries.ts` | Reads of own models: `userId` first, a DTO out, no writes | services, actions, components (lint) |
 | `services/` | Writes, vendor/Redis/email/`fetch` calls, other features' data, limit checks, flows; `userId`, `ip`, `origin` come in as parameters | actions, components, `next/headers`, `next/cache`, `next/navigation` (lint) |
 | `actions/`, `route.ts`, pages | Entry points: read the request, parse with a schema, make one call, shape the result, revalidate or redirect | Prisma, components (lint) |
-| `components/` | UI; data through props or server-component queries, changes through actions | Prisma, services (lint) |
+| `components/` | UI, including hooks in `components/hooks/use-*.ts` and browser-only helpers (`fetch-item-detail`, `put-file`, which start with `import "client-only"`); data through props or server-component queries, changes through actions ([ADR 0007](../docs/adr/0007-client-hooks-in-the-components-role.md)) | Prisma, services (lint); a hook never imports a `.tsx` (lint) |
 
 ## Where does this go
 
@@ -116,6 +117,8 @@ Course specs name the paths of the original layout. Put the code here instead:
 - Circular imports are forbidden (`import/no-cycle`)
 - Prisma (`@/lib/prisma`, `@/generated/prisma`) is imported only by `queries.ts`, services and `lib`
 - Server-only modules start with `import "server-only"`: every `queries.ts`, every file in `services/`, `auth/nextauth/auth.ts` and `session.ts`, and the `lib` files that touch secrets or Node
+- Browser-only modules that are not components or hooks start with `import "client-only"` (`put-file`, `fetch-item-detail`). `"use client"` goes only on the component that is the boundary, never on a hook or a helper
+- A hook with no feature knowledge, needed by two features, goes to `src/components/common/hooks/` (created with its first hook)
 - Vendor SDKs (`resend`, `@upstash/*`, `stripe`, `openai`, `@aws-sdk/*`) are imported only inside `lib`
 - Server Actions return `ActionResult<T>`, services return `OperationResult` (`src/lib/action-result.ts`). Expected failures are returned; unexpected ones throw and the entry point catches them
 - Authenticated routes live in `app/(app)/`; widen the matcher in `src/proxy.ts` in the same change
@@ -123,6 +126,6 @@ Course specs name the paths of the original layout. Put the code here instead:
 
 ## What the lint enforces
 
-`eslint.config.mjs` checks the layer order and `_internal/` boundary, the role directions inside a feature, the pure domain core, no Prisma in actions, components and `app/`, no request APIs in services, vendor SDKs only in `lib`, import cycles, and deprecated APIs of the installed packages (`@typescript-eslint/no-deprecated`).
+`eslint.config.mjs` checks the layer order and `_internal/` boundary, the role directions inside a feature (including hooks that import no `.tsx`), the pure domain core, no Prisma in actions, components (feature and `components/common`) and `app/`, no request APIs in services, vendor SDKs only in `lib`, import cycles, deprecated APIs of the installed packages (`@typescript-eslint/no-deprecated`), and the size limits of functions, components and files ("Size limits" in `coding-standards.md`).
 
 Not checked by lint, so it is on the author and the reviewer: `userId` in every `where`, no writes in `queries.ts`, one service call per entry point, idempotent background jobs, and the ban on foreign models (planned as a lint rule).

@@ -33,6 +33,23 @@ function sameTags(a: string, b: string): boolean {
   return aTags.size === bTags.size && [...aTags].every((tag) => bTags.has(tag));
 }
 
+type TypeFieldValues = Partial<
+  Pick<ItemFormValues, "content" | "language" | "url">
+>;
+
+// The type-specific fields the forms send: only those the type has, so a
+// hidden field is never cleared and its key is not sent at all.
+export function typeFieldValues(
+  fields: EditableFields,
+  values: ItemFormValues,
+): TypeFieldValues {
+  return {
+    ...(fields.content && { content: values.content }),
+    ...(fields.language && { language: values.language }),
+    ...(fields.url && { url: values.url }),
+  };
+}
+
 // Whether saving would change the item. A field the type does not have is not
 // sent, so it is not compared either.
 export function hasItemChanges(

@@ -79,18 +79,7 @@ export function DeleteAccountDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         {hasPassword && (
-          <div className="space-y-2">
-            <label htmlFor="delete-password" className="text-sm font-medium">
-              Enter your password to confirm
-            </label>
-            <Input
-              id="delete-password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          </div>
+          <ConfirmPasswordField value={password} onChange={setPassword} />
         )}
         {error && (
           <p role="alert" className="text-sm text-destructive">
@@ -113,5 +102,27 @@ export function DeleteAccountDialog({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+  );
+}
+
+interface ConfirmPasswordFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+function ConfirmPasswordField({ value, onChange }: ConfirmPasswordFieldProps) {
+  return (
+    <div className="space-y-2">
+      <label htmlFor="delete-password" className="text-sm font-medium">
+        Enter your password to confirm
+      </label>
+      <Input
+        id="delete-password"
+        type="password"
+        autoComplete="current-password"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </div>
   );
 }
