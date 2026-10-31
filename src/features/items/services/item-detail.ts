@@ -1,6 +1,6 @@
 import "server-only";
 
-import { signFileUrls } from "@/features/files/services/objects";
+import { signItemFile } from "@/features/items/_internal/services/file-urls";
 import { getItemDetail, getItemDetailOfType } from "@/features/items/queries";
 import type { ItemDetail, ItemDetailRecord } from "@/features/items/types";
 
@@ -15,9 +15,8 @@ async function toItemDetail({
 }: ItemDetailRecord): Promise<ItemDetail> {
   if (!fileKey) return { ...item, file: null };
 
-  const name = fileName ?? fileKey;
-  const urls = await signFileUrls(fileKey, name, new Date());
-  return { ...item, file: { name, size: fileSize ?? 0, ...urls } };
+  const file = await signItemFile(fileKey, fileName, new Date());
+  return { ...item, file: { ...file, size: fileSize ?? 0 } };
 }
 
 export async function getUserItemDetail(

@@ -4,6 +4,7 @@ import {
   contentTypeFor,
   editableFields,
   isCreatableType,
+  isGalleryType,
   parseTagInput,
   requiresPro,
 } from "@/features/items/domain/item-fields";
@@ -30,6 +31,17 @@ describe("requiresPro", () => {
     ["recipe", false],
   ])("%s needs Pro: %s", (typeName, expected) => {
     expect(requiresPro(typeName)).toBe(expected);
+  });
+});
+
+describe("isGalleryType", () => {
+  it.each([
+    ["image", true],
+    ["file", false],
+    ["snippet", false],
+    ["recipe", false],
+  ])("%s shows a gallery: %s", (typeName, expected) => {
+    expect(isGalleryType(typeName)).toBe(expected);
   });
 });
 

@@ -4,6 +4,7 @@ import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
 import { itemTypeSelect } from "@/features/item-types/queries";
 import type {
   DashboardItem,
+  GalleryItemRecord,
   ItemDetailRecord,
   ItemStats,
 } from "@/features/items/types";
@@ -34,6 +35,24 @@ function toDashboardItem({ type, tags, ...item }: RawItem): DashboardItem {
     type: toItemTypeInfo(type),
     tags: tags.map(({ tag }) => tag.name),
   };
+}
+
+const galleryItemSelect = {
+  ...dashboardItemSelect,
+  fileKey: true,
+  fileName: true,
+} satisfies Prisma.ItemSelect;
+
+type RawGalleryItem = Prisma.ItemGetPayload<{
+  select: typeof galleryItemSelect;
+}>;
+
+function toGalleryItem({
+  fileKey,
+  fileName,
+  ...item
+}: RawGalleryItem): GalleryItemRecord {
+  return { ...toDashboardItem(item), fileKey, fileName };
 }
 
 const itemDetailSelect = {
@@ -99,6 +118,20 @@ export async function getItemsByType(
     select: dashboardItemSelect,
   });
   return items.map(toDashboardItem);
+}
+
+// The items of an image type with their object keys, read only by the gallery
+// service.
+export async function getGalleryItemsByType(
+  userId: string,
+  typeId: string,
+): Promise<GalleryItemRecord[]> {
+  const items = await prisma.item.findMany({
+    where: { userId, typeId },
+    orderBy: { createdAt: "desc" },
+    select: galleryItemSelect,
+  });
+  return items.map(toGalleryItem);
 }
 
 export async function getItemDetail(
