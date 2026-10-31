@@ -44,6 +44,18 @@ export interface ItemDetail extends ItemDetailFields {
   file: ItemFile | null;
 }
 
+// What the gallery query reads. The object key stays on the server: only the
+// gallery service sees it, to sign the thumbnail URL.
+export interface GalleryItemRecord extends DashboardItem {
+  fileKey: string | null;
+  fileName: string | null;
+}
+
+// What the gallery of an image type page gets: the upload as a signed URL.
+export interface GalleryItem extends DashboardItem {
+  imageUrl: string | null;
+}
+
 // ItemDetail as it arrives from GET /api/items/[id]: dates become ISO strings.
 export type ItemDetailJson = Omit<ItemDetail, "createdAt" | "updatedAt"> & {
   createdAt: string;

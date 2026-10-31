@@ -58,6 +58,11 @@ export function requiresPro(typeName: string): boolean {
   return editableFields(typeName).file !== null;
 }
 
+// The types whose page shows thumbnails in a gallery instead of item cards.
+export function isGalleryType(typeName: string): boolean {
+  return editableFields(typeName).file === "image";
+}
+
 // Whether the user may create an item of this type now: a type the dialog
 // offers, and a Pro one only on the Pro plan.
 export function canCreateType(

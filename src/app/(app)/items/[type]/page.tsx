@@ -9,9 +9,14 @@ import {
 } from "@/features/item-types/domain/item-type";
 import { getItemTypeByName } from "@/features/item-types/queries";
 import { CreateItemDialog } from "@/features/items/components/CreateItemDialog";
-import { isCreatableType } from "@/features/items/domain/item-fields";
+import { ImageGallery } from "@/features/items/components/ImageGallery";
+import {
+  isCreatableType,
+  isGalleryType,
+} from "@/features/items/domain/item-fields";
 import { ItemList } from "@/features/items/components/ItemList";
 import { getItemsByType } from "@/features/items/queries";
+import { getUserGalleryItems } from "@/features/items/services/gallery";
 
 export default async function ItemsByTypePage({
   params,
@@ -24,11 +29,23 @@ export default async function ItemsByTypePage({
   const type = await getItemTypeByName(typeName);
   if (!type) notFound();
 
-  const [items, { isPro }] = await Promise.all([
-    getItemsByType(userId, type.id),
+  // An image type shows its items as thumbnails, every other type as cards.
+  const listing = isGalleryType(type.name)
+    ? getUserGalleryItems(userId, type.id).then((items) => ({
+        gallery: true as const,
+        items,
+      }))
+    : getItemsByType(userId, type.id).then((items) => ({
+        gallery: false as const,
+        items,
+      }));
+  const [list, { isPro }] = await Promise.all([
+    listing,
     getEntitlements(userId),
   ]);
+  const { items } = list;
   const itemLabel = items.length === 1 ? "item" : "items";
+  const emptyMessage = `No ${typeSlug(type.name)} yet.`;
 
   return (
     <div className="space-y-8">
@@ -50,7 +67,11 @@ export default async function ItemsByTypePage({
           <CreateItemDialog defaultType={type.name} isPro={isPro} />
         )}
       </header>
-      <ItemList items={items} emptyMessage={`No ${typeSlug(type.name)} yet.`} />
+      {list.gallery ? (
+        <ImageGallery items={list.items} emptyMessage={emptyMessage} />
+      ) : (
+        <ItemList items={list.items} emptyMessage={emptyMessage} />
+      )}
     </div>
   );
 }
