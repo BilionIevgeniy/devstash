@@ -30,6 +30,23 @@ model User {
   collections  Collection[]
   tags         Tag[]
   subscription Subscription?
+  preference   UserPreference?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Owned by editor. A user with no row gets the default preferences.
+model UserPreference {
+  id       String  @id @default(cuid())
+  userId   String  @unique
+  fontSize Int
+  tabSize  Int
+  wordWrap Boolean
+  minimap  Boolean
+  theme    String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
