@@ -9,12 +9,14 @@ import {
   deleteItemOptionsSchema,
   favoriteValueSchema,
   itemIdSchema,
+  pinValueSchema,
   updateItemSchema,
 } from "@/features/items/schemas";
 import {
   createUserItem,
   deleteUserItem,
   setUserItemFavorite,
+  setUserItemPin,
   updateUserItem,
 } from "@/features/items/services/item";
 import type { ItemDetailJson } from "@/features/items/types";
@@ -101,6 +103,38 @@ export async function setItemFavorite(
     return { success: true, error: null, data: null };
   } catch (error) {
     console.error("Updating the favorite failed:", error);
+    return failure(GENERIC_ERROR);
+  }
+}
+
+// Takes the wanted value, like the favorite, so two tabs cannot flip it back
+// and forth.
+export async function toggleItemPin(
+  itemId: string,
+  isPinned: boolean,
+): Promise<ActionResult> {
+  const parsedId = itemIdSchema.safeParse(itemId);
+  if (!parsedId.success) return failure(parsedId.error.issues[0].message);
+
+  const parsedValue = pinValueSchema.safeParse(isPinned);
+  if (!parsedValue.success) return failure(parsedValue.error.issues[0].message);
+
+  // Outside the try: a signed-out caller is redirected by a thrown error.
+  const { id: userId } = await getSessionUser();
+
+  try {
+    const result = await setUserItemPin(
+      userId,
+      parsedId.data,
+      parsedValue.data,
+    );
+    if (!result.success) return failure(result.error ?? GENERIC_ERROR);
+    // The fresh page comes back with this response, so the optimistic pin
+    // hands over to it without a flicker.
+    refresh();
+    return { success: true, error: null, data: null };
+  } catch (error) {
+    console.error("Updating the pin failed:", error);
     return failure(GENERIC_ERROR);
   }
 }

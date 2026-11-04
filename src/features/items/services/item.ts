@@ -245,6 +245,22 @@ export async function setUserItemFavorite(
   return { success: true, error: null };
 }
 
+// Raw SQL for the same reason as the favorite: pinning is not an edit.
+export async function setUserItemPin(
+  userId: string,
+  itemId: string,
+  isPinned: boolean,
+): Promise<OperationResult> {
+  const count = await prisma.$executeRaw`
+    UPDATE "Item"
+    SET "isPinned" = ${isPinned}
+    WHERE "id" = ${itemId} AND "userId" = ${userId}
+  `;
+
+  if (count === 0) return { success: false, error: ITEM_NOT_FOUND };
+  return { success: true, error: null };
+}
+
 // Removes the item's object from R2 before the row, so a failure leaves the
 // row and the delete can be retried; a missing object counts as deleted.
 async function deleteItemFile(

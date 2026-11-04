@@ -49,6 +49,7 @@ import {
   createUserItem,
   deleteUserItem,
   setUserItemFavorite,
+  setUserItemPin,
   updateUserItem,
 } from "@/features/items/services/item";
 
@@ -87,6 +88,42 @@ describe("setUserItemFavorite", () => {
     await expect(
       setUserItemFavorite("user-1", "item-1", true),
     ).resolves.toEqual({ success: false, error: "Item not found" });
+  });
+});
+
+describe("setUserItemPin", () => {
+  beforeEach(() => {
+    executeRaw.mockReset();
+  });
+
+  it.each([true, false])(
+    "writes %s only through the caller's id, with no updatedAt",
+    async (value) => {
+      executeRaw.mockResolvedValue(1);
+
+      await expect(setUserItemPin("user-1", "item-1", value)).resolves.toEqual({
+        success: true,
+        error: null,
+      });
+
+      const [strings, isPinned, id, userId] = executeRaw.mock.calls[0];
+      const sql = strings.join("?");
+      expect(sql).not.toContain("updatedAt");
+      expect(sql).toContain('SET "isPinned" = ?');
+      expect(sql).toContain('WHERE "id" = ? AND "userId" = ?');
+      expect(isPinned).toBe(value);
+      expect(id).toBe("item-1");
+      expect(userId).toBe("user-1");
+    },
+  );
+
+  it("reports a missing or foreign item", async () => {
+    executeRaw.mockResolvedValue(0);
+
+    await expect(setUserItemPin("user-1", "item-1", true)).resolves.toEqual({
+      success: false,
+      error: "Item not found",
+    });
   });
 });
 

@@ -13,6 +13,7 @@ import {
   getFavoriteItems,
   getItemEditState,
   getItemsByType,
+  getPinnedItems,
   getRecentItems,
   getSearchableItems,
 } from "@/features/items/queries";
@@ -62,13 +63,30 @@ describe("getItemsByType", () => {
     expect(findMany.mock.calls[0][0].where).toEqual(where);
   });
 
-  it("reads only the rows of the page, in an order with no ties", async () => {
+  it("reads only the rows of the page, pinned first with no ties", async () => {
     const result = await getItemsByType("user-1", "type-1", 2);
 
     const { skip, take, orderBy } = findMany.mock.calls[0][0];
     expect({ skip, take }).toEqual({ skip: 21, take: 21 });
-    expect(orderBy).toEqual([{ createdAt: "desc" }, { id: "desc" }]);
+    expect(orderBy).toEqual([
+      { isPinned: "desc" },
+      { createdAt: "desc" },
+      { id: "desc" },
+    ]);
     expect(result).toMatchObject({ totalCount: 50, page: 2, totalPages: 3 });
+  });
+});
+
+describe("getPinnedItems", () => {
+  it("reads only the caller's pins, newest first with no ties, up to the limit", async () => {
+    findMany.mockReset().mockResolvedValue([]);
+
+    await getPinnedItems("user-1");
+
+    const { where, orderBy, take } = findMany.mock.calls[0][0];
+    expect(where).toEqual({ userId: "user-1", isPinned: true });
+    expect(orderBy).toEqual([{ createdAt: "desc" }, { id: "desc" }]);
+    expect(take).toBe(50);
   });
 });
 
