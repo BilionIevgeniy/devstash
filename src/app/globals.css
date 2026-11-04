@@ -130,6 +130,10 @@
   html {
     @apply font-sans;
     }
+  button:not(:disabled, [aria-disabled="true"]),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+    }
 }
 
 /* Rendered Markdown of notes and prompts (MarkdownPreview). Wide tables and
