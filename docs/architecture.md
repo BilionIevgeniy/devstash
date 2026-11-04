@@ -15,7 +15,7 @@ How DevStash is organized, where each kind of code lives, and what to create whe
 ```text
 src/
   app/            routes: page.tsx, layout.tsx, route.ts. Composes features, no business logic
-    (app)/        authenticated pages (dashboard, items/[type], items/[type]/[id], profile) under one shared layout
+    (app)/        authenticated pages (dashboard, items/[type], items/[type]/[id], profile, settings) under one shared layout
     api/          route handlers: NextAuth, registration, item detail, later webhooks and streaming
   features/       the product, one folder per feature
     auth/         sign-in, registration, email verification, password reset, change password
@@ -30,7 +30,7 @@ src/
   components/ui/  shadcn/ui primitives only
   components/common/  hand-written UI with no feature knowledge, used by several features (CopyButton, PaginationNav)
   lib/            feature-neutral infrastructure and vendor clients (prisma, email, rate-limit, hash, ...)
-  proxy.ts        guards /dashboard, /profile, /items and /collections; must stay at the src root
+  proxy.ts        guards /dashboard, /profile, /settings, /items and /collections; must stay at the src root
 prisma/           schema, migrations, seed
 scripts/          one-off database scripts
 context/          the rulebooks (architecture-rules.md, coding-standards.md), the current feature and the history
