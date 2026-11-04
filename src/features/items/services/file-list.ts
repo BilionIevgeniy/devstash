@@ -1,8 +1,9 @@
 import "server-only";
 
+import { getUploadItemsByType } from "@/features/items/_internal/queries";
 import { signItemFile } from "@/features/items/_internal/services/file-urls";
-import { getUploadItemsByType } from "@/features/items/queries";
 import type { FileListItem, UploadItemRecord } from "@/features/items/types";
+import type { Paginated } from "@/lib/pagination";
 
 // The records come from a query scoped by userId, so every key is the caller's
 // own; signing is local and makes no request to R2. The key itself never
@@ -20,8 +21,16 @@ export async function toFileListItem(
 export async function getUserFileListItems(
   userId: string,
   typeId: string,
-): Promise<FileListItem[]> {
-  const records = await getUploadItemsByType(userId, typeId);
+  page: number,
+): Promise<Paginated<FileListItem>> {
+  const { items, ...position } = await getUploadItemsByType(
+    userId,
+    typeId,
+    page,
+  );
   const now = new Date();
-  return Promise.all(records.map((record) => toFileListItem(record, now)));
+  return {
+    ...position,
+    items: await Promise.all(items.map((item) => toFileListItem(item, now))),
+  };
 }

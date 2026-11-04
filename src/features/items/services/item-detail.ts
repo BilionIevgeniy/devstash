@@ -1,7 +1,10 @@
 import "server-only";
 
+import {
+  getItemDetail,
+  getItemDetailOfType,
+} from "@/features/items/_internal/queries";
 import { signItemFile } from "@/features/items/_internal/services/file-urls";
-import { getItemDetail, getItemDetailOfType } from "@/features/items/queries";
 import type { ItemDetail, ItemDetailRecord } from "@/features/items/types";
 
 // The record comes from a query scoped by userId, so the key is the caller's

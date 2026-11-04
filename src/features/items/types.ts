@@ -82,14 +82,25 @@ export interface CollectionItemRecord extends UploadItemRecord {
   canCopy: boolean;
 }
 
-// The items of one type in a collection, listed the way its type page lists them.
-export type CollectionSection =
-  | { listing: "gallery"; type: ItemTypeInfo; items: GalleryItem[] }
-  | { listing: "files"; type: ItemTypeInfo; items: FileListItem[] }
-  | { listing: "cards"; type: ItemTypeInfo; items: ItemCardData[] };
+interface CollectionSectionFields {
+  type: ItemTypeInfo;
+  /** Items of this type in the whole collection, not only on this page. */
+  totalCount: number;
+}
+
+// The items of one type on a page of a collection, listed the way its type page
+// lists them.
+export type CollectionSection = CollectionSectionFields &
+  (
+    | { listing: "gallery"; items: GalleryItem[] }
+    | { listing: "files"; items: FileListItem[] }
+    | { listing: "cards"; items: ItemCardData[] }
+  );
 
 export interface CollectionListing {
   itemCount: number;
+  page: number;
+  totalPages: number;
   sections: CollectionSection[];
 }
 

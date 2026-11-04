@@ -1,8 +1,9 @@
 import "server-only";
 
+import { getUploadItemsByType } from "@/features/items/_internal/queries";
 import { signItemFile } from "@/features/items/_internal/services/file-urls";
-import { getUploadItemsByType } from "@/features/items/queries";
 import type { GalleryItem, UploadItemRecord } from "@/features/items/types";
+import type { Paginated } from "@/lib/pagination";
 
 // The records come from a query scoped by userId, so every key is the caller's
 // own; signing is local and makes no request to R2. The thumbnail is the
@@ -22,8 +23,16 @@ export async function toGalleryItem(
 export async function getUserGalleryItems(
   userId: string,
   typeId: string,
-): Promise<GalleryItem[]> {
-  const records = await getUploadItemsByType(userId, typeId);
+  page: number,
+): Promise<Paginated<GalleryItem>> {
+  const { items, ...position } = await getUploadItemsByType(
+    userId,
+    typeId,
+    page,
+  );
   const now = new Date();
-  return Promise.all(records.map((record) => toGalleryItem(record, now)));
+  return {
+    ...position,
+    items: await Promise.all(items.map((item) => toGalleryItem(item, now))),
+  };
 }

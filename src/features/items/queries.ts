@@ -1,145 +1,25 @@
 import "server-only";
 
-import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
-import { itemTypeSelect } from "@/features/item-types/queries";
 import { toSearchPreview } from "@/features/items/_internal/domain/search-preview";
+import {
+  cardItemSelect,
+  NEWEST_FIRST,
+  toDashboardItem,
+  toItemCardData,
+} from "@/features/items/_internal/queries";
 import { copyValueOf } from "@/features/items/domain/item-fields";
+import { ITEMS_PER_PAGE } from "@/features/items/domain/pagination";
 import type {
-  CollectionItemRecord,
-  DashboardItem,
   ItemCardData,
-  ItemDetailRecord,
   ItemEditState,
   ItemStats,
   SearchableItem,
-  UploadItemRecord,
 } from "@/features/items/types";
-import type { Prisma } from "@/generated/prisma/client";
+import { type Paginated, readPage } from "@/lib/pagination";
 import { prisma } from "@/lib/prisma";
 
-const RECENT_ITEMS_LIMIT = 20;
+const DASHBOARD_RECENT_ITEMS_LIMIT = 10;
 const SEARCH_INDEX_ITEM_LIMIT = 1000;
-
-const dashboardItemSelect = {
-  id: true,
-  title: true,
-  description: true,
-  isFavorite: true,
-  isPinned: true,
-  createdAt: true,
-  type: { select: itemTypeSelect },
-  tags: {
-    select: { tag: { select: { name: true } } },
-    orderBy: { tag: { name: "asc" } },
-  },
-} satisfies Prisma.ItemSelect;
-
-type RawItem = Prisma.ItemGetPayload<{ select: typeof dashboardItemSelect }>;
-
-function toDashboardItem({ type, tags, ...item }: RawItem): DashboardItem {
-  return {
-    ...item,
-    type: toItemTypeInfo(type),
-    tags: tags.map(({ tag }) => tag.name),
-  };
-}
-
-const cardItemSelect = {
-  ...dashboardItemSelect,
-  contentType: true,
-  content: true,
-  url: true,
-} satisfies Prisma.ItemSelect;
-
-type RawCardItem = Prisma.ItemGetPayload<{ select: typeof cardItemSelect }>;
-
-// The content is read only to tell whether there is something to copy; it
-// stays on the server, and the copy button fetches it on click.
-function toItemCardData({
-  contentType,
-  content,
-  url,
-  ...item
-}: RawCardItem): ItemCardData {
-  return {
-    ...toDashboardItem(item),
-    canCopy: copyValueOf({ contentType, content, url }) !== null,
-  };
-}
-
-const uploadItemSelect = {
-  ...dashboardItemSelect,
-  fileKey: true,
-  fileName: true,
-  fileSize: true,
-} satisfies Prisma.ItemSelect;
-
-type RawUploadItem = Prisma.ItemGetPayload<{
-  select: typeof uploadItemSelect;
-}>;
-
-function toUploadItem({
-  fileKey,
-  fileName,
-  fileSize,
-  ...item
-}: RawUploadItem): UploadItemRecord {
-  return { ...toDashboardItem(item), fileKey, fileName, fileSize };
-}
-
-const collectionItemSelect = {
-  ...cardItemSelect,
-  fileKey: true,
-  fileName: true,
-  fileSize: true,
-} satisfies Prisma.ItemSelect;
-
-type RawCollectionItem = Prisma.ItemGetPayload<{
-  select: typeof collectionItemSelect;
-}>;
-
-function toCollectionItemRecord({
-  fileKey,
-  fileName,
-  fileSize,
-  ...item
-}: RawCollectionItem): CollectionItemRecord {
-  return { ...toItemCardData(item), fileKey, fileName, fileSize };
-}
-
-const itemDetailSelect = {
-  ...dashboardItemSelect,
-  contentType: true,
-  content: true,
-  url: true,
-  fileKey: true,
-  fileName: true,
-  fileSize: true,
-  language: true,
-  updatedAt: true,
-  collections: {
-    select: { collection: { select: { id: true, name: true } } },
-    orderBy: { collection: { name: "asc" } },
-  },
-} satisfies Prisma.ItemSelect;
-
-type RawItemDetail = Prisma.ItemGetPayload<{
-  select: typeof itemDetailSelect;
-}>;
-
-function toItemDetail({
-  type,
-  tags,
-  collections,
-  ...item
-}: RawItemDetail): ItemDetailRecord {
-  return {
-    ...item,
-    type: toItemTypeInfo(type),
-    tags: tags.map(({ tag }) => tag.name),
-    collections: collections.map(({ collection }) => collection),
-  };
-}
 
 export async function getPinnedItems(userId: string): Promise<ItemCardData[]> {
   const items = await prisma.item.findMany({
@@ -154,22 +34,34 @@ export async function getRecentItems(userId: string): Promise<ItemCardData[]> {
   const items = await prisma.item.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
-    take: RECENT_ITEMS_LIMIT,
+    take: DASHBOARD_RECENT_ITEMS_LIMIT,
     select: cardItemSelect,
   });
   return items.map(toItemCardData);
 }
 
-export async function getItemsByType(
+export function getItemsByType(
   userId: string,
   typeId: string,
-): Promise<ItemCardData[]> {
-  const items = await prisma.item.findMany({
-    where: { userId, typeId },
-    orderBy: { createdAt: "desc" },
-    select: cardItemSelect,
-  });
-  return items.map(toItemCardData);
+  page: number,
+): Promise<Paginated<ItemCardData>> {
+  const where = { userId, typeId };
+
+  return readPage(
+    page,
+    ITEMS_PER_PAGE,
+    () => prisma.item.count({ where }),
+    async (skip, take) => {
+      const items = await prisma.item.findMany({
+        where,
+        orderBy: NEWEST_FIRST,
+        skip,
+        take,
+        select: cardItemSelect,
+      });
+      return items.map(toItemCardData);
+    },
+  );
 }
 
 // The items the command palette searches, last edited first. The content is
@@ -189,59 +81,6 @@ export async function getSearchableItems(
   }));
 }
 
-// The items of a collection with their uploads, read only by the collection
-// listing service.
-export async function getCollectionItemRecords(
-  userId: string,
-  collectionId: string,
-): Promise<CollectionItemRecord[]> {
-  const items = await prisma.item.findMany({
-    where: { userId, collections: { some: { collectionId } } },
-    orderBy: { createdAt: "desc" },
-    select: collectionItemSelect,
-  });
-  return items.map(toCollectionItemRecord);
-}
-
-// The items of a file or image type with their uploads, read only by the
-// gallery and file list services.
-export async function getUploadItemsByType(
-  userId: string,
-  typeId: string,
-): Promise<UploadItemRecord[]> {
-  const items = await prisma.item.findMany({
-    where: { userId, typeId },
-    orderBy: { createdAt: "desc" },
-    select: uploadItemSelect,
-  });
-  return items.map(toUploadItem);
-}
-
-export async function getItemDetail(
-  userId: string,
-  id: string,
-): Promise<ItemDetailRecord | null> {
-  const item = await prisma.item.findFirst({
-    where: { id, userId },
-    select: itemDetailSelect,
-  });
-  return item ? toItemDetail(item) : null;
-}
-
-// The item routes carry the type in the URL: an item of another type is not
-// found there, the same as a missing one.
-export async function getItemDetailOfType(
-  userId: string,
-  id: string,
-  typeName: string,
-): Promise<ItemDetailRecord | null> {
-  const item = await prisma.item.findFirst({
-    where: { id, userId, type: { name: typeName } },
-    select: itemDetailSelect,
-  });
-  return item ? toItemDetail(item) : null;
-}
-
 export async function getItemEditState(
   userId: string,
   id: string,
@@ -259,18 +98,6 @@ export async function getItemEditState(
     typeName: item.type.name,
     collectionIds: item.collections.map((row) => row.collectionId),
   };
-}
-
-// An object and not the bare key: a missing item (null) and an item with no
-// file ({ fileKey: null }) are different answers to the delete service.
-export async function getItemFileKey(
-  userId: string,
-  id: string,
-): Promise<{ fileKey: string | null } | null> {
-  return prisma.item.findFirst({
-    where: { id, userId },
-    select: { fileKey: true },
-  });
 }
 
 export async function getItemStats(userId: string): Promise<ItemStats> {

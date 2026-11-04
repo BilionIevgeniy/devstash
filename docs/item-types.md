@@ -75,7 +75,7 @@ Today the type changes only the icon and the color. Nothing else in the UI depen
 
 These are the gaps found while researching, to keep the document honest:
 
-- **Type pages only list.** `/items/{name}s` shows the user's items of one type as cards, newest first, with no pagination and no search. The cards are not links: there is no detail view, drawer or editing yet.
+- **Type pages only list.** `/items/{name}s` shows the user's items of one type as cards, newest first, paginated, with no search. The cards are not links: there is no detail view, drawer or editing yet.
 - **No per-type rendering or editing.** A syntax-highlighted view for snippets and commands, a markdown editor for notes, a link view and an image preview are described in the project overview but do not exist.
 - **No value for the file class of `contentType`.** Decide it together with the upload feature (`files`), and consider an enum or a Zod/domain constant so the three classes cannot drift.
 - **No Pro gating.** The PRO badge is cosmetic. Free-tier limits and Pro-only types (file, image, custom types) belong in `billing` once it exists.

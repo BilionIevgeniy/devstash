@@ -12,7 +12,7 @@ src/
     api/                route handlers: NextAuth, registration; later webhooks, export, AI streaming
   features/             the product, one folder per feature (see Ranks)
   components/ui/        shadcn/ui primitives only
-  components/common/    hand-written UI with no feature knowledge: CopyButton, ErrorState, Field; PaginationNav, EmptyState (planned)
+  components/common/    hand-written UI with no feature knowledge: CopyButton, ErrorState, Field, PaginationNav; EmptyState (planned)
   lib/                  feature-neutral infrastructure and vendor clients
   proxy.ts              Next.js proxy, stays at the src root; its matcher must cover every authenticated route
 prisma/                 schema, migrations, seed
@@ -75,7 +75,7 @@ features/<name>/
 1. `app/` composes only: session, queries, feature components. No Prisma, no business `if`
 2. A pure rule, limit or constant (no I/O, clock, env or package) goes in `domain/`, with its test
 3. An input shape goes in `schemas.ts`; a view or result type in `types.ts` (every other type: see "Where types live"); an email body in `_internal/emails/`
-4. A read of the feature's own models goes in `queries.ts`, scoped by `userId` (the one exception: a read before sign-in keyed by email and a one-time token or the password being checked). A read that hands a secret to its caller (password hash, OAuth token) goes in `_internal/queries.ts` ([ADR 0009](../docs/adr/0009-read-write-split-enforced-by-lint.md))
+4. A read of the feature's own models goes in `queries.ts`, scoped by `userId` (the one exception: a read before sign-in keyed by email and a one-time token or the password being checked). A read that hands a secret to its caller (password hash, OAuth token, R2 object key) goes in `_internal/queries.ts` ([ADR 0009](../docs/adr/0009-read-write-split-enforced-by-lint.md), [ADR 0010](../docs/adr/0010-pagination-in-lib-and-object-key-reads-in-internal.md))
 5. A write, a vendor call, a multi-step flow, another feature's data or a read through `tx` that shares a transaction with a write goes in `services/<topic>.ts`
 6. `"use server"` files, `route.ts` and pages are thin: session, schema, one service call, revalidate. Webhooks and streams are routes
 7. UI of one route goes in `app/<route>/_components/`; UI used across routes in the feature's `components/`

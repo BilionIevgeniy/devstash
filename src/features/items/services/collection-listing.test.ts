@@ -1,10 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getCollectionItemRecords, signFileUrls } = vi.hoisted(() => ({
-  getCollectionItemRecords: vi.fn(),
-  signFileUrls: vi.fn(),
+const { getCollectionItemRecords, getCollectionTypeCounts, signFileUrls } =
+  vi.hoisted(() => ({
+    getCollectionItemRecords: vi.fn(),
+    getCollectionTypeCounts: vi.fn(),
+    signFileUrls: vi.fn(),
+  }));
+vi.mock("@/features/items/_internal/queries", () => ({
+  getCollectionItemRecords,
+  getCollectionTypeCounts,
 }));
-vi.mock("@/features/items/queries", () => ({ getCollectionItemRecords }));
 vi.mock("@/features/files/services/objects", () => ({ signFileUrls }));
 
 import { getUserCollectionListing } from "@/features/items/services/collection-listing";
@@ -45,6 +50,16 @@ const file = {
   type: { id: "t-file", name: "file", icon: "File" },
 };
 
+// The collection holds exactly the given items.
+function mockCollection<T extends { type: { id: string } }>(records: T[]) {
+  const counts = new Map<string, number>();
+  for (const { type } of records) {
+    counts.set(type.id, (counts.get(type.id) ?? 0) + 1);
+  }
+  getCollectionTypeCounts.mockResolvedValue(counts);
+  getCollectionItemRecords.mockResolvedValue(records);
+}
+
 describe("getUserCollectionListing", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -55,9 +70,9 @@ describe("getUserCollectionListing", () => {
   });
 
   it("lists each type the way its own page does", async () => {
-    getCollectionItemRecords.mockResolvedValue([note, image, file]);
+    mockCollection([note, image, file]);
 
-    const { sections } = await getUserCollectionListing("user-1", "col-1");
+    const { sections } = await getUserCollectionListing("user-1", "col-1", 1);
 
     expect(
       Object.fromEntries(sections.map((s) => [s.type.name, s.listing])),
@@ -65,9 +80,9 @@ describe("getUserCollectionListing", () => {
   });
 
   it("signs the uploads for the gallery and the file rows", async () => {
-    getCollectionItemRecords.mockResolvedValue([image, file]);
+    mockCollection([image, file]);
 
-    const { sections } = await getUserCollectionListing("user-1", "col-1");
+    const { sections } = await getUserCollectionListing("user-1", "col-1", 1);
 
     expect(sections.find((s) => s.listing === "gallery")?.items[0]).toEqual(
       expect.objectContaining({
@@ -83,27 +98,73 @@ describe("getUserCollectionListing", () => {
 
   // Every section goes to client components.
   it("never hands out the object key, in any section", async () => {
-    getCollectionItemRecords.mockResolvedValue([
-      { ...note, fileKey: "users/user-1/stray" },
-      image,
-      file,
-    ]);
+    mockCollection([{ ...note, fileKey: "users/user-1/stray" }, image, file]);
 
-    const listing = await getUserCollectionListing("user-1", "col-1");
+    const listing = await getUserCollectionListing("user-1", "col-1", 1);
 
     expect(JSON.stringify(listing)).not.toContain('"fileKey"');
   });
 
   it("counts every item, and an empty collection has no sections", async () => {
-    getCollectionItemRecords.mockResolvedValue([note, image]);
+    mockCollection([note, image]);
     await expect(
-      getUserCollectionListing("user-1", "col-1"),
+      getUserCollectionListing("user-1", "col-1", 1),
     ).resolves.toMatchObject({ itemCount: 2 });
 
-    getCollectionItemRecords.mockResolvedValue([]);
-    await expect(getUserCollectionListing("user-1", "col-1")).resolves.toEqual({
+    mockCollection([]);
+    await expect(
+      getUserCollectionListing("user-1", "col-1", 1),
+    ).resolves.toEqual({
       itemCount: 0,
+      page: 1,
+      totalPages: 1,
       sections: [],
     });
+  });
+
+  it("reads only the rows of the page, past the end the last one", async () => {
+    getCollectionTypeCounts.mockResolvedValue(new Map([["t-note", 30]]));
+    getCollectionItemRecords.mockResolvedValue([note]);
+
+    const listing = await getUserCollectionListing("user-1", "col-1", 9);
+
+    expect(getCollectionItemRecords).toHaveBeenCalledWith(
+      "user-1",
+      "col-1",
+      21,
+      21,
+    );
+    expect(listing).toMatchObject({ itemCount: 30, page: 2, totalPages: 2 });
+  });
+
+  // A page can hold more of a type that is smaller in the whole collection.
+  it("orders and labels the sections by the whole collection", async () => {
+    getCollectionTypeCounts.mockResolvedValue(
+      new Map([
+        ["t-image", 30],
+        ["t-note", 15],
+      ]),
+    );
+    getCollectionItemRecords.mockResolvedValue([
+      note,
+      { ...note, id: "note-2" },
+      image,
+    ]);
+
+    const { sections } = await getUserCollectionListing("user-1", "col-1", 2);
+
+    expect(sections.map((s) => [s.type.name, s.totalCount])).toEqual([
+      ["image", 30],
+      ["note", 15],
+    ]);
+  });
+
+  it("counts the page's items for a type created between the reads", async () => {
+    getCollectionTypeCounts.mockResolvedValue(new Map());
+    getCollectionItemRecords.mockResolvedValue([note]);
+
+    const { sections } = await getUserCollectionListing("user-1", "col-1", 1);
+
+    expect(sections[0].totalCount).toBe(1);
   });
 });
