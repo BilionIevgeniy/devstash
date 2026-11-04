@@ -22,6 +22,12 @@ export interface CollectionOption {
   name: string;
 }
 
+export interface SearchableCollection {
+  id: string;
+  name: string;
+  itemCount: number;
+}
+
 export interface SidebarCollections {
   favorites: DashboardCollection[];
   recent: DashboardCollection[];

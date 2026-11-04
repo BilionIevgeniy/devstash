@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import { PanelLeft, Search } from "lucide-react";
+import { PanelLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { CreateCollectionDialog } from "@/features/collections/components/CreateCollectionDialog";
+import { CommandPalette } from "@/features/search/components/CommandPalette";
 
 interface TopBarProps {
   onToggleSidebar: () => void;
@@ -36,18 +36,7 @@ export function TopBar({
       >
         <PanelLeft />
       </Button>
-      <div className="relative w-full max-w-md">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          type="search"
-          aria-label="Search items"
-          placeholder="Search items..."
-          className="pl-9 pr-14"
-        />
-        <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded border px-1.5 text-xs text-muted-foreground">
-          ⌘K
-        </kbd>
-      </div>
+      <CommandPalette />
       <div className="ml-auto flex shrink-0 items-center gap-2">
         <CreateCollectionDialog />
         {newItemButton}

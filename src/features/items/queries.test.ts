@@ -13,6 +13,7 @@ import {
   getItemFileKey,
   getCollectionItemRecords,
   getRecentItems,
+  getSearchableItems,
 } from "@/features/items/queries";
 
 const createdAt = new Date("2026-01-15T00:00:00Z");
@@ -239,5 +240,82 @@ describe("getRecentItems", () => {
       expect(item).not.toHaveProperty("content");
       expect(item).not.toHaveProperty("url");
     }
+  });
+});
+
+describe("getSearchableItems", () => {
+  const card = {
+    id: "item-1",
+    title: "dev",
+    description: null,
+    isFavorite: false,
+    isPinned: false,
+    createdAt,
+    type: { id: "type-1", name: "command", icon: "Terminal", color: null },
+    tags: [{ tag: { name: "cli" } }],
+    content: null,
+    url: null,
+  };
+
+  beforeEach(() => {
+    findMany.mockReset().mockResolvedValue([]);
+  });
+
+  it("reads only the caller's items, last edited first, up to the limit", async () => {
+    await getSearchableItems("user-1");
+
+    const { where, orderBy, take } = findMany.mock.calls[0][0];
+    expect(where).toEqual({ userId: "user-1" });
+    expect(orderBy).toEqual({ updatedAt: "desc" });
+    expect(take).toBe(1000);
+  });
+
+  it("previews a text item's content and a link's URL, and nothing for a file", async () => {
+    findMany.mockResolvedValue([
+      { ...card, contentType: "TEXT", content: "npm run\ndev" },
+      { ...card, id: "item-2", contentType: "URL", url: "https://react.dev" },
+      { ...card, id: "item-3", contentType: "FILE" },
+    ]);
+
+    const items = await getSearchableItems("user-1");
+
+    expect(items.map((item) => item.preview)).toEqual([
+      "npm run dev",
+      "https://react.dev",
+      null,
+    ]);
+  });
+
+  // The route sends this as it is, so a leftover field would put every item's
+  // full text in the browser.
+  it("never hands over the content, only the preview", async () => {
+    findMany.mockResolvedValue([
+      { ...card, contentType: "TEXT", content: "a".repeat(5000) },
+      { ...card, id: "item-2", contentType: "URL", url: "https://react.dev" },
+    ]);
+
+    const items = await getSearchableItems("user-1");
+
+    for (const item of items) {
+      expect(item).not.toHaveProperty("content");
+      expect(item).not.toHaveProperty("url");
+      expect(item).not.toHaveProperty("contentType");
+    }
+    expect(items[0].preview).toHaveLength(120);
+  });
+
+  // The drawer opens straight from these items, so they keep its fields.
+  it("keeps the fields the drawer reads", async () => {
+    findMany.mockResolvedValue([{ ...card, contentType: "TEXT" }]);
+
+    const [item] = await getSearchableItems("user-1");
+
+    expect(item).toMatchObject({
+      id: "item-1",
+      title: "dev",
+      tags: ["cli"],
+      type: { id: "type-1", name: "command", icon: "Terminal" },
+      createdAt,
+    });
   });
 });

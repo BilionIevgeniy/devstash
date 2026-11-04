@@ -32,7 +32,7 @@ prisma/                 schema, migrations, seed
 | 4 | `ai` | none | planned: the auto-tagging or Explain Code spec |
 | 5 | `items` | Item, Tag, ItemTag, ItemCollection ([ADR 0008](../docs/adr/0008-items-own-the-collection-link.md)) | exists |
 | 6 | `collections` | Collection | exists |
-| 7 | `search`, `import-export` | none | planned: the search spec; the import or export spec |
+| 7 | `search`, `import-export` | none | `search` exists; `import-export` planned: the import or export spec |
 | 8 | `account` | none (delete-account flow: cancel Stripe, purge files, delete rows) | exists |
 | 9 | `app-shell` | none | exists |
 | 10 | `app` | routes only | exists |
