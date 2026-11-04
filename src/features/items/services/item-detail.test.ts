@@ -5,7 +5,7 @@ const { getItemDetail, getItemDetailOfType, signFileUrls } = vi.hoisted(() => ({
   getItemDetailOfType: vi.fn(),
   signFileUrls: vi.fn(),
 }));
-vi.mock("@/features/items/queries", () => ({
+vi.mock("@/features/items/_internal/queries", () => ({
   getItemDetail,
   getItemDetailOfType,
 }));

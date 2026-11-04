@@ -28,7 +28,7 @@ export function CollectionSections({ sections }: CollectionSectionsProps) {
             />
             {typeSlug(section.type.name)}
             <span className="text-sm font-normal text-muted-foreground">
-              {section.items.length}
+              {section.totalCount}
             </span>
           </h2>
           {section.listing === "gallery" && (

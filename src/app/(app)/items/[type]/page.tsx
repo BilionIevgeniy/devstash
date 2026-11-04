@@ -1,5 +1,8 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
+import ItemsByTypeLoading from "@/app/(app)/items/[type]/loading";
+import { PaginationNav } from "@/components/common/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { getEntitlements } from "@/features/billing/queries";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
@@ -24,11 +27,12 @@ import type {
   GalleryItem,
   ItemCardData,
 } from "@/features/items/types";
+import { type Paginated, parsePage } from "@/lib/pagination";
 
 type Listing =
-  | { kind: "gallery"; items: GalleryItem[] }
-  | { kind: "files"; items: FileListItem[] }
-  | { kind: "cards"; items: ItemCardData[] };
+  | ({ kind: "gallery" } & Paginated<GalleryItem>)
+  | ({ kind: "files" } & Paginated<FileListItem>)
+  | ({ kind: "cards" } & Paginated<ItemCardData>);
 
 // An image type shows its items as thumbnails, a file type as rows of files,
 // every other type as cards.
@@ -36,43 +40,47 @@ async function loadListing(
   userId: string,
   typeId: string,
   typeName: string,
+  page: number,
 ): Promise<Listing> {
   switch (typeListing(typeName)) {
     case "gallery":
       return {
         kind: "gallery",
-        items: await getUserGalleryItems(userId, typeId),
+        ...(await getUserGalleryItems(userId, typeId, page)),
       };
     case "files":
       return {
         kind: "files",
-        items: await getUserFileListItems(userId, typeId),
+        ...(await getUserFileListItems(userId, typeId, page)),
       };
     case "cards":
       return {
         kind: "cards",
-        items: await getItemsByType(userId, typeId),
+        ...(await getItemsByType(userId, typeId, page)),
       };
   }
 }
 
-export default async function ItemsByTypePage({
-  params,
-}: PageProps<"/items/[type]">) {
-  const { type: slug } = await params;
-  const typeName = parseTypeSlug(slug);
-  if (!typeName) notFound();
+interface ItemsByTypeContentProps {
+  slug: string;
+  typeName: string;
+  page: number;
+}
 
+async function ItemsByTypeContent({
+  slug,
+  typeName,
+  page,
+}: ItemsByTypeContentProps) {
   const { id: userId } = await getSessionUser();
   const type = await getItemTypeByName(typeName);
   if (!type) notFound();
 
   const [list, { isPro }] = await Promise.all([
-    loadListing(userId, type.id, type.name),
+    loadListing(userId, type.id, type.name, page),
     getEntitlements(userId),
   ]);
-  const { items } = list;
-  const itemLabel = items.length === 1 ? "item" : "items";
+  const itemLabel = list.totalCount === 1 ? "item" : "items";
   const emptyMessage = `No ${typeSlug(type.name)} yet.`;
 
   return (
@@ -88,7 +96,7 @@ export default async function ItemsByTypePage({
             {typeSlug(type.name)}
           </h1>
           <p className="text-muted-foreground">
-            {items.length} {itemLabel}
+            {list.totalCount} {itemLabel}
           </p>
         </div>
         {isCreatableType(type.name) && (
@@ -104,6 +112,30 @@ export default async function ItemsByTypePage({
       {list.kind === "cards" && (
         <ItemList items={list.items} emptyMessage={emptyMessage} />
       )}
+      <PaginationNav
+        basePath={`/items/${slug}`}
+        page={list.page}
+        totalPages={list.totalPages}
+      />
     </div>
+  );
+}
+
+// loading.tsx does not show when only the query string changes, since the
+// segment stays the same: the key gives each page its own loading state.
+export default async function ItemsByTypePage({
+  params,
+  searchParams,
+}: PageProps<"/items/[type]">) {
+  const { type: slug } = await params;
+  const typeName = parseTypeSlug(slug);
+  if (!typeName) notFound();
+
+  const page = parsePage((await searchParams).page);
+
+  return (
+    <Suspense key={page} fallback={<ItemsByTypeLoading />}>
+      <ItemsByTypeContent slug={slug} typeName={typeName} page={page} />
+    </Suspense>
   );
 }

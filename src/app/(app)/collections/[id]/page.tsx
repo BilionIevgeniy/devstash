@@ -1,27 +1,32 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Star } from "lucide-react";
 
 import { CollectionSections } from "@/app/(app)/collections/[id]/_components/CollectionSections";
+import CollectionLoading from "@/app/(app)/collections/[id]/loading";
+import { PaginationNav } from "@/components/common/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { CollectionHeaderActions } from "@/features/collections/components/CollectionHeaderActions";
 import { getCollectionById } from "@/features/collections/queries";
 import { collectionIdSchema } from "@/features/collections/schemas";
 import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvider";
 import { getUserCollectionListing } from "@/features/items/services/collection-listing";
+import { parsePage } from "@/lib/pagination";
 
-export default async function CollectionPage({
-  params,
-}: PageProps<"/collections/[id]">) {
-  const parsedId = collectionIdSchema.safeParse((await params).id);
-  if (!parsedId.success) notFound();
+interface CollectionContentProps {
+  id: string;
+  page: number;
+}
 
+async function CollectionContent({ id, page }: CollectionContentProps) {
   const { id: userId } = await getSessionUser();
-  const [collection, { itemCount, sections }] = await Promise.all([
-    getCollectionById(userId, parsedId.data),
-    getUserCollectionListing(userId, parsedId.data),
+  const [collection, listing] = await Promise.all([
+    getCollectionById(userId, id),
+    getUserCollectionListing(userId, id, page),
   ]);
   if (!collection) notFound();
 
+  const { itemCount, sections } = listing;
   const itemLabel = itemCount === 1 ? "item" : "items";
 
   return (
@@ -48,6 +53,29 @@ export default async function CollectionPage({
       <ItemDrawerProvider>
         <CollectionSections sections={sections} />
       </ItemDrawerProvider>
+      <PaginationNav
+        basePath={`/collections/${id}`}
+        page={listing.page}
+        totalPages={listing.totalPages}
+      />
     </div>
+  );
+}
+
+// loading.tsx does not show when only the query string changes, since the
+// segment stays the same: the key gives each page its own loading state.
+export default async function CollectionPage({
+  params,
+  searchParams,
+}: PageProps<"/collections/[id]">) {
+  const parsedId = collectionIdSchema.safeParse((await params).id);
+  if (!parsedId.success) notFound();
+
+  const page = parsePage((await searchParams).page);
+
+  return (
+    <Suspense key={page} fallback={<CollectionLoading />}>
+      <CollectionContent id={parsedId.data} page={page} />
+    </Suspense>
   );
 }

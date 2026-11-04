@@ -1,19 +1,28 @@
+import { Suspense } from "react";
+
+import CollectionsLoading from "@/app/(app)/collections/(list)/loading";
+import { PaginationNav } from "@/components/common/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { CollectionCard } from "@/features/collections/components/CollectionCard";
 import { getUserCollections } from "@/features/collections/queries";
+import { parsePage } from "@/lib/pagination";
 
-export default async function CollectionsPage() {
+async function CollectionsContent({ page }: { page: number }) {
   const { id: userId } = await getSessionUser();
-  const collections = await getUserCollections(userId);
-  const collectionLabel =
-    collections.length === 1 ? "collection" : "collections";
+  const {
+    items: collections,
+    totalCount,
+    page: currentPage,
+    totalPages,
+  } = await getUserCollections(userId, page);
+  const collectionLabel = totalCount === 1 ? "collection" : "collections";
 
   return (
     <div className="space-y-8">
       <header>
         <h1 className="text-3xl font-bold">Collections</h1>
         <p className="text-muted-foreground">
-          {collections.length} {collectionLabel}
+          {totalCount} {collectionLabel}
         </p>
       </header>
       {collections.length === 0 ? (
@@ -25,6 +34,25 @@ export default async function CollectionsPage() {
           ))}
         </div>
       )}
+      <PaginationNav
+        basePath="/collections"
+        page={currentPage}
+        totalPages={totalPages}
+      />
     </div>
+  );
+}
+
+// loading.tsx does not show when only the query string changes, since the
+// segment stays the same: the key gives each page its own loading state.
+export default async function CollectionsPage({
+  searchParams,
+}: PageProps<"/collections">) {
+  const page = parsePage((await searchParams).page);
+
+  return (
+    <Suspense key={page} fallback={<CollectionsLoading />}>
+      <CollectionsContent page={page} />
+    </Suspense>
   );
 }

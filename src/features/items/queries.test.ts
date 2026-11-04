@@ -1,123 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { findFirst, findMany } = vi.hoisted(() => ({
+const { count, findFirst, findMany } = vi.hoisted(() => ({
+  count: vi.fn(),
   findFirst: vi.fn(),
   findMany: vi.fn(),
 }));
-vi.mock("@/lib/prisma", () => ({ prisma: { item: { findFirst, findMany } } }));
+vi.mock("@/lib/prisma", () => ({
+  prisma: { item: { count, findFirst, findMany } },
+}));
 
 import {
-  getItemDetail,
-  getItemDetailOfType,
   getItemEditState,
-  getItemFileKey,
-  getCollectionItemRecords,
+  getItemsByType,
   getRecentItems,
   getSearchableItems,
 } from "@/features/items/queries";
 
 const createdAt = new Date("2026-01-15T00:00:00Z");
-const updatedAt = new Date("2026-02-01T00:00:00Z");
-
-const rawItem = {
-  id: "item-1",
-  title: "useAuth Hook",
-  description: "Custom authentication hook",
-  isFavorite: true,
-  isPinned: false,
-  createdAt,
-  updatedAt,
-  contentType: "text",
-  content: "export function useAuth() {}",
-  url: null,
-  fileUrl: null,
-  fileName: null,
-  fileSize: null,
-  language: "typescript",
-  type: { id: "type-1", name: "snippet", icon: "Code", color: "#3b82f6" },
-  tags: [{ tag: { name: "auth" } }, { tag: { name: "react" } }],
-  collections: [{ collection: { id: "col-1", name: "React Patterns" } }],
-};
-
-describe("getItemDetail", () => {
-  beforeEach(() => {
-    findFirst.mockReset();
-  });
-
-  it("only looks up items that belong to the caller", async () => {
-    findFirst.mockResolvedValue(null);
-
-    await getItemDetail("user-1", "item-1");
-
-    expect(findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: "item-1", userId: "user-1" } }),
-    );
-  });
-
-  it("returns null when the item is missing or someone else's", async () => {
-    findFirst.mockResolvedValue(null);
-
-    await expect(getItemDetail("user-1", "item-1")).resolves.toBeNull();
-  });
-
-  it("flattens tags and collections into the detail DTO", async () => {
-    findFirst.mockResolvedValue(rawItem);
-
-    const detail = await getItemDetail("user-1", "item-1");
-
-    expect(detail).toMatchObject({
-      id: "item-1",
-      language: "typescript",
-      content: "export function useAuth() {}",
-      tags: ["auth", "react"],
-      collections: [{ id: "col-1", name: "React Patterns" }],
-      type: { id: "type-1", name: "snippet", icon: "Code", color: "#3b82f6" },
-      createdAt,
-      updatedAt,
-    });
-  });
-});
-
-describe("getItemDetailOfType", () => {
-  beforeEach(() => {
-    findFirst.mockReset();
-  });
-
-  it("only looks up the caller's item of the type in the URL", async () => {
-    findFirst.mockResolvedValue(null);
-
-    await getItemDetailOfType("user-1", "item-1", "snippet");
-
-    expect(findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: "item-1", userId: "user-1", type: { name: "snippet" } },
-      }),
-    );
-  });
-
-  it("returns null when the item is missing, someone else's or of another type", async () => {
-    findFirst.mockResolvedValue(null);
-
-    await expect(
-      getItemDetailOfType("user-1", "item-1", "note"),
-    ).resolves.toBeNull();
-  });
-
-  it("returns the same detail DTO as getItemDetail", async () => {
-    findFirst.mockResolvedValue(rawItem);
-
-    const detail = await getItemDetailOfType("user-1", "item-1", "snippet");
-
-    expect(detail).toMatchObject({
-      id: "item-1",
-      tags: ["auth", "react"],
-      collections: [{ id: "col-1", name: "React Patterns" }],
-      type: { id: "type-1", name: "snippet", icon: "Code", color: "#3b82f6" },
-      createdAt,
-      updatedAt,
-    });
-  });
-});
 
 describe("getItemEditState", () => {
   beforeEach(() => {
@@ -148,73 +47,39 @@ describe("getItemEditState", () => {
   });
 });
 
-describe("getItemFileKey", () => {
+describe("getItemsByType", () => {
   beforeEach(() => {
-    findFirst.mockReset();
-  });
-
-  it("only looks up items that belong to the caller", async () => {
-    findFirst.mockResolvedValue(null);
-
-    await getItemFileKey("user-1", "item-1");
-
-    expect(findFirst.mock.calls[0][0].where).toEqual({
-      id: "item-1",
-      userId: "user-1",
-    });
-  });
-
-  it("tells a missing item from an item with no file", async () => {
-    findFirst.mockResolvedValueOnce(null);
-    await expect(getItemFileKey("user-1", "item-1")).resolves.toBeNull();
-
-    findFirst.mockResolvedValueOnce({ fileKey: null });
-    await expect(getItemFileKey("user-1", "item-1")).resolves.toEqual({
-      fileKey: null,
-    });
-  });
-});
-
-describe("getCollectionItemRecords", () => {
-  beforeEach(() => {
+    count.mockReset().mockResolvedValue(50);
     findMany.mockReset().mockResolvedValue([]);
   });
 
-  it("reads only the caller's items linked to the collection", async () => {
-    await getCollectionItemRecords("user-1", "col-1");
+  it("counts and reads the same rows, the caller's items of the type", async () => {
+    await getItemsByType("user-1", "type-1", 1);
 
-    expect(findMany.mock.calls[0][0].where).toEqual({
-      userId: "user-1",
-      collections: { some: { collectionId: "col-1" } },
-    });
+    const where = { userId: "user-1", typeId: "type-1" };
+    expect(count.mock.calls[0][0].where).toEqual(where);
+    expect(findMany.mock.calls[0][0].where).toEqual(where);
   });
 
-  it("keeps the upload and tells whether there is something to copy", async () => {
-    findMany.mockResolvedValue([
-      {
-        ...rawItem,
-        tags: [],
-        contentType: "file",
-        content: null,
-        fileKey: "users/user-1/a.png",
-        fileName: "a.png",
-        fileSize: 10,
-      },
-    ]);
+  it("reads only the rows of the page, in an order with no ties", async () => {
+    const result = await getItemsByType("user-1", "type-1", 2);
 
-    const [record] = await getCollectionItemRecords("user-1", "col-1");
-
-    expect(record).toMatchObject({
-      canCopy: false,
-      fileKey: "users/user-1/a.png",
-      fileName: "a.png",
-      fileSize: 10,
-    });
-    expect(record).not.toHaveProperty("content");
+    const { skip, take, orderBy } = findMany.mock.calls[0][0];
+    expect({ skip, take }).toEqual({ skip: 21, take: 21 });
+    expect(orderBy).toEqual([{ createdAt: "desc" }, { id: "desc" }]);
+    expect(result).toMatchObject({ totalCount: 50, page: 2, totalPages: 3 });
   });
 });
 
 describe("getRecentItems", () => {
+  it("reads only what the dashboard shows", async () => {
+    findMany.mockReset().mockResolvedValue([]);
+
+    await getRecentItems("user-1");
+
+    expect(findMany.mock.calls[0][0].take).toBe(10);
+  });
+
   const card = {
     id: "item-1",
     title: "dev",

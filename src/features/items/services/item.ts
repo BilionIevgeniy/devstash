@@ -12,7 +12,8 @@ import {
   editableFields,
   editableUpdate,
 } from "@/features/items/domain/item-fields";
-import { getItemEditState, getItemFileKey } from "@/features/items/queries";
+import { getItemFileKey } from "@/features/items/_internal/queries";
+import { getItemEditState } from "@/features/items/queries";
 import type {
   CreateItemInput,
   UpdateItemInput,

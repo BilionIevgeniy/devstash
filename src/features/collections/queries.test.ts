@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { findFirst, findMany, findTypes } = vi.hoisted(() => ({
+const { count, findFirst, findMany, findTypes } = vi.hoisted(() => ({
+  count: vi.fn(),
   findFirst: vi.fn(),
   findMany: vi.fn(),
   findTypes: vi.fn(),
 }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    collection: { findFirst, findMany },
+    collection: { count, findFirst, findMany },
     itemType: { findMany: findTypes },
   },
 }));
@@ -67,16 +68,25 @@ describe("getSearchableCollections", () => {
 
 describe("getUserCollections", () => {
   beforeEach(() => {
+    count.mockReset().mockResolvedValue(50);
     findMany.mockReset().mockResolvedValue([]);
     findTypes.mockReset().mockResolvedValue([]);
   });
 
-  it("reads all of the caller's collections, with no limit", async () => {
-    await getUserCollections("user-1");
+  it("counts and reads only the caller's collections", async () => {
+    await getUserCollections("user-1", 1);
 
-    const { where, take } = findMany.mock.calls[0][0];
-    expect(where).toEqual({ userId: "user-1" });
-    expect(take).toBeUndefined();
+    expect(count.mock.calls[0][0].where).toEqual({ userId: "user-1" });
+    expect(findMany.mock.calls[0][0].where).toEqual({ userId: "user-1" });
+  });
+
+  it("reads only the rows of the page, in an order with no ties", async () => {
+    const result = await getUserCollections("user-1", 2);
+
+    const { skip, take, orderBy } = findMany.mock.calls[0][0];
+    expect({ skip, take }).toEqual({ skip: 21, take: 21 });
+    expect(orderBy).toEqual([{ updatedAt: "desc" }, { id: "desc" }]);
+    expect(result).toMatchObject({ totalCount: 50, page: 2, totalPages: 3 });
   });
 });
 

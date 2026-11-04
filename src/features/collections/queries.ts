@@ -1,5 +1,6 @@
 import "server-only";
 
+import { COLLECTIONS_PER_PAGE } from "@/features/collections/domain/pagination";
 import { rankTypesByUsage } from "@/features/item-types/domain/rank-types-by-usage";
 import type {
   CollectionOption,
@@ -13,6 +14,7 @@ import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
 import { itemTypeSelect } from "@/features/item-types/queries";
 import type { ItemTypeInfo } from "@/features/item-types/types";
 import type { Prisma } from "@/generated/prisma/client";
+import { type Paginated, readPage } from "@/lib/pagination";
 import { prisma } from "@/lib/prisma";
 
 const DASHBOARD_COLLECTIONS_LIMIT = 6;
@@ -41,12 +43,13 @@ async function fetchTypesById(
 async function fetchCollections(
   userId: string,
   where: Prisma.CollectionWhereInput,
-  take?: number,
+  rows: { skip?: number; take?: number } = {},
 ): Promise<DashboardCollection[]> {
   const collections = await prisma.collection.findMany({
     where: { userId, ...where },
-    orderBy: { updatedAt: "desc" },
-    take,
+    // The id settles equal dates, so a row cannot move between pages.
+    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+    ...rows,
     select: collectionSelect,
   });
 
@@ -68,13 +71,19 @@ async function fetchCollections(
 export function getRecentCollections(
   userId: string,
 ): Promise<DashboardCollection[]> {
-  return fetchCollections(userId, {}, DASHBOARD_COLLECTIONS_LIMIT);
+  return fetchCollections(userId, {}, { take: DASHBOARD_COLLECTIONS_LIMIT });
 }
 
 export function getUserCollections(
   userId: string,
-): Promise<DashboardCollection[]> {
-  return fetchCollections(userId, {});
+  page: number,
+): Promise<Paginated<DashboardCollection>> {
+  return readPage(
+    page,
+    COLLECTIONS_PER_PAGE,
+    () => prisma.collection.count({ where: { userId } }),
+    (skip, take) => fetchCollections(userId, {}, { skip, take }),
+  );
 }
 
 export function getCollectionById(
@@ -92,7 +101,7 @@ export async function getSidebarCollections(
 ): Promise<SidebarCollections> {
   const [favorites, recent] = await Promise.all([
     fetchCollections(userId, { isFavorite: true }),
-    fetchCollections(userId, {}, SIDEBAR_RECENT_LIMIT),
+    fetchCollections(userId, {}, { take: SIDEBAR_RECENT_LIMIT }),
   ]);
   return { favorites, recent };
 }
