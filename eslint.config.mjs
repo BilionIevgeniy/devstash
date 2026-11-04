@@ -93,7 +93,7 @@ const intraFeatureZones = FEATURE_NAMES.flatMap((name) => {
   const dir = `./src/features/${name}`;
   return [
     {
-      target: [`${dir}/queries.ts`],
+      target: [`${dir}/queries.ts`, `${dir}/_internal/queries.ts`],
       from: roleFolders(name, "services", "actions", "components"),
       message: "queries.ts cannot import services, actions or components.",
     },
@@ -101,6 +101,7 @@ const intraFeatureZones = FEATURE_NAMES.flatMap((name) => {
       target: [`${dir}/schemas.ts`],
       from: [
         `${dir}/queries.ts`,
+        `${dir}/_internal/queries.ts`,
         ...roleFolders(name, "services", "actions", "components"),
       ],
       message: "schemas.ts cannot import queries, services, actions or components.",
@@ -160,6 +161,26 @@ const restrictImports = ({ paths = [], patterns = [] } = {}) => [
 
 const NO_PRISMA_MESSAGE =
   "Only queries.ts, services and lib touch Prisma: read through a query or call a service.";
+
+// Reads live in queries.ts, writes in services (ADR 0009). The selectors match
+// the names prisma and tx, so a read through tx, which shares a transaction with
+// a write, stays in the service.
+const NO_READ_IN_SERVICE_MESSAGE =
+  "A read goes in queries.ts; one that returns a secret goes in _internal/queries.ts. Only a read through tx stays in a service.";
+const NO_WRITE_IN_QUERIES_MESSAGE =
+  "queries.ts only reads: a write, a transaction or raw SQL goes in a service.";
+const READ_IN_SERVICE_SELECTORS = [
+  "MemberExpression[object.object.name='prisma'][property.name=/^(find|count$|aggregate$|groupBy$)/]",
+  "MemberExpression[object.name='prisma'][property.name=/^\\$queryRaw/]",
+];
+const WRITE_IN_QUERIES_SELECTORS = [
+  "MemberExpression[object.object.name=/^(prisma|tx)$/][property.name=/^(create|update|upsert|delete)/]",
+  "MemberExpression[object.name='prisma'][property.name=/^\\$(transaction|executeRaw|queryRaw)/]",
+];
+const restrictSyntax = (selectors, message) => [
+  "error",
+  ...selectors.map((selector) => ({ selector, message })),
+];
 
 // Size limits ("Size limits" in context/coding-standards.md), counted without
 // blank lines and comments. UI code (components with their hooks, pages) gets
@@ -241,6 +262,28 @@ const eslintConfig = defineConfig([
             "Services take userId, ip and origin as parameters: read the request in the action, route or page.",
         })),
       }),
+    },
+  },
+  {
+    files: [
+      "src/features/**/services/**/*.{ts,tsx}",
+      "src/features/**/nextauth/**/*.{ts,tsx}",
+    ],
+    ignores: ["src/**/*.test.ts"],
+    rules: {
+      "no-restricted-syntax": restrictSyntax(
+        READ_IN_SERVICE_SELECTORS,
+        NO_READ_IN_SERVICE_MESSAGE,
+      ),
+    },
+  },
+  {
+    files: ["src/features/**/queries.ts"],
+    rules: {
+      "no-restricted-syntax": restrictSyntax(
+        WRITE_IN_QUERIES_SELECTORS,
+        NO_WRITE_IN_QUERIES_MESSAGE,
+      ),
     },
   },
   {

@@ -9,6 +9,8 @@ vi.mock("@/lib/prisma", () => ({ prisma: { item: { findFirst, findMany } } }));
 import {
   getItemDetail,
   getItemDetailOfType,
+  getItemEditState,
+  getItemFileKey,
   getItemsByCollection,
   getRecentItems,
 } from "@/features/items/queries";
@@ -112,6 +114,62 @@ describe("getItemDetailOfType", () => {
       type: { id: "type-1", name: "snippet", icon: "Code", color: "#3b82f6" },
       createdAt,
       updatedAt,
+    });
+  });
+});
+
+describe("getItemEditState", () => {
+  beforeEach(() => {
+    findFirst.mockReset();
+  });
+
+  it("only looks up items that belong to the caller", async () => {
+    findFirst.mockResolvedValue(null);
+
+    await expect(getItemEditState("user-1", "item-1")).resolves.toBeNull();
+
+    expect(findFirst.mock.calls[0][0].where).toEqual({
+      id: "item-1",
+      userId: "user-1",
+    });
+  });
+
+  it("flattens the type and the collection links", async () => {
+    findFirst.mockResolvedValue({
+      type: { name: "snippet" },
+      collections: [{ collectionId: "col-1" }, { collectionId: "col-2" }],
+    });
+
+    await expect(getItemEditState("user-1", "item-1")).resolves.toEqual({
+      typeName: "snippet",
+      collectionIds: ["col-1", "col-2"],
+    });
+  });
+});
+
+describe("getItemFileKey", () => {
+  beforeEach(() => {
+    findFirst.mockReset();
+  });
+
+  it("only looks up items that belong to the caller", async () => {
+    findFirst.mockResolvedValue(null);
+
+    await getItemFileKey("user-1", "item-1");
+
+    expect(findFirst.mock.calls[0][0].where).toEqual({
+      id: "item-1",
+      userId: "user-1",
+    });
+  });
+
+  it("tells a missing item from an item with no file", async () => {
+    findFirst.mockResolvedValueOnce(null);
+    await expect(getItemFileKey("user-1", "item-1")).resolves.toBeNull();
+
+    findFirst.mockResolvedValueOnce({ fileKey: null });
+    await expect(getItemFileKey("user-1", "item-1")).resolves.toEqual({
+      fileKey: null,
     });
   });
 });

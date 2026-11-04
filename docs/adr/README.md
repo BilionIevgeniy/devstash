@@ -12,6 +12,7 @@ One short file per decision that shapes the structure of the code, in the [MADR]
 | [0006](0006-eslint-9-and-eslint-plugin-import.md) | Stay on ESLint 9 because of `eslint-plugin-import` | accepted |
 | [0007](0007-client-hooks-in-the-components-role.md) | Client hooks belong to the components role | accepted |
 | [0008](0008-items-own-the-collection-link.md) | Items own the link to collections | accepted |
+| [0009](0009-read-write-split-enforced-by-lint.md) | The split between reads and writes is enforced by lint | accepted |
 
 ## How to add one
 

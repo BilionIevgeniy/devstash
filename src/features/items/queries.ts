@@ -7,6 +7,7 @@ import type {
   DashboardItem,
   ItemCardData,
   ItemDetailRecord,
+  ItemEditState,
   ItemStats,
   UploadItemRecord,
 } from "@/features/items/types";
@@ -196,6 +197,37 @@ export async function getItemDetailOfType(
     select: itemDetailSelect,
   });
   return item ? toItemDetail(item) : null;
+}
+
+export async function getItemEditState(
+  userId: string,
+  id: string,
+): Promise<ItemEditState | null> {
+  const item = await prisma.item.findFirst({
+    where: { id, userId },
+    select: {
+      type: { select: { name: true } },
+      collections: { select: { collectionId: true } },
+    },
+  });
+  if (!item) return null;
+
+  return {
+    typeName: item.type.name,
+    collectionIds: item.collections.map((row) => row.collectionId),
+  };
+}
+
+// An object and not the bare key: a missing item (null) and an item with no
+// file ({ fileKey: null }) are different answers to the delete service.
+export async function getItemFileKey(
+  userId: string,
+  id: string,
+): Promise<{ fileKey: string | null } | null> {
+  return prisma.item.findFirst({
+    where: { id, userId },
+    select: { fileKey: true },
+  });
 }
 
 export async function getItemStats(userId: string): Promise<ItemStats> {

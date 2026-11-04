@@ -27,6 +27,16 @@ export const getUserProfile = cache(
   },
 );
 
+export async function getSessionVersion(
+  userId: string,
+): Promise<number | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { sessionVersion: true },
+  });
+  return user?.sessionVersion ?? null;
+}
+
 // The reads below run before anyone is signed in. They are keyed by an email
 // address (and a one-time token) instead of a user id, which is the one
 // exception to scoping every query by userId.

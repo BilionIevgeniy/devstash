@@ -95,12 +95,14 @@ features/auth/
   services/                  operations: registration, email verification, password reset, account
                              (change password; the proof check and row deletion `account` uses to
                              delete an account), the email-send rate limit
-  queries.ts                 reads: getUserProfile, and the reads made before sign-in (see the standard)
+  queries.ts                 reads: getUserProfile, getSessionVersion, and the reads made before sign-in
+                             (see the standard)
   schemas.ts                 Zod schemas of every input
   types.ts                   AuthActionState, AccountState, UserProfile
   _internal/                 private to auth (see the next section)
     actions/                 Server Actions used only by auth's own forms
     components/              CheckEmailNotice
+    queries.ts               reads that hand a secret to their caller: password hashes, GitHub tokens
     services/                github-grant: revokes the app's authorization on GitHub
     emails/                  the emails: pure builders of subject, html and text
     token.ts, password.ts    generate and hash tokens; hash passwords with one bcrypt cost
@@ -163,7 +165,7 @@ Adding an operation to an existing feature is the same without steps 1 to 5: inp
 - an SDK of a vendor (Resend, Upstash, Stripe, OpenAI, AWS) is imported outside `lib/`;
 - two files import each other in a loop.
 
-What lint cannot see (no writes in `queries.ts`, one call into a service per entry point, `userId` in every query) is on the author and the reviewer. The exact list is "What the lint enforces" in the Reference below.
+What lint cannot see (one call into a service per entry point, `userId` in every query) is on the author and the reviewer. The exact list is "What the lint enforces" in the Reference below.
 
 ## Reference
 
@@ -205,8 +207,8 @@ Expected failures (wrong password, expired link) are returned as a result; unexp
 1. No I/O, clock, environment or package (including `node:*` and `zod`), plain values in and out: `domain/<topic>.ts`.
 2. A helper that needs a package or `node:*` (hashing, crypto): `lib/<name>.ts` when it is generic and has no product words, otherwise `_internal/<name>.ts`.
 3. A Zod input shape: `schemas.ts`. A view or result type: `types.ts`. An email body: `_internal/emails/`. Every other type: "Where types live" in [context/architecture-rules.md](../context/architecture-rules.md).
-4. A standalone read of this feature's own Prisma models, including a read that a flow needs: `queries.ts`. Scope it by `userId`; the one exception is a read before sign-in that is keyed by an email address and a one-time token (`getAccountState`, `isVerificationTokenValid`, `isPasswordResetTokenValid` in `auth`), where holding the token is the authorization.
-5. Anything else that does work: `services/<topic>.ts`. That is every write, any call to a vendor, Redis, email, NextAuth or `fetch`, another feature's data, a read that must share a transaction with a write, a decision that needs two sources.
+4. A standalone read of this feature's own Prisma models, including a read that a flow needs: `queries.ts`. Scope it by `userId`; the one exception is a read before sign-in that is keyed by an email address and a one-time token (`getAccountState`, `isVerificationTokenValid`, `isPasswordResetTokenValid` in `auth`), where holding the token is the authorization, or by an email address and the password being checked (`getPasswordHashByEmail`, `getCredentialsUser`). A read that hands a secret to its caller (a password hash, an OAuth token) goes in `_internal/queries.ts`, so nothing outside the feature can import it ([ADR 0009](adr/0009-read-write-split-enforced-by-lint.md)).
+5. Anything else that does work: `services/<topic>.ts`. That is every write, any call to a vendor, Redis, email, NextAuth or `fetch`, another feature's data, a read through `tx` that must share a transaction with a write, a decision that needs two sources.
 6. Anything that reads the request (session, headers, cookies, searchParams) or is `"use server"`: an entry point (`actions/<noun>.ts`, `route.ts`, a page, `auth/nextauth/session.ts`). It passes `userId`, `ip` and `origin` as plain values into one call.
 7. A vendor client with no feature knowledge: `lib/<vendor>.ts`.
 8. Used only inside this feature: `_internal/<same role>/`, and a new file starts there. Needed by two features: move it down to the lowest rank both can import.
@@ -284,11 +286,12 @@ Each feature keeps its business rules in `features/[feature]/domain/` as pure Ty
 - the direction of the roles inside a feature: queries and schemas do not import services, actions or components; services do not import actions or components; actions do not import components; components do not import services; hooks in `components/hooks/` do not import any `.tsx`
 - the domain core: no package import (colocated `*.test.ts` files are excepted), only `domain/`, `types.ts` and `lib/utils`
 - no Prisma in actions, components (including `components/common`) and `app/`; no `next/headers`, `next/cache` or `next/navigation` in services; vendor SDKs only in `lib`
+- the split between reads and writes (`no-restricted-syntax`, [ADR 0009](adr/0009-read-write-split-enforced-by-lint.md)): no read through `prisma` in services and `nextauth/`, while a read through `tx` is allowed; no write, `$transaction` or raw SQL in `queries.ts`
 - import cycles (`import/no-cycle`)
 - deprecated APIs of the installed packages (`@typescript-eslint/no-deprecated`, with type information from `projectService`)
 - size: 50 lines per function in the logic roles and the browser helpers, 80 per component (`.tsx`), hook (`components/hooks/use-*.ts`) and page, 250 per file, cyclomatic complexity 15 (`max-lines-per-function`, `max-lines`, `complexity`; blank lines and comments not counted; see "Size limits" in `context/coding-standards.md`)
 
-Not checked by lint, so it is on the author and the reviewer: no writes in `queries.ts`, one call into a service per entry point, `userId` in every `where`, a service taking `userId`, `ip` and `origin` as parameters, idempotent background jobs, and reads of another feature's models (see "Known risks").
+Not checked by lint, so it is on the author and the reviewer: one call into a service per entry point, `userId` in every `where`, a service taking `userId`, `ip` and `origin` as parameters, idempotent background jobs, a read through `tx` with no write in its transaction, an alias of a Prisma delegate (the read and write rules match the names `prisma` and `tx`), and reads of another feature's models (see "Known risks").
 
 ### Known risks
 

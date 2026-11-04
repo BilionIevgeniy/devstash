@@ -9,6 +9,7 @@ import {
   TooManyAttemptsError,
 } from "@/features/auth/_internal/errors";
 import { verifyPassword } from "@/features/auth/_internal/password";
+import { getCredentialsUser } from "@/features/auth/_internal/queries";
 import { revokeGitHubGrant } from "@/features/auth/_internal/services/github-grant";
 import {
   LOGIN_BY_EMAIL_GLOBAL,
@@ -16,6 +17,7 @@ import {
   LOGIN_BY_IP,
   loginEmailKey,
 } from "@/features/auth/domain/rate-limits";
+import { getSessionVersion } from "@/features/auth/queries";
 import { credentialsSchema } from "@/features/auth/schemas";
 import { getClientIp } from "@/lib/client-ip";
 import { prisma } from "@/lib/prisma";
@@ -25,14 +27,6 @@ import {
   resetRateLimit,
 } from "@/lib/rate-limit";
 import authConfig from "./auth.config";
-
-async function getSessionVersion(userId: string): Promise<number | null> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { sessionVersion: true },
-  });
-  return user?.sessionVersion ?? null;
-}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -63,7 +57,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new TooManyAttemptsError();
         }
 
-        const user = await prisma.user.findUnique({ where: { email } });
+        const user = await getCredentialsUser(email);
         // A missing account pays the same bcrypt round as a wrong password.
         const isValid = await verifyPassword(
           parsed.data.password,

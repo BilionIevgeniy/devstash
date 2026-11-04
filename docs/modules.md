@@ -29,7 +29,7 @@ A module writes only the models it owns and reads only its own models. A relatio
   - `actions/sign-in`, `queries`, `schemas`, `services/registration`, `services/account`, and the `domain/` files for tokens, rate limits and reset links, all called by pages and routes
   - `services/account` for `account` only: `verifyAccountDeletion` returns a `VerifiedDeletion` that only it can build, and `deleteVerifiedUserRows` takes nothing else, so the rows cannot be deleted without the proof check
   - `components/`: `AuthCard`, the forms (`SignInForm`, `RegisterForm`, `ForgotPasswordForm`, `ResetPasswordForm`, `ConfirmEmailForm`, `ChangePasswordForm`), `ResendVerificationButton`, `GitHubSignInButton`, `UserAvatar`
-- **Private:** the actions of its own forms, emails, token and password helpers, error classes, messages, the GitHub grant service
+- **Private:** the actions of its own forms, emails, token and password helpers, error classes, messages, the GitHub grant service, the reads that return a secret (`_internal/queries`, [ADR 0009](adr/0009-read-write-split-enforced-by-lint.md))
 
 ### billing
 

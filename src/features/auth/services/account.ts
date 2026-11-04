@@ -5,6 +5,12 @@ import {
   hashPassword,
   verifyPassword,
 } from "@/features/auth/_internal/password";
+import {
+  getDeletionCredentials,
+  getGitHubAccessTokens,
+  getPasswordHash,
+  getPasswordHashByEmail,
+} from "@/features/auth/_internal/queries";
 import { revokeGitHubGrant } from "@/features/auth/_internal/services/github-grant";
 import { getPasswordResetIdentifier } from "@/features/auth/domain/password-reset";
 import {
@@ -68,13 +74,10 @@ export async function changeUserPassword(
   const refusal = await getPasswordCheckRefusal(userId);
   if (refusal) return refusal;
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { password: true },
-  });
-  if (!user?.password) return { success: false, error: NO_PASSWORD_MESSAGE };
+  const hash = await getPasswordHash(userId);
+  if (!hash) return { success: false, error: NO_PASSWORD_MESSAGE };
 
-  if (!(await bcrypt.compare(currentPassword, user.password))) {
+  if (!(await bcrypt.compare(currentPassword, hash))) {
     return { success: false, error: INCORRECT_PASSWORD_MESSAGE };
   }
 
@@ -92,11 +95,7 @@ export async function verifyPasswordByEmail(
   email: string,
   password: string,
 ): Promise<boolean> {
-  const user = await prisma.user.findUnique({
-    where: { email },
-    select: { password: true },
-  });
-  return verifyPassword(password, user?.password);
+  return verifyPassword(password, await getPasswordHashByEmail(email));
 }
 
 // The clock is read here and not in the profile component, which must stay pure.
@@ -119,10 +118,7 @@ export async function verifyAccountDeletion(
   const refusal = await getPasswordCheckRefusal(userId);
   if (refusal) return { ...refusal, data: null };
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { email: true, password: true },
-  });
+  const user = await getDeletionCredentials(userId);
   if (!user) return { success: true, error: null, data: null };
 
   if (user.password) {
@@ -160,12 +156,8 @@ export async function deleteVerifiedUserRows({
   // Taking the app's authorization away on GitHub makes the next GitHub
   // sign-in start from GitHub's authorize screen and create a new account. The
   // stored token is the one from the first link, so it may already be revoked.
-  const githubAccounts = await prisma.account.findMany({
-    where: { userId, provider: "github" },
-    select: { access_token: true },
-  });
-  for (const { access_token } of githubAccounts) {
-    if (access_token) await revokeGitHubGrant(access_token);
+  for (const token of await getGitHubAccessTokens(userId)) {
+    await revokeGitHubGrant(token);
   }
 
   await prisma.$transaction([
