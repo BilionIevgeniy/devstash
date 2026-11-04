@@ -14,7 +14,7 @@ A module gets its section here in the commit with its first real code, together 
 | Collection | `collections` | |
 | Subscription | `billing` | `isPro` is derived from the subscription status; no row means the Free plan |
 | StripeEvent | `billing` (planned) | The webhook's idempotency record, with the Stripe specs |
-| UserPreference | `editor` (model planned) | One row per user, typed columns, an absent row means defaults, created by upsert |
+| UserPreference | `editor` | One row per user, typed columns, an absent row means defaults, created by upsert |
 
 A module writes only the models it owns and reads only its own models. A relation `select` of scalar columns through its own relation is fine (`items` selects the type name, icon and color through `Item.type`, and the id and name of each collection through `Item.collections`). Everything else goes through the owner's queries or services.
 
@@ -77,11 +77,12 @@ A module writes only the models it owns and reads only its own models. A relatio
 
 ### editor
 
-- **Owns:** the editors of item content: `CodeEditor` (Monaco, loaded from the jsDelivr CDN by `@monaco-editor/react`) with its dark theme, header (window dots, language, copy) and fluid height up to 400px; the mapping from the free-text language field to the editor's language id; `MarkdownEditor` (Write and Preview tabs on Radix `Tabs`, the Write panel kept mounted so the textarea keeps its undo history; readonly shows only the preview) with the same frame, header and 400px height; the Markdown preview (`react-markdown` with `remark-gfm` and `remark-breaks`, no raw HTML, links open in a new tab, styled by `.markdown-preview` in `globals.css`), loaded with `next/dynamic` so the parser is fetched only when a preview first renders
-- **Uses today:** nothing
-- **Entry points used from outside:** `components/CodeEditor`, `components/MarkdownEditor` (both used by `items`)
-- **Private:** `_internal/domain/code-language` (`editorLanguage`); `_internal/components/EditorHeader` (window dots, a slot for the language label or the tabs, the copy button), shared by both editors; `_internal/components/MarkdownPreview` (moves to `components/` when `ai` needs it)
-- **Will grow with** (from the specs, not built): `UserPreference` and the preferences provider, form and action (`EditorPreferencesProvider` mounted in `app/(app)/layout.tsx`, `EditorPreferencesSection`). It will use `auth`. It cannot import `ai`: the Explain button reaches the editor header through a slot that `items` fills
+- **Owns:** `UserPreference` and the editor preferences (font size, tab size, word wrap, minimap, theme): the read started by the app layout, saved on every change, one full object per save, so the last write from any tab wins; the editors of item content: `CodeEditor` (Monaco, loaded from the jsDelivr CDN by `@monaco-editor/react`) with its three themes (the `vs-dark` option is Monaco's vs-dark with the app's colors), header (window dots, language, copy) and fluid height up to 400px; the mapping from the free-text language field to the editor's language id; `MarkdownEditor` (Write and Preview tabs on Radix `Tabs`, the Write panel kept mounted so the textarea keeps its undo history; readonly shows only the preview) with the same frame, header and 400px height; the Markdown preview (`react-markdown` with `remark-gfm` and `remark-breaks`, no raw HTML, links open in a new tab, styled by `.markdown-preview` in `globals.css`), loaded with `next/dynamic` so the parser is fetched only when a preview first renders
+- **Uses today:** `auth` (`getSessionUser` in the action)
+- **Entry points used from outside:** `components/CodeEditor`, `components/MarkdownEditor` (both used by `items`); `components/EditorPreferencesProvider` and `queries` (`getEditorPreferences`; both in `app/(app)/layout.tsx`, around the shell because the top bar's dialogs hold editors); `components/EditorPreferencesSection` (the settings page)
+- **Inside the feature only, so far:** `schemas` (`editorPreferencesSchema`); `useEditorPreferences`, exported by the provider, suspends until the read is done, so `CodeEditor` holds a `Suspense`
+- **Private:** `_internal/domain/code-language` (`editorLanguage`); `_internal/domain/preferences` (the options, the defaults, `toEditorPreferences`); `_internal/domain/preference-save` (which of several overlapping saves decides the screen and the toast); `_internal/domain/editor-themes` (Monaco theme data); `_internal/actions/preferences` and `_internal/services/preferences`; `_internal/components/MonacoEditor` (the Monaco part of `CodeEditor`, applies the preferences); `_internal/components/EditorHeader` (window dots, a slot for the language label or the tabs, the copy button), shared by both editors; `_internal/components/MarkdownPreview` (moves to `components/` when `ai` needs it)
+- It cannot import `ai`: the Explain button reaches the editor header through a slot that `items` fills
 
 ### search
 
