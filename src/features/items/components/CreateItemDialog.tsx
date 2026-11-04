@@ -49,13 +49,11 @@ interface CreateItemDialogProps {
   defaultType?: CreatableTypeName;
   /** From getEntitlements on the server; the server checks again on create. */
   isPro: boolean;
-  className?: string;
 }
 
 export function CreateItemDialog({
   defaultType,
   isPro,
-  className,
 }: CreateItemDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const createdRef = useRef(false);
@@ -82,7 +80,7 @@ export function CreateItemDialog({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className={className} disabled={isLocked}>
+        <Button disabled={isLocked}>
           <Plus />
           <span className="capitalize">{label}</span>
           {isLocked && <ProBadge />}

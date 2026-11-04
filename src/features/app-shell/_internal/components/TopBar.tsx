@@ -3,6 +3,7 @@ import { PanelLeft, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CreateCollectionDialog } from "@/features/collections/components/CreateCollectionDialog";
 
 interface TopBarProps {
   onToggleSidebar: () => void;
@@ -47,7 +48,10 @@ export function TopBar({
           ⌘K
         </kbd>
       </div>
-      {newItemButton}
+      <div className="ml-auto flex shrink-0 items-center gap-2">
+        <CreateCollectionDialog />
+        {newItemButton}
+      </div>
     </header>
   );
 }

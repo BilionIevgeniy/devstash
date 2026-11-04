@@ -1,5 +1,6 @@
 "use client";
 
+import { Field } from "@/components/common/Field";
 import {
   Select,
   SelectContent,
@@ -8,7 +9,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ProBadge } from "@/features/billing/components/ProBadge";
-import { Field } from "@/features/items/_internal/components/Field";
 import {
   canCreateType,
   CREATABLE_TYPES,
