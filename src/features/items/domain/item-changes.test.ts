@@ -15,6 +15,7 @@ const initial: ItemFormValues = {
   language: "typescript",
   url: "",
   tags: "react, hooks",
+  collectionIds: ["col-1", "col-2"],
 };
 
 function changed(patch: Partial<ItemFormValues>, fields = snippet) {
@@ -22,6 +23,15 @@ function changed(patch: Partial<ItemFormValues>, fields = snippet) {
 }
 
 describe("hasItemChanges", () => {
+  it("sees a change when only the collections differ", () => {
+    expect(changed({ collectionIds: ["col-1"] })).toBe(true);
+    expect(changed({ collectionIds: ["col-1", "col-3"] })).toBe(true);
+  });
+
+  it("treats the collections as a set", () => {
+    expect(changed({ collectionIds: ["col-2", "col-1"] })).toBe(false);
+  });
+
   it("sees no change in an untouched form", () => {
     expect(changed({})).toBe(false);
   });

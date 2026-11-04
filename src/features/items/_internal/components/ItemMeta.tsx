@@ -5,11 +5,18 @@ import { DrawerSection } from "@/features/items/_internal/components/DrawerSecti
 import type { ItemDetailJson } from "@/features/items/types";
 import { formatLongDate } from "@/lib/utils";
 
-// Read-only in both the detail and the edit form: collections and dates.
-export function ItemMeta({ detail }: { detail: ItemDetailJson }) {
+interface ItemMetaProps {
+  detail: ItemDetailJson;
+  /** Off in the edit form, where the collections have their own input. */
+  showCollections?: boolean;
+}
+
+// Read-only: the collections in the detail, and the dates in both the detail
+// and the edit form.
+export function ItemMeta({ detail, showCollections = true }: ItemMetaProps) {
   return (
     <>
-      {detail.collections.length > 0 && (
+      {showCollections && detail.collections.length > 0 && (
         <DrawerSection title="Collections" icon={Folder}>
           <div className="flex flex-wrap gap-2">
             {detail.collections.map((collection) => (

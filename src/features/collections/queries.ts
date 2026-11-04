@@ -2,6 +2,7 @@ import "server-only";
 
 import { rankTypesByUsage } from "@/features/collections/domain/rank-types-by-usage";
 import type {
+  CollectionOption,
   CollectionStats,
   DashboardCollection,
   SidebarCollections,
@@ -76,6 +77,16 @@ export async function getSidebarCollections(
     fetchCollections(userId, {}, SIDEBAR_RECENT_LIMIT),
   ]);
   return { favorites, recent };
+}
+
+export function getCollectionOptions(
+  userId: string,
+): Promise<CollectionOption[]> {
+  return prisma.collection.findMany({
+    where: { userId },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true },
+  });
 }
 
 export async function getCollectionStats(

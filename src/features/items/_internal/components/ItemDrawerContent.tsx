@@ -56,7 +56,7 @@ export function ItemDrawerContent({
           onSaved={onSaved}
           onDirtyChange={onDirtyChange}
         >
-          <ItemMeta detail={detail} />
+          <ItemMeta detail={detail} showCollections={false} />
         </ItemEditForm>
       </>
     );

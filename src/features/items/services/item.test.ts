@@ -84,6 +84,7 @@ describe("createUserItem", () => {
     language: "ts",
     url: null,
     tags: [],
+    collectionIds: [],
   };
 
   beforeEach(() => {
@@ -154,6 +155,29 @@ describe("createUserItem", () => {
           },
         },
       ],
+    });
+  });
+
+  it("links collections of the caller only", async () => {
+    await createUserItem("user-1", { ...snippet, collectionIds: ["col-1"] });
+
+    expect(create.mock.calls[0][0].data.collections).toEqual({
+      create: [{ collection: { connect: { id: "col-1", userId: "user-1" } } }],
+    });
+  });
+
+  it("answers in plain words when a collection is someone else's or gone", async () => {
+    create.mockRejectedValue(prismaError("P2025"));
+
+    const result = await createUserItem("user-1", {
+      ...snippet,
+      collectionIds: ["col-1"],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "One of the collections no longer exists",
+      data: null,
     });
   });
 
@@ -240,6 +264,8 @@ describe("createUserItem", () => {
 });
 
 describe("updateUserItem", () => {
+  const renamed = { title: "Renamed", tags: [], collectionIds: [] };
+
   beforeEach(() => {
     update.mockReset().mockResolvedValue({ id: "item-1" });
     findFirst.mockReset().mockResolvedValue(rawItem);
@@ -247,7 +273,7 @@ describe("updateUserItem", () => {
   });
 
   it("writes only an item that belongs to the caller", async () => {
-    await updateUserItem("user-1", "item-1", { title: "Renamed", tags: [] });
+    await updateUserItem("user-1", "item-1", { ...renamed });
 
     expect(findFirst.mock.calls[0][0].where).toEqual({
       id: "item-1",
@@ -264,6 +290,7 @@ describe("updateUserItem", () => {
     const result = await updateUserItem("user-1", "item-1", {
       title: "Renamed",
       tags: [],
+      collectionIds: [],
     });
 
     expect(result).toEqual({
@@ -274,17 +301,14 @@ describe("updateUserItem", () => {
     expect(update).not.toHaveBeenCalled();
   });
 
-  it("answers not found when a delete wins between the read and the write", async () => {
+  it("answers in plain words when the item or a collection is gone by the write", async () => {
     update.mockRejectedValue(prismaError("P2025"));
 
-    const result = await updateUserItem("user-1", "item-1", {
-      title: "Renamed",
-      tags: [],
-    });
+    const result = await updateUserItem("user-1", "item-1", renamed);
 
     expect(result).toEqual({
       success: false,
-      error: "Item not found",
+      error: "This item or one of its collections no longer exists",
       data: null,
     });
   });
@@ -298,6 +322,7 @@ describe("updateUserItem", () => {
       language: "ts",
       url: "https://react.dev",
       tags: [],
+      collectionIds: [],
     });
 
     const { data } = update.mock.calls[0][0];
@@ -313,6 +338,7 @@ describe("updateUserItem", () => {
       title: "Renamed",
       url: null,
       tags: [],
+      collectionIds: [],
     });
 
     expect(result).toEqual({
@@ -324,7 +350,7 @@ describe("updateUserItem", () => {
   });
 
   it("removes the caller's tags no item uses any more", async () => {
-    await updateUserItem("user-1", "item-1", { title: "Renamed", tags: [] });
+    await updateUserItem("user-1", "item-1", { ...renamed });
 
     expect(deleteTags).toHaveBeenCalledWith({
       where: { userId: "user-1", items: { none: {} } },
@@ -338,6 +364,7 @@ describe("updateUserItem", () => {
     const result = await updateUserItem("user-1", "item-1", {
       title: "Renamed",
       tags: [],
+      collectionIds: [],
     });
 
     expect(result.success).toBe(true);
@@ -347,6 +374,7 @@ describe("updateUserItem", () => {
     await updateUserItem("user-1", "item-1", {
       title: "Renamed",
       tags: ["shell"],
+      collectionIds: [],
     });
 
     expect(update.mock.calls[0][0].data.tags).toEqual({
@@ -364,11 +392,29 @@ describe("updateUserItem", () => {
     });
   });
 
+  it("keeps the links that stay, so their addedAt survives the save", async () => {
+    findFirst.mockResolvedValue({
+      ...rawItem,
+      collections: [{ collectionId: "col-1" }, { collectionId: "col-2" }],
+    });
+
+    await updateUserItem("user-1", "item-1", {
+      ...renamed,
+      collectionIds: ["col-1", "col-3"],
+    });
+
+    expect(update.mock.calls[0][0].data.collections).toEqual({
+      deleteMany: { collectionId: { notIn: ["col-1", "col-3"] } },
+      create: [{ collection: { connect: { id: "col-3", userId: "user-1" } } }],
+    });
+  });
+
   it("leaves the fields that were not sent out of the write", async () => {
     await updateUserItem("user-1", "item-1", {
       title: "Renamed",
       description: null,
       tags: [],
+      collectionIds: [],
     });
 
     const { data } = update.mock.calls[0][0];
@@ -381,6 +427,7 @@ describe("updateUserItem", () => {
     const result = await updateUserItem("user-1", "item-1", {
       title: "Renamed",
       tags: ["shell"],
+      collectionIds: [],
     });
 
     expect(result.success).toBe(true);
@@ -393,6 +440,7 @@ describe("updateUserItem", () => {
     const result = await updateUserItem("user-1", "item-1", {
       title: "Renamed",
       tags: [],
+      collectionIds: [],
     });
 
     expect(result).toEqual({
@@ -406,7 +454,7 @@ describe("updateUserItem", () => {
     update.mockRejectedValue(prismaError("P2002"));
 
     await expect(
-      updateUserItem("user-1", "item-1", { title: "Renamed", tags: [] }),
+      updateUserItem("user-1", "item-1", { ...renamed }),
     ).rejects.toThrow("failed");
   });
 });

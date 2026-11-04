@@ -175,8 +175,8 @@ The detailed rules, moved here from `context/coding-standards.md` so that the al
 - **2 `billing`:** gives the entitlements (limits, Pro) that everything above reads
 - **3 `item-types`, `files`, `editor`:** building blocks. Pro gating of custom types and file limits read the entitlements; the editor needs only the session
 - **4 `ai`:** uses the entitlements (Pro gate, quota) and the editor's `MarkdownPreview`. It takes the content as input and never reads items, which is why it sits below `items`
-- **5 `items`:** uses item types, files, the editor and `ai`
-- **6 `collections`:** uses items
+- **5 `items`:** uses item types, files, the editor and `ai`. It owns the link to collections, and its forms read the options from `GET /api/collections` ([ADR 0008](adr/0008-items-own-the-collection-link.md))
+- **6 `collections`:** uses item types; it imports nothing from `items` today
 - **7 `search`, `import-export`:** read and compose items and collections; they call the owners' queries and services and never read the tables themselves
 - **8 `account`:** orchestrates deleting an account: verify the proof (`auth`), purge the files (`files`), then delete the rows (`auth`); cancelling the Stripe subscription (`billing`) comes with the Stripe specs
 - **9 `app-shell`:** composes the others for every authenticated page

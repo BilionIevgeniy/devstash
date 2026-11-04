@@ -5,7 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CodeEditor } from "@/features/editor/components/CodeEditor";
 import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
-import type { ItemFormValues } from "@/features/items/domain/item-changes";
+import type {
+  ItemFormValues,
+  ItemTextField,
+} from "@/features/items/domain/item-changes";
 import {
   DESCRIPTION_MAX,
   LANGUAGE_MAX,
@@ -18,7 +21,7 @@ interface ItemFieldsProps {
   fields: EditableFields;
   values: ItemFormValues;
   /** Should close over a function update only, so it stays stable for Monaco. */
-  onChange: (name: keyof ItemFormValues, value: string) => void;
+  onChange: (name: ItemTextField, value: string) => void;
 }
 
 // The text fields of the create and edit forms, in the same order in both;

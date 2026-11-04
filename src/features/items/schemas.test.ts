@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  COLLECTIONS_MAX,
   CONTENT_MAX,
   DESCRIPTION_MAX,
   LANGUAGE_MAX,
@@ -61,7 +62,7 @@ describe("itemIdSchema", () => {
 });
 
 describe("updateItemSchema", () => {
-  const base = { title: "Title", tags: [] };
+  const base = { title: "Title", tags: [], collectionIds: [] };
 
   function parse(input: Record<string, unknown>) {
     return updateItemSchema.safeParse({ ...base, ...input });
@@ -113,6 +114,35 @@ describe("updateItemSchema", () => {
     expect(parse({ url: "javascript:alert(1)" }).success).toBe(false);
   });
 
+  describe("collectionIds", () => {
+    const ids = (count: number) =>
+      Array.from({ length: count }, (_, i) => `cmh8x2k9p0000abcd1234e${i}`);
+
+    it("is required, so a save never wipes the links by leaving them out", () => {
+      expect(
+        updateItemSchema.safeParse({ title: "Title", tags: [] }).success,
+      ).toBe(false);
+    });
+
+    it("refuses an id that is not a cuid", () => {
+      expect(parse({ collectionIds: ["not an id"] }).success).toBe(false);
+    });
+
+    it("counts the ids after dropping duplicates", () => {
+      const repeated = [...ids(COLLECTIONS_MAX), ids(1)[0]];
+
+      expect(parse({ collectionIds: repeated }).data?.collectionIds).toEqual(
+        ids(COLLECTIONS_MAX),
+      );
+    });
+
+    it("refuses more than the limit", () => {
+      expect(parse({ collectionIds: ids(COLLECTIONS_MAX + 1) }).success).toBe(
+        false,
+      );
+    });
+  });
+
   it("trims tags and drops duplicates", () => {
     expect(parse({ tags: [" react", "hooks ", "react"] }).data?.tags).toEqual([
       "react",
@@ -126,7 +156,7 @@ describe("updateItemSchema", () => {
 
   it("leaves out the fields that were not sent", () => {
     const { data } = parse({});
-    expect(data).toEqual({ title: "Title", tags: [] });
+    expect(data).toEqual({ title: "Title", tags: [], collectionIds: [] });
   });
 
   describe("limits", () => {
@@ -174,7 +204,12 @@ describe("updateItemSchema", () => {
 });
 
 describe("createItemSchema", () => {
-  const base = { typeName: "snippet", title: "Title", tags: [] };
+  const base = {
+    typeName: "snippet",
+    title: "Title",
+    tags: [],
+    collectionIds: [],
+  };
 
   function parse(input: Record<string, unknown>) {
     return createItemSchema.safeParse({ ...base, ...input });

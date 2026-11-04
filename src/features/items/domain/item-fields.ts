@@ -31,6 +31,7 @@ export const LANGUAGE_MAX = 50;
 export const URL_MAX = 2_048;
 export const TAGS_MAX = 20;
 export const TAG_MAX = 50;
+export const COLLECTIONS_MAX = 100;
 
 export const URL_REQUIRED_MESSAGE = "URL is required";
 

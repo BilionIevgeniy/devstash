@@ -10,6 +10,11 @@ export interface DashboardCollection {
   types: ItemTypeInfo[];
 }
 
+export interface CollectionOption {
+  id: string;
+  name: string;
+}
+
 export interface SidebarCollections {
   favorites: DashboardCollection[];
   recent: DashboardCollection[];
