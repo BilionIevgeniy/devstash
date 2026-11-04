@@ -1,6 +1,13 @@
 "use client";
 
-import { useRef, useState, useTransition, type SubmitEvent } from "react";
+import {
+  useRef,
+  useState,
+  useTransition,
+  type SubmitEvent,
+  type TransitionStartFunction,
+} from "react";
+import { unstable_rethrow } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -17,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { ProBadge } from "@/features/billing/components/ProBadge";
 import { FileUpload } from "@/features/files/components/FileUpload";
+import type { FileKind } from "@/features/files/domain/file-rules";
 import type { UploadedFile } from "@/features/files/types";
 import { ItemFields } from "@/features/items/_internal/components/ItemFields";
 import { ItemTypeSelect } from "@/features/items/_internal/components/ItemTypeSelect";
@@ -56,11 +64,18 @@ export function CreateItemDialog({
   isPro,
 }: CreateItemDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isCreating, startCreating] = useTransition();
   const createdRef = useRef(false);
   const label = `New ${defaultType ?? "item"}`;
   // A type page of a Pro type keeps its button for a Free user, disabled.
   const isLocked =
     defaultType !== undefined && !canCreateType(defaultType, isPro);
+
+  // Esc, the overlay and the X wait for the result: closing now would lose
+  // the input on a failure and let the form be sent twice.
+  function handleOpenChange(open: boolean) {
+    if (!isCreating) setIsOpen(open);
+  }
 
   function handleCreated() {
     createdRef.current = true;
@@ -78,7 +93,7 @@ export function CreateItemDialog({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button disabled={isLocked}>
           <Plus />
@@ -101,6 +116,8 @@ export function CreateItemDialog({
         <CreateItemForm
           initialType={defaultType ?? DEFAULT_TYPE}
           isPro={isPro}
+          isCreating={isCreating}
+          startCreating={startCreating}
           onCreated={handleCreated}
         />
       </DialogContent>
@@ -111,18 +128,21 @@ export function CreateItemDialog({
 interface CreateItemFormProps {
   initialType: CreatableTypeName;
   isPro: boolean;
+  isCreating: boolean;
+  startCreating: TransitionStartFunction;
   onCreated: () => void;
 }
 
 function CreateItemForm({
   initialType,
   isPro,
+  isCreating,
+  startCreating,
   onCreated,
 }: CreateItemFormProps) {
   const [typeName, setTypeName] = useState<CreatableTypeName>(initialType);
   const [values, setValues] = useState<ItemFormValues>(EMPTY_VALUES);
   const [upload, setUpload] = useState<UploadedFile | null>(null);
-  const [isCreating, startCreating] = useTransition();
   const fields = editableFields(typeName);
   const isMissingRequired =
     values.title.trim() === "" ||
@@ -145,22 +165,30 @@ function CreateItemForm({
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     startCreating(async () => {
-      const result = await createItem({
-        typeName,
-        title: values.title,
-        description: values.description,
-        tags: parseTagInput(values.tags),
-        ...typeFieldValues(fields, values),
-        ...(fields.file &&
-          upload && { file: { key: upload.key, name: upload.fileName } }),
-      });
-      if (result.success) {
-        // After the await this is no longer part of the transition, so it is
-        // wrapped again: the dialog closes in the commit that brings the
-        // refreshed page with the new item, not before it.
-        startCreating(onCreated);
-      } else {
-        toast.error(result.error ?? CREATE_FAILED_MESSAGE);
+      try {
+        const result = await createItem({
+          typeName,
+          title: values.title,
+          description: values.description,
+          tags: parseTagInput(values.tags),
+          ...typeFieldValues(fields, values),
+          ...(fields.file &&
+            upload && { file: { key: upload.key, name: upload.fileName } }),
+        });
+        if (result.success) {
+          // After the await this is no longer part of the transition, so it
+          // is wrapped again: the dialog closes in the commit that brings the
+          // refreshed page with the new item, not before it.
+          startCreating(onCreated);
+        } else {
+          toast.error(result.error ?? CREATE_FAILED_MESSAGE);
+        }
+      } catch (error) {
+        // A signed-out caller's redirect arrives here too, and must go on. A
+        // rejection left in the transition would replace the page with an
+        // error page, the root one or `(app)/error.tsx`, by where this mounts.
+        unstable_rethrow(error);
+        toast.error(CREATE_FAILED_MESSAGE);
       }
     });
   }
@@ -174,19 +202,12 @@ function CreateItemForm({
         disabled={isCreating}
       />
       {fields.file && (
-        // Not a Field: its label points at an input, and the drop zone is
-        // named by its own aria-label.
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground capitalize">
-            {fields.file}
-          </p>
-          <FileUpload
-            key={typeName}
-            kind={fields.file}
-            onChange={setUpload}
-            disabled={isCreating}
-          />
-        </div>
+        <ItemFileField
+          key={typeName}
+          kind={fields.file}
+          onChange={setUpload}
+          disabled={isCreating}
+        />
       )}
       <ItemFields fields={fields} values={values} onChange={setField} />
       <DialogFooter>
@@ -200,5 +221,24 @@ function CreateItemForm({
         </Button>
       </DialogFooter>
     </form>
+  );
+}
+
+interface ItemFileFieldProps {
+  kind: FileKind;
+  onChange: (file: UploadedFile | null) => void;
+  disabled: boolean;
+}
+
+// Not a Field: its label points at an input, and the drop zone is named by
+// its own aria-label.
+function ItemFileField({ kind, onChange, disabled }: ItemFileFieldProps) {
+  return (
+    <div className="space-y-2">
+      <p className="text-sm font-medium text-muted-foreground capitalize">
+        {kind}
+      </p>
+      <FileUpload kind={kind} onChange={onChange} disabled={disabled} />
+    </div>
   );
 }
