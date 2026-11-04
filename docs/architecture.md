@@ -30,7 +30,7 @@ src/
   components/ui/  shadcn/ui primitives only
   components/common/  hand-written UI with no feature knowledge, used by several features (CopyButton, PaginationNav)
   lib/            feature-neutral infrastructure and vendor clients (prisma, email, rate-limit, hash, ...)
-  proxy.ts        guards /dashboard, /profile, /settings, /items and /collections; must stay at the src root
+  proxy.ts        guards /dashboard, /profile, /settings, /items, /collections and /favorites; must stay at the src root
 prisma/           schema, migrations, seed
 scripts/          one-off database scripts
 context/          the rulebooks (architecture-rules.md, coding-standards.md), the current feature and the history

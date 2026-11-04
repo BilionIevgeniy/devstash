@@ -16,6 +16,7 @@ vi.mock("@/lib/prisma", () => ({
 import {
   getCollectionById,
   getCollectionOptions,
+  getFavoriteCollections,
   getSearchableCollections,
   getUserCollections,
 } from "@/features/collections/queries";
@@ -39,6 +40,32 @@ describe("getCollectionOptions", () => {
     const { select, orderBy } = findMany.mock.calls[0][0];
     expect(select).toEqual({ id: true, name: true });
     expect(orderBy).toEqual({ name: "asc" });
+  });
+});
+
+describe("getFavoriteCollections", () => {
+  beforeEach(() => {
+    findMany.mockReset().mockResolvedValue([]);
+    findTypes.mockReset();
+  });
+
+  it("reads only the caller's favorites, last changed first with no ties", async () => {
+    await getFavoriteCollections("user-1");
+
+    const { where, orderBy } = findMany.mock.calls[0][0];
+    expect(where).toEqual({ userId: "user-1", isFavorite: true });
+    expect(orderBy).toEqual([{ updatedAt: "desc" }, { id: "desc" }]);
+  });
+
+  it("selects only what a row shows, with no type lookup", async () => {
+    await getFavoriteCollections("user-1");
+
+    expect(findMany.mock.calls[0][0].select).toEqual({
+      id: true,
+      name: true,
+      updatedAt: true,
+    });
+    expect(findTypes).not.toHaveBeenCalled();
   });
 });
 

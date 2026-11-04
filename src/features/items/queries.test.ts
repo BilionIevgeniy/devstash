@@ -10,6 +10,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 import {
+  getFavoriteItems,
   getItemEditState,
   getItemsByType,
   getRecentItems,
@@ -105,6 +106,46 @@ describe("getRecentItems", () => {
       expect(item).not.toHaveProperty("content");
       expect(item).not.toHaveProperty("url");
     }
+  });
+});
+
+describe("getFavoriteItems", () => {
+  beforeEach(() => {
+    findMany.mockReset().mockResolvedValue([]);
+  });
+
+  it("reads only the caller's favorites, last changed first with no ties", async () => {
+    await getFavoriteItems("user-1");
+
+    const { where, orderBy, take } = findMany.mock.calls[0][0];
+    expect(where).toEqual({ userId: "user-1", isFavorite: true });
+    expect(orderBy).toEqual([{ updatedAt: "desc" }, { id: "desc" }]);
+    expect(take).toBeUndefined();
+  });
+
+  it("keeps the date the row shows and selects no content or object key", async () => {
+    const updatedAt = new Date("2026-02-01T00:00:00Z");
+    findMany.mockResolvedValue([
+      {
+        id: "item-1",
+        title: "dev",
+        description: null,
+        isFavorite: true,
+        isPinned: false,
+        createdAt,
+        updatedAt,
+        type: { id: "type-1", name: "command", icon: "Terminal", color: null },
+        tags: [{ tag: { name: "npm" } }],
+      },
+    ]);
+
+    const [item] = await getFavoriteItems("user-1");
+
+    expect(item.updatedAt).toBe(updatedAt);
+    expect(item.tags).toEqual(["npm"]);
+    const { select } = findMany.mock.calls[0][0];
+    expect(select).not.toHaveProperty("content");
+    expect(select).not.toHaveProperty("fileKey");
   });
 });
 

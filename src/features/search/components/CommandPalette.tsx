@@ -68,7 +68,9 @@ export function CommandPalette() {
       >
         <Search />
         <span className="truncate">Search items and collections...</span>
-        <kbd className="ml-auto rounded border px-1.5 text-xs">⌘K</kbd>
+        <kbd className="ml-auto hidden rounded border px-1.5 text-xs sm:inline">
+          ⌘K
+        </kbd>
       </Button>
       <PaletteDialog
         isOpen={isOpen}

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { PanelLeft } from "lucide-react";
+import Link from "next/link";
+import { PanelLeft, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { CreateCollectionDialog } from "@/features/collections/components/CreateCollectionDialog";
@@ -38,6 +39,11 @@ export function TopBar({
       </Button>
       <CommandPalette />
       <div className="ml-auto flex shrink-0 items-center gap-2">
+        <Button asChild variant="ghost" size="icon">
+          <Link href="/favorites" aria-label="Favorites">
+            <Star />
+          </Link>
+        </Button>
         <CreateCollectionDialog />
         {newItemButton}
       </div>
