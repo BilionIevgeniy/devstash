@@ -1,10 +1,10 @@
 "use client";
 
+import { Field } from "@/components/common/Field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CodeEditor } from "@/features/editor/components/CodeEditor";
 import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
-import { Field } from "@/features/items/_internal/components/Field";
 import type { ItemFormValues } from "@/features/items/domain/item-changes";
 import {
   DESCRIPTION_MAX,

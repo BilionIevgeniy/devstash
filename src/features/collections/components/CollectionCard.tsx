@@ -28,7 +28,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
       <p className="text-sm text-muted-foreground">
         {collection.itemCount} {itemLabel}
       </p>
-      <p className="mt-3 truncate text-sm text-muted-foreground">
+      <p className="mt-3 min-h-5 truncate text-sm text-muted-foreground">
         {collection.description}
       </p>
       <div className="mt-3 flex h-4 items-center gap-2">
