@@ -3,8 +3,17 @@
 import { refresh } from "next/cache";
 
 import { getSessionUser } from "@/features/auth/nextauth/session";
-import { createCollectionSchema } from "@/features/collections/schemas";
-import { createUserCollection } from "@/features/collections/services/collection";
+import {
+  collectionIdSchema,
+  createCollectionSchema,
+  deleteCollectionOptionsSchema,
+  updateCollectionSchema,
+} from "@/features/collections/schemas";
+import {
+  createUserCollection,
+  deleteUserCollection,
+  updateUserCollection,
+} from "@/features/collections/services/collection";
 import type { ActionResult } from "@/lib/action-result";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
@@ -28,6 +37,63 @@ export async function createCollection(data: unknown): Promise<ActionResult> {
     return { success: true, error: null, data: null };
   } catch (error) {
     console.error("Creating the collection failed:", error);
+    return failure(GENERIC_ERROR);
+  }
+}
+
+export async function updateCollection(
+  collectionId: string,
+  data: unknown,
+): Promise<ActionResult> {
+  const parsedId = collectionIdSchema.safeParse(collectionId);
+  if (!parsedId.success) return failure(parsedId.error.issues[0].message);
+
+  const parsed = updateCollectionSchema.safeParse(data);
+  if (!parsed.success) return failure(parsed.error.issues[0].message);
+
+  // Outside the try: a signed-out caller is redirected by a thrown error.
+  const { id: userId } = await getSessionUser();
+
+  try {
+    const result = await updateUserCollection(
+      userId,
+      parsedId.data,
+      parsed.data,
+    );
+    if (!result.success) return failure(result.error ?? GENERIC_ERROR);
+    // The new name comes back with this response's fresh page and sidebar.
+    refresh();
+    return { success: true, error: null, data: null };
+  } catch (error) {
+    console.error("Updating the collection failed:", error);
+    return failure(GENERIC_ERROR);
+  }
+}
+
+// `refresh: false` is for a caller that leaves the page itself: refreshing the
+// page of a deleted collection would render its 404.
+export async function deleteCollection(
+  collectionId: string,
+  options?: unknown,
+): Promise<ActionResult> {
+  const parsedId = collectionIdSchema.safeParse(collectionId);
+  if (!parsedId.success) return failure(parsedId.error.issues[0].message);
+
+  const parsedOptions = deleteCollectionOptionsSchema.safeParse(options);
+  if (!parsedOptions.success) {
+    return failure(parsedOptions.error.issues[0].message);
+  }
+
+  // Outside the try: a signed-out caller is redirected by a thrown error.
+  const { id: userId } = await getSessionUser();
+
+  try {
+    const result = await deleteUserCollection(userId, parsedId.data);
+    if (!result.success) return failure(result.error ?? GENERIC_ERROR);
+    if (parsedOptions.data.refresh) refresh();
+    return { success: true, error: null, data: null };
+  } catch (error) {
+    console.error("Deleting the collection failed:", error);
     return failure(GENERIC_ERROR);
   }
 }

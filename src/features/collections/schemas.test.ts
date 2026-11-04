@@ -6,7 +6,24 @@ import {
 import {
   collectionIdSchema,
   createCollectionSchema,
+  deleteCollectionOptionsSchema,
 } from "@/features/collections/schemas";
+
+describe("deleteCollectionOptionsSchema", () => {
+  // A card calls the action with no options at all.
+  it("refreshes by default", () => {
+    expect(deleteCollectionOptionsSchema.parse(undefined)).toEqual({
+      refresh: true,
+    });
+    expect(deleteCollectionOptionsSchema.parse({})).toEqual({ refresh: true });
+  });
+
+  it("keeps a caller's refresh: false", () => {
+    expect(deleteCollectionOptionsSchema.parse({ refresh: false })).toEqual({
+      refresh: false,
+    });
+  });
+});
 
 describe("collectionIdSchema", () => {
   it("accepts a generated id", () => {

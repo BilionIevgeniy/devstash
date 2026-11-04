@@ -70,6 +70,23 @@ export interface FileListItem extends DashboardItem {
 }
 
 // ItemDetail as it arrives from GET /api/items/[id]: dates become ISO strings.
+// An item of a collection as read, with its upload: read only by the
+// collection listing service, because the key never leaves the server.
+export interface CollectionItemRecord extends UploadItemRecord {
+  canCopy: boolean;
+}
+
+// The items of one type in a collection, listed the way its type page lists them.
+export type CollectionSection =
+  | { listing: "gallery"; type: ItemTypeInfo; items: GalleryItem[] }
+  | { listing: "files"; type: ItemTypeInfo; items: FileListItem[] }
+  | { listing: "cards"; type: ItemTypeInfo; items: ItemCardData[] };
+
+export interface CollectionListing {
+  itemCount: number;
+  sections: CollectionSection[];
+}
+
 export type ItemDetailJson = Omit<ItemDetail, "createdAt" | "updatedAt"> & {
   createdAt: string;
   updatedAt: string;
