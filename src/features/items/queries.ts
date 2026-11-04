@@ -2,6 +2,7 @@ import "server-only";
 
 import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
 import { itemTypeSelect } from "@/features/item-types/queries";
+import { toSearchPreview } from "@/features/items/_internal/domain/search-preview";
 import { copyValueOf } from "@/features/items/domain/item-fields";
 import type {
   CollectionItemRecord,
@@ -10,12 +11,14 @@ import type {
   ItemDetailRecord,
   ItemEditState,
   ItemStats,
+  SearchableItem,
   UploadItemRecord,
 } from "@/features/items/types";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
 const RECENT_ITEMS_LIMIT = 20;
+const SEARCH_INDEX_ITEM_LIMIT = 1000;
 
 const dashboardItemSelect = {
   id: true,
@@ -167,6 +170,23 @@ export async function getItemsByType(
     select: cardItemSelect,
   });
   return items.map(toItemCardData);
+}
+
+// The items the command palette searches, last edited first. The content is
+// read only to build the preview; it stays on the server.
+export async function getSearchableItems(
+  userId: string,
+): Promise<SearchableItem[]> {
+  const items = await prisma.item.findMany({
+    where: { userId },
+    orderBy: { updatedAt: "desc" },
+    take: SEARCH_INDEX_ITEM_LIMIT,
+    select: cardItemSelect,
+  });
+  return items.map(({ contentType, content, url, ...item }) => ({
+    ...toDashboardItem(item),
+    preview: toSearchPreview(copyValueOf({ contentType, content, url })),
+  }));
 }
 
 // The items of a collection with their uploads, read only by the collection

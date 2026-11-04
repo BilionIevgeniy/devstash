@@ -38,6 +38,8 @@ interface ItemDrawerProviderProps {
    * draws the drawer; this provider then renders no sheet of its own.
    */
   basePath?: string;
+  /** For a provider with no card to give the focus back to (the palette). */
+  onSheetCloseAutoFocus?: (event: Event) => void;
   children: ReactNode;
 }
 
@@ -53,6 +55,7 @@ export function useItemDrawer(): ItemDrawerContextValue {
 
 export function ItemDrawerProvider({
   basePath,
+  onSheetCloseAutoFocus,
   children,
 }: ItemDrawerProviderProps) {
   const router = useRouter();
@@ -111,6 +114,7 @@ export function ItemDrawerProvider({
         <SheetContent
           aria-describedby={undefined}
           className="gap-0 data-[side=right]:sm:max-w-xl"
+          onCloseAutoFocus={onSheetCloseAutoFocus}
         >
           {sheet.item && (
             <ItemDrawerContent

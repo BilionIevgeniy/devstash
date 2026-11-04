@@ -19,6 +19,7 @@ const FEATURE_RANKS = {
   editor: 3,
   items: 5,
   collections: 6,
+  search: 7,
   account: 8,
   "app-shell": 9,
 };

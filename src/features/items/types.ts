@@ -19,6 +19,12 @@ export interface ItemCardData extends DashboardItem {
   canCopy: boolean;
 }
 
+// What the command palette searches and opens: a short preview of the text,
+// never the content itself.
+export interface SearchableItem extends DashboardItem {
+  preview: string | null;
+}
+
 export interface ItemCollectionRef {
   id: string;
   name: string;
