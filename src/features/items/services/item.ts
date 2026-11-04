@@ -225,6 +225,26 @@ export async function updateUserItem(
   return { success: true, error: null, data: item };
 }
 
+// Raw SQL on purpose: Prisma stamps `updatedAt` on every update, and favoriting
+// is not an edit. It is the one way to leave that column alone without reading
+// it first; the price is that a renamed column fails only at runtime. The owner
+// in the where makes someone else's item look missing.
+export async function setUserItemFavorite(
+  userId: string,
+  itemId: string,
+  isFavorite: boolean,
+): Promise<OperationResult> {
+  const favoritedAt = isFavorite ? new Date() : null;
+  const count = await prisma.$executeRaw`
+    UPDATE "Item"
+    SET "isFavorite" = ${isFavorite}, "favoritedAt" = ${favoritedAt}
+    WHERE "id" = ${itemId} AND "userId" = ${userId}
+  `;
+
+  if (count === 0) return { success: false, error: ITEM_NOT_FOUND };
+  return { success: true, error: null };
+}
+
 // Removes the item's object from R2 before the row, so a failure leaves the
 // row and the delete can be retried; a missing object counts as deleted.
 async function deleteItemFile(

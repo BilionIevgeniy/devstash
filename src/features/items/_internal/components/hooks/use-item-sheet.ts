@@ -69,6 +69,14 @@ export function useItemSheet() {
     setIsEditing(false);
   }
 
+  // The sheet holds its own copy of the card's item, so a favorite saved for
+  // the open item is written to it, or the star would fall back when the
+  // optimistic value ends.
+  function handleFavoriteSaved(id: string, isFavorite: boolean) {
+    if (openItemIdRef.current !== id) return;
+    setItem((current) => current && { ...current, isFavorite });
+  }
+
   return {
     isOpen,
     item,
@@ -78,5 +86,6 @@ export function useItemSheet() {
     openSheet,
     onOpenChange,
     handleSaved,
+    handleFavoriteSaved,
   };
 }

@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { CollectionFavorite } from "@/features/collections/_internal/components/hooks/use-collection-favorite";
 import { DeleteCollectionDialog } from "@/features/collections/_internal/components/DeleteCollectionDialog";
 import { EditCollectionDialog } from "@/features/collections/_internal/components/EditCollectionDialog";
 import { useCollectionDialogs } from "@/features/collections/_internal/components/hooks/use-collection-dialogs";
@@ -18,13 +19,16 @@ import { cn } from "@/lib/utils";
 
 interface CollectionCardMenuProps {
   collection: CollectionSummary;
+  favorite: CollectionFavorite;
 }
 
-export function CollectionCardMenu({ collection }: CollectionCardMenuProps) {
+export function CollectionCardMenu({
+  collection,
+  favorite,
+}: CollectionCardMenuProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const { isAnyOpen, openDialog, editDialog, deleteDialog } =
     useCollectionDialogs();
-  const { isFavorite } = collection;
 
   // The dialog that opened takes the focus; the menu must not pull it back.
   function handleMenuCloseAutoFocus(event: Event) {
@@ -42,7 +46,6 @@ export function CollectionCardMenu({ collection }: CollectionCardMenuProps) {
             variant="ghost"
             size="icon-sm"
             aria-label={`Actions for ${collection.name}`}
-            className="absolute top-2 right-2 z-10"
           >
             <MoreHorizontal />
           </Button>
@@ -57,9 +60,14 @@ export function CollectionCardMenu({ collection }: CollectionCardMenuProps) {
             <Pencil />
             Edit
           </DropdownMenuItem>
-          <DropdownMenuItem disabled>
+          <DropdownMenuItem
+            disabled={favorite.isPending}
+            onSelect={favorite.toggle}
+          >
             <Star
-              className={cn(isFavorite && "fill-yellow-400 text-yellow-400")}
+              className={cn(
+                favorite.isFavorite && "fill-yellow-400 text-yellow-400",
+              )}
             />
             Favorite
           </DropdownMenuItem>

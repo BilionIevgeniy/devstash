@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 // background of the first and last rows inside the rounded corners.
 export const FILE_LIST = "divide-y overflow-hidden rounded-lg border bg-card";
 export const FILE_ROW_HEIGHT = "h-16 sm:h-14";
+export const FILE_ROW_ACTIONS =
+  "flex w-20 shrink-0 items-center justify-end gap-1 pr-2";
 
 const ROW_COUNT = 6;
 
@@ -23,7 +25,8 @@ export function FileListSkeleton() {
             <Skeleton className="h-4 w-1/2" />
             <Skeleton className="h-3 w-1/3" />
           </div>
-          <div className="flex w-12 shrink-0 justify-center">
+          <div className={FILE_ROW_ACTIONS}>
+            <Skeleton className="size-8" />
             <Skeleton className="size-8" />
           </div>
         </div>

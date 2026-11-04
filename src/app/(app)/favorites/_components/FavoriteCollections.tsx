@@ -27,7 +27,7 @@ export function FavoriteCollections({ collections }: FavoriteCollectionsProps) {
             icon={<Folder className="size-4 shrink-0 text-muted-foreground" />}
             title={collection.name}
             badge="collection"
-            date={collection.updatedAt}
+            date={collection.favoritedAt}
           />
         </Link>
       ))}

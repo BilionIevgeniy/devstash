@@ -31,7 +31,7 @@ export interface SearchableCollection {
 export interface FavoriteCollection {
   id: string;
   name: string;
-  updatedAt: Date;
+  favoritedAt: Date;
 }
 
 export interface SidebarCollections {

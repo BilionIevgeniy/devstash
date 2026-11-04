@@ -15,7 +15,7 @@ import { DiscardChangesDialog } from "@/features/items/_internal/components/Disc
 import { ItemDetailView } from "@/features/items/_internal/components/ItemDetailView";
 import { ItemDrawerSkeleton } from "@/features/items/_internal/components/ItemDrawerSkeleton";
 import { useDirtyCloseGuard } from "@/features/items/_internal/components/hooks/use-dirty-close-guard";
-import { useItemDrawer } from "@/features/items/components/ItemDrawerProvider";
+import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
 interface RouteDrawerContextValue {

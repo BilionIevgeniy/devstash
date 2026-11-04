@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Star } from "lucide-react";
 
-import { CollectionCardMenu } from "@/features/collections/_internal/components/CollectionCardMenu";
+import { CollectionCardActions } from "@/features/collections/_internal/components/CollectionCardActions";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import type { DashboardCollection } from "@/features/collections/types";
 
@@ -9,8 +8,9 @@ interface CollectionCardProps {
   collection: DashboardCollection;
 }
 
-// The link stretches over the whole card through its ::after, and the menu sits
-// above it: a menu may not be inside a link, and a click on it must not navigate.
+// The link stretches over the whole card through its ::after, and the actions
+// sit above it: a button may not be inside a link, and a click on it must not
+// navigate.
 export function CollectionCard({ collection }: CollectionCardProps) {
   const { types } = collection;
   const accentColor = types[0]?.color;
@@ -21,7 +21,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
       className="relative rounded-lg border border-l-4 bg-card p-4 transition-colors hover:bg-accent"
       style={accentColor ? { borderLeftColor: accentColor } : undefined}
     >
-      <div className="flex items-center gap-2 pr-8">
+      <div className="pr-16">
         <h3 className="truncate font-medium">
           <Link
             href={`/collections/${collection.id}`}
@@ -30,9 +30,6 @@ export function CollectionCard({ collection }: CollectionCardProps) {
             {collection.name}
           </Link>
         </h3>
-        {collection.isFavorite && (
-          <Star className="size-4 shrink-0 fill-yellow-400 text-yellow-400" />
-        )}
       </div>
       <p className="text-sm text-muted-foreground">
         {collection.itemCount} {itemLabel}
@@ -51,7 +48,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
           />
         ))}
       </div>
-      <CollectionCardMenu collection={collection} />
+      <CollectionCardActions collection={collection} />
     </div>
   );
 }

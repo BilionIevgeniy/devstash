@@ -1,13 +1,17 @@
 "use client";
 
-import { Download, Pin, Star } from "lucide-react";
+import { Download, Pin } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { FileTypeIcon } from "@/features/files/components/FileTypeIcon";
 import { formatFileSize } from "@/features/files/domain/file-rules";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
-import { FILE_ROW_HEIGHT } from "@/features/items/components/FileListSkeleton";
-import { useItemDrawer } from "@/features/items/components/ItemDrawerProvider";
+import { ItemFavoriteButton } from "@/features/items/_internal/components/ItemFavoriteButton";
+import {
+  FILE_ROW_ACTIONS,
+  FILE_ROW_HEIGHT,
+} from "@/features/items/components/FileListSkeleton";
+import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
 import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
 import type { FileListItem } from "@/features/items/types";
 import { cn, formatLongDate } from "@/lib/utils";
@@ -16,9 +20,9 @@ interface FileRowProps {
   item: FileListItem;
 }
 
-// The trigger fills the row except the Download link, which is its sibling:
-// a link inside a role="button" is not allowed, and a click on it must not
-// open the drawer. The download URL is signed for at least an hour after the
+// The trigger fills the row except the star and the Download link, which are
+// its siblings: a control inside a role="button" is not allowed, and a click on
+// it must not open the drawer. The download URL is signed for at least an hour after the
 // render (see "Known risks" in docs/architecture.md).
 export function FileRow({ item }: FileRowProps) {
   const { hiddenIds } = useItemDrawer();
@@ -59,9 +63,6 @@ export function FileRow({ item }: FileRowProps) {
             {item.isPinned && (
               <Pin className="size-3.5 shrink-0 text-muted-foreground" />
             )}
-            {item.isFavorite && (
-              <Star className="size-3.5 shrink-0 fill-yellow-400 text-yellow-400" />
-            )}
           </div>
           {file && (
             <p className="hidden truncate text-xs text-muted-foreground sm:block">
@@ -79,7 +80,13 @@ export function FileRow({ item }: FileRowProps) {
           {date}
         </span>
       </ItemDrawerTrigger>
-      <div className="flex w-12 shrink-0 items-center justify-center">
+      <div className={FILE_ROW_ACTIONS}>
+        <ItemFavoriteButton
+          itemId={item.id}
+          title={item.title}
+          isFavorite={item.isFavorite}
+          className="size-8"
+        />
         {file && (
           <Button asChild variant="ghost" size="icon">
             <a href={file.downloadUrl} aria-label={`Download ${file.name}`}>

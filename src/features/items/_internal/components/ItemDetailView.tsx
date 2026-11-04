@@ -18,7 +18,8 @@ interface ItemDetailViewProps {
 
 // The item routes get the detail from the server, so there is no loading
 // state. A save updates the header and the detail here at once; the refresh
-// updates the cards behind and the server copy.
+// updates the cards behind and the server copy. The favorite comes from the
+// props: the action's refresh brings it, and this state would keep the old one.
 export function ItemDetailView({
   item: initialItem,
   detail: initialDetail,
@@ -45,7 +46,7 @@ export function ItemDetailView({
 
   return (
     <ItemDrawerContent
-      item={item}
+      item={{ ...item, isFavorite: initialItem.isFavorite }}
       state={{ status: "ready", detail }}
       isEditing={isEditing}
       onEdit={() => setIsEditing(true)}

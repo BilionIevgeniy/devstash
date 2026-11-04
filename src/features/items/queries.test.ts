@@ -114,16 +114,19 @@ describe("getFavoriteItems", () => {
     findMany.mockReset().mockResolvedValue([]);
   });
 
-  it("reads only the caller's favorites, last changed first with no ties", async () => {
+  it("reads only the caller's favorites, last starred first with no ties", async () => {
     await getFavoriteItems("user-1");
 
     const { where, orderBy, take } = findMany.mock.calls[0][0];
     expect(where).toEqual({ userId: "user-1", isFavorite: true });
-    expect(orderBy).toEqual([{ updatedAt: "desc" }, { id: "desc" }]);
+    expect(orderBy).toEqual([
+      { favoritedAt: { sort: "desc", nulls: "last" } },
+      { id: "desc" },
+    ]);
     expect(take).toBeUndefined();
   });
 
-  it("keeps the date the row shows and selects no content or object key", async () => {
+  it("falls back to the last change for a favorite with no star date", async () => {
     const updatedAt = new Date("2026-02-01T00:00:00Z");
     findMany.mockResolvedValue([
       {
@@ -133,7 +136,30 @@ describe("getFavoriteItems", () => {
         isFavorite: true,
         isPinned: false,
         createdAt,
+        favoritedAt: null,
         updatedAt,
+        type: { id: "type-1", name: "command", icon: "Terminal", color: null },
+        tags: [],
+      },
+    ]);
+
+    const [item] = await getFavoriteItems("user-1");
+
+    expect(item.favoritedAt).toBe(updatedAt);
+  });
+
+  it("keeps the date the row shows and selects no content or object key", async () => {
+    const favoritedAt = new Date("2026-02-01T00:00:00Z");
+    findMany.mockResolvedValue([
+      {
+        id: "item-1",
+        title: "dev",
+        description: null,
+        isFavorite: true,
+        isPinned: false,
+        createdAt,
+        favoritedAt,
+        updatedAt: createdAt,
         type: { id: "type-1", name: "command", icon: "Terminal", color: null },
         tags: [{ tag: { name: "npm" } }],
       },
@@ -141,7 +167,8 @@ describe("getFavoriteItems", () => {
 
     const [item] = await getFavoriteItems("user-1");
 
-    expect(item.updatedAt).toBe(updatedAt);
+    expect(item.favoritedAt).toBe(favoritedAt);
+    expect(item).not.toHaveProperty("updatedAt");
     expect(item.tags).toEqual(["npm"]);
     const { select } = findMany.mock.calls[0][0];
     expect(select).not.toHaveProperty("content");

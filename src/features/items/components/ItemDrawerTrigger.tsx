@@ -2,7 +2,7 @@
 
 import type { KeyboardEvent, ReactNode } from "react";
 
-import { useItemDrawer } from "@/features/items/components/ItemDrawerProvider";
+import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
 import type { DashboardItem } from "@/features/items/types";
 import { cn } from "@/lib/utils";
 

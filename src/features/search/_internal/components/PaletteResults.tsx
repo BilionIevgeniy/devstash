@@ -13,7 +13,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SearchableCollection } from "@/features/collections/types";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
-import { useItemDrawer } from "@/features/items/components/ItemDrawerProvider";
+import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
 import type { SearchableItem } from "@/features/items/types";
 import {
   createPaletteSearch,
