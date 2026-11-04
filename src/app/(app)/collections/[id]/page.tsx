@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { Star } from "lucide-react";
 
 import { CollectionSections } from "@/app/(app)/collections/[id]/_components/CollectionSections";
 import CollectionLoading from "@/app/(app)/collections/[id]/loading";
@@ -33,11 +32,8 @@ async function CollectionContent({ id, page }: CollectionContentProps) {
     <div className="space-y-8">
       <header className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="flex items-center gap-3 text-3xl font-bold">
-            <span className="min-w-0 wrap-break-word">{collection.name}</span>
-            {collection.isFavorite && (
-              <Star className="size-6 shrink-0 fill-yellow-400 text-yellow-400" />
-            )}
+          <h1 className="text-3xl font-bold wrap-break-word">
+            {collection.name}
           </h1>
           <p className="text-muted-foreground">
             {itemCount} {itemLabel}

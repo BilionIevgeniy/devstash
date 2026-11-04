@@ -35,6 +35,24 @@ export async function updateUserCollection(
   return { success: true, error: null };
 }
 
+// Raw SQL for the same reason as setUserItemFavorite: favoriting is not an edit,
+// so `updatedAt` stays, and the collection keeps its place in the lists.
+export async function setUserCollectionFavorite(
+  userId: string,
+  collectionId: string,
+  isFavorite: boolean,
+): Promise<OperationResult> {
+  const favoritedAt = isFavorite ? new Date() : null;
+  const count = await prisma.$executeRaw`
+    UPDATE "Collection"
+    SET "isFavorite" = ${isFavorite}, "favoritedAt" = ${favoritedAt}
+    WHERE "id" = ${collectionId} AND "userId" = ${userId}
+  `;
+
+  if (count === 0) return { success: false, error: NOT_FOUND_ERROR };
+  return { success: true, error: null };
+}
+
 // The items stay: only their `ItemCollection` rows go, by the cascade on the
 // foreign key.
 export async function deleteUserCollection(

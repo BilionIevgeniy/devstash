@@ -21,6 +21,9 @@ import {
 // Prisma generates CUID v1 ids, which also match the cuid2 format.
 export const itemIdSchema = z.cuid2("Invalid item id");
 
+// The value a favorite toggle asks for, for items and collections alike.
+export const favoriteValueSchema = z.boolean("Invalid favorite value");
+
 // `refresh: false` is for a caller that leaves the page itself.
 export const deleteItemOptionsSchema = z
   .object({ refresh: z.boolean().default(true) })

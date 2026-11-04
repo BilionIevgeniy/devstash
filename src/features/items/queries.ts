@@ -48,12 +48,12 @@ export async function getFavoriteItems(
   const items = await prisma.item.findMany({
     where: { userId, isFavorite: true },
     // The id settles equal dates, so rows keep their order between refreshes.
-    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
-    select: { ...dashboardItemSelect, updatedAt: true },
+    orderBy: [{ favoritedAt: { sort: "desc", nulls: "last" } }, { id: "desc" }],
+    select: { ...dashboardItemSelect, favoritedAt: true, updatedAt: true },
   });
-  return items.map(({ updatedAt, ...item }) => ({
+  return items.map(({ favoritedAt, updatedAt, ...item }) => ({
     ...toDashboardItem(item),
-    updatedAt,
+    favoritedAt: favoritedAt ?? updatedAt,
   }));
 }
 

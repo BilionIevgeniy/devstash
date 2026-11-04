@@ -5,6 +5,7 @@ import {
   DeleteItemDialog,
   type ItemDeleteHandler,
 } from "@/features/items/_internal/components/DeleteItemDialog";
+import { useItemFavorite } from "@/features/items/components/hooks/use-item-drawer";
 import { cn } from "@/lib/utils";
 
 interface ItemActionBarProps {
@@ -17,8 +18,7 @@ interface ItemActionBarProps {
   onDelete: ItemDeleteHandler;
 }
 
-// Only Edit and Delete work so far: the other actions are wired up in a later
-// feature.
+// Pin and Copy are wired up in a later feature.
 export function ItemActionBar({
   itemId,
   title,
@@ -28,15 +28,22 @@ export function ItemActionBar({
   onEdit,
   onDelete,
 }: ItemActionBarProps) {
+  const favorite = useItemFavorite(itemId, isFavorite);
+
   return (
     <div className="flex items-center gap-1 border-b px-6 py-3">
       <Button
         type="button"
         variant="ghost"
-        aria-pressed={isFavorite}
-        className={cn(isFavorite && "text-yellow-400 hover:text-yellow-400")}
+        aria-pressed={favorite.isFavorite}
+        aria-disabled={favorite.isPending}
+        onClick={favorite.toggle}
+        className={cn(
+          "aria-disabled:opacity-50",
+          favorite.isFavorite && "text-yellow-400 hover:text-yellow-400",
+        )}
       >
-        <Star className={cn(isFavorite && "fill-yellow-400")} />
+        <Star className={cn(favorite.isFavorite && "fill-yellow-400")} />
         Favorite
       </Button>
       <Button type="button" variant="ghost" aria-pressed={isPinned}>

@@ -6,6 +6,7 @@ const {
   remove,
   findFirst,
   deleteTags,
+  executeRaw,
   getItemTypeByName,
   getEntitlements,
   confirmUpload,
@@ -17,6 +18,7 @@ const {
   remove: vi.fn(),
   findFirst: vi.fn(),
   deleteTags: vi.fn(),
+  executeRaw: vi.fn(),
   getItemTypeByName: vi.fn(),
   getEntitlements: vi.fn(),
   confirmUpload: vi.fn(),
@@ -25,6 +27,7 @@ const {
 }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    $executeRaw: executeRaw,
     item: { create, update, delete: remove, findFirst },
     tag: { deleteMany: deleteTags },
   },
@@ -45,8 +48,47 @@ import { Prisma } from "@/generated/prisma/client";
 import {
   createUserItem,
   deleteUserItem,
+  setUserItemFavorite,
   updateUserItem,
 } from "@/features/items/services/item";
+
+describe("setUserItemFavorite", () => {
+  beforeEach(() => {
+    executeRaw.mockReset();
+  });
+
+  it("writes only through the caller's id, with no updatedAt", async () => {
+    executeRaw.mockResolvedValue(1);
+
+    await expect(
+      setUserItemFavorite("user-1", "item-1", true),
+    ).resolves.toEqual({ success: true, error: null });
+
+    const [strings, isFavorite, favoritedAt, id, userId] =
+      executeRaw.mock.calls[0];
+    expect(strings.join("")).not.toContain("updatedAt");
+    expect(isFavorite).toBe(true);
+    expect(favoritedAt).toBeInstanceOf(Date);
+    expect(id).toBe("item-1");
+    expect(userId).toBe("user-1");
+  });
+
+  it("clears the star date when the favorite is removed", async () => {
+    executeRaw.mockResolvedValue(1);
+
+    await setUserItemFavorite("user-1", "item-1", false);
+
+    expect(executeRaw.mock.calls[0][2]).toBeNull();
+  });
+
+  it("reports a missing or foreign item", async () => {
+    executeRaw.mockResolvedValue(0);
+
+    await expect(
+      setUserItemFavorite("user-1", "item-1", true),
+    ).resolves.toEqual({ success: false, error: "Item not found" });
+  });
+});
 
 const rawItem = {
   id: "item-1",

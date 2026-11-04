@@ -108,15 +108,20 @@ export async function getSidebarCollections(
 }
 
 // Narrower than fetchCollections: the favorites page shows no types or counts.
-export function getFavoriteCollections(
+export async function getFavoriteCollections(
   userId: string,
 ): Promise<FavoriteCollection[]> {
-  return prisma.collection.findMany({
+  const collections = await prisma.collection.findMany({
     where: { userId, isFavorite: true },
     // The id settles equal dates, so rows keep their order between refreshes.
-    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
-    select: { id: true, name: true, updatedAt: true },
+    orderBy: [{ favoritedAt: { sort: "desc", nulls: "last" } }, { id: "desc" }],
+    select: { id: true, name: true, favoritedAt: true, updatedAt: true },
   });
+  return collections.map(({ id, name, favoritedAt, updatedAt }) => ({
+    id,
+    name,
+    favoritedAt: favoritedAt ?? updatedAt,
+  }));
 }
 
 export function getCollectionOptions(

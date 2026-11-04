@@ -1,4 +1,5 @@
 import { FAVORITE_ROW_HEIGHT } from "@/app/(app)/favorites/_components/FavoriteRow";
+import { FAVORITE_SORT_WIDTH } from "@/app/(app)/favorites/_components/FavoriteSortSelect";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +40,7 @@ export default function FavoritesLoading() {
         <Skeleton className="h-9 w-48" />
         <Skeleton className="mt-1 h-6 w-64" />
       </header>
+      <Skeleton className={cn("ml-auto", FAVORITE_SORT_WIDTH, "h-8")} />
       <SectionSkeleton rows={ITEM_ROWS} />
       <SectionSkeleton rows={COLLECTION_ROWS} />
     </div>

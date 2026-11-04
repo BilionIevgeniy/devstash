@@ -1,6 +1,6 @@
 "use client";
 
-import { Pin, Star } from "lucide-react";
+import { Pin } from "lucide-react";
 import { useState } from "react";
 
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
@@ -47,9 +47,6 @@ export function ImageCard({ item }: ImageCardProps) {
         <h2 className="truncate text-sm font-medium">{item.title}</h2>
         {item.isPinned && (
           <Pin className="size-3.5 shrink-0 text-muted-foreground" />
-        )}
-        {item.isFavorite && (
-          <Star className="size-3.5 shrink-0 fill-yellow-400 text-yellow-400" />
         )}
       </div>
     </article>

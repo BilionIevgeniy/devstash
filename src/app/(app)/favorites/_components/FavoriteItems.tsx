@@ -32,7 +32,7 @@ export function FavoriteItems({ items }: FavoriteItemsProps) {
             }
             title={item.title}
             badge={item.type.name}
-            date={item.updatedAt}
+            date={item.favoritedAt}
           />
         </ItemDrawerTrigger>
       ))}

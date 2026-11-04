@@ -107,7 +107,7 @@ model VerificationToken {
 }
 
 model Item {
-  id          String  @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   contentType String
   content     String?
@@ -115,13 +115,15 @@ model Item {
   fileUrl     String?
   // The R2 object key under users/<userId>/, never a URL. Unique, so one
   // upload cannot back two items.
-  fileKey     String? @unique
+  fileKey     String?   @unique
   fileName    String?
   fileSize    Int?
   url         String?
   description String?
-  isFavorite  Boolean @default(false)
-  isPinned    Boolean @default(false)
+  isFavorite  Boolean   @default(false)
+  // When it was starred. A toggle leaves updatedAt alone: favoriting is not an edit.
+  favoritedAt DateTime?
+  isPinned    Boolean   @default(false)
   language    String?
 
   userId String
@@ -157,10 +159,12 @@ model ItemType {
 }
 
 model Collection {
-  id          String  @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
   description String?
-  isFavorite  Boolean @default(false)
+  isFavorite  Boolean   @default(false)
+  // When it was starred. A toggle leaves updatedAt alone: favoriting is not an edit.
+  favoritedAt DateTime?
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

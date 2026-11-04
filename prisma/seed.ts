@@ -66,7 +66,13 @@ async function seedCollections(userId: string) {
     });
     const record =
       existing ??
-      (await prisma.collection.create({ data: { ...collection, userId } }));
+      (await prisma.collection.create({
+        data: {
+          ...collection,
+          favoritedAt: collection.isFavorite ? new Date() : null,
+          userId,
+        },
+      }));
     idsByName.set(collection.name, record.id);
   }
   return idsByName;
@@ -110,6 +116,7 @@ async function seedItems(
       (await prisma.item.create({
         data: {
           ...fields,
+          favoritedAt: fields.isFavorite ? new Date() : null,
           userId,
           typeId: getId(typeIds, typeName, "item type"),
           tags: {

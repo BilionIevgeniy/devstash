@@ -1,5 +1,4 @@
-import { FavoriteCollections } from "@/app/(app)/favorites/_components/FavoriteCollections";
-import { FavoriteItems } from "@/app/(app)/favorites/_components/FavoriteItems";
+import { FavoriteLists } from "@/app/(app)/favorites/_components/FavoriteLists";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { getFavoriteCollections } from "@/features/collections/queries";
 import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvider";
@@ -11,7 +10,6 @@ export default async function FavoritesPage() {
     getFavoriteItems(userId),
     getFavoriteCollections(userId),
   ]);
-  const isEmpty = items.length === 0 && collections.length === 0;
 
   return (
     <div className="space-y-8">
@@ -24,14 +22,7 @@ export default async function FavoritesPage() {
       {/* Around the empty state too: the last favorite leaving through the open
           drawer must not unmount the drawer's sheet. */}
       <ItemDrawerProvider>
-        {isEmpty ? (
-          <p className="text-sm text-muted-foreground">No favorites yet.</p>
-        ) : (
-          <div className="space-y-8">
-            <FavoriteItems items={items} />
-            <FavoriteCollections collections={collections} />
-          </div>
-        )}
+        <FavoriteLists items={items} collections={collections} />
       </ItemDrawerProvider>
     </div>
   );

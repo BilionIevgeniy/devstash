@@ -1,4 +1,4 @@
-import { Pin, Star } from "lucide-react";
+import { Pin } from "lucide-react";
 
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { cn, formatShortDate } from "@/lib/utils";
@@ -14,12 +14,12 @@ export function ItemRow({ item }: ItemRowProps) {
     ? `color-mix(in oklab, ${type.color} 10%, transparent)`
     : undefined;
 
-  // pr-14 leaves room for the copy button over the corner (ItemCardTrigger).
+  // The padding leaves room for the buttons over the corner (ItemCardTrigger).
   return (
     <article
       className={cn(
         "flex items-start gap-4 rounded-lg border border-l-4 bg-card p-4 transition-colors hover:bg-accent/50",
-        item.canCopy && "pr-14",
+        item.canCopy ? "pr-22" : "pr-14",
       )}
       style={{ borderLeftColor: type.color }}
     >
@@ -38,9 +38,6 @@ export function ItemRow({ item }: ItemRowProps) {
           <h3 className="truncate font-medium">{item.title}</h3>
           {item.isPinned && (
             <Pin className="size-3.5 shrink-0 text-muted-foreground" />
-          )}
-          {item.isFavorite && (
-            <Star className="size-3.5 shrink-0 fill-yellow-400 text-yellow-400" />
           )}
         </div>
         <p className="truncate text-sm text-muted-foreground">

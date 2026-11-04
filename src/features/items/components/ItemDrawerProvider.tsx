@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  startTransition,
-  useContext,
-  useOptimistic,
-  type ReactNode,
-} from "react";
+import { startTransition, useOptimistic, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -18,19 +12,13 @@ import {
 import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
 import { ItemDrawerContent } from "@/features/items/_internal/components/ItemDrawerContent";
 import { useDirtyCloseGuard } from "@/features/items/_internal/components/hooks/use-dirty-close-guard";
+import { useItemFavorites } from "@/features/items/_internal/components/hooks/use-item-favorites";
 import { useItemSheet } from "@/features/items/_internal/components/hooks/use-item-sheet";
 import { deleteItem } from "@/features/items/actions/item";
+import { ItemDrawerContext } from "@/features/items/components/hooks/use-item-drawer";
 import type { DashboardItem } from "@/features/items/types";
 
 const NO_HIDDEN_IDS: ReadonlySet<string> = new Set();
-
-interface ItemDrawerContextValue {
-  open: (item: DashboardItem) => void;
-  /** Deletes the item and hides its card until the fresh page arrives. */
-  remove: (id: string) => void;
-  /** Items being deleted: their cards are hidden until the fresh page arrives. */
-  hiddenIds: ReadonlySet<string>;
-}
 
 interface ItemDrawerProviderProps {
   /**
@@ -43,16 +31,6 @@ interface ItemDrawerProviderProps {
   children: ReactNode;
 }
 
-const ItemDrawerContext = createContext<ItemDrawerContextValue | null>(null);
-
-export function useItemDrawer(): ItemDrawerContextValue {
-  const context = useContext(ItemDrawerContext);
-  if (!context) {
-    throw new Error("useItemDrawer must be used inside ItemDrawerProvider");
-  }
-  return context;
-}
-
 export function ItemDrawerProvider({
   basePath,
   onSheetCloseAutoFocus,
@@ -61,6 +39,7 @@ export function ItemDrawerProvider({
   const router = useRouter();
   const sheet = useItemSheet();
   const guard = useDirtyCloseGuard(sheet.onOpenChange);
+  const favorites = useItemFavorites(sheet.handleFavoriteSaved);
   const [hiddenIds, hideItem] = useOptimistic(
     NO_HIDDEN_IDS,
     (ids, id: string): ReadonlySet<string> => new Set(ids).add(id),
@@ -97,7 +76,7 @@ export function ItemDrawerProvider({
     remove(id);
   }
 
-  const value = { open, remove, hiddenIds };
+  const value = { open, remove, hiddenIds, ...favorites };
 
   if (basePath !== undefined) {
     return (

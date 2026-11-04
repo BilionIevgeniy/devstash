@@ -1,12 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { updateMany, deleteMany, deleteItems } = vi.hoisted(() => ({
+const { executeRaw, updateMany, deleteMany, deleteItems } = vi.hoisted(() => ({
+  executeRaw: vi.fn(),
   updateMany: vi.fn(),
   deleteMany: vi.fn(),
   deleteItems: vi.fn(),
 }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    $executeRaw: executeRaw,
     collection: { updateMany, deleteMany },
     item: { deleteMany: deleteItems },
   },
@@ -14,10 +16,49 @@ vi.mock("@/lib/prisma", () => ({
 
 import {
   deleteUserCollection,
+  setUserCollectionFavorite,
   updateUserCollection,
 } from "@/features/collections/services/collection";
 
 const GONE = { success: false, error: "This collection no longer exists." };
+
+describe("setUserCollectionFavorite", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("writes only through the caller's id, with no updatedAt", async () => {
+    executeRaw.mockResolvedValue(1);
+
+    await expect(
+      setUserCollectionFavorite("user-1", "collection-1", true),
+    ).resolves.toEqual({ success: true, error: null });
+
+    const [strings, isFavorite, favoritedAt, id, userId] =
+      executeRaw.mock.calls[0];
+    expect(strings.join("")).not.toContain("updatedAt");
+    expect(isFavorite).toBe(true);
+    expect(favoritedAt).toBeInstanceOf(Date);
+    expect(id).toBe("collection-1");
+    expect(userId).toBe("user-1");
+  });
+
+  it("clears the star date when the favorite is removed", async () => {
+    executeRaw.mockResolvedValue(1);
+
+    await setUserCollectionFavorite("user-1", "collection-1", false);
+
+    expect(executeRaw.mock.calls[0][2]).toBeNull();
+  });
+
+  it("reports a missing or foreign collection", async () => {
+    executeRaw.mockResolvedValue(0);
+
+    await expect(
+      setUserCollectionFavorite("user-1", "collection-1", true),
+    ).resolves.toEqual(GONE);
+  });
+});
 
 describe("updateUserCollection", () => {
   beforeEach(() => {

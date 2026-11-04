@@ -12,8 +12,10 @@ import {
 import {
   createUserCollection,
   deleteUserCollection,
+  setUserCollectionFavorite,
   updateUserCollection,
 } from "@/features/collections/services/collection";
+import { favoriteValueSchema } from "@/features/items/schemas";
 import type { ActionResult } from "@/lib/action-result";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
@@ -66,6 +68,36 @@ export async function updateCollection(
     return { success: true, error: null, data: null };
   } catch (error) {
     console.error("Updating the collection failed:", error);
+    return failure(GENERIC_ERROR);
+  }
+}
+
+// The client sends the value it wants, so two tabs cannot flip it back and forth.
+export async function setCollectionFavorite(
+  collectionId: string,
+  isFavorite: boolean,
+): Promise<ActionResult> {
+  const parsedId = collectionIdSchema.safeParse(collectionId);
+  if (!parsedId.success) return failure(parsedId.error.issues[0].message);
+
+  const parsedValue = favoriteValueSchema.safeParse(isFavorite);
+  if (!parsedValue.success) return failure(parsedValue.error.issues[0].message);
+
+  // Outside the try: a signed-out caller is redirected by a thrown error.
+  const { id: userId } = await getSessionUser();
+
+  try {
+    const result = await setUserCollectionFavorite(
+      userId,
+      parsedId.data,
+      parsedValue.data,
+    );
+    if (!result.success) return failure(result.error ?? GENERIC_ERROR);
+    // The star, the sidebar and the favorites come back with this response.
+    refresh();
+    return { success: true, error: null, data: null };
+  } catch (error) {
+    console.error("Updating the favorite failed:", error);
     return failure(GENERIC_ERROR);
   }
 }

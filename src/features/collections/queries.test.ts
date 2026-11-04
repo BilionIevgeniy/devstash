@@ -49,12 +49,26 @@ describe("getFavoriteCollections", () => {
     findTypes.mockReset();
   });
 
-  it("reads only the caller's favorites, last changed first with no ties", async () => {
+  it("reads only the caller's favorites, last starred first with no ties", async () => {
     await getFavoriteCollections("user-1");
 
     const { where, orderBy } = findMany.mock.calls[0][0];
     expect(where).toEqual({ userId: "user-1", isFavorite: true });
-    expect(orderBy).toEqual([{ updatedAt: "desc" }, { id: "desc" }]);
+    expect(orderBy).toEqual([
+      { favoritedAt: { sort: "desc", nulls: "last" } },
+      { id: "desc" },
+    ]);
+  });
+
+  it("falls back to the last change for a favorite with no star date", async () => {
+    const updatedAt = new Date("2026-02-01T00:00:00Z");
+    findMany.mockResolvedValue([
+      { id: "c-1", name: "React", favoritedAt: null, updatedAt },
+    ]);
+
+    await expect(getFavoriteCollections("user-1")).resolves.toEqual([
+      { id: "c-1", name: "React", favoritedAt: updatedAt },
+    ]);
   });
 
   it("selects only what a row shows, with no type lookup", async () => {
@@ -63,6 +77,7 @@ describe("getFavoriteCollections", () => {
     expect(findMany.mock.calls[0][0].select).toEqual({
       id: true,
       name: true,
+      favoritedAt: true,
       updatedAt: true,
     });
     expect(findTypes).not.toHaveBeenCalled();
