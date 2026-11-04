@@ -3,6 +3,7 @@ import "server-only";
 import { toSearchPreview } from "@/features/items/_internal/domain/search-preview";
 import {
   cardItemSelect,
+  dashboardItemSelect,
   NEWEST_FIRST,
   toDashboardItem,
   toItemCardData,
@@ -10,6 +11,7 @@ import {
 import { copyValueOf } from "@/features/items/domain/item-fields";
 import { ITEMS_PER_PAGE } from "@/features/items/domain/pagination";
 import type {
+  FavoriteItem,
   ItemCardData,
   ItemEditState,
   ItemStats,
@@ -38,6 +40,21 @@ export async function getRecentItems(userId: string): Promise<ItemCardData[]> {
     select: cardItemSelect,
   });
   return items.map(toItemCardData);
+}
+
+export async function getFavoriteItems(
+  userId: string,
+): Promise<FavoriteItem[]> {
+  const items = await prisma.item.findMany({
+    where: { userId, isFavorite: true },
+    // The id settles equal dates, so rows keep their order between refreshes.
+    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+    select: { ...dashboardItemSelect, updatedAt: true },
+  });
+  return items.map(({ updatedAt, ...item }) => ({
+    ...toDashboardItem(item),
+    updatedAt,
+  }));
 }
 
 export function getItemsByType(

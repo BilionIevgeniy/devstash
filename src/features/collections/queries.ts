@@ -7,6 +7,7 @@ import type {
   CollectionStats,
   CollectionSummary,
   DashboardCollection,
+  FavoriteCollection,
   SearchableCollection,
   SidebarCollections,
 } from "@/features/collections/types";
@@ -104,6 +105,18 @@ export async function getSidebarCollections(
     fetchCollections(userId, {}, { take: SIDEBAR_RECENT_LIMIT }),
   ]);
   return { favorites, recent };
+}
+
+// Narrower than fetchCollections: the favorites page shows no types or counts.
+export function getFavoriteCollections(
+  userId: string,
+): Promise<FavoriteCollection[]> {
+  return prisma.collection.findMany({
+    where: { userId, isFavorite: true },
+    // The id settles equal dates, so rows keep their order between refreshes.
+    orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+    select: { id: true, name: true, updatedAt: true },
+  });
 }
 
 export function getCollectionOptions(

@@ -25,6 +25,11 @@ export interface SearchableItem extends DashboardItem {
   preview: string | null;
 }
 
+// A row of the favorites page, which sorts and dates by the last change.
+export interface FavoriteItem extends DashboardItem {
+  updatedAt: Date;
+}
+
 export interface ItemCollectionRef {
   id: string;
   name: string;

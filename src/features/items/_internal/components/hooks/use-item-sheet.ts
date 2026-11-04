@@ -9,9 +9,9 @@ export type ItemDetailState =
   | { status: "error" }
   | { status: "ready"; detail: ItemDetailJson };
 
-// The item sheet of the pages with no item URL (the dashboard, a collection):
-// the card's item at once, its detail fetched from the API, and the edit mode.
-// Closing aborts a detail still on its way.
+// The item sheet of the pages with no item URL (the dashboard, a collection,
+// the favorites): the card's item at once, its detail fetched from the API, and
+// the edit mode. Closing aborts a detail still on its way.
 export function useItemSheet() {
   const [isOpen, setIsOpen] = useState(false);
   const [item, setItem] = useState<DashboardItem | null>(null);

@@ -28,6 +28,12 @@ export interface SearchableCollection {
   itemCount: number;
 }
 
+export interface FavoriteCollection {
+  id: string;
+  name: string;
+  updatedAt: Date;
+}
+
 export interface SidebarCollections {
   favorites: DashboardCollection[];
   recent: DashboardCollection[];
