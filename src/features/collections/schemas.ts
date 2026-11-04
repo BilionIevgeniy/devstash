@@ -5,6 +5,8 @@ import {
   NAME_MAX,
 } from "@/features/collections/domain/collection-fields";
 
+export const collectionIdSchema = z.cuid2("Invalid collection id");
+
 export const createCollectionSchema = z.object({
   name: z
     .string()

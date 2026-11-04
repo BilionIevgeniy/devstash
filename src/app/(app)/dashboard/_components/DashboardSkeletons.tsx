@@ -1,12 +1,11 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { CollectionGridSkeleton } from "@/features/collections/components/CollectionGridSkeleton";
 
 const STAT_CARDS = 4;
-const COLLECTION_CARDS = 6;
 
-// Block heights mirror the rendered cards (StatsCards, CollectionCard, ItemRow)
-// so the page does not shift when the real content streams in.
+// Block heights mirror the rendered cards (StatsCards, ItemRow) so the page
+// does not shift when the real content streams in.
 const STAT_CARD_HEIGHT = "h-22";
-const COLLECTION_CARD_HEIGHT = "h-34";
 const ITEM_ROW_HEIGHT = "h-26";
 
 function SkeletonBlocks({
@@ -43,12 +42,7 @@ export function CollectionsSkeleton() {
         <Skeleton className="h-7 w-32" />
         <Skeleton className="h-5 w-14" />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <SkeletonBlocks
-          count={COLLECTION_CARDS}
-          className={`${COLLECTION_CARD_HEIGHT} rounded-lg`}
-        />
-      </div>
+      <CollectionGridSkeleton />
     </section>
   );
 }

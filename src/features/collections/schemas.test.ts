@@ -3,7 +3,25 @@ import {
   DESCRIPTION_MAX,
   NAME_MAX,
 } from "@/features/collections/domain/collection-fields";
-import { createCollectionSchema } from "@/features/collections/schemas";
+import {
+  collectionIdSchema,
+  createCollectionSchema,
+} from "@/features/collections/schemas";
+
+describe("collectionIdSchema", () => {
+  it("accepts a generated id", () => {
+    expect(
+      collectionIdSchema.safeParse("cmh1x2y3z0000abcd1234efgh").success,
+    ).toBe(true);
+  });
+
+  // The id comes from the URL: a NUL byte would make Postgres throw, and the
+  // page would show the error screen where a missing collection belongs.
+  it("rejects a malformed id", () => {
+    expect(collectionIdSchema.safeParse("bad\u0000id").success).toBe(false);
+    expect(collectionIdSchema.safeParse("Not An Id").success).toBe(false);
+  });
+});
 
 describe("createCollectionSchema", () => {
   it("trims the name and the description", () => {
