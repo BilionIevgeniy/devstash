@@ -7,7 +7,7 @@ import type { FileListItem, UploadItemRecord } from "@/features/items/types";
 // The records come from a query scoped by userId, so every key is the caller's
 // own; signing is local and makes no request to R2. The key itself never
 // leaves the server.
-async function toFileListItem(
+export async function toFileListItem(
   { fileKey, fileName, fileSize, ...item }: UploadItemRecord,
   now: Date,
 ): Promise<FileListItem> {

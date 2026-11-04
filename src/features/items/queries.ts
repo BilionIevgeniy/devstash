@@ -4,6 +4,7 @@ import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
 import { itemTypeSelect } from "@/features/item-types/queries";
 import { copyValueOf } from "@/features/items/domain/item-fields";
 import type {
+  CollectionItemRecord,
   DashboardItem,
   ItemCardData,
   ItemDetailRecord,
@@ -83,6 +84,26 @@ function toUploadItem({
   return { ...toDashboardItem(item), fileKey, fileName, fileSize };
 }
 
+const collectionItemSelect = {
+  ...cardItemSelect,
+  fileKey: true,
+  fileName: true,
+  fileSize: true,
+} satisfies Prisma.ItemSelect;
+
+type RawCollectionItem = Prisma.ItemGetPayload<{
+  select: typeof collectionItemSelect;
+}>;
+
+function toCollectionItemRecord({
+  fileKey,
+  fileName,
+  fileSize,
+  ...item
+}: RawCollectionItem): CollectionItemRecord {
+  return { ...toItemCardData(item), fileKey, fileName, fileSize };
+}
+
 const itemDetailSelect = {
   ...dashboardItemSelect,
   contentType: true,
@@ -148,16 +169,18 @@ export async function getItemsByType(
   return items.map(toItemCardData);
 }
 
-export async function getItemsByCollection(
+// The items of a collection with their uploads, read only by the collection
+// listing service.
+export async function getCollectionItemRecords(
   userId: string,
   collectionId: string,
-): Promise<ItemCardData[]> {
+): Promise<CollectionItemRecord[]> {
   const items = await prisma.item.findMany({
     where: { userId, collections: { some: { collectionId } } },
     orderBy: { createdAt: "desc" },
-    select: cardItemSelect,
+    select: collectionItemSelect,
   });
-  return items.map(toItemCardData);
+  return items.map(toCollectionItemRecord);
 }
 
 // The items of a file or image type with their uploads, read only by the

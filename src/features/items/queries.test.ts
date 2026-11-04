@@ -11,7 +11,7 @@ import {
   getItemDetailOfType,
   getItemEditState,
   getItemFileKey,
-  getItemsByCollection,
+  getCollectionItemRecords,
   getRecentItems,
 } from "@/features/items/queries";
 
@@ -174,18 +174,42 @@ describe("getItemFileKey", () => {
   });
 });
 
-describe("getItemsByCollection", () => {
+describe("getCollectionItemRecords", () => {
   beforeEach(() => {
     findMany.mockReset().mockResolvedValue([]);
   });
 
   it("reads only the caller's items linked to the collection", async () => {
-    await getItemsByCollection("user-1", "col-1");
+    await getCollectionItemRecords("user-1", "col-1");
 
     expect(findMany.mock.calls[0][0].where).toEqual({
       userId: "user-1",
       collections: { some: { collectionId: "col-1" } },
     });
+  });
+
+  it("keeps the upload and tells whether there is something to copy", async () => {
+    findMany.mockResolvedValue([
+      {
+        ...rawItem,
+        tags: [],
+        contentType: "file",
+        content: null,
+        fileKey: "users/user-1/a.png",
+        fileName: "a.png",
+        fileSize: 10,
+      },
+    ]);
+
+    const [record] = await getCollectionItemRecords("user-1", "col-1");
+
+    expect(record).toMatchObject({
+      canCopy: false,
+      fileKey: "users/user-1/a.png",
+      fileName: "a.png",
+      fileSize: 10,
+    });
+    expect(record).not.toHaveProperty("content");
   });
 });
 

@@ -7,7 +7,12 @@ import {
 
 export const collectionIdSchema = z.cuid2("Invalid collection id");
 
-export const createCollectionSchema = z.object({
+// `refresh: false` is for a caller that leaves the page itself.
+export const deleteCollectionOptionsSchema = z
+  .object({ refresh: z.boolean().default(true) })
+  .default({ refresh: true });
+
+const collectionFieldsSchema = z.object({
   name: z
     .string()
     .trim()
@@ -25,4 +30,8 @@ export const createCollectionSchema = z.object({
     .optional(),
 });
 
+export const createCollectionSchema = collectionFieldsSchema;
+export const updateCollectionSchema = collectionFieldsSchema;
+
 export type CreateCollectionInput = z.infer<typeof createCollectionSchema>;
+export type UpdateCollectionInput = z.infer<typeof updateCollectionSchema>;

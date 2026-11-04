@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
 
+import { CollectionCardMenu } from "@/features/collections/_internal/components/CollectionCardMenu";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import type { DashboardCollection } from "@/features/collections/types";
 
@@ -8,19 +9,27 @@ interface CollectionCardProps {
   collection: DashboardCollection;
 }
 
+// The link stretches over the whole card through its ::after, and the menu sits
+// above it: a menu may not be inside a link, and a click on it must not navigate.
 export function CollectionCard({ collection }: CollectionCardProps) {
   const { types } = collection;
   const accentColor = types[0]?.color;
   const itemLabel = collection.itemCount === 1 ? "item" : "items";
 
   return (
-    <Link
-      href={`/collections/${collection.id}`}
-      className="block rounded-lg border border-l-4 bg-card p-4 transition-colors hover:bg-accent"
+    <div
+      className="relative rounded-lg border border-l-4 bg-card p-4 transition-colors hover:bg-accent"
       style={accentColor ? { borderLeftColor: accentColor } : undefined}
     >
-      <div className="flex items-center gap-2">
-        <h3 className="truncate font-medium">{collection.name}</h3>
+      <div className="flex items-center gap-2 pr-8">
+        <h3 className="truncate font-medium">
+          <Link
+            href={`/collections/${collection.id}`}
+            className="outline-none after:absolute after:-inset-px after:-left-1 after:rounded-lg focus-visible:after:ring-2 focus-visible:after:ring-ring"
+          >
+            {collection.name}
+          </Link>
+        </h3>
         {collection.isFavorite && (
           <Star className="size-4 shrink-0 fill-yellow-400 text-yellow-400" />
         )}
@@ -42,6 +51,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
           />
         ))}
       </div>
-    </Link>
+      <CollectionCardMenu collection={collection} />
+    </div>
   );
 }

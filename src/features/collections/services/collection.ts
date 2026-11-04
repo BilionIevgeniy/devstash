@@ -1,8 +1,13 @@
 import "server-only";
 
-import type { CreateCollectionInput } from "@/features/collections/schemas";
+import type {
+  CreateCollectionInput,
+  UpdateCollectionInput,
+} from "@/features/collections/schemas";
 import type { OperationResult } from "@/lib/action-result";
 import { prisma } from "@/lib/prisma";
+
+const NOT_FOUND_ERROR = "This collection no longer exists.";
 
 export async function createUserCollection(
   userId: string,
@@ -13,5 +18,33 @@ export async function createUserCollection(
     select: { id: true },
   });
 
+  return { success: true, error: null };
+}
+
+export async function updateUserCollection(
+  userId: string,
+  collectionId: string,
+  { name, description }: UpdateCollectionInput,
+): Promise<OperationResult> {
+  const { count } = await prisma.collection.updateMany({
+    where: { id: collectionId, userId },
+    data: { name, description },
+  });
+
+  if (count === 0) return { success: false, error: NOT_FOUND_ERROR };
+  return { success: true, error: null };
+}
+
+// The items stay: only their `ItemCollection` rows go, by the cascade on the
+// foreign key.
+export async function deleteUserCollection(
+  userId: string,
+  collectionId: string,
+): Promise<OperationResult> {
+  const { count } = await prisma.collection.deleteMany({
+    where: { id: collectionId, userId },
+  });
+
+  if (count === 0) return { success: false, error: NOT_FOUND_ERROR };
   return { success: true, error: null };
 }

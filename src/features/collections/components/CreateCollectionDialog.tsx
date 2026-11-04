@@ -11,7 +11,6 @@ import { unstable_rethrow } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
-import { Field } from "@/components/common/Field";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,16 +22,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { CollectionFields } from "@/features/collections/_internal/components/CollectionFields";
 import { createCollection } from "@/features/collections/actions/collection";
-import {
-  DESCRIPTION_MAX,
-  NAME_MAX,
-} from "@/features/collections/domain/collection-fields";
+import type { CollectionFormValues } from "@/features/collections/domain/collection-fields";
 
 const LABEL = "New collection";
-const EMPTY_VALUES = { name: "", description: "" };
+const EMPTY_VALUES: CollectionFormValues = { name: "", description: "" };
 const CREATED_MESSAGE = "Collection created";
 const CREATE_FAILED_MESSAGE = "Couldn't create the collection";
 
@@ -104,7 +99,7 @@ function CreateCollectionForm({
 }: CreateCollectionFormProps) {
   const [values, setValues] = useState(EMPTY_VALUES);
 
-  function setField(name: keyof typeof EMPTY_VALUES, value: string) {
+  function setField(name: keyof CollectionFormValues, value: string) {
     setValues((current) => ({ ...current, [name]: value }));
   }
 
@@ -133,27 +128,7 @@ function CreateCollectionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Field label="Name">
-        {(id) => (
-          <Input
-            id={id}
-            value={values.name}
-            onChange={(event) => setField("name", event.target.value)}
-            maxLength={NAME_MAX}
-            required
-          />
-        )}
-      </Field>
-      <Field label="Description">
-        {(id) => (
-          <Textarea
-            id={id}
-            value={values.description}
-            onChange={(event) => setField("description", event.target.value)}
-            maxLength={DESCRIPTION_MAX}
-          />
-        )}
-      </Field>
+      <CollectionFields values={values} onChange={setField} />
       <DialogFooter>
         <DialogClose asChild>
           <Button type="button" variant="ghost" disabled={isCreating}>

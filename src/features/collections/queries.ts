@@ -1,6 +1,6 @@
 import "server-only";
 
-import { rankTypesByUsage } from "@/features/collections/domain/rank-types-by-usage";
+import { rankTypesByUsage } from "@/features/item-types/domain/rank-types-by-usage";
 import type {
   CollectionOption,
   CollectionStats,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { rankTypesByUsage } from "@/features/collections/domain/rank-types-by-usage";
+import { rankTypesByUsage } from "@/features/item-types/domain/rank-types-by-usage";
 import type { ItemTypeInfo } from "@/features/item-types/types";
 
 function makeType(id: string, name: string): ItemTypeInfo {

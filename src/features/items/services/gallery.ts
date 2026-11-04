@@ -8,7 +8,7 @@ import type { GalleryItem, UploadItemRecord } from "@/features/items/types";
 // own; signing is local and makes no request to R2. The thumbnail is the
 // drawer's view URL, so opening a card reuses the cached image. The key itself
 // never leaves the server.
-async function toGalleryItem(
+export async function toGalleryItem(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- the size is not part of a thumbnail
   { fileKey, fileName, fileSize, ...item }: UploadItemRecord,
   now: Date,
