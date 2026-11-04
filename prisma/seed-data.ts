@@ -10,6 +10,7 @@ export interface SeedCollection {
   name: string;
   description: string;
   isFavorite: boolean;
+  updatedAt?: Date;
 }
 
 export interface SeedItem {
@@ -25,6 +26,7 @@ export interface SeedItem {
   collectionNames: string[];
   tags: string[];
   createdAt: Date;
+  updatedAt?: Date;
 }
 
 export const demoUser = {
