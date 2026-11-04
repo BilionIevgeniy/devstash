@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { Check, X } from "lucide-react";
+import { unstable_rethrow } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,24 @@ import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 const TAG_JOINER = ", ";
 const SAVED_MESSAGE = "Item saved";
 const SAVE_FAILED_MESSAGE = "Couldn't save the item";
+
+// null after a failure, with the toast already shown. A signed-out caller's
+// redirect rejects too, and must go on; any other rejection left in the
+// transition would replace the form, with the user's edits, by an error page.
+async function saveItem(
+  itemId: string,
+  payload: unknown,
+): Promise<ItemDetailJson | null> {
+  try {
+    const result = await updateItem(itemId, payload);
+    if (result.success && result.data) return result.data;
+    toast.error(result.error ?? SAVE_FAILED_MESSAGE);
+  } catch (error) {
+    unstable_rethrow(error);
+    toast.error(SAVE_FAILED_MESSAGE);
+  }
+  return null;
+}
 
 interface ItemEditFormProps {
   item: DashboardItem;
@@ -105,13 +124,14 @@ export function ItemEditForm({
     event.preventDefault();
     if (!isChanged) return;
     startSaving(async () => {
-      const result = await updateItem(item.id, updatePayload(fields, values));
-      if (result.success && result.data) {
-        toast.success(SAVED_MESSAGE);
-        onSaved(result.data);
-      } else {
-        toast.error(result.error ?? SAVE_FAILED_MESSAGE);
-      }
+      const saved = await saveItem(item.id, updatePayload(fields, values));
+      if (!saved) return;
+
+      toast.success(SAVED_MESSAGE);
+      // After the await this is no longer part of the transition, so it is
+      // wrapped again: the form closes in the commit that brings the refreshed
+      // page.
+      startSaving(() => onSaved(saved));
     });
   }
 

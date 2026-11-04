@@ -1,12 +1,23 @@
-import Editor, { type BeforeMount, type OnMount } from "@monaco-editor/react";
+import Editor, {
+  loader,
+  type BeforeMount,
+  type OnMount,
+} from "@monaco-editor/react";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { EditorFallback } from "@/features/editor/_internal/components/EditorFallback";
+import { useMonacoLoadFailed } from "@/features/editor/_internal/components/hooks/use-monaco-load-failed";
 import {
   MONACO_THEME_NAMES,
   MONACO_THEMES,
 } from "@/features/editor/_internal/domain/editor-themes";
 import { EDITOR_THEMES } from "@/features/editor/_internal/domain/preferences";
 import { useEditorPreferences } from "@/features/editor/components/EditorPreferencesProvider";
+
+// At the top of the module: the loader reads this once, when the first Editor
+// mounts, and this is the only file that renders one. Without it Monaco comes
+// from a CDN.
+loader.config({ paths: { vs: process.env.NEXT_PUBLIC_MONACO_VS_PATH } });
 
 const defineThemes: BeforeMount = (monaco) => {
   for (const theme of EDITOR_THEMES) {
@@ -34,6 +45,7 @@ export function MonacoEditor({
   onContentHeight,
 }: MonacoEditorProps) {
   const { preferences } = useEditorPreferences();
+  const hasLoadFailed = useMonacoLoadFailed();
 
   const handleMount: OnMount = (editor) => {
     onContentHeight(editor.getContentHeight());
@@ -41,6 +53,17 @@ export function MonacoEditor({
       onContentHeight(event.contentHeight),
     );
   };
+
+  if (hasLoadFailed) {
+    return (
+      <EditorFallback
+        value={value}
+        readOnly={readOnly}
+        ariaLabel={ariaLabel}
+        onChange={onChange}
+      />
+    );
+  }
 
   return (
     <Editor

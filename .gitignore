@@ -19,6 +19,9 @@
 /.next/
 /out/
 
+# copied from node_modules by scripts/copy-monaco.mjs
+/public/monaco
+
 # production
 /build
 

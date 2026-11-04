@@ -28,6 +28,17 @@ export async function getItemTypeByName(
   return type ? toItemTypeInfo(type) : null;
 }
 
+export async function getItemTypesById(
+  typeIds: string[],
+): Promise<Map<string, ItemTypeInfo>> {
+  const types = await prisma.itemType.findMany({
+    where: { id: { in: typeIds } },
+    select: itemTypeSelect,
+  });
+
+  return new Map(types.map((type) => [type.id, toItemTypeInfo(type)]));
+}
+
 export async function getSidebarItemTypes(
   userId: string,
 ): Promise<SidebarItemType[]> {

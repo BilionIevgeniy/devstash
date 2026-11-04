@@ -120,8 +120,8 @@ export function acceptedExtensions(kind: FileKind): string {
     .join(",");
 }
 
-// What the browser declares before the upload. The real size is checked again
-// after it (see confirmUpload), since a signed PUT cannot limit the size.
+// What the browser declares before the upload. The size signed into the PUT is
+// this one, and the real object is checked again after it (see confirmUpload).
 export function checkDeclaredFile(
   kind: FileKind,
   fileName: string,

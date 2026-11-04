@@ -58,11 +58,13 @@ function getR2(): R2Config {
   return config;
 }
 
-// The browser must send the same Content-Type, or R2 rejects the signature.
-// The SDK signs only `host` by default, which lets any Content-Type through.
+// The browser must send the same Content-Type and exactly this many bytes, or
+// R2 rejects the signature. The SDK signs only `host` by default, which lets
+// any type and size through.
 export function signPutUrl(
   key: string,
   contentType: string,
+  contentLength: number,
   expiresIn: number,
 ): Promise<string> {
   const { client, bucket } = getR2();
@@ -72,8 +74,12 @@ export function signPutUrl(
       Bucket: bucket,
       Key: key,
       ContentType: contentType,
+      ContentLength: contentLength,
     }),
-    { expiresIn, signableHeaders: new Set(["content-type"]) },
+    {
+      expiresIn,
+      signableHeaders: new Set(["content-type", "content-length"]),
+    },
   );
 }
 

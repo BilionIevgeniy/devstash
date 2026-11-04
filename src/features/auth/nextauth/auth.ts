@@ -95,8 +95,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // A password reset or change bumps the version and an account deletion
       // removes it, which revokes every token issued before. Tokens from before
       // this check existed carry no version and count as 0.
-      const current = await getSessionVersion(token.sub);
-      return current === (token.sv ?? 0) ? token : null;
+      try {
+        const current = await getSessionVersion(token.sub);
+        return current === (token.sv ?? 0) ? token : null;
+      } catch (error) {
+        // A throw here would come back as an empty session, so a database
+        // error would sign the user out. The token stays valid until the read
+        // works again: the app's own reads fail in the meantime anyway.
+        console.error("Reading the session version failed:", error);
+        return token;
+      }
     },
     session({ session, token }) {
       if (token.sub) {

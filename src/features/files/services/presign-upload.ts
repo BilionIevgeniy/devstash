@@ -23,8 +23,9 @@ export interface PresignUploadResult extends OperationResult {
 }
 
 // Checks what the browser declares and signs a PUT under the user's prefix.
-// The size is not part of the signature (R2 cannot enforce one), so the item
-// create confirms it after the upload.
+// The checked size is part of the signature, so R2 refuses any other length,
+// also on a second PUT to the same URL. The item create still confirms the
+// object after the upload.
 export async function presignUpload(
   userId: string,
   { kind, fileName, size }: RequestUploadInput,
@@ -52,6 +53,7 @@ export async function presignUpload(
   const uploadUrl = await signPutUrl(
     key,
     check.contentType,
+    size,
     UPLOAD_URL_TTL_SECONDS,
   );
   return {
