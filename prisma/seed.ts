@@ -8,8 +8,11 @@ import {
   demoUser,
   systemItemTypes,
 } from "./seed-data";
+import { paginationCollections, paginationItems } from "./seed-pagination-data";
 
 const BCRYPT_ROUNDS = 12;
+const collections = [...demoCollections, ...paginationCollections];
+const items = [...demoItems, ...paginationItems];
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -60,7 +63,7 @@ async function seedDemoSubscription(userId: string) {
 
 async function seedCollections(userId: string) {
   const idsByName = new Map<string, string>();
-  for (const collection of demoCollections) {
+  for (const collection of collections) {
     const existing = await prisma.collection.findFirst({
       where: { userId, name: collection.name },
     });
@@ -79,7 +82,7 @@ async function seedCollections(userId: string) {
 }
 
 async function seedTags(userId: string) {
-  const names = new Set(demoItems.flatMap((item) => item.tags));
+  const names = new Set(items.flatMap((item) => item.tags));
   const idsByName = new Map<string, string>();
   for (const name of names) {
     const tag = await prisma.tag.upsert({
@@ -106,7 +109,7 @@ async function seedItems(
   collectionIds: Map<string, string>,
   tagIds: Map<string, string>,
 ) {
-  for (const item of demoItems) {
+  for (const item of items) {
     const { typeName, collectionNames, tags, ...fields } = item;
     const existing = await prisma.item.findFirst({
       where: { userId, title: item.title },
@@ -146,7 +149,7 @@ async function main() {
   await seedItems(user.id, typeIds, collectionIds, tagIds);
   console.log(
     `Seeded ${typeIds.size} system types, demo user ${user.email}, ` +
-      `${collectionIds.size} collections, ${demoItems.length} items`,
+      `${collectionIds.size} collections, ${items.length} items`,
   );
 }
 
