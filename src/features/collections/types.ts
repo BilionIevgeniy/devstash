@@ -10,6 +10,13 @@ export interface DashboardCollection {
   types: ItemTypeInfo[];
 }
 
+export interface CollectionSummary {
+  id: string;
+  name: string;
+  description: string | null;
+  isFavorite: boolean;
+}
+
 export interface CollectionOption {
   id: string;
   name: string;

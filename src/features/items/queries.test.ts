@@ -9,6 +9,7 @@ vi.mock("@/lib/prisma", () => ({ prisma: { item: { findFirst, findMany } } }));
 import {
   getItemDetail,
   getItemDetailOfType,
+  getItemsByCollection,
   getRecentItems,
 } from "@/features/items/queries";
 
@@ -111,6 +112,21 @@ describe("getItemDetailOfType", () => {
       type: { id: "type-1", name: "snippet", icon: "Code", color: "#3b82f6" },
       createdAt,
       updatedAt,
+    });
+  });
+});
+
+describe("getItemsByCollection", () => {
+  beforeEach(() => {
+    findMany.mockReset().mockResolvedValue([]);
+  });
+
+  it("reads only the caller's items linked to the collection", async () => {
+    await getItemsByCollection("user-1", "col-1");
+
+    expect(findMany.mock.calls[0][0].where).toEqual({
+      userId: "user-1",
+      collections: { some: { collectionId: "col-1" } },
     });
   });
 });

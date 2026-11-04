@@ -4,6 +4,7 @@ import { rankTypesByUsage } from "@/features/collections/domain/rank-types-by-us
 import type {
   CollectionOption,
   CollectionStats,
+  CollectionSummary,
   DashboardCollection,
   SidebarCollections,
 } from "@/features/collections/types";
@@ -67,6 +68,22 @@ export function getRecentCollections(
   userId: string,
 ): Promise<DashboardCollection[]> {
   return fetchCollections(userId, {}, DASHBOARD_COLLECTIONS_LIMIT);
+}
+
+export function getUserCollections(
+  userId: string,
+): Promise<DashboardCollection[]> {
+  return fetchCollections(userId, {});
+}
+
+export function getCollectionById(
+  userId: string,
+  id: string,
+): Promise<CollectionSummary | null> {
+  return prisma.collection.findFirst({
+    where: { id, userId },
+    select: { id: true, name: true, description: true, isFavorite: true },
+  });
 }
 
 export async function getSidebarCollections(

@@ -147,6 +147,18 @@ export async function getItemsByType(
   return items.map(toItemCardData);
 }
 
+export async function getItemsByCollection(
+  userId: string,
+  collectionId: string,
+): Promise<ItemCardData[]> {
+  const items = await prisma.item.findMany({
+    where: { userId, collections: { some: { collectionId } } },
+    orderBy: { createdAt: "desc" },
+    select: cardItemSelect,
+  });
+  return items.map(toItemCardData);
+}
+
 // The items of a file or image type with their uploads, read only by the
 // gallery and file list services.
 export async function getUploadItemsByType(
