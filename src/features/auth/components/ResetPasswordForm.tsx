@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 
 const SUCCESS_MESSAGE = "Password updated. You can now sign in.";
 const SIGN_IN_URL = "/sign-in";
+const GENERIC_ERROR = "Something went wrong. Please try again.";
 
 const FIELDS = [
   { name: "password", label: "New password" },
@@ -45,18 +46,23 @@ export function ResetPasswordForm({ email, token }: ResetPasswordFormProps) {
 
     setError(null);
     startTransition(async () => {
-      const result = await resetPassword({
-        email,
-        token,
-        password,
-        confirmPassword,
-      });
-      if (result.success) {
-        toast.success(SUCCESS_MESSAGE);
-        router.push(SIGN_IN_URL);
-        return;
+      try {
+        const result = await resetPassword({
+          email,
+          token,
+          password,
+          confirmPassword,
+        });
+        if (result.success) {
+          toast.success(SUCCESS_MESSAGE);
+          router.push(SIGN_IN_URL);
+          return;
+        }
+        setError(result.error);
+      } catch {
+        // A rejection left in the transition would show the error page.
+        setError(GENERIC_ERROR);
       }
-      setError(result.error);
     });
   }
 

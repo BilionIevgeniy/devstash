@@ -21,11 +21,16 @@ export function ResendVerificationButton({
 
   function handleClick() {
     startTransition(async () => {
-      const result = await resendVerificationEmail(email);
-      if (result.success) {
-        toast.success(SENT_MESSAGE);
-      } else {
-        toast.error(result.error ?? GENERIC_ERROR);
+      try {
+        const result = await resendVerificationEmail(email);
+        if (result.success) {
+          toast.success(SENT_MESSAGE);
+        } else {
+          toast.error(result.error ?? GENERIC_ERROR);
+        }
+      } catch {
+        // A rejection left in the transition would show the error page.
+        toast.error(GENERIC_ERROR);
       }
     });
   }

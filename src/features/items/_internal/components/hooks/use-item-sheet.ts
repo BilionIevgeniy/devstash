@@ -1,5 +1,4 @@
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 
 import { fetchItemDetail } from "@/features/items/_internal/components/fetch-item-detail";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
@@ -19,7 +18,6 @@ export function useItemSheet() {
   const [isEditing, setIsEditing] = useState(false);
   const requestRef = useRef<AbortController | null>(null);
   const openItemIdRef = useRef<string | null>(null);
-  const router = useRouter();
 
   async function openSheet(next: DashboardItem) {
     requestRef.current?.abort();
@@ -49,11 +47,10 @@ export function useItemSheet() {
   }
 
   // The header, description and tags come from the card's item, so it is
-  // updated along with the detail; the refresh updates the cards behind. The
-  // ref, not the item in this closure, tells whether another card was opened
-  // while the save was running.
+  // updated along with the detail; the action's refresh updates the cards
+  // behind. The ref, not the item in this closure, tells whether another card
+  // was opened while the save was running.
   function handleSaved(detail: ItemDetailJson) {
-    router.refresh();
     if (openItemIdRef.current !== detail.id) return;
 
     setItem(

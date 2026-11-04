@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { unstable_rethrow } from "next/navigation";
 
 import { startPut } from "@/features/files/_internal/components/put-file";
 import { requestUpload } from "@/features/files/actions/upload";
@@ -16,6 +17,18 @@ export type UploadState =
   | { status: "uploading"; file: File; progress: number }
   | { status: "failed"; file: File | null; error: string }
   | { status: "done"; file: File };
+
+// null when the request itself failed (the connection, a server error), so the
+// upload ends as failed instead of staying at 0%. The redirect of a signed-out
+// caller rejects too, and must go on.
+async function requestSignedUpload(input: Parameters<typeof requestUpload>[0]) {
+  try {
+    return await requestUpload(input);
+  } catch (error) {
+    unstable_rethrow(error);
+    return null;
+  }
+}
 
 // The upload of one file: checked, signed by the server, then sent by the
 // browser straight to R2. Unmounting aborts a running upload, so a closed
@@ -50,14 +63,14 @@ export function useFileUpload(
     }
 
     setState({ status: "uploading", file, progress: 0 });
-    const signed = await requestUpload({
+    const signed = await requestSignedUpload({
       kind,
       fileName: file.name,
       size: file.size,
     });
     if (attempt !== attemptRef.current) return;
-    if (!signed.success || !signed.data) {
-      const error = signed.error ?? UPLOAD_FAILED_MESSAGE;
+    if (!signed?.success || !signed.data) {
+      const error = signed?.error ?? UPLOAD_FAILED_MESSAGE;
       setState({ status: "failed", file, error });
       return;
     }

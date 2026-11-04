@@ -1,5 +1,6 @@
 "use client";
 
+import { unstable_rethrow } from "next/navigation";
 import { useState, useTransition, type SubmitEvent } from "react";
 import { toast } from "sonner";
 
@@ -13,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const SUCCESS_MESSAGE = "Password updated. Please sign in again.";
+const GENERIC_ERROR = "Something went wrong. Please try again.";
 
 const FIELDS = [
   {
@@ -54,19 +56,25 @@ export function ChangePasswordForm() {
 
     setError(null);
     startTransition(async () => {
-      const result = await changePassword({
-        currentPassword,
-        newPassword,
-        confirmPassword,
-      });
-      if (result.success) {
-        // The change revoked every session, this one included; signing out
-        // clears the cookie and redirects to /sign-in.
-        toast.success(SUCCESS_MESSAGE);
-        await signOutUser();
-        return;
+      try {
+        const result = await changePassword({
+          currentPassword,
+          newPassword,
+          confirmPassword,
+        });
+        if (result.success) {
+          // The change revoked every session, this one included; signing out
+          // clears the cookie and redirects to /sign-in.
+          toast.success(SUCCESS_MESSAGE);
+          await signOutUser();
+          return;
+        }
+        setError(result.error);
+      } catch (error) {
+        // The sign-out's redirect arrives here too, and must go on.
+        unstable_rethrow(error);
+        setError(GENERIC_ERROR);
       }
-      setError(result.error);
     });
   }
 

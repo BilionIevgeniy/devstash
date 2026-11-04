@@ -11,9 +11,7 @@ import type {
   SearchableCollection,
   SidebarCollections,
 } from "@/features/collections/types";
-import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
-import { itemTypeSelect } from "@/features/item-types/queries";
-import type { ItemTypeInfo } from "@/features/item-types/types";
+import { getItemTypesById } from "@/features/item-types/queries";
 import type { Prisma } from "@/generated/prisma/client";
 import { type Paginated, readPage } from "@/lib/pagination";
 import { prisma } from "@/lib/prisma";
@@ -29,17 +27,6 @@ const collectionSelect = {
   _count: { select: { items: true } },
   items: { select: { item: { select: { typeId: true } } } },
 } satisfies Prisma.CollectionSelect;
-
-async function fetchTypesById(
-  typeIds: string[],
-): Promise<Map<string, ItemTypeInfo>> {
-  const types = await prisma.itemType.findMany({
-    where: { id: { in: typeIds } },
-    select: itemTypeSelect,
-  });
-
-  return new Map(types.map((type) => [type.id, toItemTypeInfo(type)]));
-}
 
 async function fetchCollections(
   userId: string,
@@ -57,7 +44,7 @@ async function fetchCollections(
   const typeIds = new Set(
     collections.flatMap(({ items }) => items.map(({ item }) => item.typeId)),
   );
-  const typesById = await fetchTypesById([...typeIds]);
+  const typesById = await getItemTypesById([...typeIds]);
 
   return collections.map(({ items, _count, ...collection }) => ({
     ...collection,

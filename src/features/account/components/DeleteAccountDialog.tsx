@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, type MouseEvent } from "react";
+import { unstable_rethrow } from "next/navigation";
 
 import { deleteAccount } from "@/features/account/_internal/actions/delete-account";
 import { reauthenticateWithGitHub } from "@/features/auth/actions/sign-in";
@@ -41,19 +42,25 @@ export function DeleteAccountDialog({
     event.preventDefault();
     setError(null);
     startTransition(async () => {
-      if (reauthNeeded) {
-        await reauthenticateWithGitHub();
-        return;
-      }
+      try {
+        if (reauthNeeded) {
+          await reauthenticateWithGitHub();
+          return;
+        }
 
-      const result = await deleteAccount({ password });
-      if (result.success) return;
-      // The dialog text already asks for a fresh GitHub sign-in.
-      if (result.error === REAUTH_REQUIRED_MESSAGE) {
-        setReauthNeeded(true);
-        return;
+        const result = await deleteAccount({ password });
+        if (result.success) return;
+        // The dialog text already asks for a fresh GitHub sign-in.
+        if (result.error === REAUTH_REQUIRED_MESSAGE) {
+          setReauthNeeded(true);
+          return;
+        }
+        setError(result.error ?? DEFAULT_ERROR);
+      } catch (error) {
+        // Both actions end in a redirect on success, which must go on.
+        unstable_rethrow(error);
+        setError(DEFAULT_ERROR);
       }
-      setError(result.error ?? DEFAULT_ERROR);
     });
   }
 

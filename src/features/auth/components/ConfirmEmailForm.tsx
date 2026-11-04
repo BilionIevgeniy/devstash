@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 
 const SUCCESS_MESSAGE = "Email verified. You can now sign in.";
 const SIGN_IN_URL = "/sign-in";
+const GENERIC_ERROR = "Something went wrong. Please try again.";
 
 interface ConfirmEmailFormProps {
   email: string;
@@ -34,13 +35,18 @@ export function ConfirmEmailForm({ email, token }: ConfirmEmailFormProps) {
 
     setError(null);
     startTransition(async () => {
-      const result = await confirmEmail({ email, token, password });
-      if (result.success) {
-        toast.success(SUCCESS_MESSAGE);
-        router.push(SIGN_IN_URL);
-        return;
+      try {
+        const result = await confirmEmail({ email, token, password });
+        if (result.success) {
+          toast.success(SUCCESS_MESSAGE);
+          router.push(SIGN_IN_URL);
+          return;
+        }
+        setError(result.error);
+      } catch {
+        // A rejection left in the transition would show the error page.
+        setError(GENERIC_ERROR);
       }
-      setError(result.error);
     });
   }
 

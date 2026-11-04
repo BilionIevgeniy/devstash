@@ -69,6 +69,9 @@ export async function updateItem(
       return failure(result.error ?? GENERIC_ERROR);
     }
 
+    // The fresh page comes back with this response, so the cards behind the
+    // form update in the same commit that closes it.
+    refresh();
     return { success: true, error: null, data: toItemDetailJson(result.data) };
   } catch (error) {
     console.error("Updating the item failed:", error);

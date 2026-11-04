@@ -84,6 +84,7 @@ describe("presignUpload", () => {
     expect(signPutUrl).toHaveBeenCalledWith(
       result.data?.key,
       "text/markdown",
+      input.size,
       expect.any(Number),
     );
   });

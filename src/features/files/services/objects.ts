@@ -24,9 +24,10 @@ export interface ConfirmUploadResult extends OperationResult {
   data: { size: number } | null;
 }
 
-// Run after the browser's PUT and before the item row is saved. The signed PUT
-// cannot limit the size, so the real object is read here: an object over the
-// limit or of another type than its key says is deleted, not kept.
+// Run after the browser's PUT and before the item row is saved. The signature
+// binds the type and the length, and the real object is read here as a second
+// check: an object over the limit or of another type than its key says is
+// deleted, not kept.
 export async function confirmUpload(
   userId: string,
   key: string,
