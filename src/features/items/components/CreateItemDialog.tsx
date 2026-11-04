@@ -26,6 +26,7 @@ import { ProBadge } from "@/features/billing/components/ProBadge";
 import { FileUpload } from "@/features/files/components/FileUpload";
 import type { FileKind } from "@/features/files/domain/file-rules";
 import type { UploadedFile } from "@/features/files/types";
+import { CollectionSelect } from "@/features/items/_internal/components/CollectionSelect";
 import { ItemFields } from "@/features/items/_internal/components/ItemFields";
 import { ItemTypeSelect } from "@/features/items/_internal/components/ItemTypeSelect";
 import { createItem } from "@/features/items/actions/item";
@@ -38,6 +39,7 @@ import {
   editableFields,
   parseTagInput,
   type CreatableTypeName,
+  type EditableFields,
 } from "@/features/items/domain/item-fields";
 
 const DEFAULT_TYPE: CreatableTypeName = "snippet";
@@ -48,6 +50,7 @@ const EMPTY_VALUES: ItemFormValues = {
   language: "",
   url: "",
   tags: "",
+  collectionIds: [],
 };
 const CREATED_MESSAGE = "Item created";
 const CREATE_FAILED_MESSAGE = "Couldn't create the item";
@@ -133,6 +136,26 @@ interface CreateItemFormProps {
   onCreated: () => void;
 }
 
+// Only the fields of the chosen type are sent; the others keep their input in
+// case the type is switched back.
+function createPayload(
+  typeName: CreatableTypeName,
+  fields: EditableFields,
+  values: ItemFormValues,
+  upload: UploadedFile | null,
+) {
+  return {
+    typeName,
+    title: values.title,
+    description: values.description,
+    tags: parseTagInput(values.tags),
+    collectionIds: values.collectionIds,
+    ...typeFieldValues(fields, values),
+    ...(fields.file &&
+      upload && { file: { key: upload.key, name: upload.fileName } }),
+  };
+}
+
 function CreateItemForm({
   initialType,
   isPro,
@@ -149,7 +172,10 @@ function CreateItemForm({
     (fields.url && values.url.trim() === "") ||
     (fields.file !== null && upload === null);
 
-  function setField(name: keyof ItemFormValues, value: string) {
+  function setField<K extends keyof ItemFormValues>(
+    name: K,
+    value: ItemFormValues[K],
+  ) {
     setValues((current) => ({ ...current, [name]: value }));
   }
 
@@ -160,21 +186,13 @@ function CreateItemForm({
     setUpload(null);
   }
 
-  // Only the fields of the chosen type are sent; the others keep their input
-  // in case the type is switched back.
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     startCreating(async () => {
       try {
-        const result = await createItem({
-          typeName,
-          title: values.title,
-          description: values.description,
-          tags: parseTagInput(values.tags),
-          ...typeFieldValues(fields, values),
-          ...(fields.file &&
-            upload && { file: { key: upload.key, name: upload.fileName } }),
-        });
+        const result = await createItem(
+          createPayload(typeName, fields, values, upload),
+        );
         if (result.success) {
           // After the await this is no longer part of the transition, so it
           // is wrapped again: the dialog closes in the commit that brings the
@@ -210,6 +228,11 @@ function CreateItemForm({
         />
       )}
       <ItemFields fields={fields} values={values} onChange={setField} />
+      <CollectionSelect
+        value={values.collectionIds}
+        onChange={(ids) => setField("collectionIds", ids)}
+        disabled={isCreating}
+      />
       <DialogFooter>
         <DialogClose asChild>
           <Button type="button" variant="ghost" disabled={isCreating}>

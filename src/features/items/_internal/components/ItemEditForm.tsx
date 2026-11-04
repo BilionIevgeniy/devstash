@@ -10,6 +10,7 @@ import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { CollectionSelect } from "@/features/items/_internal/components/CollectionSelect";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
 import { ItemFields } from "@/features/items/_internal/components/ItemFields";
 import { useUnsavedChanges } from "@/features/items/_internal/components/hooks/use-unsaved-changes";
@@ -22,6 +23,7 @@ import {
 import {
   editableFields,
   parseTagInput,
+  type EditableFields,
 } from "@/features/items/domain/item-fields";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
@@ -39,7 +41,7 @@ interface ItemEditFormProps {
    * the sheet around it can ask before closing.
    */
   onDirtyChange?: (isDirty: boolean) => void;
-  /** Shown read-only under the fields: collections and dates. */
+  /** Shown read-only under the fields: the dates. */
   children?: ReactNode;
 }
 
@@ -54,6 +56,18 @@ function initialValues(
     content: detail.content ?? "",
     language: detail.language ?? "",
     url: detail.url ?? "",
+    collectionIds: detail.collections.map((collection) => collection.id),
+  };
+}
+
+// Only the fields of this type are sent, so a hidden field is never cleared.
+function updatePayload(fields: EditableFields, values: ItemFormValues) {
+  return {
+    title: values.title,
+    description: values.description,
+    tags: parseTagInput(values.tags),
+    collectionIds: values.collectionIds,
+    ...typeFieldValues(fields, values),
   };
 }
 
@@ -75,7 +89,10 @@ export function ItemEditForm({
     values.title.trim() === "" || (fields.url && values.url.trim() === "");
   useUnsavedChanges(isChanged, onDirtyChange);
 
-  function setField(name: keyof ItemFormValues, value: string) {
+  function setField<K extends keyof ItemFormValues>(
+    name: K,
+    value: ItemFormValues[K],
+  ) {
     setValues((current) => ({ ...current, [name]: value }));
   }
 
@@ -84,17 +101,11 @@ export function ItemEditForm({
     else onCancel();
   }
 
-  // Only the fields of this type are sent, so a hidden field is never cleared.
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!isChanged) return;
     startSaving(async () => {
-      const result = await updateItem(item.id, {
-        title: values.title,
-        description: values.description,
-        tags: parseTagInput(values.tags),
-        ...typeFieldValues(fields, values),
-      });
+      const result = await updateItem(item.id, updatePayload(fields, values));
       if (result.success && result.data) {
         toast.success(SAVED_MESSAGE);
         onSaved(result.data);
@@ -131,6 +142,12 @@ export function ItemEditForm({
       </div>
       <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
         <ItemFields fields={fields} values={values} onChange={setField} />
+        <CollectionSelect
+          value={values.collectionIds}
+          linked={detail.collections}
+          onChange={(ids) => setField("collectionIds", ids)}
+          disabled={isSaving}
+        />
         {children}
       </div>
     </form>

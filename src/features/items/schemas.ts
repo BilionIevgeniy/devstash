@@ -5,6 +5,7 @@ import {
   FILE_NAME_MAX,
 } from "@/features/files/domain/file-rules";
 import {
+  COLLECTIONS_MAX,
   CONTENT_MAX,
   CREATABLE_TYPES,
   DESCRIPTION_MAX,
@@ -68,7 +69,17 @@ const tagList = z
   .transform((tags) => [...new Set(tags)])
   .pipe(z.array(z.string()).max(TAGS_MAX, `Up to ${TAGS_MAX} tags`));
 
-// A field left out is not changed; null clears it.
+const collectionIdList = z
+  .array(z.cuid2("Invalid collection id"))
+  .transform((ids) => [...new Set(ids)])
+  .pipe(
+    z
+      .array(z.string())
+      .max(COLLECTIONS_MAX, `Up to ${COLLECTIONS_MAX} collections`),
+  );
+
+// A field left out is not changed; null clears it. The tags and the collections
+// are always sent and replace the old ones as a whole.
 export const updateItemSchema = z.object({
   title: z
     .string()
@@ -86,6 +97,7 @@ export const updateItemSchema = z.object({
     `The language can be up to ${LANGUAGE_MAX} characters`,
   ),
   tags: tagList,
+  collectionIds: collectionIdList,
 });
 
 export type UpdateItemInput = z.infer<typeof updateItemSchema>;

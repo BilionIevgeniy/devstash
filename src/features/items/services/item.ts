@@ -28,6 +28,9 @@ const PRO_ONLY = "Files and images are a Pro feature";
 const FILE_MISSING = "Upload the file first";
 const FILE_ALREADY_SAVED = "This file is already saved on another item";
 const FILE_DELETE_FAILED = "Couldn't delete the file. Please try again.";
+const COLLECTION_NOT_FOUND = "One of the collections no longer exists";
+const ITEM_OR_COLLECTION_NOT_FOUND =
+  "This item or one of its collections no longer exists";
 const RECORD_NOT_FOUND_CODE = "P2025";
 const UNIQUE_VIOLATION_CODE = "P2002";
 
@@ -90,6 +93,14 @@ function tagLinks(userId: string, tags: string[]) {
   }));
 }
 
+// Links to the caller's collections. The owner in the connect makes someone
+// else's collection fail like a missing one: P2025, and the write rolls back.
+function collectionLinks(userId: string, collectionIds: string[]) {
+  return collectionIds.map((id) => ({
+    collection: { connect: { id, userId } },
+  }));
+}
+
 // The type is looked up by name among the system types. Only the fields its
 // type has are stored, so a stray language on a note, or a file on a snippet,
 // never lands in the row.
@@ -102,6 +113,7 @@ export async function createUserItem(
   input: CreateItemInput,
 ): Promise<CreateItemResult> {
   const { typeName, title, description, content, language, url, tags } = input;
+  const { collectionIds } = input;
 
   const type = await getItemTypeByName(typeName);
   if (!type) return { success: false, error: INVALID_ITEM_TYPE, data: null };
@@ -128,11 +140,15 @@ export async function createUserItem(
         ...(fields.url && { url }),
         ...fileColumns,
         tags: { create: tagLinks(userId, tags) },
+        collections: { create: collectionLinks(userId, collectionIds) },
       },
       select: { id: true },
     });
     return { success: true, error: null, data: item };
   } catch (error) {
+    if (isRecordNotFound(error)) {
+      return { success: false, error: COLLECTION_NOT_FOUND, data: null };
+    }
     // fileKey is the only unique column a file item can collide on: the same
     // upload sent twice, after a lost response.
     if (fields.file && hasPrismaCode(error, UNIQUE_VIOLATION_CODE)) {
@@ -156,8 +172,9 @@ async function deleteOrphanTags(userId: string): Promise<void> {
 
 // The owner is part of the where, so an id of someone else's item fails the
 // same way as a missing one. Only the fields of the item's type are written;
-// fields left out of the input stay as they are; the tags are replaced as a
-// whole.
+// fields left out of the input stay as they are; the tags and collections are
+// replaced as a whole. Links that stay are not rewritten, so they keep their
+// addedAt, and an existing link was checked when it was made.
 export async function updateUserItem(
   userId: string,
   itemId: string,
@@ -165,7 +182,10 @@ export async function updateUserItem(
 ): Promise<UpdateItemResult> {
   const current = await prisma.item.findFirst({
     where: { id: itemId, userId },
-    select: { type: { select: { name: true } } },
+    select: {
+      type: { select: { name: true } },
+      collections: { select: { collectionId: true } },
+    },
   });
   if (!current) return { success: false, error: ITEM_NOT_FOUND, data: null };
 
@@ -173,21 +193,32 @@ export async function updateUserItem(
   if ("error" in update) {
     return { success: false, error: update.error, data: null };
   }
-  const { tags, ...fields } = update.data;
+  const { tags, collectionIds, ...fields } = update.data;
+  const linked = new Set(current.collections.map((row) => row.collectionId));
+  const added = collectionIds.filter((id) => !linked.has(id));
 
-  // A delete can win between the read and here: P2025 below.
+  // A delete of the item or a collection can win between the read and here:
+  // P2025 below.
   try {
     await prisma.item.update({
       where: { id: itemId, userId },
       data: {
         ...fields,
         tags: { deleteMany: {}, create: tagLinks(userId, tags) },
+        collections: {
+          deleteMany: { collectionId: { notIn: collectionIds } },
+          create: collectionLinks(userId, added),
+        },
       },
       select: { id: true },
     });
   } catch (error) {
     if (isRecordNotFound(error)) {
-      return { success: false, error: ITEM_NOT_FOUND, data: null };
+      return {
+        success: false,
+        error: ITEM_OR_COLLECTION_NOT_FOUND,
+        data: null,
+      };
     }
     throw error;
   }

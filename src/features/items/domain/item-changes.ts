@@ -3,8 +3,8 @@ import {
   type EditableFields,
 } from "@/features/items/domain/item-fields";
 
-// What the edit form holds: every field as the text in its input, tags as the
-// comma-separated string.
+// What the forms hold: every text field as the text in its input, tags as the
+// comma-separated string, and the ids of the chosen collections.
 export interface ItemFormValues {
   title: string;
   description: string;
@@ -12,7 +12,10 @@ export interface ItemFormValues {
   language: string;
   url: string;
   tags: string;
+  collectionIds: string[];
 }
+
+export type ItemTextField = Exclude<keyof ItemFormValues, "collectionIds">;
 
 // Trimmed like the update schema trims it: "  " and "" are both empty.
 function sameText(a: string, b: string): boolean {
@@ -31,6 +34,12 @@ function sameTags(a: string, b: string): boolean {
   const aTags = new Set(parseTagInput(a));
   const bTags = new Set(parseTagInput(b));
   return aTags.size === bTags.size && [...aTags].every((tag) => bTags.has(tag));
+}
+
+// The collections are a set: the order of ticking does not count.
+function sameIds(a: string[], b: string[]): boolean {
+  const bIds = new Set(b);
+  return a.length === b.length && a.every((id) => bIds.has(id));
 }
 
 type TypeFieldValues = Partial<
@@ -61,6 +70,7 @@ export function hasItemChanges(
     sameText(initial.title, current.title) &&
     sameText(initial.description, current.description) &&
     sameTags(initial.tags, current.tags) &&
+    sameIds(initial.collectionIds, current.collectionIds) &&
     (!fields.content || sameContent(initial.content, current.content)) &&
     (!fields.language || sameText(initial.language, current.language)) &&
     (!fields.url || sameText(initial.url, current.url));
