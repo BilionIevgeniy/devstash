@@ -1,4 +1,5 @@
 import { Settings } from "lucide-react";
+import { redirect } from "next/navigation";
 
 import { DeleteAccountDialog } from "@/features/account/components/DeleteAccountDialog";
 import { needsReauthentication } from "@/features/auth/services/account";
@@ -9,7 +10,7 @@ import { getSessionUser } from "@/features/auth/nextauth/session";
 export async function AccountActions() {
   const { id: userId, authenticatedAt } = await getSessionUser();
   const profile = await getUserProfile(userId);
-  if (!profile) return null;
+  if (!profile) redirect("/sign-in");
 
   return (
     <section className="space-y-4">

@@ -98,7 +98,7 @@ export async function verifyPasswordByEmail(
   return verifyPassword(password, await getPasswordHashByEmail(email));
 }
 
-// The clock is read here and not in the profile component, which must stay pure.
+// The clock is read here and not in the settings component, which must stay pure.
 export function needsReauthentication(
   hasPassword: boolean,
   authenticatedAt: number | undefined,

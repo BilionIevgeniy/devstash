@@ -24,7 +24,7 @@ import { getIpRateLimitStatus, getRateLimitStatus } from "@/lib/rate-limit";
 
 const DASHBOARD_URL = "/dashboard";
 const SIGN_IN_URL = "/sign-in";
-const PROFILE_URL = "/profile";
+const SETTINGS_URL = "/settings";
 const CREDENTIALS_ERROR_MESSAGES = new Map([
   [EMAIL_NOT_VERIFIED_CODE, EMAIL_NOT_VERIFIED_MESSAGE],
 ]);
@@ -84,7 +84,7 @@ export async function signInWithGitHub(): Promise<void> {
 // A fresh GitHub sign-in confirms the owner before a destructive action on an
 // account that has no password to type.
 export async function reauthenticateWithGitHub(): Promise<void> {
-  await signIn("github", { redirectTo: PROFILE_URL });
+  await signIn("github", { redirectTo: SETTINGS_URL });
 }
 
 export async function signOutUser(): Promise<void> {

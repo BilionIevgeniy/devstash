@@ -1,9 +1,7 @@
 import { Suspense } from "react";
 
-import { AccountActions } from "@/app/(app)/profile/_components/AccountActions";
 import { ProfileInfo } from "@/app/(app)/profile/_components/ProfileInfo";
 import {
-  AccountActionsSkeleton,
   ProfileInfoSkeleton,
   UsageStatsSkeleton,
 } from "@/app/(app)/profile/_components/ProfileSkeletons";
@@ -23,9 +21,6 @@ export default function ProfilePage() {
       </Suspense>
       <Suspense fallback={<UsageStatsSkeleton />}>
         <UsageStats />
-      </Suspense>
-      <Suspense fallback={<AccountActionsSkeleton />}>
-        <AccountActions />
       </Suspense>
     </div>
   );

@@ -95,7 +95,7 @@ A module writes only the models it owns and reads only its own models. A relatio
 
 - **Owns:** no model; the delete-account flow: verify the proof (`auth`), purge the user's files (`files`) and abort if that fails, delete the rows (`auth`), then purge once more as best effort for an upload from another tab that landed in between ([ADR 0004](adr/0004-direct-upload-to-r2.md))
 - **Uses today:** `auth` (`verifyAccountDeletion`, `deleteVerifiedUserRows`, `auth`/`signOut` in the action, `reauthenticateWithGitHub` and `REAUTH_REQUIRED_MESSAGE` in the dialog), `files` (`purgeUserObjects`)
-- **Entry points used from outside:** `components/DeleteAccountDialog` (the profile page)
+- **Entry points used from outside:** `components/DeleteAccountDialog` (the settings page)
 - **Private:** `_internal/actions/delete-account` (signs out after a delete, outside its `try`), `_internal/services/delete-account`; `schemas` (`deleteAccountSchema`)
 - **Will grow with** (from the Stripe specs, not built): cancelling the Stripe subscription through `billing` before the purge
 
@@ -126,7 +126,7 @@ Each one is created in the commit with its first code. "Expects to use" is what 
 
 - **`tags`:** stays in `items` until a second feature needs a tag vocabulary. Tag suggestions from `ai` are free text and need none
 - **`marketing`:** the homepage is one route, so it lives in `app/(marketing)/` with its own `_components/`. Its pricing numbers come from `billing/domain`
-- **Favorites, pagination, settings, dashboard:** pages that compose modules. `/settings` composes the `*Section` components of `billing`, `editor` and `import-export`; `/favorites` composes queries of `items` and `collections`
+- **Favorites, pagination, settings, dashboard:** pages that compose modules. `/settings` holds the account section (`AccountActions` in its `_components/`) and will compose the `*Section` components of `billing`, `editor` and `import-export`; `/favorites` composes queries of `items` and `collections`
 
 ## Applying the rules to what exists
 
