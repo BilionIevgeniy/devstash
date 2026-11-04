@@ -12,6 +12,7 @@ import {
   editableFields,
   editableUpdate,
 } from "@/features/items/domain/item-fields";
+import { getItemEditState, getItemFileKey } from "@/features/items/queries";
 import type {
   CreateItemInput,
   UpdateItemInput,
@@ -180,21 +181,15 @@ export async function updateUserItem(
   itemId: string,
   input: UpdateItemInput,
 ): Promise<UpdateItemResult> {
-  const current = await prisma.item.findFirst({
-    where: { id: itemId, userId },
-    select: {
-      type: { select: { name: true } },
-      collections: { select: { collectionId: true } },
-    },
-  });
+  const current = await getItemEditState(userId, itemId);
   if (!current) return { success: false, error: ITEM_NOT_FOUND, data: null };
 
-  const update = editableUpdate(current.type.name, input);
+  const update = editableUpdate(current.typeName, input);
   if ("error" in update) {
     return { success: false, error: update.error, data: null };
   }
   const { tags, collectionIds, ...fields } = update.data;
-  const linked = new Set(current.collections.map((row) => row.collectionId));
+  const linked = new Set(current.collectionIds);
   const added = collectionIds.filter((id) => !linked.has(id));
 
   // A delete of the item or a collection can win between the read and here:
@@ -256,10 +251,7 @@ export async function deleteUserItem(
   userId: string,
   itemId: string,
 ): Promise<OperationResult> {
-  const item = await prisma.item.findFirst({
-    where: { id: itemId, userId },
-    select: { fileKey: true },
-  });
+  const item = await getItemFileKey(userId, itemId);
   if (!item) return { success: false, error: ITEM_NOT_FOUND };
 
   if (item.fileKey) {

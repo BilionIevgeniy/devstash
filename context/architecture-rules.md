@@ -75,8 +75,8 @@ features/<name>/
 1. `app/` composes only: session, queries, feature components. No Prisma, no business `if`
 2. A pure rule, limit or constant (no I/O, clock, env or package) goes in `domain/`, with its test
 3. An input shape goes in `schemas.ts`; a view or result type in `types.ts` (every other type: see "Where types live"); an email body in `_internal/emails/`
-4. A read of the feature's own models goes in `queries.ts`, scoped by `userId` (the one exception: a read before sign-in keyed by email and a one-time token)
-5. A write, a vendor call, a multi-step flow or another feature's data goes in `services/<topic>.ts`
+4. A read of the feature's own models goes in `queries.ts`, scoped by `userId` (the one exception: a read before sign-in keyed by email and a one-time token or the password being checked). A read that hands a secret to its caller (password hash, OAuth token) goes in `_internal/queries.ts` ([ADR 0009](../docs/adr/0009-read-write-split-enforced-by-lint.md))
+5. A write, a vendor call, a multi-step flow, another feature's data or a read through `tx` that shares a transaction with a write goes in `services/<topic>.ts`
 6. `"use server"` files, `route.ts` and pages are thin: session, schema, one service call, revalidate. Webhooks and streams are routes
 7. UI of one route goes in `app/<route>/_components/`; UI used across routes in the feature's `components/`
 8. A vendor SDK goes in `lib/<vendor>.ts`; what the vendor means for the product (prices, prompts) stays in the feature's `domain/`
@@ -115,7 +115,7 @@ Course specs name the paths of the original layout. Put the code here instead:
 
 - Import by full path (`@/features/items/components/ItemRow`). No `index.ts` barrels. Never import another feature's `_internal/`
 - Circular imports are forbidden (`import/no-cycle`)
-- Prisma (`@/lib/prisma`, `@/generated/prisma`) is imported only by `queries.ts`, services and `lib`
+- Prisma (`@/lib/prisma`, `@/generated/prisma`) is imported only by `queries.ts`, services and `lib`, and by `auth/nextauth/auth.ts` for `PrismaAdapter`
 - Server-only modules start with `import "server-only"`: every `queries.ts`, every file in `services/`, `auth/nextauth/auth.ts` and `session.ts`, and the `lib` files that touch secrets or Node
 - Browser-only modules that are not components or hooks start with `import "client-only"` (`put-file`, `fetch-item-detail`). `"use client"` goes only on the component that is the boundary, never on a hook or a helper
 - A hook with no feature knowledge, needed by two features, goes to `src/components/common/hooks/` (created with its first hook)
@@ -126,6 +126,6 @@ Course specs name the paths of the original layout. Put the code here instead:
 
 ## What the lint enforces
 
-`eslint.config.mjs` checks the layer order and `_internal/` boundary, the role directions inside a feature (including hooks that import no `.tsx`), the pure domain core, no Prisma in actions, components (feature and `components/common`) and `app/`, no request APIs in services, vendor SDKs only in `lib`, import cycles, deprecated APIs of the installed packages (`@typescript-eslint/no-deprecated`), and the size limits of functions, components and files ("Size limits" in `coding-standards.md`).
+`eslint.config.mjs` checks the layer order and `_internal/` boundary, the role directions inside a feature (including hooks that import no `.tsx`), the pure domain core, no Prisma in actions, components (feature and `components/common`) and `app/`, no request APIs in services, no `prisma` reads in services and `nextauth/`, no writes, transactions or raw SQL in `queries.ts`, vendor SDKs only in `lib`, import cycles, deprecated APIs of the installed packages (`@typescript-eslint/no-deprecated`), and the size limits of functions, components and files ("Size limits" in `coding-standards.md`).
 
-Not checked by lint, so it is on the author and the reviewer: `userId` in every `where`, no writes in `queries.ts`, one service call per entry point, idempotent background jobs, and the ban on foreign models (planned as a lint rule).
+Not checked by lint, so it is on the author and the reviewer: `userId` in every `where`, one service call per entry point, idempotent background jobs, a read through `tx` with no write in its transaction, an alias of a Prisma delegate (the read and write rules match the names `prisma` and `tx`), and the ban on foreign models (planned as a lint rule).

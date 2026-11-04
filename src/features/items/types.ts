@@ -75,6 +75,13 @@ export type ItemDetailJson = Omit<ItemDetail, "createdAt" | "updatedAt"> & {
   updatedAt: string;
 };
 
+// What the update service reads before it writes: the type decides the editable
+// fields, and only collections not yet linked are checked and added.
+export interface ItemEditState {
+  typeName: string;
+  collectionIds: string[];
+}
+
 export interface ItemStats {
   total: number;
   favorites: number;
