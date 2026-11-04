@@ -22,6 +22,12 @@ import {
 const createdAt = new Date("2026-01-15T00:00:00Z");
 const updatedAt = new Date("2026-02-01T00:00:00Z");
 
+const PINNED_FIRST_ORDER = [
+  { isPinned: "desc" },
+  { createdAt: "desc" },
+  { id: "desc" },
+];
+
 const rawItem = {
   id: "item-1",
   title: "useAuth Hook",
@@ -163,11 +169,12 @@ describe("getCollectionItemRecords", () => {
     });
   });
 
-  it("reads only the rows it is asked for", async () => {
+  it("reads only the rows it is asked for, pinned first", async () => {
     await getCollectionItemRecords("user-1", "col-1", 21, 21);
 
-    const { skip, take } = findMany.mock.calls[0][0];
+    const { skip, take, orderBy } = findMany.mock.calls[0][0];
     expect({ skip, take }).toEqual({ skip: 21, take: 21 });
+    expect(orderBy).toEqual(PINNED_FIRST_ORDER);
   });
 
   it("keeps the upload and tells whether there is something to copy", async () => {
@@ -219,14 +226,15 @@ describe("getUploadItemsByType", () => {
     findMany.mockReset().mockResolvedValue([]);
   });
 
-  it("counts and reads the same rows, one page of them", async () => {
+  it("counts and reads the same rows, one page of them, pinned first", async () => {
     const result = await getUploadItemsByType("user-1", "type-1", 2);
 
     const where = { userId: "user-1", typeId: "type-1" };
-    const { skip, take } = findMany.mock.calls[0][0];
+    const { skip, take, orderBy } = findMany.mock.calls[0][0];
     expect(count.mock.calls[0][0].where).toEqual(where);
     expect(findMany.mock.calls[0][0].where).toEqual(where);
     expect({ skip, take }).toEqual({ skip: 21, take: 21 });
+    expect(orderBy).toEqual(PINNED_FIRST_ORDER);
     expect(result).toMatchObject({ totalCount: 30, page: 2, totalPages: 2 });
   });
 });

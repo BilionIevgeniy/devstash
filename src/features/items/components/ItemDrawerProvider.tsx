@@ -13,6 +13,7 @@ import { DiscardChangesDialog } from "@/features/items/_internal/components/Disc
 import { ItemDrawerContent } from "@/features/items/_internal/components/ItemDrawerContent";
 import { useDirtyCloseGuard } from "@/features/items/_internal/components/hooks/use-dirty-close-guard";
 import { useItemFavorites } from "@/features/items/_internal/components/hooks/use-item-favorites";
+import { useItemPins } from "@/features/items/_internal/components/hooks/use-item-pins";
 import { useItemSheet } from "@/features/items/_internal/components/hooks/use-item-sheet";
 import { deleteItem } from "@/features/items/actions/item";
 import { ItemDrawerContext } from "@/features/items/components/hooks/use-item-drawer";
@@ -40,6 +41,7 @@ export function ItemDrawerProvider({
   const sheet = useItemSheet();
   const guard = useDirtyCloseGuard(sheet.onOpenChange);
   const favorites = useItemFavorites(sheet.handleFavoriteSaved);
+  const pins = useItemPins(sheet.handlePinSaved);
   const [hiddenIds, hideItem] = useOptimistic(
     NO_HIDDEN_IDS,
     (ids, id: string): ReadonlySet<string> => new Set(ids).add(id),
@@ -76,7 +78,7 @@ export function ItemDrawerProvider({
     remove(id);
   }
 
-  const value = { open, remove, hiddenIds, ...favorites };
+  const value = { open, remove, hiddenIds, ...favorites, ...pins };
 
   if (basePath !== undefined) {
     return (

@@ -5,7 +5,10 @@ import {
   DeleteItemDialog,
   type ItemDeleteHandler,
 } from "@/features/items/_internal/components/DeleteItemDialog";
-import { useItemFavorite } from "@/features/items/components/hooks/use-item-drawer";
+import {
+  useItemFavorite,
+  useItemPin,
+} from "@/features/items/components/hooks/use-item-drawer";
 import { cn } from "@/lib/utils";
 
 interface ItemActionBarProps {
@@ -18,7 +21,7 @@ interface ItemActionBarProps {
   onDelete: ItemDeleteHandler;
 }
 
-// Pin and Copy are wired up in a later feature.
+// Copy is wired up in a later feature.
 export function ItemActionBar({
   itemId,
   title,
@@ -29,6 +32,7 @@ export function ItemActionBar({
   onDelete,
 }: ItemActionBarProps) {
   const favorite = useItemFavorite(itemId, isFavorite);
+  const pin = useItemPin(itemId, isPinned);
 
   return (
     <div className="flex items-center gap-1 border-b px-6 py-3">
@@ -46,8 +50,15 @@ export function ItemActionBar({
         <Star className={cn(favorite.isFavorite && "fill-yellow-400")} />
         Favorite
       </Button>
-      <Button type="button" variant="ghost" aria-pressed={isPinned}>
-        <Pin className={cn(isPinned && "fill-current")} />
+      <Button
+        type="button"
+        variant="ghost"
+        aria-pressed={pin.isPinned}
+        aria-disabled={pin.isPending}
+        onClick={pin.toggle}
+        className="aria-disabled:opacity-50"
+      >
+        <Pin className={cn(pin.isPinned && "fill-current")} />
         Pin
       </Button>
       <Button type="button" variant="ghost">

@@ -25,6 +25,12 @@ export const NEWEST_FIRST = [
   { id: "desc" },
 ] satisfies Prisma.ItemOrderByWithRelationInput[];
 
+// The order of the listings: type pages and collections.
+export const PINNED_FIRST = [
+  { isPinned: "desc" },
+  ...NEWEST_FIRST,
+] satisfies Prisma.ItemOrderByWithRelationInput[];
+
 export const dashboardItemSelect = {
   id: true,
   title: true,
@@ -180,7 +186,7 @@ export async function getCollectionItemRecords(
 ): Promise<CollectionItemRecord[]> {
   const items = await prisma.item.findMany({
     where: collectionItemsWhere(userId, collectionId),
-    orderBy: NEWEST_FIRST,
+    orderBy: PINNED_FIRST,
     skip,
     take,
     select: collectionItemSelect,
@@ -204,7 +210,7 @@ export function getUploadItemsByType(
     async (skip, take) => {
       const items = await prisma.item.findMany({
         where,
-        orderBy: NEWEST_FIRST,
+        orderBy: PINNED_FIRST,
         skip,
         take,
         select: uploadItemSelect,

@@ -11,6 +11,9 @@ interface ItemDrawerContextValue {
   /** Favorites being saved, with the value asked for. */
   favoriteOverrides: ReadonlyMap<string, boolean>;
   toggleFavorite: (id: string, isFavorite: boolean) => void;
+  /** Pins being saved, with the value asked for. */
+  pinOverrides: ReadonlyMap<string, boolean>;
+  togglePin: (id: string, isPinned: boolean) => void;
 }
 
 // Apart from the provider, which imports the drawer content: the action bar
@@ -40,4 +43,19 @@ export function useItemFavorite(id: string, isFavorite: boolean) {
   }
 
   return { isFavorite: current, isPending, toggle };
+}
+
+// The pin of one item in the open drawer. As with the star, a click during a
+// running save is ignored.
+export function useItemPin(id: string, isPinned: boolean) {
+  const { pinOverrides, togglePin } = useItemDrawer();
+  const override = pinOverrides.get(id);
+  const isPending = override !== undefined;
+  const current = override ?? isPinned;
+
+  function toggle() {
+    if (!isPending) togglePin(id, !current);
+  }
+
+  return { isPinned: current, isPending, toggle };
 }

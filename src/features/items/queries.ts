@@ -5,6 +5,7 @@ import {
   cardItemSelect,
   dashboardItemSelect,
   NEWEST_FIRST,
+  PINNED_FIRST,
   toDashboardItem,
   toItemCardData,
 } from "@/features/items/_internal/queries";
@@ -21,12 +22,15 @@ import { type Paginated, readPage } from "@/lib/pagination";
 import { prisma } from "@/lib/prisma";
 
 const DASHBOARD_RECENT_ITEMS_LIMIT = 10;
+// Matches the planned item limit of the Free plan.
+const DASHBOARD_PINNED_ITEMS_LIMIT = 50;
 const SEARCH_INDEX_ITEM_LIMIT = 1000;
 
 export async function getPinnedItems(userId: string): Promise<ItemCardData[]> {
   const items = await prisma.item.findMany({
     where: { userId, isPinned: true },
-    orderBy: { createdAt: "desc" },
+    orderBy: NEWEST_FIRST,
+    take: DASHBOARD_PINNED_ITEMS_LIMIT,
     select: cardItemSelect,
   });
   return items.map(toItemCardData);
@@ -71,7 +75,7 @@ export function getItemsByType(
     async (skip, take) => {
       const items = await prisma.item.findMany({
         where,
-        orderBy: NEWEST_FIRST,
+        orderBy: PINNED_FIRST,
         skip,
         take,
         select: cardItemSelect,

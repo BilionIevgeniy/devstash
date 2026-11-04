@@ -55,10 +55,11 @@ async function toSection(
   }
 }
 
-// One page of the collection, newest first, in one section per type, listed the
-// way that type's own page lists it. The sections are ordered and labelled by
-// the whole collection, so their order holds from page to page. An item created
-// between the two reads has no count yet: its page's items stand in.
+// One page of the collection, pinned then newest first, in one section per type,
+// listed the way that type's own page lists it. The sections are ordered and
+// labelled by the whole collection, so their order holds from page to page, and
+// a pin leads only its own section. An item created between the two reads has
+// no count yet: its page's items stand in.
 export async function getUserCollectionListing(
   userId: string,
   collectionId: string,

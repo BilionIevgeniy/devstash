@@ -24,6 +24,9 @@ export const itemIdSchema = z.cuid2("Invalid item id");
 // The value a favorite toggle asks for, for items and collections alike.
 export const favoriteValueSchema = z.boolean("Invalid favorite value");
 
+// The value a pin toggle asks for.
+export const pinValueSchema = z.boolean("Invalid pin value");
+
 // `refresh: false` is for a caller that leaves the page itself.
 export const deleteItemOptionsSchema = z
   .object({ refresh: z.boolean().default(true) })
