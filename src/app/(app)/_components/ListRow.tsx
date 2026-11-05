@@ -9,7 +9,7 @@ export const LIST_ROW_HEIGHT = "h-9";
 // For what wraps a row, the drawer trigger or a link, so both act the same. The
 // ring is inset: the rows touch, and a neighbour would paint over an outer one.
 export const LIST_ROW_WRAPPER =
-  "block rounded-none outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring";
+  "block min-w-0 flex-1 rounded-none outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring";
 
 interface ListRowProps {
   icon: ReactNode;
@@ -22,14 +22,17 @@ export function ListRow({ icon, title, badge, date }: ListRowProps) {
   return (
     <div
       className={cn(
-        "flex items-center gap-3 px-2 font-mono text-sm transition-colors hover:bg-accent/50",
+        "flex items-center gap-3 px-2 font-mono text-sm",
         LIST_ROW_HEIGHT,
       )}
     >
       {icon}
       <span className="min-w-0 flex-1 truncate">{title}</span>
       {badge && (
-        <Badge variant="secondary" className="font-normal">
+        <Badge
+          variant="secondary"
+          className="hidden font-normal sm:inline-flex"
+        >
           {badge}
         </Badge>
       )}

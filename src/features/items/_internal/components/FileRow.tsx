@@ -1,12 +1,13 @@
 "use client";
 
-import { Download, Pin } from "lucide-react";
+import { Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { FileTypeIcon } from "@/features/files/components/FileTypeIcon";
 import { formatFileSize } from "@/features/files/domain/file-rules";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { ItemFavoriteButton } from "@/features/items/_internal/components/ItemFavoriteButton";
+import { PinMark } from "@/features/items/_internal/components/PinMark";
 import {
   FILE_ROW_ACTIONS,
   FILE_ROW_HEIGHT,
@@ -60,9 +61,7 @@ export function FileRow({ item }: FileRowProps) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="truncate text-sm font-medium">{item.title}</p>
-            {item.isPinned && (
-              <Pin className="size-3.5 shrink-0 text-muted-foreground" />
-            )}
+            {item.isPinned && <PinMark color={item.type.color} />}
           </div>
           {file && (
             <p className="hidden truncate text-xs text-muted-foreground sm:block">

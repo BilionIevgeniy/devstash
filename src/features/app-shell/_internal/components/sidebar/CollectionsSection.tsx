@@ -7,6 +7,7 @@ import {
   LINK_CLASS,
   SidebarGroup,
 } from "@/features/app-shell/_internal/components/sidebar/shared";
+import { collectionAccent } from "@/features/collections/domain/collection-accent";
 import type {
   DashboardCollection,
   SidebarCollections,
@@ -27,7 +28,7 @@ function FavoriteLink({ collection }: CollectionLinkProps) {
 }
 
 function RecentLink({ collection }: CollectionLinkProps) {
-  const color = collection.types[0]?.color;
+  const color = collectionAccent(collection.types);
 
   return (
     <Link href={`/collections/${collection.id}`} className={LINK_CLASS}>

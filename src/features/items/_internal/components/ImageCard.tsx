@@ -1,9 +1,9 @@
 "use client";
 
-import { Pin } from "lucide-react";
 import { useState } from "react";
 
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
+import { PinMark } from "@/features/items/_internal/components/PinMark";
 import { IMAGE_CARD_TITLE_HEIGHT } from "@/features/items/components/ImageGallerySkeleton";
 import type { GalleryItem } from "@/features/items/types";
 import { cn } from "@/lib/utils";
@@ -45,9 +45,7 @@ export function ImageCard({ item }: ImageCardProps) {
         className={cn("flex items-center gap-2 px-3", IMAGE_CARD_TITLE_HEIGHT)}
       >
         <h2 className="truncate text-sm font-medium">{item.title}</h2>
-        {item.isPinned && (
-          <Pin className="size-3.5 shrink-0 text-muted-foreground" />
-        )}
+        {item.isPinned && <PinMark color={type.color} />}
       </div>
     </article>
   );

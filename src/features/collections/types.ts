@@ -32,6 +32,8 @@ export interface FavoriteCollection {
   id: string;
   name: string;
   favoritedAt: Date;
+  /** The collection's accent; none for an empty collection. */
+  color?: string;
 }
 
 export interface SidebarCollections {

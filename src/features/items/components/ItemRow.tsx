@@ -1,6 +1,5 @@
-import { Pin } from "lucide-react";
-
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
+import { PinMark } from "@/features/items/_internal/components/PinMark";
 import { cn, formatShortDate } from "@/lib/utils";
 import type { ItemCardData } from "@/features/items/types";
 
@@ -36,9 +35,7 @@ export function ItemRow({ item }: ItemRowProps) {
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <h3 className="truncate font-medium">{item.title}</h3>
-          {item.isPinned && (
-            <Pin className="size-3.5 shrink-0 text-muted-foreground" />
-          )}
+          {item.isPinned && <PinMark color={type.color} />}
         </div>
         <p className="truncate text-sm text-muted-foreground">
           {item.description}
