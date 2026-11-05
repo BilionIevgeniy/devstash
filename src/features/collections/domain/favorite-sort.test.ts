@@ -18,27 +18,59 @@ function names(sorted: FavoriteCollection[]): string[] {
 }
 
 describe("sortFavoriteCollections", () => {
-  it("puts the newest star first by date", () => {
-    expect(names(sortFavoriteCollections(collections, "date"))).toEqual([
+  it("puts the newest star first", () => {
+    expect(names(sortFavoriteCollections(collections, "newest"))).toEqual([
       "Python",
       "go",
       "react",
+    ]);
+  });
+
+  it("puts the oldest star first", () => {
+    expect(names(sortFavoriteCollections(collections, "oldest"))).toEqual([
+      "react",
+      "go",
+      "Python",
+    ]);
+  });
+
+  it("keeps the server's order for favorites starred at the same moment", () => {
+    const sameMoment = [
+      favorite("second", "2026-02-01T00:00:00Z"),
+      favorite("first", "2026-02-01T00:00:00Z"),
+    ];
+
+    expect(names(sortFavoriteCollections(sameMoment, "oldest"))).toEqual([
+      "second",
+      "first",
     ]);
   });
 
   it("sorts names A-Z without regard to case", () => {
-    expect(names(sortFavoriteCollections(collections, "name"))).toEqual([
+    expect(names(sortFavoriteCollections(collections, "a-z"))).toEqual([
       "go",
       "Python",
       "react",
     ]);
   });
 
-  it("falls back to the name in the type sort, having no type", () => {
-    expect(names(sortFavoriteCollections(collections, "type"))).toEqual([
-      "go",
-      "Python",
+  it("sorts names Z-A without regard to case", () => {
+    expect(names(sortFavoriteCollections(collections, "z-a"))).toEqual([
       "react",
+      "Python",
+      "go",
+    ]);
+  });
+
+  it("keeps the server's order for names that differ only by case in Z-A", () => {
+    const sameName = [
+      favorite("alpha", "2026-02-01T00:00:00Z"),
+      favorite("Alpha", "2026-01-01T00:00:00Z"),
+    ];
+
+    expect(names(sortFavoriteCollections(sameName, "z-a"))).toEqual([
+      "alpha",
+      "Alpha",
     ]);
   });
 });

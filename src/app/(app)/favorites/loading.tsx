@@ -1,4 +1,5 @@
 import { FAVORITE_ROW_HEIGHT } from "@/app/(app)/favorites/_components/FavoriteRow";
+import { FAVORITE_SECTION_HEADER } from "@/app/(app)/favorites/_components/FavoriteSection";
 import { FAVORITE_SORT_WIDTH } from "@/app/(app)/favorites/_components/FavoriteSortSelect";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -13,7 +14,10 @@ interface SectionSkeletonProps {
 function SectionSkeleton({ rows }: SectionSkeletonProps) {
   return (
     <section className="space-y-2">
-      <Skeleton className="h-5 w-28" />
+      <div className={FAVORITE_SECTION_HEADER}>
+        <Skeleton className="h-5 w-28" />
+        <Skeleton className={cn(FAVORITE_SORT_WIDTH, "h-8")} />
+      </div>
       <div>
         {Array.from({ length: rows }, (_, index) => (
           <div
@@ -40,7 +44,6 @@ export default function FavoritesLoading() {
         <Skeleton className="h-9 w-48" />
         <Skeleton className="mt-1 h-6 w-64" />
       </header>
-      <Skeleton className={cn("ml-auto", FAVORITE_SORT_WIDTH, "h-8")} />
       <SectionSkeleton rows={ITEM_ROWS} />
       <SectionSkeleton rows={COLLECTION_ROWS} />
     </div>

@@ -1,8 +1,14 @@
 import type { FavoriteItem } from "@/features/items/types";
 
-export const FAVORITE_SORTS = ["date", "name", "type"] as const;
+export const FAVORITE_ITEM_SORTS = [
+  "newest",
+  "oldest",
+  "a-z",
+  "z-a",
+  "type",
+] as const;
 
-export type FavoriteSort = (typeof FAVORITE_SORTS)[number];
+export type FavoriteItemSort = (typeof FAVORITE_ITEM_SORTS)[number];
 
 // An explicit locale: the order must not depend on where the code runs.
 export function compareNames(a: string, b: string): number {
@@ -14,18 +20,29 @@ export function compareNames(a: string, b: string): number {
 function compareItems(
   a: FavoriteItem,
   b: FavoriteItem,
-  sort: FavoriteSort,
+  sort: FavoriteItemSort,
 ): number {
-  if (sort === "date") return b.favoritedAt.getTime() - a.favoritedAt.getTime();
-  if (sort === "name") return compareNames(a.title, b.title);
-  return (
-    compareNames(a.type.name, b.type.name) || compareNames(a.title, b.title)
-  );
+  switch (sort) {
+    case "newest":
+      return b.favoritedAt.getTime() - a.favoritedAt.getTime();
+    case "oldest":
+      return a.favoritedAt.getTime() - b.favoritedAt.getTime();
+    case "a-z":
+      return compareNames(a.title, b.title);
+    case "z-a":
+      return compareNames(b.title, a.title);
+    case "type":
+      return (
+        compareNames(a.type.name, b.type.name) || compareNames(a.title, b.title)
+      );
+  }
 }
 
+// Ties keep the server's order in every sort, so Oldest is not an exact mirror
+// of Newest for favorites starred at the same moment.
 export function sortFavoriteItems(
   items: FavoriteItem[],
-  sort: FavoriteSort,
+  sort: FavoriteItemSort,
 ): FavoriteItem[] {
   return items.toSorted((a, b) => compareItems(a, b, sort));
 }

@@ -32,11 +32,19 @@ function titles(sorted: FavoriteItem[]): string[] {
 }
 
 describe("sortFavoriteItems", () => {
-  it("puts the newest star first by date", () => {
-    expect(titles(sortFavoriteItems(items, "date"))).toEqual([
+  it("puts the newest star first", () => {
+    expect(titles(sortFavoriteItems(items, "newest"))).toEqual([
       "gamma",
       "beta",
       "Alpha",
+    ]);
+  });
+
+  it("puts the oldest star first", () => {
+    expect(titles(sortFavoriteItems(items, "oldest"))).toEqual([
+      "Alpha",
+      "beta",
+      "gamma",
     ]);
   });
 
@@ -46,17 +54,41 @@ describe("sortFavoriteItems", () => {
       favorite("first", "snippet", "2026-02-01T00:00:00Z"),
     ];
 
-    expect(titles(sortFavoriteItems(sameMoment, "date"))).toEqual([
+    expect(titles(sortFavoriteItems(sameMoment, "newest"))).toEqual([
+      "second",
+      "first",
+    ]);
+    expect(titles(sortFavoriteItems(sameMoment, "oldest"))).toEqual([
       "second",
       "first",
     ]);
   });
 
   it("sorts names A-Z without regard to case", () => {
-    expect(titles(sortFavoriteItems(items, "name"))).toEqual([
+    expect(titles(sortFavoriteItems(items, "a-z"))).toEqual([
       "Alpha",
       "beta",
       "gamma",
+    ]);
+  });
+
+  it("sorts names Z-A without regard to case", () => {
+    expect(titles(sortFavoriteItems(items, "z-a"))).toEqual([
+      "gamma",
+      "beta",
+      "Alpha",
+    ]);
+  });
+
+  it("keeps the server's order for names that differ only by case in Z-A", () => {
+    const sameName = [
+      favorite("alpha", "snippet", "2026-02-01T00:00:00Z"),
+      favorite("Alpha", "snippet", "2026-01-01T00:00:00Z"),
+    ];
+
+    expect(titles(sortFavoriteItems(sameName, "z-a"))).toEqual([
+      "alpha",
+      "Alpha",
     ]);
   });
 
@@ -80,7 +112,7 @@ describe("sortFavoriteItems", () => {
   it("leaves the array it was given untouched", () => {
     const before = titles(items);
 
-    sortFavoriteItems(items, "name");
+    sortFavoriteItems(items, "a-z");
 
     expect(titles(items)).toEqual(before);
   });

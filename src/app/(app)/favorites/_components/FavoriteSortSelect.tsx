@@ -5,43 +5,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  FAVORITE_SORTS,
-  type FavoriteSort,
-} from "@/features/items/domain/favorite-sort";
-import { cn } from "@/lib/utils";
+import type { FavoriteItemSort } from "@/features/items/domain/favorite-sort";
 
 // Shared with loading.tsx, so the skeleton is as wide as the control.
 export const FAVORITE_SORT_WIDTH = "w-36";
 
-const SORT_LABELS: Record<FavoriteSort, string> = {
-  date: "Date",
-  name: "Name",
+// The sorts of collections are a subset of these.
+const SORT_LABELS: Record<FavoriteItemSort, string> = {
+  newest: "Newest",
+  oldest: "Oldest",
+  "a-z": "A-Z",
+  "z-a": "Z-A",
   type: "Item type",
 };
 
-interface FavoriteSortSelectProps {
-  value: FavoriteSort;
-  onChange: (sort: FavoriteSort) => void;
+interface FavoriteSortSelectProps<T extends FavoriteItemSort> {
+  sorts: readonly T[];
+  value: T;
+  onChange: (sort: T) => void;
+  ariaLabel: string;
 }
 
-export function FavoriteSortSelect({
+export function FavoriteSortSelect<T extends FavoriteItemSort>({
+  sorts,
   value,
   onChange,
-}: FavoriteSortSelectProps) {
+  ariaLabel,
+}: FavoriteSortSelectProps<T>) {
   return (
-    <Select
-      value={value}
-      onValueChange={(next) => onChange(next as FavoriteSort)}
-    >
-      <SelectTrigger
-        aria-label="Sort favorites"
-        className={cn("ml-auto", FAVORITE_SORT_WIDTH)}
-      >
+    <Select value={value} onValueChange={(next) => onChange(next as T)}>
+      <SelectTrigger aria-label={ariaLabel} className={FAVORITE_SORT_WIDTH}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {FAVORITE_SORTS.map((sort) => (
+        {sorts.map((sort) => (
           <SelectItem key={sort} value={sort}>
             {SORT_LABELS[sort]}
           </SelectItem>
