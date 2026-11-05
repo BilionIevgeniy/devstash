@@ -1,5 +1,7 @@
 "use server";
 
+import { redirect, RedirectType } from "next/navigation";
+
 import { deleteAccountSchema } from "@/features/account/schemas";
 import { deleteAccount as deleteUserAccount } from "@/features/account/_internal/services/delete-account";
 import { auth, signOut } from "@/features/auth/nextauth/auth";
@@ -7,7 +9,7 @@ import type { ActionResult } from "@/lib/action-result";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 const SIGNED_OUT_ERROR = "You need to be signed in";
-const SIGN_IN_URL = "/sign-in";
+const HOME_URL = "/";
 
 interface DeleteAccountInput {
   password?: string;
@@ -40,9 +42,9 @@ export async function deleteAccount(
     return failure(GENERIC_ERROR);
   }
 
-  // Outside the try: it ends by throwing the redirect, which the catch above
-  // would turn into an error on a deleted account. Redirects to the sign-in
-  // page and never returns.
-  await signOut({ redirectTo: SIGN_IN_URL });
-  return { success: true, data: null, error: null };
+  // Outside the try: redirect() throws, and the catch above would turn that
+  // into an error on a deleted account. Replace and not signOut's own redirect,
+  // a push in an action: Back must not lead to the settings of a deleted account.
+  await signOut({ redirect: false });
+  redirect(HOME_URL, RedirectType.replace);
 }

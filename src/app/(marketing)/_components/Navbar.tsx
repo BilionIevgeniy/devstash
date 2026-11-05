@@ -4,18 +4,22 @@ import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { Logo } from "@/components/common/Logo";
 import { Button } from "@/components/ui/button";
+import { useHasSession } from "@/features/auth/components/hooks/use-has-session";
 import { cn } from "@/lib/utils";
 
 import { useScrolled } from "./hooks/use-scrolled";
-import { Logo } from "./Logo";
 import { MobileNavPanel } from "./MobileNavPanel";
 
 const PANEL_ID = "mobile-nav";
 const DESKTOP_LINK = "transition-colors hover:text-foreground";
+const GUEST_ACTION = { href: "/register", label: "Get Started" };
+const SIGNED_IN_ACTION = { href: "/dashboard", label: "Dashboard" };
 
 export function Navbar() {
   const scrolled = useScrolled();
+  const signedIn = useHasSession();
   const [open, setOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
 
@@ -32,6 +36,7 @@ export function Navbar() {
   }, [open]);
 
   const solid = scrolled || open;
+  const primaryAction = signedIn ? SIGNED_IN_ACTION : GUEST_ACTION;
 
   return (
     <header
@@ -56,16 +61,18 @@ export function Navbar() {
           </a>
         </nav>
         <div className="ml-auto flex items-center gap-2">
-          <Button
-            asChild
-            variant="ghost"
-            size="lg"
-            className="hidden px-3.5 text-muted-foreground md:inline-flex"
-          >
-            <Link href="/sign-in">Sign In</Link>
-          </Button>
+          {!signedIn && (
+            <Button
+              asChild
+              variant="ghost"
+              size="lg"
+              className="hidden px-3.5 text-muted-foreground md:inline-flex"
+            >
+              <Link href="/sign-in">Sign In</Link>
+            </Button>
+          )}
           <Button asChild size="lg" className="px-3.5">
-            <Link href="/register">Get Started</Link>
+            <Link href={primaryAction.href}>{primaryAction.label}</Link>
           </Button>
           <Button
             ref={toggleRef}
@@ -81,7 +88,13 @@ export function Navbar() {
           </Button>
         </div>
       </div>
-      {open && <MobileNavPanel id={PANEL_ID} onClose={() => setOpen(false)} />}
+      {open && (
+        <MobileNavPanel
+          id={PANEL_ID}
+          signedIn={signedIn}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </header>
   );
 }

@@ -1,10 +1,11 @@
 "use server";
 
-import { auth } from "@/features/auth/nextauth/auth";
+import { auth, signOut } from "@/features/auth/nextauth/auth";
 import { changePasswordSchema } from "@/features/auth/schemas";
 import { changeUserPassword } from "@/features/auth/services/account";
 import type { AuthActionState } from "@/features/auth/types";
 
+const SIGN_IN_URL = "/sign-in";
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 const SIGNED_OUT_ERROR = "You need to be signed in";
 const SUCCESS: AuthActionState = { success: true, data: null, error: null };
@@ -40,4 +41,10 @@ export async function changePassword(
     console.error("Changing the password failed:", error);
     return failure(GENERIC_ERROR);
   }
+}
+
+// Not the homepage, as a plain sign-out: the user signs in again right away
+// with the new password.
+export async function signOutAfterPasswordChange(): Promise<void> {
+  await signOut({ redirectTo: SIGN_IN_URL });
 }

@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
-import { Layers } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+
+import { Logo } from "@/components/common/Logo";
 
 interface AuthCardProps {
   title: string;
@@ -10,16 +13,24 @@ interface AuthCardProps {
 export function AuthCard({ title, description, children }: AuthCardProps) {
   return (
     <main className="flex flex-1 items-center justify-center p-4">
-      <div className="w-full max-w-sm space-y-6 rounded-xl border bg-card p-6 text-card-foreground">
-        <div className="space-y-2 text-center">
-          <div className="flex items-center justify-center gap-2">
-            <Layers className="size-6 text-primary" />
-            <span className="text-lg font-semibold">DevStash</span>
+      <div className="w-full max-w-sm">
+        <Link
+          href="/"
+          className="inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Back to home
+        </Link>
+        <div className="space-y-6 rounded-xl border bg-card p-6 text-card-foreground">
+          <div className="space-y-2 text-center">
+            <div className="flex justify-center">
+              <Logo />
+            </div>
+            <h1 className="text-xl font-semibold">{title}</h1>
+            <p className="text-sm text-muted-foreground">{description}</p>
           </div>
-          <h1 className="text-xl font-semibold">{title}</h1>
-          <p className="text-sm text-muted-foreground">{description}</p>
+          {children}
         </div>
-        {children}
       </div>
     </main>
   );

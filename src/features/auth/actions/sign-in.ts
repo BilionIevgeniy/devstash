@@ -23,7 +23,7 @@ import { getClientIp } from "@/lib/client-ip";
 import { getIpRateLimitStatus, getRateLimitStatus } from "@/lib/rate-limit";
 
 const DASHBOARD_URL = "/dashboard";
-const SIGN_IN_URL = "/sign-in";
+const HOME_URL = "/";
 const SETTINGS_URL = "/settings";
 const CREDENTIALS_ERROR_MESSAGES = new Map([
   [EMAIL_NOT_VERIFIED_CODE, EMAIL_NOT_VERIFIED_MESSAGE],
@@ -88,5 +88,5 @@ export async function reauthenticateWithGitHub(): Promise<void> {
 }
 
 export async function signOutUser(): Promise<void> {
-  await signOut({ redirectTo: SIGN_IN_URL });
+  await signOut({ redirectTo: HOME_URL });
 }
