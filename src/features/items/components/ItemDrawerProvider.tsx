@@ -10,7 +10,10 @@ import {
   DELETE_FAILED_MESSAGE,
 } from "@/features/items/_internal/components/DeleteItemDialog";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
-import { ItemDrawerContent } from "@/features/items/_internal/components/ItemDrawerContent";
+import {
+  ITEM_SHEET_CLASS,
+  ItemDrawerContent,
+} from "@/features/items/_internal/components/ItemDrawerContent";
 import { useDirtyCloseGuard } from "@/features/items/_internal/components/hooks/use-dirty-close-guard";
 import { useItemFavorites } from "@/features/items/_internal/components/hooks/use-item-favorites";
 import { useItemPins } from "@/features/items/_internal/components/hooks/use-item-pins";
@@ -94,7 +97,7 @@ export function ItemDrawerProvider({
       <Sheet open={sheet.isOpen} onOpenChange={guard.guardOpenChange}>
         <SheetContent
           aria-describedby={undefined}
-          className="gap-0 data-[side=right]:sm:max-w-xl"
+          className={ITEM_SHEET_CLASS}
           onCloseAutoFocus={onSheetCloseAutoFocus}
         >
           {sheet.item && (

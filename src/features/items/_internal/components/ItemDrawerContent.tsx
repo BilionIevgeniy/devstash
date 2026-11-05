@@ -11,6 +11,11 @@ import { ItemMeta } from "@/features/items/_internal/components/ItemMeta";
 import type { ItemDetailState } from "@/features/items/_internal/components/hooks/use-item-sheet";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
+// For the SheetContent around this content, in both sheets that draw it. Full
+// width on a phone, where the default three quarters squeeze the action bar.
+export const ITEM_SHEET_CLASS =
+  "gap-0 data-[side=right]:w-full data-[side=right]:sm:w-3/4 data-[side=right]:sm:max-w-xl";
+
 interface ItemDrawerContentProps {
   item: DashboardItem;
   state: ItemDetailState;

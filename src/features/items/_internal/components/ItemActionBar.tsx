@@ -11,6 +11,10 @@ import {
 } from "@/features/items/components/hooks/use-item-drawer";
 import { cn } from "@/lib/utils";
 
+// Five labelled buttons do not fit a phone, so there the labels are only read
+// out. The active state stays visible through the filled icons.
+const ACTION_LABEL = "sr-only sm:not-sr-only";
+
 interface ItemActionBarProps {
   itemId: string;
   title: string;
@@ -48,7 +52,7 @@ export function ItemActionBar({
         )}
       >
         <Star className={cn(favorite.isFavorite && "fill-yellow-400")} />
-        Favorite
+        <span className={ACTION_LABEL}>Favorite</span>
       </Button>
       <Button
         type="button"
@@ -59,11 +63,11 @@ export function ItemActionBar({
         className="aria-disabled:opacity-50"
       >
         <Pin className={cn(pin.isPinned && "fill-current")} />
-        Pin
+        <span className={ACTION_LABEL}>Pin</span>
       </Button>
       <Button type="button" variant="ghost">
         <Copy />
-        Copy
+        <span className={ACTION_LABEL}>Copy</span>
       </Button>
       <Button
         type="button"
@@ -73,7 +77,7 @@ export function ItemActionBar({
         onClick={onEdit}
       >
         <Pencil />
-        Edit
+        <span className={ACTION_LABEL}>Edit</span>
       </Button>
       <DeleteItemDialog
         itemId={itemId}
