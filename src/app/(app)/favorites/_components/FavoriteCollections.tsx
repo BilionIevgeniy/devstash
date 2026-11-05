@@ -6,17 +6,39 @@ import {
   FavoriteRow,
 } from "@/app/(app)/favorites/_components/FavoriteRow";
 import { FavoriteSection } from "@/app/(app)/favorites/_components/FavoriteSection";
+import { FavoriteSortSelect } from "@/app/(app)/favorites/_components/FavoriteSortSelect";
+import {
+  FAVORITE_COLLECTION_SORTS,
+  type FavoriteCollectionSort,
+} from "@/features/collections/domain/favorite-sort";
 import type { FavoriteCollection } from "@/features/collections/types";
 
 interface FavoriteCollectionsProps {
   collections: FavoriteCollection[];
+  sort: FavoriteCollectionSort;
+  onSortChange: (sort: FavoriteCollectionSort) => void;
 }
 
-export function FavoriteCollections({ collections }: FavoriteCollectionsProps) {
+export function FavoriteCollections({
+  collections,
+  sort,
+  onSortChange,
+}: FavoriteCollectionsProps) {
   if (collections.length === 0) return null;
 
   return (
-    <FavoriteSection title="Collections" count={collections.length}>
+    <FavoriteSection
+      title="Collections"
+      count={collections.length}
+      action={
+        <FavoriteSortSelect
+          sorts={FAVORITE_COLLECTION_SORTS}
+          value={sort}
+          onChange={onSortChange}
+          ariaLabel="Sort collections"
+        />
+      }
+    >
       {collections.map((collection) => (
         <Link
           key={collection.id}
