@@ -1,20 +1,16 @@
-# Current Feature: Pinned typography
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- The group headers of `/pinned` use the type of the `/favorites` section headers: `font-mono text-sm font-semibold`, count as `(2)`
-- The type icon leaves the group header and stays on the rows, so the page has fewer left edges
-- The chevron moves after the label, as in the sidebar's `CollapsibleSection`
-- The skeleton in `loading.tsx` follows, so nothing moves when the content commits
+<!-- Goals for the current feature go here -->
 
 ## Notes
 
-- Option A of a review by an independent agent in the role of a UI designer, chosen by the user
-- Accepted: a collapsed group has no colour, only its name and count
+<!-- Additional context, constraints or details from the spec go here -->
 
 ## History
 
