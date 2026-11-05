@@ -1,8 +1,10 @@
 import { LIST_ROW_WRAPPER, ListRow } from "@/app/(app)/_components/ListRow";
+import { ListRowFrame } from "@/app/(app)/_components/ListRowFrame";
 import { SortSelect } from "@/app/(app)/_components/SortSelect";
 import { FavoriteSection } from "@/app/(app)/favorites/_components/FavoriteSection";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
+import { ItemRowActions } from "@/features/items/components/ItemRowActions";
 import {
   FAVORITE_ITEM_SORTS,
   type FavoriteItemSort,
@@ -36,24 +38,25 @@ export function FavoriteItems({
       }
     >
       {items.map((item) => (
-        <ItemDrawerTrigger
+        <ListRowFrame
           key={item.id}
-          item={item}
-          className={LIST_ROW_WRAPPER}
+          actions={<ItemRowActions item={item} removes="favorite" />}
         >
-          <ListRow
-            icon={
-              <TypeIcon
-                name={item.type.icon}
-                className="size-4 shrink-0"
-                style={{ color: item.type.color }}
-              />
-            }
-            title={item.title}
-            badge={item.type.name}
-            date={item.favoritedAt}
-          />
-        </ItemDrawerTrigger>
+          <ItemDrawerTrigger item={item} className={LIST_ROW_WRAPPER}>
+            <ListRow
+              icon={
+                <TypeIcon
+                  name={item.type.icon}
+                  className="size-4 shrink-0"
+                  style={{ color: item.type.color }}
+                />
+              }
+              title={item.title}
+              badge={item.type.name}
+              date={item.favoritedAt}
+            />
+          </ItemDrawerTrigger>
+        </ListRowFrame>
       ))}
     </FavoriteSection>
   );

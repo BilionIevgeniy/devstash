@@ -11,8 +11,8 @@ interface FavoriteSectionProps {
   children: ReactNode;
 }
 
-// The rows sit in a plain div with no spacing or dividers: a row being deleted
-// from the drawer hides itself, and nothing of it may stay behind.
+// The rows sit in a plain div with no spacing or dividers: a row that leaves goes
+// whole, and nothing of it may stay behind.
 export function FavoriteSection({
   title,
   count,

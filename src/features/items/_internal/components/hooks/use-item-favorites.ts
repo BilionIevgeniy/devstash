@@ -2,8 +2,11 @@ import { startTransition, useOptimistic } from "react";
 import { toast } from "sonner";
 
 import { setItemFavorite } from "@/features/items/actions/item";
+import type { ToggleOptions } from "@/features/items/components/hooks/use-item-drawer";
+import { UNDO_TOAST_DURATION } from "@/features/items/domain/list-rows";
 
 const FAVORITE_FAILED_MESSAGE = "Couldn't update the favorite.";
+const UNFAVORITED_MESSAGE = "Removed from favorites";
 const NO_OVERRIDES: ReadonlyMap<string, boolean> = new Map();
 
 interface FavoriteOverride {
@@ -25,13 +28,29 @@ export function useItemFavorites(
       new Map(overrides).set(id, isFavorite),
   );
 
-  function toggleFavorite(id: string, isFavorite: boolean) {
+  function toggleFavorite(
+    id: string,
+    isFavorite: boolean,
+    options?: ToggleOptions,
+  ) {
     startTransition(async () => {
       addOverride({ id, isFavorite });
       try {
         const result = await setItemFavorite(id, isFavorite);
-        if (result.success) startTransition(() => onSaved(id, isFavorite));
-        else toast.error(result.error ?? FAVORITE_FAILED_MESSAGE);
+        if (result.success) {
+          startTransition(() => onSaved(id, isFavorite));
+          if (options?.undoable && !isFavorite) {
+            toast(UNFAVORITED_MESSAGE, {
+              duration: UNDO_TOAST_DURATION,
+              action: {
+                label: "Undo",
+                onClick: () => toggleFavorite(id, true),
+              },
+            });
+          }
+        } else {
+          toast.error(result.error ?? FAVORITE_FAILED_MESSAGE);
+        }
       } catch {
         toast.error(FAVORITE_FAILED_MESSAGE);
       }

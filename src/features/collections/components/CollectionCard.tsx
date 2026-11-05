@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CollectionCardActions } from "@/features/collections/_internal/components/CollectionCardActions";
+import { collectionAccent } from "@/features/collections/domain/collection-accent";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import type { DashboardCollection } from "@/features/collections/types";
 
@@ -13,7 +14,7 @@ interface CollectionCardProps {
 // navigate.
 export function CollectionCard({ collection }: CollectionCardProps) {
   const { types } = collection;
-  const accentColor = types[0]?.color;
+  const accentColor = collectionAccent(types);
   const itemLabel = collection.itemCount === 1 ? "item" : "items";
 
   return (

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { collectionAccent } from "@/features/collections/domain/collection-accent";
 import { COLLECTIONS_PER_PAGE } from "@/features/collections/domain/pagination";
 import { rankTypesByUsage } from "@/features/item-types/domain/rank-types-by-usage";
 import type {
@@ -28,14 +29,36 @@ const LAST_STARRED_FIRST = [
   { id: "desc" },
 ] satisfies Prisma.CollectionOrderByWithRelationInput[];
 
+const collectionItemTypesSelect = {
+  items: { select: { item: { select: { typeId: true } } } },
+} satisfies Prisma.CollectionSelect;
+
 const collectionSelect = {
   id: true,
   name: true,
   description: true,
   isFavorite: true,
   _count: { select: { items: true } },
-  items: { select: { item: { select: { typeId: true } } } },
+  ...collectionItemTypesSelect,
 } satisfies Prisma.CollectionSelect;
+
+interface CollectionItemTypes {
+  items: { item: { typeId: string } }[];
+}
+
+// One read of the types of all the rows; the result ranks those of one row.
+async function typeRanker(rows: CollectionItemTypes[]) {
+  const typeIds = new Set(
+    rows.flatMap(({ items }) => items.map(({ item }) => item.typeId)),
+  );
+  const typesById = await getItemTypesById([...typeIds]);
+
+  return ({ items }: CollectionItemTypes) =>
+    rankTypesByUsage(
+      items.map(({ item }) => item.typeId),
+      typesById,
+    );
+}
 
 async function fetchCollections(
   userId: string,
@@ -50,18 +73,12 @@ async function fetchCollections(
     select: collectionSelect,
   });
 
-  const typeIds = new Set(
-    collections.flatMap(({ items }) => items.map(({ item }) => item.typeId)),
-  );
-  const typesById = await getItemTypesById([...typeIds]);
+  const rankTypes = await typeRanker(collections);
 
   return collections.map(({ items, _count, ...collection }) => ({
     ...collection,
     itemCount: _count.items,
-    types: rankTypesByUsage(
-      items.map(({ item }) => item.typeId),
-      typesById,
-    ),
+    types: rankTypes({ items }),
   }));
 }
 
@@ -118,19 +135,29 @@ export async function getSidebarCollections(
   };
 }
 
-// Narrower than fetchCollections: the favorites page shows no types or counts.
+// The favorites page shows no counts, and of the types only the accent. Every
+// favorite is read with one row per item: there is no limit on favorites.
 export async function getFavoriteCollections(
   userId: string,
 ): Promise<FavoriteCollection[]> {
   const collections = await prisma.collection.findMany({
     where: { userId, isFavorite: true },
     orderBy: LAST_STARRED_FIRST,
-    select: { id: true, name: true, favoritedAt: true, updatedAt: true },
+    select: {
+      id: true,
+      name: true,
+      favoritedAt: true,
+      updatedAt: true,
+      ...collectionItemTypesSelect,
+    },
   });
-  return collections.map(({ id, name, favoritedAt, updatedAt }) => ({
+  const rankTypes = await typeRanker(collections);
+
+  return collections.map(({ id, name, favoritedAt, updatedAt, items }) => ({
     id,
     name,
     favoritedAt: favoritedAt ?? updatedAt,
+    color: collectionAccent(rankTypes({ items })),
   }));
 }
 

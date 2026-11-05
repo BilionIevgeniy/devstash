@@ -1,11 +1,13 @@
 import { ChevronDown } from "lucide-react";
 
 import { LIST_ROW_WRAPPER, ListRow } from "@/app/(app)/_components/ListRow";
+import { ListRowFrame } from "@/app/(app)/_components/ListRowFrame";
 import { SortSelect } from "@/app/(app)/_components/SortSelect";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { typeSlug } from "@/features/item-types/domain/item-type";
 import type { ItemTypeInfo } from "@/features/item-types/types";
 import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
+import { ItemRowActions } from "@/features/items/components/ItemRowActions";
 import {
   PINNED_ITEM_SORTS,
   type PinnedItemSort,
@@ -70,23 +72,24 @@ export function PinnedGroup({
       </div>
       <div id={panelId} hidden={!isOpen}>
         {items.map((item) => (
-          <ItemDrawerTrigger
+          <ListRowFrame
             key={item.id}
-            item={item}
-            className={LIST_ROW_WRAPPER}
+            actions={<ItemRowActions item={item} removes="pin" />}
           >
-            <ListRow
-              icon={
-                <TypeIcon
-                  name={item.type.icon}
-                  className="size-4 shrink-0"
-                  style={{ color: item.type.color }}
-                />
-              }
-              title={item.title}
-              date={item.createdAt}
-            />
-          </ItemDrawerTrigger>
+            <ItemDrawerTrigger item={item} className={LIST_ROW_WRAPPER}>
+              <ListRow
+                icon={
+                  <TypeIcon
+                    name={item.type.icon}
+                    className="size-4 shrink-0"
+                    style={{ color: item.type.color }}
+                  />
+                }
+                title={item.title}
+                date={item.createdAt}
+              />
+            </ItemDrawerTrigger>
+          </ListRowFrame>
         ))}
       </div>
     </section>

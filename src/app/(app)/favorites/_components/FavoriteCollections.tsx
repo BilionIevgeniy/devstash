@@ -2,13 +2,16 @@ import Link from "next/link";
 import { Folder } from "lucide-react";
 
 import { LIST_ROW_WRAPPER, ListRow } from "@/app/(app)/_components/ListRow";
+import { ListRowFrame } from "@/app/(app)/_components/ListRowFrame";
 import { SortSelect } from "@/app/(app)/_components/SortSelect";
 import { FavoriteSection } from "@/app/(app)/favorites/_components/FavoriteSection";
+import { CollectionRowFavorite } from "@/features/collections/components/CollectionRowFavorite";
 import {
   FAVORITE_COLLECTION_SORTS,
   type FavoriteCollectionSort,
 } from "@/features/collections/domain/favorite-sort";
 import type { FavoriteCollection } from "@/features/collections/types";
+import { cn } from "@/lib/utils";
 
 interface FavoriteCollectionsProps {
   collections: FavoriteCollection[];
@@ -37,18 +40,37 @@ export function FavoriteCollections({
       }
     >
       {collections.map((collection) => (
-        <Link
+        <ListRowFrame
           key={collection.id}
-          href={`/collections/${collection.id}`}
-          className={LIST_ROW_WRAPPER}
+          actions={
+            <CollectionRowFavorite
+              collectionId={collection.id}
+              name={collection.name}
+            />
+          }
         >
-          <ListRow
-            icon={<Folder className="size-4 shrink-0 text-muted-foreground" />}
-            title={collection.name}
-            badge="collection"
-            date={collection.favoritedAt}
-          />
-        </Link>
+          <Link
+            href={`/collections/${collection.id}`}
+            className={LIST_ROW_WRAPPER}
+          >
+            <ListRow
+              icon={
+                <Folder
+                  className={cn(
+                    "size-4 shrink-0",
+                    !collection.color && "text-muted-foreground",
+                  )}
+                  style={
+                    collection.color ? { color: collection.color } : undefined
+                  }
+                />
+              }
+              title={collection.name}
+              badge="collection"
+              date={collection.favoritedAt}
+            />
+          </Link>
+        </ListRowFrame>
       ))}
     </FavoriteSection>
   );

@@ -11,6 +11,8 @@ interface ItemFavoriteButtonProps {
   title: string;
   isFavorite: boolean;
   className?: string;
+  /** Taking the star off removes the row from its list, so the toast offers Undo. */
+  undoable?: boolean;
 }
 
 // aria-disabled, not disabled: a disabled button would lose the keyboard focus
@@ -20,8 +22,9 @@ export function ItemFavoriteButton({
   title,
   isFavorite,
   className,
+  undoable,
 }: ItemFavoriteButtonProps) {
-  const favorite = useItemFavorite(itemId, isFavorite);
+  const favorite = useItemFavorite(itemId, isFavorite, { undoable });
 
   return (
     <Button

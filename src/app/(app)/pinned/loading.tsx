@@ -1,4 +1,5 @@
 import { LIST_ROW_HEIGHT } from "@/app/(app)/_components/ListRow";
+import { LIST_ROW_ACTIONS_WIDTH } from "@/app/(app)/_components/ListRowFrame";
 import { SORT_SELECT_WIDTH } from "@/app/(app)/_components/SortSelect";
 import { PINNED_GROUP_HEADER } from "@/app/(app)/pinned/_components/PinnedGroup";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,13 +20,13 @@ function GroupSkeleton({ rows }: GroupSkeletonProps) {
       </div>
       <div>
         {Array.from({ length: rows }, (_, index) => (
-          <div
-            key={index}
-            className={cn("flex items-center gap-3 px-2", LIST_ROW_HEIGHT)}
-          >
-            <Skeleton className="size-4 shrink-0" />
-            <Skeleton className="h-4 flex-1" />
-            <Skeleton className="h-4 w-14 shrink-0" />
+          <div key={index} className={cn("flex", LIST_ROW_HEIGHT)}>
+            <div className="flex min-w-0 flex-1 items-center gap-3 px-2">
+              <Skeleton className="size-4 shrink-0" />
+              <Skeleton className="h-4 flex-1" />
+              <Skeleton className="h-4 w-14 shrink-0" />
+            </div>
+            <div className={LIST_ROW_ACTIONS_WIDTH} />
           </div>
         ))}
       </div>

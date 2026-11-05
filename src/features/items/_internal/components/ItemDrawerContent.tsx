@@ -75,10 +75,7 @@ export function ItemDrawerContent({
         variant={variant}
       />
       <ItemActionBar
-        itemId={item.id}
-        title={item.title}
-        isFavorite={item.isFavorite}
-        isPinned={item.isPinned}
+        item={item}
         canEdit={detail !== null}
         onEdit={onEdit}
         onDelete={onDelete}
