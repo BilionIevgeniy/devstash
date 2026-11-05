@@ -25,8 +25,8 @@ function getErrorMessage(
 }
 
 // A signed-in user goes to the dashboard. Checked here and not in the proxy:
-// auth() also checks the session version, so a revoked session is signed out
-// here instead of bouncing between the proxy and the pages.
+// auth() also checks the session version, so a revoked session reads as signed
+// out here instead of bouncing between the proxy and the pages.
 export default async function SignInPage({
   searchParams,
 }: PageProps<"/sign-in">) {

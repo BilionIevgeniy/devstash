@@ -39,7 +39,8 @@ export function ConfirmEmailForm({ email, token }: ConfirmEmailFormProps) {
         const result = await confirmEmail({ email, token, password });
         if (result.success) {
           toast.success(SUCCESS_MESSAGE);
-          router.push(SIGN_IN_URL);
+          // replace: Back must not lead to the link that was just used.
+          router.replace(SIGN_IN_URL);
           return;
         }
         setError(result.error);

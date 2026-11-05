@@ -1,4 +1,4 @@
-import { Logo } from "./Logo";
+import { Logo } from "@/components/common/Logo";
 
 interface FooterEntry {
   label: string;

@@ -4,8 +4,10 @@ import { unstable_rethrow } from "next/navigation";
 import { useState, useTransition, type SubmitEvent } from "react";
 import { toast } from "sonner";
 
-import { changePassword } from "@/features/auth/_internal/actions/account";
-import { signOutUser } from "@/features/auth/actions/sign-in";
+import {
+  changePassword,
+  signOutAfterPasswordChange,
+} from "@/features/auth/_internal/actions/account";
 import {
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
@@ -66,7 +68,7 @@ export function ChangePasswordForm() {
           // The change revoked every session, this one included; signing out
           // clears the cookie and redirects to /sign-in.
           toast.success(SUCCESS_MESSAGE);
-          await signOutUser();
+          await signOutAfterPasswordChange();
           return;
         }
         setError(result.error);

@@ -92,6 +92,7 @@ features/auth/
   actions/
     sign-in.ts               Server Actions the rest of the app calls: sign in, re-authenticate, sign out
   components/                forms, dialogs and cards (SignInForm, RegisterForm, ChangePasswordForm, ...)
+    hooks/                   use-has-session: a static page learns of the session after mount
   domain/                    pure rules: password length, token expiry and links, rate-limit policies,
                              the recent-sign-in window, when to resend a verification
   services/                  operations: registration, email verification, password reset, account
@@ -103,7 +104,7 @@ features/auth/
   types.ts                   AuthActionState, AccountState, UserProfile
   _internal/                 private to auth (see the next section)
     actions/                 Server Actions used only by auth's own forms
-    components/              CheckEmailNotice
+    components/              CheckEmailNotice, fetch-has-session
     queries.ts               reads that hand a secret to their caller: password hashes, GitHub tokens
     services/                github-grant: revokes the app's authorization on GitHub
     emails/                  the emails: pure builders of subject, html and text
@@ -320,6 +321,7 @@ Not checked by lint, so it is on the author and the reviewer: one call into a se
 - **Login lockout by strangers.** The lockout a user meets counts per email and client address (`LOGIN_BY_EMAIL_IP`, 5 per 15 minutes), so one stranger guessing from elsewhere cannot lock the owner out. The per-email ceiling `LOGIN_BY_EMAIL_GLOBAL` (50 per 15 minutes, never reset by a success) can still be used up by someone with enough addresses (about three, given `LOGIN_BY_IP` at 20), which blocks password sign-in for that address until the window ends. GitHub sign-in and password reset still work
 - **Unused tags are removed after the fact.** An item update or delete removes the caller's tags no item uses (`deleteOrphanTags` in `items/services/item.ts`, best effort). A create in another tab that links one of those tags in the same moment can lose that link (`ItemTag` cascades) or fail on its foreign key; the user retries. Accepted as rare
 - **Unsaved edits on Back.** The item edit form asks before Cancel, Esc, the overlay or the sheet's close button throw edits away, and the browser asks on reload or a closed tab. Browser Back on the intercepted item route and the sidebar's links on the full item page still drop them: the route is already gone when the sheet hears of it
+- **A session check on every homepage view.** The homepage stays static, so `Navbar` learns of the session in the browser (`useHasSession`): every view, guests included, calls `GET /api/auth/session`, which is one function call, plus one database read and a renewed cookie for a signed-in visitor. A signed-in visitor sees the guest buttons swap to Dashboard after mount. Reading the session on the server would remove the swap and cost the static page for every visitor
 - **Superseded columns.** `User.isPro`, `User.stripeCustomerId`, `User.stripeSubscriptionId` and `Item.fileUrl` are read by nothing and wait for their contract migration (`context/todo.md`). Code must not start reading them again
 
 ## Glossary
