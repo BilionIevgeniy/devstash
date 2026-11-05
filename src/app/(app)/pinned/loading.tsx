@@ -14,7 +14,7 @@ function GroupSkeleton({ rows }: GroupSkeletonProps) {
   return (
     <section className="space-y-2">
       <div className={PINNED_GROUP_HEADER}>
-        <Skeleton className="h-6 w-36" />
+        <Skeleton className="h-5 w-28" />
         <Skeleton className={cn(SORT_SELECT_WIDTH, "h-8")} />
       </div>
       <div>
