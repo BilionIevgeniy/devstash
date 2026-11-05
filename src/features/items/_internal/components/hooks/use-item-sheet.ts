@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type RefObject } from "react";
 
 import { fetchItemDetail } from "@/features/items/_internal/components/fetch-item-detail";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
@@ -11,15 +11,24 @@ export type ItemDetailState =
 // The item sheet of the pages with no item URL (the dashboard, a collection,
 // the favorites, the pins): the card's item at once, its detail fetched from
 // the API, and the edit mode. Closing aborts a detail still on its way.
-export function useItemSheet() {
+//
+// The sheet has no SheetTrigger, so Radix has nothing to give the focus back
+// to: the hook remembers the opener. A delete or an unpin can take the opener
+// off the page, and then the focus goes to the sentinel the provider renders.
+export function useItemSheet(focusSentinelRef: RefObject<HTMLElement | null>) {
   const [isOpen, setIsOpen] = useState(false);
   const [item, setItem] = useState<DashboardItem | null>(null);
   const [state, setState] = useState<ItemDetailState>({ status: "loading" });
   const [isEditing, setIsEditing] = useState(false);
   const requestRef = useRef<AbortController | null>(null);
   const openItemIdRef = useRef<string | null>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
 
   async function openSheet(next: DashboardItem) {
+    const active = document.activeElement;
+    openerRef.current =
+      active instanceof HTMLElement && active !== document.body ? active : null;
+
     requestRef.current?.abort();
     const controller = new AbortController();
     requestRef.current = controller;
@@ -44,6 +53,13 @@ export function useItemSheet() {
   function onOpenChange(nextOpen: boolean) {
     if (!nextOpen) requestRef.current?.abort();
     setIsOpen(nextOpen);
+  }
+
+  function handleCloseAutoFocus(event: Event) {
+    event.preventDefault();
+    const opener = openerRef.current;
+    if (opener?.isConnected) opener.focus();
+    else focusSentinelRef.current?.focus({ preventScroll: true });
   }
 
   // The header, description and tags come from the card's item, so it is
@@ -87,6 +103,7 @@ export function useItemSheet() {
     setIsEditing,
     openSheet,
     onOpenChange,
+    handleCloseAutoFocus,
     handleSaved,
     handleFavoriteSaved,
     handlePinSaved,
