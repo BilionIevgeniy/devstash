@@ -9,6 +9,7 @@ import { ItemDrawerSkeleton } from "@/features/items/_internal/components/ItemDr
 import { ItemEditForm } from "@/features/items/_internal/components/ItemEditForm";
 import { ItemMeta } from "@/features/items/_internal/components/ItemMeta";
 import type { ItemDetailState } from "@/features/items/_internal/components/hooks/use-item-sheet";
+import { copyValueOf } from "@/features/items/domain/item-fields";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
 // For the SheetContent around this content, in both sheets that draw it. Full
@@ -77,6 +78,7 @@ export function ItemDrawerContent({
       <ItemActionBar
         item={item}
         canEdit={detail !== null}
+        copyValue={detail && copyValueOf(detail)}
         onEdit={onEdit}
         onDelete={onDelete}
       />

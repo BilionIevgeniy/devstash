@@ -75,8 +75,7 @@ interface TypeSpecificUpdate {
 }
 
 export type EditableUpdate<T extends TypeSpecificUpdate> =
-  | { data: T }
-  | { error: string };
+  { data: T } | { error: string };
 
 // Keeps an update to the fields its type has, so a stray url on a note or
 // content on an image never lands in the row. A field left out stays as it
@@ -132,8 +131,9 @@ export function contentTypeFor(typeName: string): string {
   return TEXT_CONTENT_TYPE;
 }
 
-// What a card's copy button puts on the clipboard: a text item's content, a
-// link's URL. An upload has only a signed URL that expires, so nothing.
+// What the copy button of a card or the drawer puts on the clipboard: a text
+// item's content, a link's URL. An upload has only a signed URL that expires,
+// so nothing.
 export function copyValueOf(item: {
   contentType: string;
   content: string | null;

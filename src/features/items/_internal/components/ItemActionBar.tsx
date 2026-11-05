@@ -1,5 +1,6 @@
-import { Copy, Pencil, Pin, Star } from "lucide-react";
+import { Pencil, Pin, Star } from "lucide-react";
 
+import { CopyButton } from "@/components/common/CopyButton";
 import { Button } from "@/components/ui/button";
 import {
   DeleteItemDialog,
@@ -19,14 +20,16 @@ const ACTION_LABEL = "sr-only sm:not-sr-only";
 interface ItemActionBarProps {
   item: DashboardItem;
   canEdit: boolean;
+  /** Null while the detail loads and for an upload, which has nothing to copy. */
+  copyValue: string | null;
   onEdit: () => void;
   onDelete: ItemDeleteHandler;
 }
 
-// Copy is wired up in a later feature.
 export function ItemActionBar({
   item,
   canEdit,
+  copyValue,
   onEdit,
   onDelete,
 }: ItemActionBarProps) {
@@ -63,10 +66,11 @@ export function ItemActionBar({
         <Pin className={cn(pin.isPinned && "fill-current")} />
         <span className={ACTION_LABEL}>Pin</span>
       </Button>
-      <Button type="button" variant="ghost">
-        <Copy />
-        <span className={ACTION_LABEL}>Copy</span>
-      </Button>
+      {copyValue !== null && (
+        <CopyButton value={copyValue} label={`Copy ${title}`}>
+          <span className={ACTION_LABEL}>Copy</span>
+        </CopyButton>
+      )}
       <Button
         type="button"
         variant="ghost"
