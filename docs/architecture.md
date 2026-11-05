@@ -66,12 +66,14 @@ components/ForgotPasswordForm.tsx       client component
 
 ```text
 app/(app)/items/[type]/layout.tsx       ItemDrawerProvider basePath=/items/<type>, wraps {children} and {drawer}
-  click on a card                       router.push(/items/<type>/<id>)
+  click on a card or a sidebar row      router.push(/items/<type>/<id>)
   -> @drawer/(.)[id]/layout.tsx         ItemRouteDrawer: the sheet, kept while loading gives way to the page
-     -> @drawer/(.)[id]/page.tsx        getItemDetailOfType(userId, id, type)   items/queries.ts
+     -> @drawer/(.)[id]/page.tsx        getUserItemDetail(userId, id)   items/services/item-detail.ts
   children keeps the list               on a reload the same URL renders [id]/page.tsx, the full item page
   closing the sheet                     router.back() once it has slid out; @drawer falls back to default.tsx (null)
 ```
+
+The rewrite takes `type` from the page the link was clicked on, so a sidebar row of another type opens over the current list with the wrong `type` in its params: the drawer reads the item by id alone and its skeleton reads the type from the path. The rewrite also matches below the type page, so a row opens a drawer over the full page of another item; on the item's own page the row goes nowhere (`isItemPage`).
 
 **Registration** is a route handler (`app/api/auth/register/route.ts`) instead of a Server Action: it parses with `registerSchema`, applies the per-IP limit and calls the `registerAccount` service.
 

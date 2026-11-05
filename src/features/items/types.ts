@@ -30,6 +30,19 @@ export interface FavoriteItem extends DashboardItem {
   favoritedAt: Date;
 }
 
+// A row of the sidebar: only what the link shows.
+export interface SidebarItem {
+  id: string;
+  title: string;
+  type: ItemTypeInfo;
+}
+
+export interface SidebarItems {
+  favorites: SidebarItem[];
+  pinned: SidebarItem[];
+  hasMoreFavorites: boolean;
+}
+
 export interface ItemCollectionRef {
   id: string;
   name: string;
