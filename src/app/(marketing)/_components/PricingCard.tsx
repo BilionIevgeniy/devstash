@@ -28,7 +28,7 @@ export function PricingCard({
       className={cn(
         "relative flex h-full flex-col rounded-[14px] border bg-card p-8",
         highlighted &&
-          "border-[#a78bfa]/50 shadow-[0_0_60px_-20px_rgba(139,92,246,0.4)]",
+          "border-brand/50 shadow-[0_0_60px_-20px_rgba(139,92,246,0.4)]",
       )}
     >
       {highlighted && (
