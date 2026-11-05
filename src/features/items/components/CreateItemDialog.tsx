@@ -60,13 +60,22 @@ interface CreateItemDialogProps {
   defaultType?: CreatableTypeName;
   /** From getEntitlements on the server; the server checks again on create. */
   isPro: boolean;
+  /** Opened from elsewhere: no button, and the focus goes back through this. */
+  controlled?: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    returnFocus: () => void;
+  };
 }
 
 export function CreateItemDialog({
   defaultType,
   isPro,
+  controlled,
 }: CreateItemDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpenState, setIsOpenState] = useState(false);
+  const isOpen = controlled?.open ?? isOpenState;
+  const setIsOpen = controlled?.onOpenChange ?? setIsOpenState;
   const [isCreating, startCreating] = useTransition();
   const createdRef = useRef(false);
   const label = `New ${defaultType ?? "item"}`;
@@ -88,8 +97,12 @@ export function CreateItemDialog({
   // Sonner is outside the transition, so a toast in the form would show
   // before the refreshed page closes the dialog. Radix calls this once the
   // dialog has closed, with or without an animation; focus still returns to
-  // the trigger.
-  function handleCloseAutoFocus() {
+  // the trigger, or through `controlled`, which has none.
+  function handleCloseAutoFocus(event: Event) {
+    if (controlled) {
+      event.preventDefault();
+      controlled.returnFocus();
+    }
     if (!createdRef.current) return;
     createdRef.current = false;
     toast.success(CREATED_MESSAGE);
@@ -97,13 +110,15 @@ export function CreateItemDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button disabled={isLocked}>
-          <Plus />
-          <span className="capitalize">{label}</span>
-          {isLocked && <ProBadge />}
-        </Button>
-      </DialogTrigger>
+      {!controlled && (
+        <DialogTrigger asChild>
+          <Button disabled={isLocked}>
+            <Plus />
+            <span className="capitalize">{label}</span>
+            {isLocked && <ProBadge />}
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent
         className="max-h-[90vh] grid-cols-1 overflow-y-auto"
         onCloseAutoFocus={handleCloseAutoFocus}
