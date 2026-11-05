@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 interface ErrorStateProps {
   title: string;
   description: string;
-  /** Buttons or links that lead out: Try again, Go to the dashboard. */
+  /** Buttons or links that lead out: Try again, Go to the homepage. */
   children?: ReactNode;
 }
 

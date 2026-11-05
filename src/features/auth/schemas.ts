@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { safeCallbackPath } from "@/features/auth/domain/callback-url";
 import {
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
@@ -34,6 +35,9 @@ export const signInSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, "Password is required"),
 });
+
+// Never fails: a bad value becomes the default path, not a sign-in error.
+export const callbackPathSchema = z.unknown().transform(safeCallbackPath);
 
 export const registerSchema = z
   .object({
