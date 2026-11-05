@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { parseTypeSlug } from "@/features/item-types/domain/item-type";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
 import { ItemDetailView } from "@/features/items/_internal/components/ItemDetailView";
+import { ITEM_SHEET_CLASS } from "@/features/items/_internal/components/ItemDrawerContent";
 import { ItemDrawerSkeleton } from "@/features/items/_internal/components/ItemDrawerSkeleton";
 import { useDirtyCloseGuard } from "@/features/items/_internal/components/hooks/use-dirty-close-guard";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
@@ -61,7 +62,7 @@ export function ItemRouteDrawer({ children }: { children: ReactNode }) {
       <Sheet open={isOpen} onOpenChange={guardOpenChange}>
         <SheetContent
           aria-describedby={undefined}
-          className="gap-0 data-[side=right]:sm:max-w-xl"
+          className={ITEM_SHEET_CLASS}
           onCloseAutoFocus={handleCloseAutoFocus}
         >
           <RouteDrawerContext.Provider value={{ closeAndDelete, setDirty }}>
