@@ -1,9 +1,6 @@
-import {
-  FAVORITE_ROW_WRAPPER,
-  FavoriteRow,
-} from "@/app/(app)/favorites/_components/FavoriteRow";
+import { LIST_ROW_WRAPPER, ListRow } from "@/app/(app)/_components/ListRow";
+import { SortSelect } from "@/app/(app)/_components/SortSelect";
 import { FavoriteSection } from "@/app/(app)/favorites/_components/FavoriteSection";
-import { FavoriteSortSelect } from "@/app/(app)/favorites/_components/FavoriteSortSelect";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
 import {
@@ -30,7 +27,7 @@ export function FavoriteItems({
       title="Items"
       count={items.length}
       action={
-        <FavoriteSortSelect
+        <SortSelect
           sorts={FAVORITE_ITEM_SORTS}
           value={sort}
           onChange={onSortChange}
@@ -42,9 +39,9 @@ export function FavoriteItems({
         <ItemDrawerTrigger
           key={item.id}
           item={item}
-          className={FAVORITE_ROW_WRAPPER}
+          className={LIST_ROW_WRAPPER}
         >
-          <FavoriteRow
+          <ListRow
             icon={
               <TypeIcon
                 name={item.type.icon}

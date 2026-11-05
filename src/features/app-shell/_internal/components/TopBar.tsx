@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { PanelLeft, Star } from "lucide-react";
+import { PanelLeft, Pin, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { CreateCollectionDialog } from "@/features/collections/components/CreateCollectionDialog";
@@ -42,6 +42,11 @@ export function TopBar({
         <Button asChild variant="ghost" size="icon">
           <Link href="/favorites" aria-label="Favorites">
             <Star />
+          </Link>
+        </Button>
+        <Button asChild variant="ghost" size="icon">
+          <Link href="/pinned" aria-label="Pinned">
+            <Pin />
           </Link>
         </Button>
         <CreateCollectionDialog />

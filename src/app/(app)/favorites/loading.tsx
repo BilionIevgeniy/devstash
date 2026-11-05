@@ -1,6 +1,6 @@
-import { FAVORITE_ROW_HEIGHT } from "@/app/(app)/favorites/_components/FavoriteRow";
+import { LIST_ROW_HEIGHT } from "@/app/(app)/_components/ListRow";
+import { SORT_SELECT_WIDTH } from "@/app/(app)/_components/SortSelect";
 import { FAVORITE_SECTION_HEADER } from "@/app/(app)/favorites/_components/FavoriteSection";
-import { FAVORITE_SORT_WIDTH } from "@/app/(app)/favorites/_components/FavoriteSortSelect";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -16,13 +16,13 @@ function SectionSkeleton({ rows }: SectionSkeletonProps) {
     <section className="space-y-2">
       <div className={FAVORITE_SECTION_HEADER}>
         <Skeleton className="h-5 w-28" />
-        <Skeleton className={cn(FAVORITE_SORT_WIDTH, "h-8")} />
+        <Skeleton className={cn(SORT_SELECT_WIDTH, "h-8")} />
       </div>
       <div>
         {Array.from({ length: rows }, (_, index) => (
           <div
             key={index}
-            className={cn("flex items-center gap-3 px-2", FAVORITE_ROW_HEIGHT)}
+            className={cn("flex items-center gap-3 px-2", LIST_ROW_HEIGHT)}
           >
             <Skeleton className="size-4 shrink-0" />
             <Skeleton className="h-4 flex-1" />

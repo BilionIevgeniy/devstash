@@ -1,14 +1,45 @@
+import type { ReactNode } from "react";
+import Link from "next/link";
+
 export const LINK_CLASS =
-  "flex items-center gap-3 rounded-md px-2 py-1.5 text-sm hover:bg-accent";
+  "flex items-center gap-3 rounded-md px-2 py-1.5 text-sm text-foreground/80 hover:bg-accent hover:text-foreground";
 
 export function ItemCount({ value }: { value: number }) {
-  return <span className="ml-auto text-xs text-muted-foreground">{value}</span>;
+  return (
+    <span className="ml-auto text-xs tabular-nums text-muted-foreground">
+      {value}
+    </span>
+  );
 }
 
-export function GroupLabel({ children }: { children: string }) {
+export interface ViewAllTarget {
+  href: string;
+  label: string;
+}
+
+interface SidebarGroupProps {
+  label: string;
+  viewAll?: ViewAllTarget;
+  children: ReactNode;
+}
+
+// `pl-9` lines the link up with the titles of the rows, so it reads as the end
+// of the list and not as one more row.
+export function SidebarGroup({ label, viewAll, children }: SidebarGroupProps) {
   return (
-    <h3 className="px-2 pb-1 pt-2 text-xs font-medium uppercase text-muted-foreground">
-      {children}
-    </h3>
+    <div>
+      <h3 className="px-2 pb-1 text-xs font-medium text-muted-foreground">
+        {label}
+      </h3>
+      <ul>{children}</ul>
+      {viewAll && (
+        <Link
+          href={viewAll.href}
+          className="flex h-7 items-center rounded-md pr-2 pl-9 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+        >
+          {viewAll.label}
+        </Link>
+      )}
+    </div>
   );
 }

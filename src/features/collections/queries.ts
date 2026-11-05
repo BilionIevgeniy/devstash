@@ -12,12 +12,21 @@ import type {
   SidebarCollections,
 } from "@/features/collections/types";
 import { getItemTypesById } from "@/features/item-types/queries";
+import {
+  limitSidebarRows,
+  SIDEBAR_ITEMS_LIMIT,
+} from "@/features/items/domain/sidebar-items";
 import type { Prisma } from "@/generated/prisma/client";
 import { type Paginated, readPage } from "@/lib/pagination";
 import { prisma } from "@/lib/prisma";
 
 const DASHBOARD_COLLECTIONS_LIMIT = 6;
-const SIDEBAR_RECENT_LIMIT = 4;
+
+// The id settles equal dates, so rows keep their order between refreshes.
+const LAST_STARRED_FIRST = [
+  { favoritedAt: { sort: "desc", nulls: "last" } },
+  { id: "desc" },
+] satisfies Prisma.CollectionOrderByWithRelationInput[];
 
 const collectionSelect = {
   id: true,
@@ -31,7 +40,7 @@ const collectionSelect = {
 async function fetchCollections(
   userId: string,
   where: Prisma.CollectionWhereInput,
-  rows: { skip?: number; take?: number } = {},
+  rows: Pick<Prisma.CollectionFindManyArgs, "skip" | "take" | "orderBy"> = {},
 ): Promise<DashboardCollection[]> {
   const collections = await prisma.collection.findMany({
     where: { userId, ...where },
@@ -87,11 +96,26 @@ export function getCollectionById(
 export async function getSidebarCollections(
   userId: string,
 ): Promise<SidebarCollections> {
-  const [favorites, recent] = await Promise.all([
-    fetchCollections(userId, { isFavorite: true }),
-    fetchCollections(userId, {}, { take: SIDEBAR_RECENT_LIMIT }),
+  const take = SIDEBAR_ITEMS_LIMIT + 1;
+  const [favoriteRows, recentRows] = await Promise.all([
+    // Last starred first: a star leaves updatedAt alone, so a new favorite of
+    // an old collection would otherwise fall past the limit.
+    fetchCollections(
+      userId,
+      { isFavorite: true },
+      { take, orderBy: LAST_STARRED_FIRST },
+    ),
+    fetchCollections(userId, {}, { take }),
   ]);
-  return { favorites, recent };
+  const favorites = limitSidebarRows(favoriteRows);
+  const recent = limitSidebarRows(recentRows);
+
+  return {
+    favorites: favorites.rows,
+    recent: recent.rows,
+    hasMoreFavorites: favorites.hasMore,
+    hasMoreRecent: recent.hasMore,
+  };
 }
 
 // Narrower than fetchCollections: the favorites page shows no types or counts.
@@ -100,8 +124,7 @@ export async function getFavoriteCollections(
 ): Promise<FavoriteCollection[]> {
   const collections = await prisma.collection.findMany({
     where: { userId, isFavorite: true },
-    // The id settles equal dates, so rows keep their order between refreshes.
-    orderBy: [{ favoritedAt: { sort: "desc", nulls: "last" } }, { id: "desc" }],
+    orderBy: LAST_STARRED_FIRST,
     select: { id: true, name: true, favoritedAt: true, updatedAt: true },
   });
   return collections.map(({ id, name, favoritedAt, updatedAt }) => ({

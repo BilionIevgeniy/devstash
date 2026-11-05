@@ -22,11 +22,14 @@ export function CollapsibleSection({
         type="button"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((open) => !open)}
-        className="flex w-full items-center gap-1 px-2 py-1 text-sm font-medium text-muted-foreground hover:text-foreground"
+        className="flex w-full items-center gap-1 rounded-md px-2 py-1 text-sm font-semibold text-foreground hover:bg-accent"
       >
         {title}
         <ChevronDown
-          className={cn("size-4 transition-transform", !isOpen && "-rotate-90")}
+          className={cn(
+            "size-3.5 text-muted-foreground transition-transform",
+            !isOpen && "-rotate-90",
+          )}
         />
       </button>
       {isOpen && <div className="mt-1">{children}</div>}
