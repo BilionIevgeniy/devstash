@@ -49,7 +49,9 @@ export function TopBar({
             <Pin />
           </Link>
         </Button>
-        <CreateCollectionDialog />
+        <div className="hidden sm:flex">
+          <CreateCollectionDialog />
+        </div>
         {newItemButton}
       </div>
     </header>

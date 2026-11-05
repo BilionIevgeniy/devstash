@@ -15,7 +15,10 @@ import { cn } from "@/lib/utils";
 
 interface DashboardShellProps {
   sidebar: ReactNode;
-  /** The top bar's New Item button, filled by the layout with the user's plan. */
+  /**
+   * The top bar's New Item button, or the create menu on a phone, filled by the
+   * layout with the user's plan.
+   */
   newItemButton: ReactNode;
   /** From the sidebar cookie, so a reload keeps the sidebar as it was left. */
   defaultSidebarOpen: boolean;
