@@ -4,3 +4,11 @@ export const LINK_CLASS =
 export function ItemCount({ value }: { value: number }) {
   return <span className="ml-auto text-xs text-muted-foreground">{value}</span>;
 }
+
+export function GroupLabel({ children }: { children: string }) {
+  return (
+    <h3 className="px-2 pb-1 pt-2 text-xs font-medium uppercase text-muted-foreground">
+      {children}
+    </h3>
+  );
+}

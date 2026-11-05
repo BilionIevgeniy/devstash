@@ -30,8 +30,8 @@ export async function getUserItemDetail(
   return record ? toItemDetail(record) : null;
 }
 
-// The item routes carry the type in the URL: an item of another type is not
-// found there, the same as a missing one.
+// The full item page carries the type in the URL: an item of another type is
+// not found there, the same as a missing one.
 export async function getUserItemDetailOfType(
   userId: string,
   itemId: string,

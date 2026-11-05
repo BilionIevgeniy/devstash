@@ -2,17 +2,20 @@ import { Layers } from "lucide-react";
 import Link from "next/link";
 
 import { CollectionsSection } from "@/features/app-shell/_internal/components/sidebar/CollectionsSection";
+import { ItemsSection } from "@/features/app-shell/_internal/components/sidebar/ItemsSection";
 import { TypesSection } from "@/features/app-shell/_internal/components/sidebar/TypesSection";
 import { UserArea } from "@/features/app-shell/_internal/components/sidebar/UserArea";
 import { getSidebarCollections } from "@/features/collections/queries";
 import { getSidebarItemTypes } from "@/features/item-types/queries";
+import { getSidebarItems } from "@/features/items/queries";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 
 export async function Sidebar() {
   const user = await getSessionUser();
-  const [itemTypes, collections] = await Promise.all([
+  const [itemTypes, collections, items] = await Promise.all([
     getSidebarItemTypes(user.id),
     getSidebarCollections(user.id),
+    getSidebarItems(user.id),
   ]);
 
   return (
@@ -30,6 +33,7 @@ export async function Sidebar() {
       <nav className="flex-1 space-y-4 overflow-y-auto px-2 py-2">
         <TypesSection itemTypes={itemTypes} />
         <CollectionsSection {...collections} />
+        <ItemsSection {...items} />
       </nav>
 
       <UserArea user={user} />

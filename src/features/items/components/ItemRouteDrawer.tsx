@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { parseTypeSlug } from "@/features/item-types/domain/item-type";
@@ -107,16 +107,17 @@ export function ItemRouteDrawerMissing() {
   );
 }
 
-// Radix wants a title in every dialog, so the skeleton has a hidden one. A
-// loading file gets no params, so the type is read from the URL here, for a
-// file or image skeleton of the right size.
+// Radix wants a title in every dialog, so the skeleton has a hidden one. The
+// type is read from the path, for a file or image skeleton of the right size:
+// the params hold the type of the page behind the drawer, which a sidebar row
+// of another type does not share.
 export function ItemRouteDrawerSkeleton() {
-  const { type } = useParams<{ type: string }>();
+  const slug = usePathname().split("/")[2];
 
   return (
     <div className="px-6 pt-12 pb-6">
       <SheetTitle className="sr-only">Loading item</SheetTitle>
-      <ItemDrawerSkeleton typeName={parseTypeSlug(type) ?? undefined} />
+      <ItemDrawerSkeleton typeName={parseTypeSlug(slug) ?? undefined} />
     </div>
   );
 }

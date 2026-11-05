@@ -2,7 +2,11 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 
 import { CollapsibleSection } from "@/features/app-shell/_internal/components/CollapsibleSection";
-import { ItemCount, LINK_CLASS } from "@/features/app-shell/_internal/components/sidebar/shared";
+import {
+  GroupLabel,
+  ItemCount,
+  LINK_CLASS,
+} from "@/features/app-shell/_internal/components/sidebar/shared";
 import { cn } from "@/lib/utils";
 import type {
   DashboardCollection,
@@ -11,14 +15,6 @@ import type {
 
 interface CollectionLinkProps {
   collection: DashboardCollection;
-}
-
-function GroupLabel({ children }: { children: string }) {
-  return (
-    <h3 className="px-2 pb-1 pt-2 text-xs font-medium uppercase text-muted-foreground">
-      {children}
-    </h3>
-  );
 }
 
 function FavoriteLink({ collection }: CollectionLinkProps) {

@@ -2,6 +2,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const TYPE_ROWS = 7;
 const COLLECTION_ROWS = 4;
+// The real section runs from nothing to two full groups; it comes last, so
+// nothing below it moves.
+const ITEM_ROWS = 4;
 
 function GroupSkeleton({ rows }: { rows: number }) {
   return (
@@ -22,9 +25,10 @@ export function SidebarSkeleton() {
         <Skeleton className="h-5 w-24" />
       </div>
 
-      <div className="flex-1 space-y-4 px-2 py-2">
+      <div className="min-h-0 flex-1 space-y-4 overflow-hidden px-2 py-2">
         <GroupSkeleton rows={TYPE_ROWS} />
         <GroupSkeleton rows={COLLECTION_ROWS} />
+        <GroupSkeleton rows={ITEM_ROWS} />
       </div>
 
       <div className="flex shrink-0 items-center gap-3 border-t p-4">

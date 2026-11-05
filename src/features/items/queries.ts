@@ -1,6 +1,12 @@
 import "server-only";
 
+import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
+import { itemTypeSelect } from "@/features/item-types/queries";
 import { toSearchPreview } from "@/features/items/_internal/domain/search-preview";
+import {
+  limitSidebarFavorites,
+  SIDEBAR_ITEMS_LIMIT,
+} from "@/features/items/_internal/domain/sidebar-items";
 import {
   cardItemSelect,
   dashboardItemSelect,
@@ -17,7 +23,10 @@ import type {
   ItemEditState,
   ItemStats,
   SearchableItem,
+  SidebarItem,
+  SidebarItems,
 } from "@/features/items/types";
+import type { Prisma } from "@/generated/prisma/client";
 import { type Paginated, readPage } from "@/lib/pagination";
 import { prisma } from "@/lib/prisma";
 
@@ -25,6 +34,26 @@ const DASHBOARD_RECENT_ITEMS_LIMIT = 10;
 // Matches the planned item limit of the Free plan.
 const DASHBOARD_PINNED_ITEMS_LIMIT = 50;
 const SEARCH_INDEX_ITEM_LIMIT = 1000;
+
+// The id settles equal dates, so rows keep their order between refreshes.
+const LAST_STARRED_FIRST = [
+  { favoritedAt: { sort: "desc", nulls: "last" } },
+  { id: "desc" },
+] satisfies Prisma.ItemOrderByWithRelationInput[];
+
+const sidebarItemSelect = {
+  id: true,
+  title: true,
+  type: { select: itemTypeSelect },
+} satisfies Prisma.ItemSelect;
+
+type RawSidebarItem = Prisma.ItemGetPayload<{
+  select: typeof sidebarItemSelect;
+}>;
+
+function toSidebarItem({ type, ...item }: RawSidebarItem): SidebarItem {
+  return { ...item, type: toItemTypeInfo(type) };
+}
 
 export async function getPinnedItems(userId: string): Promise<ItemCardData[]> {
   const items = await prisma.item.findMany({
@@ -51,14 +80,34 @@ export async function getFavoriteItems(
 ): Promise<FavoriteItem[]> {
   const items = await prisma.item.findMany({
     where: { userId, isFavorite: true },
-    // The id settles equal dates, so rows keep their order between refreshes.
-    orderBy: [{ favoritedAt: { sort: "desc", nulls: "last" } }, { id: "desc" }],
+    orderBy: LAST_STARRED_FIRST,
     select: { ...dashboardItemSelect, favoritedAt: true, updatedAt: true },
   });
   return items.map(({ favoritedAt, updatedAt, ...item }) => ({
     ...toDashboardItem(item),
     favoritedAt: favoritedAt ?? updatedAt,
   }));
+}
+
+export async function getSidebarItems(userId: string): Promise<SidebarItems> {
+  const [favorites, pinned] = await Promise.all([
+    prisma.item.findMany({
+      where: { userId, isFavorite: true },
+      orderBy: LAST_STARRED_FIRST,
+      take: SIDEBAR_ITEMS_LIMIT + 1,
+      select: sidebarItemSelect,
+    }),
+    prisma.item.findMany({
+      where: { userId, isPinned: true },
+      orderBy: NEWEST_FIRST,
+      take: SIDEBAR_ITEMS_LIMIT,
+      select: sidebarItemSelect,
+    }),
+  ]);
+  return {
+    ...limitSidebarFavorites(favorites.map(toSidebarItem)),
+    pinned: pinned.map(toSidebarItem),
+  };
 }
 
 export function getItemsByType(

@@ -74,7 +74,7 @@ export function DashboardShell({
         >
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <SheetDescription className="sr-only">
-            Browse item types and collections
+            Browse item types, collections and items
           </SheetDescription>
           {sidebar}
         </SheetContent>
