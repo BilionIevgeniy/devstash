@@ -28,7 +28,7 @@ async function CollectionsContent({ page }: { page: number }) {
       {collections.length === 0 ? (
         <p className="text-sm text-muted-foreground">No collections yet.</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {collections.map((collection) => (
             <CollectionCard key={collection.id} collection={collection} />
           ))}

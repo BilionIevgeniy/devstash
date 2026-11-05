@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Shared with ImageGallery and ImageCard, so the skeleton has the columns and
 // card size of the gallery that replaces it. Kept apart from the gallery: the
 // client loading.tsx imports only this file.
-export const IMAGE_GALLERY_GRID = "grid gap-4 sm:grid-cols-2 lg:grid-cols-3";
+export const IMAGE_GALLERY_GRID = "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3";
 export const IMAGE_CARD_TITLE_HEIGHT = "h-12";
 
 const CARD_COUNT = 6;
