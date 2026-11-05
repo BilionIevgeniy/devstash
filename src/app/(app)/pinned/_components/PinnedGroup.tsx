@@ -41,29 +41,24 @@ export function PinnedGroup({
   return (
     <section className="space-y-2">
       <div className={PINNED_GROUP_HEADER}>
-        <h2 className="min-w-0 text-lg font-semibold">
+        <h2 className="min-w-0 font-mono text-sm font-semibold">
           <button
             type="button"
             aria-expanded={isOpen}
             aria-controls={panelId}
             onClick={onToggle}
-            className="flex items-center gap-2 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex h-8 items-center gap-1 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
+            <span>
+              <span className="capitalize">{label}</span>{" "}
+              <span className="text-muted-foreground">({items.length})</span>
+            </span>
             <ChevronDown
               className={cn(
-                "size-4 shrink-0 text-muted-foreground transition-transform",
+                "size-3.5 shrink-0 text-muted-foreground transition-transform",
                 !isOpen && "-rotate-90",
               )}
             />
-            <TypeIcon
-              name={type.icon}
-              className="size-5 shrink-0"
-              style={{ color: type.color }}
-            />
-            <span className="capitalize">{label}</span>
-            <span className="text-sm font-normal text-muted-foreground">
-              {items.length}
-            </span>
           </button>
         </h2>
         <SortSelect
