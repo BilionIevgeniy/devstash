@@ -41,6 +41,7 @@ export interface SidebarItems {
   favorites: SidebarItem[];
   pinned: SidebarItem[];
   hasMoreFavorites: boolean;
+  hasMorePinned: boolean;
 }
 
 export interface ItemCollectionRef {

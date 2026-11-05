@@ -10,12 +10,14 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 import {
+  getAllPinnedItems,
   getFavoriteItems,
   getItemEditState,
   getItemsByType,
   getPinnedItems,
   getRecentItems,
   getSearchableItems,
+  getSidebarItems,
 } from "@/features/items/queries";
 
 const createdAt = new Date("2026-01-15T00:00:00Z");
@@ -124,6 +126,64 @@ describe("getRecentItems", () => {
       expect(item).not.toHaveProperty("content");
       expect(item).not.toHaveProperty("url");
     }
+  });
+});
+
+describe("getAllPinnedItems", () => {
+  beforeEach(() => {
+    findMany.mockReset().mockResolvedValue([]);
+  });
+
+  it("reads every pin of the caller, newest first with no ties", async () => {
+    await getAllPinnedItems("user-1");
+
+    const { where, orderBy, take } = findMany.mock.calls[0][0];
+    expect(where).toEqual({ userId: "user-1", isPinned: true });
+    expect(orderBy).toEqual([{ createdAt: "desc" }, { id: "desc" }]);
+    expect(take).toBeUndefined();
+  });
+
+  it("does not read the content or the object key", async () => {
+    await getAllPinnedItems("user-1");
+
+    const { select } = findMany.mock.calls[0][0];
+    expect(select).not.toHaveProperty("content");
+    expect(select).not.toHaveProperty("fileKey");
+  });
+});
+
+describe("getSidebarItems", () => {
+  const type = { id: "type-1", name: "note", icon: "StickyNote", color: null };
+  const rows = (count: number) =>
+    Array.from({ length: count }, (_, index) => ({
+      id: `item-${index}`,
+      title: "note",
+      type,
+    }));
+
+  beforeEach(() => {
+    findMany.mockReset().mockResolvedValue([]);
+  });
+
+  it("reads one row past the limit of the caller's two groups", async () => {
+    await getSidebarItems("user-1");
+
+    const [favorites, pinned] = findMany.mock.calls.map(([args]) => args);
+    expect(favorites.where).toEqual({ userId: "user-1", isFavorite: true });
+    expect(pinned.where).toEqual({ userId: "user-1", isPinned: true });
+    expect(favorites.take).toBe(6);
+    expect(pinned.take).toBe(6);
+  });
+
+  it("reports more pins and shows only the limit", async () => {
+    findMany.mockResolvedValueOnce(rows(5)).mockResolvedValueOnce(rows(6));
+
+    const result = await getSidebarItems("user-1");
+
+    expect(result.favorites).toHaveLength(5);
+    expect(result.hasMoreFavorites).toBe(false);
+    expect(result.pinned).toHaveLength(5);
+    expect(result.hasMorePinned).toBe(true);
   });
 });
 

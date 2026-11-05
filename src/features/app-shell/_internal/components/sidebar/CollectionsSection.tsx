@@ -3,11 +3,10 @@ import { Star } from "lucide-react";
 
 import { CollapsibleSection } from "@/features/app-shell/_internal/components/CollapsibleSection";
 import {
-  GroupLabel,
   ItemCount,
   LINK_CLASS,
+  SidebarGroup,
 } from "@/features/app-shell/_internal/components/sidebar/shared";
-import { cn } from "@/lib/utils";
 import type {
   DashboardCollection,
   SidebarCollections,
@@ -47,39 +46,50 @@ function RecentLink({ collection }: CollectionLinkProps) {
   );
 }
 
-export function CollectionsSection({ favorites, recent }: SidebarCollections) {
+export function CollectionsSection({
+  favorites,
+  recent,
+  hasMoreFavorites,
+  hasMoreRecent,
+}: SidebarCollections) {
+  if (favorites.length === 0 && recent.length === 0) return null;
+
   return (
     <CollapsibleSection title="Collections">
-      {favorites.length > 0 && (
-        <>
-          <GroupLabel>Favorites</GroupLabel>
-          <ul>
+      <div className="space-y-4">
+        {favorites.length > 0 && (
+          <SidebarGroup
+            label="Favorites"
+            viewAll={
+              hasMoreFavorites
+                ? { href: "/favorites", label: "View all favorites" }
+                : undefined
+            }
+          >
             {favorites.map((collection) => (
               <li key={collection.id}>
                 <FavoriteLink collection={collection} />
               </li>
             ))}
-          </ul>
-        </>
-      )}
-      {recent.length > 0 && (
-        <>
-          <GroupLabel>Recent</GroupLabel>
-          <ul>
+          </SidebarGroup>
+        )}
+        {recent.length > 0 && (
+          <SidebarGroup
+            label="Recent"
+            viewAll={
+              hasMoreRecent
+                ? { href: "/collections", label: "View all collections" }
+                : undefined
+            }
+          >
             {recent.map((collection) => (
               <li key={collection.id}>
                 <RecentLink collection={collection} />
               </li>
             ))}
-          </ul>
-        </>
-      )}
-      <Link
-        href="/collections"
-        className={cn(LINK_CLASS, "mt-1 text-muted-foreground")}
-      >
-        View all collections
-      </Link>
+          </SidebarGroup>
+        )}
+      </div>
     </CollapsibleSection>
   );
 }

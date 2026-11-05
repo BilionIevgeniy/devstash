@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { Folder } from "lucide-react";
 
-import {
-  FAVORITE_ROW_WRAPPER,
-  FavoriteRow,
-} from "@/app/(app)/favorites/_components/FavoriteRow";
+import { LIST_ROW_WRAPPER, ListRow } from "@/app/(app)/_components/ListRow";
+import { SortSelect } from "@/app/(app)/_components/SortSelect";
 import { FavoriteSection } from "@/app/(app)/favorites/_components/FavoriteSection";
-import { FavoriteSortSelect } from "@/app/(app)/favorites/_components/FavoriteSortSelect";
 import {
   FAVORITE_COLLECTION_SORTS,
   type FavoriteCollectionSort,
@@ -31,7 +28,7 @@ export function FavoriteCollections({
       title="Collections"
       count={collections.length}
       action={
-        <FavoriteSortSelect
+        <SortSelect
           sorts={FAVORITE_COLLECTION_SORTS}
           value={sort}
           onChange={onSortChange}
@@ -43,9 +40,9 @@ export function FavoriteCollections({
         <Link
           key={collection.id}
           href={`/collections/${collection.id}`}
-          className={FAVORITE_ROW_WRAPPER}
+          className={LIST_ROW_WRAPPER}
         >
-          <FavoriteRow
+          <ListRow
             icon={<Folder className="size-4 shrink-0 text-muted-foreground" />}
             title={collection.name}
             badge="collection"

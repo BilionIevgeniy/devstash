@@ -4,10 +4,6 @@ import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
 import { itemTypeSelect } from "@/features/item-types/queries";
 import { toSearchPreview } from "@/features/items/_internal/domain/search-preview";
 import {
-  limitSidebarFavorites,
-  SIDEBAR_ITEMS_LIMIT,
-} from "@/features/items/_internal/domain/sidebar-items";
-import {
   cardItemSelect,
   dashboardItemSelect,
   NEWEST_FIRST,
@@ -17,7 +13,12 @@ import {
 } from "@/features/items/_internal/queries";
 import { copyValueOf } from "@/features/items/domain/item-fields";
 import { ITEMS_PER_PAGE } from "@/features/items/domain/pagination";
+import {
+  limitSidebarRows,
+  SIDEBAR_ITEMS_LIMIT,
+} from "@/features/items/domain/sidebar-items";
 import type {
+  DashboardItem,
   FavoriteItem,
   ItemCardData,
   ItemEditState,
@@ -65,6 +66,19 @@ export async function getPinnedItems(userId: string): Promise<ItemCardData[]> {
   return items.map(toItemCardData);
 }
 
+// Every pin, for the pinned page. Narrower than getPinnedItems: no content is
+// read, so the lack of a limit stays cheap.
+export async function getAllPinnedItems(
+  userId: string,
+): Promise<DashboardItem[]> {
+  const items = await prisma.item.findMany({
+    where: { userId, isPinned: true },
+    orderBy: NEWEST_FIRST,
+    select: dashboardItemSelect,
+  });
+  return items.map(toDashboardItem);
+}
+
 export async function getRecentItems(userId: string): Promise<ItemCardData[]> {
   const items = await prisma.item.findMany({
     where: { userId },
@@ -100,13 +114,18 @@ export async function getSidebarItems(userId: string): Promise<SidebarItems> {
     prisma.item.findMany({
       where: { userId, isPinned: true },
       orderBy: NEWEST_FIRST,
-      take: SIDEBAR_ITEMS_LIMIT,
+      take: SIDEBAR_ITEMS_LIMIT + 1,
       select: sidebarItemSelect,
     }),
   ]);
+  const limitedFavorites = limitSidebarRows(favorites.map(toSidebarItem));
+  const limitedPinned = limitSidebarRows(pinned.map(toSidebarItem));
+
   return {
-    ...limitSidebarFavorites(favorites.map(toSidebarItem)),
-    pinned: pinned.map(toSidebarItem),
+    favorites: limitedFavorites.rows,
+    pinned: limitedPinned.rows,
+    hasMoreFavorites: limitedFavorites.hasMore,
+    hasMorePinned: limitedPinned.hasMore,
   };
 }
 

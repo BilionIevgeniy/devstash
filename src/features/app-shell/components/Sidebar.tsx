@@ -30,7 +30,7 @@ export async function Sidebar() {
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-4 overflow-y-auto px-2 py-2">
+      <nav className="flex-1 space-y-6 overflow-y-auto px-2 py-2">
         <TypesSection itemTypes={itemTypes} />
         <CollectionsSection {...collections} />
         <ItemsSection {...items} />

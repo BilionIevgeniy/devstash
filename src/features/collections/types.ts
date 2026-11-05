@@ -37,6 +37,8 @@ export interface FavoriteCollection {
 export interface SidebarCollections {
   favorites: DashboardCollection[];
   recent: DashboardCollection[];
+  hasMoreFavorites: boolean;
+  hasMoreRecent: boolean;
 }
 
 export interface CollectionStats {
