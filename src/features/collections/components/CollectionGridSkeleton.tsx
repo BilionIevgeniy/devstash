@@ -8,7 +8,7 @@ const COLLECTION_CARD_HEIGHT = "h-34";
 
 export function CollectionGridSkeleton() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {Array.from({ length: CARD_COUNT }, (_, index) => (
         <Skeleton
           key={index}

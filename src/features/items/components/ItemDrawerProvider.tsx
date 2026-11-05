@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useOptimistic, type ReactNode } from "react";
+import { startTransition, useOptimistic, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -30,7 +30,10 @@ interface ItemDrawerProviderProps {
    * draws the drawer; this provider then renders no sheet of its own.
    */
   basePath?: string;
-  /** For a provider with no card to give the focus back to (the palette). */
+  /**
+   * Replaces the default focus return to the opener, for a provider with no
+   * card to give the focus back to (the palette).
+   */
   onSheetCloseAutoFocus?: (event: Event) => void;
   children: ReactNode;
 }
@@ -41,7 +44,8 @@ export function ItemDrawerProvider({
   children,
 }: ItemDrawerProviderProps) {
   const router = useRouter();
-  const sheet = useItemSheet();
+  const focusSentinelRef = useRef<HTMLDivElement>(null);
+  const sheet = useItemSheet(focusSentinelRef);
   const guard = useDirtyCloseGuard(sheet.onOpenChange);
   const favorites = useItemFavorites(sheet.handleFavoriteSaved);
   const pins = useItemPins(sheet.handlePinSaved);
@@ -93,12 +97,13 @@ export function ItemDrawerProvider({
 
   return (
     <ItemDrawerContext.Provider value={value}>
+      <div ref={focusSentinelRef} tabIndex={-1} className="sr-only" />
       {children}
       <Sheet open={sheet.isOpen} onOpenChange={guard.guardOpenChange}>
         <SheetContent
           aria-describedby={undefined}
           className={ITEM_SHEET_CLASS}
-          onCloseAutoFocus={onSheetCloseAutoFocus}
+          onCloseAutoFocus={onSheetCloseAutoFocus ?? sheet.handleCloseAutoFocus}
         >
           {sheet.item && (
             <ItemDrawerContent

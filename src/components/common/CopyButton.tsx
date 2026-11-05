@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Check, Copy, Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,6 +20,8 @@ type CopyButtonProps = CopySource & {
   label: string;
   /** The size and color of the button, merged over the defaults. */
   className?: string;
+  /** A visible label after the icon; without it the button is icon-sized. */
+  children?: ReactNode;
 };
 
 // The write starts inside the click, so Safari keeps the user gesture while
@@ -43,13 +45,14 @@ async function writeLater(text: Promise<string>): Promise<void> {
   await navigator.clipboard.writeText(await text);
 }
 
-// An icon button that copies a text, shows a check for a moment and confirms
-// with a toast. With getValue it is disabled while the text is read.
+// A button that copies a text, shows a check for a moment and confirms with a
+// toast. With getValue it is disabled while the text is read.
 export function CopyButton({
   value,
   getValue,
   label,
   className,
+  children,
 }: CopyButtonProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
@@ -73,7 +76,7 @@ export function CopyButton({
     <Button
       type="button"
       variant="ghost"
-      size="icon"
+      size={children ? "default" : "icon"}
       className={className}
       aria-label={label}
       aria-busy={isCopying}
@@ -87,6 +90,7 @@ export function CopyButton({
       ) : (
         <Copy />
       )}
+      {children}
     </Button>
   );
 }
