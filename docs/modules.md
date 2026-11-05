@@ -35,9 +35,9 @@ A module writes only the models it owns and reads only its own models. A relatio
 
 - **Owns:** `Subscription` (later `StripeEvent`); the entitlements (limits, Pro) as `domain/limits.ts` plus `queries.ts` `getEntitlements`, read through `cache()` and never from the JWT or the session; later checkout, portal and the webhook service, and the billing section of the settings page
 - **Uses today:** nothing
-- **Entry points used from outside:** `queries` (`getEntitlements`), `domain/limits` (`entitlementsFor`, `Entitlements`), `components/ProBadge` (the sidebar's file and image types, the same types in the create dialog)
+- **Entry points used from outside:** `queries` (`getEntitlements`), `domain/limits` (`entitlementsFor`, `Entitlements`, the Free limits and Pro prices), `components/ProBadge` (the sidebar's file and image types, the same types in the create dialog)
 - **Today:** created by the file upload spec for the Pro check. Its first migration created `Subscription`; the old `isPro`, `stripeCustomerId` and `stripeSubscriptionId` on `User` stay, read by nothing, until the contract migration in `context/todo.md` drops them. Nobody can become Pro in production until the Stripe specs; in development the seed gives the demo user an active subscription
-- **Will grow with** (from the two Stripe specs, not built): `StripeEvent`, checkout, portal, the webhook service behind the thin route `app/api/webhooks/stripe/route.ts`, `components/BillingSection`, the Free limits in `domain/limits` (also used by the homepage pricing). It will use `auth`
+- **Will grow with** (from the two Stripe specs, not built): `StripeEvent`, checkout, portal, the webhook service behind the thin route `app/api/webhooks/stripe/route.ts`, `components/BillingSection`, enforcement of the Free limits. `domain/limits` already holds those limits and the Pro prices, which the homepage pricing shows; nothing enforces them yet. It will use `auth`
 
 ### item-types
 

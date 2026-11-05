@@ -1,6 +1,21 @@
 import { describe, expect, it } from "vitest";
 
-import { entitlementsFor, isProStatus } from "@/features/billing/domain/limits";
+import {
+  entitlementsFor,
+  isProStatus,
+  proYearlyPricePerMonth,
+  proYearlySavingsPercent,
+} from "@/features/billing/domain/limits";
+
+describe("yearly Pro pricing", () => {
+  it("shows the yearly price as $6 a month", () => {
+    expect(proYearlyPricePerMonth()).toBe(6);
+  });
+
+  it("saves 25% against paying monthly", () => {
+    expect(proYearlySavingsPercent()).toBe(25);
+  });
+});
 
 describe("entitlementsFor", () => {
   it.each(["active", "trialing"])("grants Pro for %s", (status) => {

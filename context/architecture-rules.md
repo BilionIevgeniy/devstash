@@ -7,7 +7,7 @@ A modular monolith. Code is grouped by feature, a feature imports only features 
 ```text
 src/
   app/                  entry points and page composition: page, layout, route.ts, loading, error
-    (marketing)/        public homepage with its own `_components/` (planned)
+    (marketing)/        public homepage with its own `_components/`
     (app)/              authenticated routes under one shell layout, each route with `_components/`
     api/                route handlers: NextAuth, registration; later webhooks, export, AI streaming
   features/             the product, one folder per feature (see Ranks)
