@@ -6,6 +6,7 @@ import { auth } from "@/features/auth/nextauth/auth";
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { GitHubSignInButton } from "@/features/auth/components/GitHubSignInButton";
 import { SignInForm } from "@/features/auth/components/SignInForm";
+import { safeCallbackPath } from "@/features/auth/domain/callback-url";
 
 const AUTH_ERROR_MESSAGES = new Map([
   ["CredentialsSignin", "Invalid email or password"],
@@ -24,20 +25,25 @@ function getErrorMessage(
   return AUTH_ERROR_MESSAGES.get(code) ?? DEFAULT_ERROR_MESSAGE;
 }
 
-// A signed-in user goes to the dashboard. Checked here and not in the proxy:
-// auth() also checks the session version, so a revoked session reads as signed
-// out here instead of bouncing between the proxy and the pages.
+// A signed-in user goes to the callback path, by default the dashboard. Checked
+// here and not in the proxy: auth() also checks the session version, so a
+// revoked session reads as signed out here instead of bouncing between the
+// proxy and the pages.
 export default async function SignInPage({
   searchParams,
 }: PageProps<"/sign-in">) {
-  const session = await auth();
-  if (session?.user) redirect("/dashboard");
+  const { error, callbackUrl } = await searchParams;
+  const callbackPath = safeCallbackPath(callbackUrl);
 
-  const { error } = await searchParams;
+  const session = await auth();
+  if (session?.user) redirect(callbackPath);
 
   return (
     <AuthCard title="Sign in" description="Welcome back to DevStash">
-      <SignInForm initialError={getErrorMessage(error)} />
+      <SignInForm
+        callbackUrl={callbackPath}
+        initialError={getErrorMessage(error)}
+      />
 
       <div className="flex items-center gap-3 text-xs text-muted-foreground">
         <div className="h-px flex-1 bg-border" />
@@ -46,6 +52,7 @@ export default async function SignInPage({
       </div>
 
       <form action={signInWithGitHub}>
+        <input type="hidden" name="callbackUrl" value={callbackPath} />
         <GitHubSignInButton />
       </form>
 

@@ -17,12 +17,11 @@ import {
   loginEmailKey,
   TOO_MANY_ATTEMPTS_MESSAGE,
 } from "@/features/auth/domain/rate-limits";
-import { signInSchema } from "@/features/auth/schemas";
+import { callbackPathSchema, signInSchema } from "@/features/auth/schemas";
 import type { AuthActionState } from "@/features/auth/types";
 import { getClientIp } from "@/lib/client-ip";
 import { getIpRateLimitStatus, getRateLimitStatus } from "@/lib/rate-limit";
 
-const DASHBOARD_URL = "/dashboard";
 const HOME_URL = "/";
 const SETTINGS_URL = "/settings";
 const CREDENTIALS_ERROR_MESSAGES = new Map([
@@ -58,9 +57,10 @@ export async function signInWithCredentials(
     password: formData.get("password"),
   });
   if (!parsed.success) return failure(parsed.error.issues[0].message);
+  const redirectTo = callbackPathSchema.parse(formData.get("callbackUrl"));
 
   try {
-    await signIn("credentials", { ...parsed.data, redirectTo: DASHBOARD_URL });
+    await signIn("credentials", { ...parsed.data, redirectTo });
   } catch (error) {
     if (error instanceof CredentialsSignin) {
       if (error.code === TOO_MANY_ATTEMPTS_CODE) {
@@ -77,8 +77,9 @@ export async function signInWithCredentials(
   return { success: true, data: null, error: null };
 }
 
-export async function signInWithGitHub(): Promise<void> {
-  await signIn("github", { redirectTo: DASHBOARD_URL });
+export async function signInWithGitHub(formData: FormData): Promise<void> {
+  const redirectTo = callbackPathSchema.parse(formData.get("callbackUrl"));
+  await signIn("github", { redirectTo });
 }
 
 // A fresh GitHub sign-in confirms the owner before a destructive action on an

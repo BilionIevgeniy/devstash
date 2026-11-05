@@ -17,10 +17,11 @@ const INITIAL_STATE: AuthActionState = {
 };
 
 interface SignInFormProps {
+  callbackUrl: string;
   initialError?: string;
 }
 
-export function SignInForm({ initialError }: SignInFormProps) {
+export function SignInForm({ callbackUrl, initialError }: SignInFormProps) {
   const [state, formAction, isPending] = useActionState(
     signInWithCredentials,
     INITIAL_STATE,
@@ -30,6 +31,7 @@ export function SignInForm({ initialError }: SignInFormProps) {
 
   return (
     <form action={formAction} className="space-y-4">
+      <input type="hidden" name="callbackUrl" value={callbackUrl} />
       <div className="space-y-2">
         <label htmlFor="email" className="text-sm font-medium">
           Email

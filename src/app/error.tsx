@@ -27,7 +27,7 @@ export default function RootError({
       >
         <Button onClick={retry}>Try again</Button>
         <Button asChild variant="outline">
-          <Link href="/dashboard">Go to the dashboard</Link>
+          <Link href="/">Go to the homepage</Link>
         </Button>
       </ErrorState>
     </main>
