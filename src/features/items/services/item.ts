@@ -11,11 +11,13 @@ import { getItemFileKey } from "@/features/items/_internal/queries";
 import { getItemEditState } from "@/features/items/queries";
 import type { UpdateItemInput } from "@/features/items/schemas";
 import { getUserItemDetail } from "@/features/items/services/item-detail";
+import { userCanUseType } from "@/features/items/services/type-access";
 import type { ItemDetail } from "@/features/items/types";
 import type { OperationResult } from "@/lib/action-result";
 import { prisma } from "@/lib/prisma";
 
 const ITEM_NOT_FOUND = "Item not found";
+const PRO_ONLY = "Files and images are a Pro feature";
 const FILE_DELETE_FAILED = "Couldn't delete the file. Please try again.";
 const ITEM_OR_COLLECTION_NOT_FOUND =
   "This item or one of its collections no longer exists";
@@ -48,6 +50,10 @@ export async function updateUserItem(
 ): Promise<UpdateItemResult> {
   const current = await getItemEditState(userId, itemId);
   if (!current) return { success: false, error: ITEM_NOT_FOUND, data: null };
+  // The answer carries signed URLs, so a locked item cannot be saved either.
+  if (!(await userCanUseType(userId, current.typeName))) {
+    return { success: false, error: PRO_ONLY, data: null };
+  }
 
   const update = editableUpdate(current.typeName, input);
   if ("error" in update) {

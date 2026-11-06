@@ -1,11 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getCollectionItemRecords, getCollectionTypeCounts, signFileUrls } =
-  vi.hoisted(() => ({
-    getCollectionItemRecords: vi.fn(),
-    getCollectionTypeCounts: vi.fn(),
-    signFileUrls: vi.fn(),
-  }));
+const {
+  getCollectionItemRecords,
+  getCollectionTypeCounts,
+  getEntitlements,
+  signFileUrls,
+} = vi.hoisted(() => ({
+  getCollectionItemRecords: vi.fn(),
+  getCollectionTypeCounts: vi.fn(),
+  getEntitlements: vi.fn(),
+  signFileUrls: vi.fn(),
+}));
+vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
 vi.mock("@/features/items/_internal/queries", () => ({
   getCollectionItemRecords,
   getCollectionTypeCounts,
@@ -63,6 +69,7 @@ function mockCollection<T extends { type: { id: string } }>(records: T[]) {
 describe("getUserCollectionListing", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    getEntitlements.mockResolvedValue({ isPro: true });
     signFileUrls.mockImplementation(async (key: string) => ({
       viewUrl: `https://r2.example/view/${key}`,
       downloadUrl: `https://r2.example/download/${key}`,
@@ -93,6 +100,21 @@ describe("getUserCollectionListing", () => {
       expect.objectContaining({
         file: expect.objectContaining({ name: "a.pdf", size: 20 }),
       }),
+    );
+  });
+
+  it("signs nothing for a Free user, who keeps the rows", async () => {
+    getEntitlements.mockResolvedValue({ isPro: false });
+    mockCollection([image, file]);
+
+    const { sections } = await getUserCollectionListing("user-1", "col-1", 1);
+
+    expect(signFileUrls).not.toHaveBeenCalled();
+    expect(sections.find((s) => s.listing === "gallery")?.items[0]).toEqual(
+      expect.objectContaining({ id: "image-1", imageUrl: null }),
+    );
+    expect(sections.find((s) => s.listing === "files")?.items[0]).toEqual(
+      expect.objectContaining({ id: "file-1", file: null }),
     );
   });
 

@@ -30,7 +30,7 @@ src/
   components/ui/  shadcn/ui primitives only
   components/common/  hand-written UI with no feature knowledge, used by several features (CopyButton, PaginationNav)
   lib/            feature-neutral infrastructure and vendor clients (prisma, email, rate-limit, hash, ...)
-  proxy.ts        guards /dashboard, /profile, /settings, /items, /collections, /favorites and /pinned; must stay at the src root
+  proxy.ts        guards /dashboard, /profile, /settings, /items, /collections, /favorites, /pinned and /upgrade; must stay at the src root
 prisma/           schema, migrations, seed
 scripts/          one-off database scripts
 context/          the rulebooks (architecture-rules.md, coding-standards.md), the current feature and the history
@@ -68,7 +68,7 @@ components/ForgotPasswordForm.tsx       client component
 app/(app)/items/[type]/layout.tsx       ItemDrawerProvider basePath=/items/<type>, wraps {children} and {drawer}
   click on a card or a sidebar row      router.push(/items/<type>/<id>)
   -> @drawer/(.)[id]/layout.tsx         ItemRouteDrawer: the sheet, kept while loading gives way to the page
-     -> @drawer/(.)[id]/page.tsx        getUserItemDetail(userId, id)   items/services/item-detail.ts
+     -> @drawer/(.)[id]/page.tsx        openUserItem(userId, id)        items/services/item-detail.ts
   children keeps the list               on a reload the same URL renders [id]/page.tsx, the full item page
   closing the sheet                     router.back() once it has slid out; @drawer falls back to default.tsx (null)
 ```
@@ -325,7 +325,7 @@ Not checked by lint, so it is on the author and the reviewer: one call into a se
 - **Unsaved edits on Back.** The item edit form asks before Cancel, Esc, the overlay or the sheet's close button throw edits away, and the browser asks on reload or a closed tab. Browser Back on the intercepted item route and the sidebar's links on the full item page still drop them: the route is already gone when the sheet hears of it
 - **A session check on every homepage view.** The homepage stays static, so `Navbar` learns of the session in the browser (`useHasSession`): every view, guests included, calls `GET /api/auth/session`, which is one function call, plus one database read and a renewed cookie for a signed-in visitor. A signed-in visitor sees the guest buttons swap to Dashboard after mount. Reading the session on the server would remove the swap and cost the static page for every visitor
 - **Unbuilt features on sale.** `PricingSection` lists Custom item types, AI features and Export under Pro, and none exist. Decide before live mode ("Pro features" in `context/todo.md`)
-- **Two open Checkout tabs can create two subscriptions.** The service refuses a user who is already Pro, and the Dashboard setting redirects existing subscribers, but neither covers two sessions opened before either completes. The second live subscription wins the row and the first keeps billing until cancelled in the Dashboard. The same can happen when the webhook is late and the confirm after Checkout fails: the Upgrade buttons come back while the payment is already taken
+- **Two open Checkout tabs can create two subscriptions.** The service refuses a user who is already Pro, and the Dashboard setting redirects existing subscribers, but neither covers two sessions opened before either completes. The second live subscription wins the row and the first keeps billing until cancelled in the Dashboard. The same can happen when the webhook is late and the confirm after Checkout fails: the Upgrade buttons come back while the payment is already taken. The top bar's Upgrade button stays live during that wait too, and `/upgrade` starts a Checkout the service does not refuse, since the row still says Free
 - **Two open tabs on a dead customer.** Both replace it and the later save wins the row. A payment on the earlier customer then matches no row, so the user has paid and stays Free until it is fixed by hand. Accepted as rare
 - **The grace period and the write rule share a list.** `subscriptionWrite` reuses `isProStatus` for its live class, so a change to the grace policy also changes which subscription may write the row
 - **Lost webhooks.** An event lost for longer than Stripe's 3 days of retries leaves the row stale. There is no periodic sync, and at this size the Dashboard's failed deliveries are enough (`context/todo.md`)

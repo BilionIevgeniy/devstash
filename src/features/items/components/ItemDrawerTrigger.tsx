@@ -2,6 +2,8 @@
 
 import type { KeyboardEvent, ReactNode } from "react";
 
+import { LockedItemCard } from "@/features/items/_internal/components/LockedItemCard";
+import { LockedItemRow } from "@/features/items/_internal/components/LockedItemRow";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
 import type { DashboardItem } from "@/features/items/types";
 import { cn } from "@/lib/utils";
@@ -18,16 +20,26 @@ interface ItemDrawerTriggerProps {
 // A div with role="button" rather than a <button>: the cards are <article>
 // elements, which a button may not contain. The action is a sibling of the
 // trigger, not a child: a button inside a role="button" is not allowed, and a
-// click on it must not open the drawer.
+// click on it must not open the drawer. A locked item opens nothing, and its
+// action goes too: with one it is a card, without one a row.
 export function ItemDrawerTrigger({
   item,
   children,
   className,
   action,
 }: ItemDrawerTriggerProps) {
-  const { open, hiddenIds } = useItemDrawer();
+  const { open, hiddenIds, isLocked } = useItemDrawer();
 
   if (hiddenIds.has(item.id)) return null;
+
+  if (isLocked(item)) {
+    if (action) return <LockedItemCard item={item}>{children}</LockedItemCard>;
+    return (
+      <LockedItemRow title={item.title} className={className}>
+        {children}
+      </LockedItemRow>
+    );
+  }
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "Enter" || event.key === " ") {

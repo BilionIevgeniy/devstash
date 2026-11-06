@@ -11,8 +11,10 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 import {
+  countFileItems,
   getCollectionItemRecords,
   getCollectionTypeCounts,
+  getFileItemRecords,
   getItemDetail,
   getItemDetailOfType,
   getItemFileKey,
@@ -125,6 +127,35 @@ describe("getItemDetailOfType", () => {
       createdAt,
       updatedAt,
     });
+  });
+});
+
+describe("getFileItemRecords", () => {
+  const FILE_ITEMS = { userId: "user-1", fileKey: { not: null } };
+
+  beforeEach(() => {
+    count.mockReset().mockResolvedValue(30);
+    findMany.mockReset().mockResolvedValue([]);
+  });
+
+  it("reads only the caller's items that have an upload, newest first", async () => {
+    await getFileItemRecords("user-1", 2);
+
+    expect(count).toHaveBeenCalledWith({ where: FILE_ITEMS });
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: FILE_ITEMS,
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        skip: 21,
+        take: 21,
+      }),
+    );
+  });
+
+  it("counts by the same where", async () => {
+    await expect(countFileItems("user-1")).resolves.toBe(30);
+
+    expect(count).toHaveBeenCalledWith({ where: FILE_ITEMS });
   });
 });
 

@@ -41,6 +41,7 @@ export function SidebarSkeleton() {
       <div className="flex h-16 shrink-0 items-center gap-2 px-4">
         <Skeleton className="size-6" />
         <Skeleton className="h-5 w-24" />
+        <Skeleton className="h-5 w-10 rounded-full" />
       </div>
 
       <div className="min-h-0 flex-1 space-y-6 overflow-hidden px-2 py-2">

@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 
 interface DashboardShellProps {
   sidebar: ReactNode;
+  /** The top bar's Upgrade button, filled by the layout with the user's plan. */
+  upgradeButton: ReactNode;
   /**
    * The top bar's New Item button, or the create menu on a phone, filled by the
    * layout with the user's plan.
@@ -27,6 +29,7 @@ interface DashboardShellProps {
 
 export function DashboardShell({
   sidebar,
+  upgradeButton,
   newItemButton,
   defaultSidebarOpen,
   children,
@@ -87,6 +90,7 @@ export function DashboardShell({
         <TopBar
           onToggleSidebar={toggleSidebar}
           onOpenDrawer={() => setIsDrawerOpen(true)}
+          upgradeButton={upgradeButton}
           newItemButton={newItemButton}
         />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>

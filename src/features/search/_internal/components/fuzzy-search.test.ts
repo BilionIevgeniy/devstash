@@ -1,12 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import type { SearchableItem } from "@/features/items/types";
 import { createPaletteSearch } from "@/features/search/_internal/components/fuzzy-search";
+import type { IndexedItem } from "@/features/search/types";
 
-function item(
-  id: string,
-  fields: Partial<SearchableItem> = {},
-): SearchableItem {
+function item(id: string, fields: Partial<IndexedItem> = {}): IndexedItem {
   return {
     id,
     title: id,
@@ -17,6 +14,7 @@ function item(
     tags: [],
     type: { id: "type-1", name: "snippet", icon: "Code" },
     preview: null,
+    isLocked: false,
     ...fields,
   };
 }

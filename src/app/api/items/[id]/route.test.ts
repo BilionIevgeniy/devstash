@@ -1,11 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const auth = vi.hoisted(() => vi.fn());
-const getUserItemDetail = vi.hoisted(() => vi.fn());
+const openUserItem = vi.hoisted(() => vi.fn());
 vi.mock("@/features/auth/nextauth/auth", () => ({ auth }));
-vi.mock("@/features/items/services/item-detail", () => ({
-  getUserItemDetail,
-}));
+vi.mock("@/features/items/services/item-detail", () => ({ openUserItem }));
 
 import { GET } from "@/app/api/items/[id]/route";
 
@@ -20,7 +18,7 @@ function callGet(id: string) {
 describe("GET /api/items/[id]", () => {
   beforeEach(() => {
     auth.mockReset();
-    getUserItemDetail.mockReset();
+    openUserItem.mockReset();
     auth.mockResolvedValue({ user: { id: "user-1" } });
   });
 
@@ -30,29 +28,38 @@ describe("GET /api/items/[id]", () => {
     const response = await callGet(VALID_ID);
 
     expect(response.status).toBe(401);
-    expect(getUserItemDetail).not.toHaveBeenCalled();
+    expect(openUserItem).not.toHaveBeenCalled();
   });
 
   it("answers 400 for an id that is not a cuid", async () => {
     const response = await callGet("not-an-id");
 
     expect(response.status).toBe(400);
-    expect(getUserItemDetail).not.toHaveBeenCalled();
+    expect(openUserItem).not.toHaveBeenCalled();
   });
 
   it("answers 404 when the item is missing or someone else's", async () => {
-    getUserItemDetail.mockResolvedValue(null);
+    openUserItem.mockResolvedValue({ status: "missing" });
 
     const response = await callGet(VALID_ID);
 
     expect(response.status).toBe(404);
-    expect(getUserItemDetail).toHaveBeenCalledWith("user-1", VALID_ID);
+    expect(openUserItem).toHaveBeenCalledWith("user-1", VALID_ID);
+  });
+
+  it("answers 403 for an item the plan does not give", async () => {
+    openUserItem.mockResolvedValue({ status: "locked" });
+
+    const response = await callGet(VALID_ID);
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({ data: null });
   });
 
   it("returns the item for its owner", async () => {
-    getUserItemDetail.mockResolvedValue({
-      id: VALID_ID,
-      title: "useAuth Hook",
+    openUserItem.mockResolvedValue({
+      status: "ok",
+      item: { id: VALID_ID, title: "useAuth Hook" },
     });
 
     const response = await callGet(VALID_ID);
@@ -67,7 +74,10 @@ describe("GET /api/items/[id]", () => {
 
   // The answer holds the user's content and signed URLs.
   it("keeps the answer out of every cache", async () => {
-    getUserItemDetail.mockResolvedValue({ id: VALID_ID, title: "x" });
+    openUserItem.mockResolvedValue({
+      status: "ok",
+      item: { id: VALID_ID, title: "x" },
+    });
 
     const response = await callGet(VALID_ID);
 

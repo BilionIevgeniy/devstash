@@ -4,8 +4,10 @@ import {
   billingOverviewFor,
   entitlementsFor,
   isProStatus,
+  proPriceDisplay,
   proYearlyPricePerMonth,
   proYearlySavingsPercent,
+  reachedFreeLimit,
   withinFreeCollectionLimit,
   withinFreeItemLimit,
 } from "@/features/billing/domain/limits";
@@ -17,6 +19,33 @@ describe("yearly Pro pricing", () => {
 
   it("saves 25% against paying monthly", () => {
     expect(proYearlySavingsPercent()).toBe(25);
+  });
+});
+
+describe("proPriceDisplay", () => {
+  it("shows the monthly price", () => {
+    expect(proPriceDisplay(false)).toEqual({
+      price: "$8",
+      note: "Billed monthly",
+    });
+  });
+
+  it("shows the yearly price per month, with the yearly total", () => {
+    expect(proPriceDisplay(true)).toEqual({
+      price: "$6",
+      note: "Billed $72/yr",
+    });
+  });
+});
+
+describe("reachedFreeLimit", () => {
+  it.each([
+    [49, 2, false],
+    [50, 2, true],
+    [49, 3, true],
+    [60, 5, true],
+  ])("%i items and %i collections: %s", (items, collections, expected) => {
+    expect(reachedFreeLimit(items, collections)).toBe(expected);
   });
 });
 

@@ -8,6 +8,10 @@ export interface ToggleOptions {
 }
 
 interface ItemDrawerContextValue {
+  /** The plan does not give this item's type, so it opens nothing. */
+  isLocked: (item: Pick<DashboardItem, "type">) => boolean;
+  /** Takes the focus when the row that held it is gone. */
+  focusListTop: () => void;
   open: (item: DashboardItem) => void;
   /** Deletes the item and hides its card until the fresh page arrives. */
   remove: (id: string) => void;

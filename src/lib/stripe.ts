@@ -16,6 +16,11 @@ export function getStripe(): Stripe {
   return client;
 }
 
+// A test key, secret (sk_) or restricted (rk_): no payment is real.
+export function isStripeTestMode(): boolean {
+  return /^[sr]k_test_/.test(process.env.STRIPE_SECRET_KEY ?? "");
+}
+
 // A missing secret throws a plain Error, so the route answers 500 and Stripe
 // retries. Only a bad signature is the caller's fault.
 export function constructStripeEvent(

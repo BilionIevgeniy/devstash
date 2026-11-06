@@ -1,6 +1,7 @@
-import { CheckList } from "./CheckList";
+import { CheckList } from "@/components/common/CheckList";
+import { GradientBadge } from "@/components/common/GradientBadge";
+
 import { CodeMockup } from "./CodeMockup";
-import { GradientBadge } from "./GradientBadge";
 import { ScrollFadeIn } from "./ScrollFadeIn";
 
 const CAPABILITIES = [

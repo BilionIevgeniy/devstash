@@ -11,6 +11,7 @@ import {
   NewItemButton,
   NewItemButtonFallback,
 } from "@/app/(app)/_components/NewItemButton";
+import { UpgradeButton } from "@/app/(app)/_components/UpgradeButton";
 import { SidebarSkeleton } from "@/features/app-shell/components/SidebarSkeleton";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { EditorPreferencesProvider } from "@/features/editor/components/EditorPreferencesProvider";
@@ -35,6 +36,11 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         sidebar={
           <Suspense fallback={<SidebarSkeleton />}>
             <Sidebar />
+          </Suspense>
+        }
+        upgradeButton={
+          <Suspense>
+            <UpgradeButton />
           </Suspense>
         }
         newItemButton={

@@ -16,7 +16,7 @@ export async function ProfileInfo() {
         name={profile.name}
         email={profile.email}
         image={profile.image}
-        className="size-16 [&_[data-slot=avatar-fallback]]:text-xl"
+        className="size-16 **:data-[slot=avatar-fallback]:text-xl"
       />
       <div className="min-w-0">
         {profile.name && (

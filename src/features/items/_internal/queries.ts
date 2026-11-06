@@ -9,6 +9,7 @@ import type {
   DashboardItem,
   ItemCardData,
   ItemDetailRecord,
+  LockedFileRecord,
   UploadItemRecord,
 } from "@/features/items/types";
 import type { Prisma } from "@/generated/prisma/client";
@@ -255,4 +256,38 @@ export async function getItemFileKey(
     where: { id, userId },
     select: { fileKey: true },
   });
+}
+
+function fileItemsOf(userId: string) {
+  return { userId, fileKey: { not: null } } satisfies Prisma.ItemWhereInput;
+}
+
+export function countFileItems(userId: string): Promise<number> {
+  return prisma.item.count({ where: fileItemsOf(userId) });
+}
+
+// Every item with an upload, newest first, read only by the locked files service.
+export function getFileItemRecords(
+  userId: string,
+  page: number,
+): Promise<Paginated<LockedFileRecord>> {
+  return readPage(
+    page,
+    ITEMS_PER_PAGE,
+    () => countFileItems(userId),
+    (skip, take) =>
+      prisma.item.findMany({
+        where: fileItemsOf(userId),
+        orderBy: NEWEST_FIRST,
+        skip,
+        take,
+        select: {
+          id: true,
+          title: true,
+          fileKey: true,
+          fileName: true,
+          fileSize: true,
+        },
+      }),
+  );
 }

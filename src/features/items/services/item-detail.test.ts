@@ -1,10 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getItemDetail, getItemDetailOfType, signFileUrls } = vi.hoisted(() => ({
-  getItemDetail: vi.fn(),
-  getItemDetailOfType: vi.fn(),
-  signFileUrls: vi.fn(),
-}));
+const { getEntitlements, getItemDetail, getItemDetailOfType, signFileUrls } =
+  vi.hoisted(() => ({
+    getEntitlements: vi.fn(),
+    getItemDetail: vi.fn(),
+    getItemDetailOfType: vi.fn(),
+    signFileUrls: vi.fn(),
+  }));
+vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
 vi.mock("@/features/items/_internal/queries", () => ({
   getItemDetail,
   getItemDetailOfType,
@@ -14,6 +17,7 @@ vi.mock("@/features/files/services/objects", () => ({ signFileUrls }));
 import {
   getUserItemDetail,
   getUserItemDetailOfType,
+  openUserItem,
 } from "@/features/items/services/item-detail";
 
 const record = {
@@ -82,6 +86,58 @@ describe("getUserItemDetail", () => {
     getItemDetail.mockResolvedValue(null);
 
     expect(await getUserItemDetail("user-1", "item-1")).toBeNull();
+  });
+});
+
+describe("openUserItem", () => {
+  const upload = { ...record, fileKey: "users/user-1/abc.png" };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    signFileUrls.mockResolvedValue({
+      viewUrl: "https://r2.example/view",
+      downloadUrl: "https://r2.example/download",
+    });
+  });
+
+  it("locks a file item for a Free user before anything is signed", async () => {
+    getEntitlements.mockResolvedValue({ isPro: false });
+    getItemDetail.mockResolvedValue(upload);
+
+    await expect(openUserItem("user-1", "item-1")).resolves.toEqual({
+      status: "locked",
+    });
+    expect(signFileUrls).not.toHaveBeenCalled();
+  });
+
+  it("opens a file item on Pro", async () => {
+    getEntitlements.mockResolvedValue({ isPro: true });
+    getItemDetail.mockResolvedValue(upload);
+
+    const result = await openUserItem("user-1", "item-1");
+
+    expect(result.status).toBe("ok");
+    expect(signFileUrls).toHaveBeenCalled();
+  });
+
+  it("opens a text item on Free, with no read of the plan", async () => {
+    getItemDetail.mockResolvedValue({
+      ...record,
+      type: { ...record.type, name: "snippet" },
+    });
+
+    const result = await openUserItem("user-1", "item-1");
+
+    expect(result.status).toBe("ok");
+    expect(getEntitlements).not.toHaveBeenCalled();
+  });
+
+  it("answers missing for an item that is not there", async () => {
+    getItemDetail.mockResolvedValue(null);
+
+    await expect(openUserItem("user-1", "item-1")).resolves.toEqual({
+      status: "missing",
+    });
   });
 });
 

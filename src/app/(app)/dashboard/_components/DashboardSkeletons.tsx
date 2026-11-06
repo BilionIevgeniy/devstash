@@ -2,6 +2,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CollectionGridSkeleton } from "@/features/collections/components/CollectionGridSkeleton";
 
 const STAT_CARDS = 4;
+export const PINNED_SKELETON_ROWS = 2;
+export const RECENT_SKELETON_ROWS = 5;
 
 // Block heights mirror the rendered cards (StatsCards, ItemRow) so the page
 // does not shift when the real content streams in.

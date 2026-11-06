@@ -11,17 +11,19 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import type { SearchableCollection } from "@/features/collections/types";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
-import type { SearchableItem } from "@/features/items/types";
+import { LOCKED_LABEL } from "@/features/items/domain/item-fields";
 import {
   createPaletteSearch,
   type PaletteSearch,
 } from "@/features/search/_internal/components/fuzzy-search";
 import type { SearchIndexState } from "@/features/search/_internal/components/hooks/use-search-index";
 import { isItemPage } from "@/features/search/domain/item-page";
-import type { SearchIndex } from "@/features/search/types";
+import type { IndexedItem, SearchIndex } from "@/features/search/types";
+import { cn } from "@/lib/utils";
 
 const LOADING_ROWS = [0, 1, 2, 3, 4];
 
@@ -34,7 +36,7 @@ interface PaletteResultsProps {
 
 interface MatchHandlers {
   query: string;
-  onSelectItem: (item: SearchableItem) => void;
+  onSelectItem: (item: IndexedItem) => void;
   onSelectCollection: (collection: SearchableCollection) => void;
 }
 
@@ -64,13 +66,21 @@ function PaletteMatches({
               key={item.id}
               value={`item-${item.id}`}
               onSelect={() => onSelectItem(item)}
+              className={cn(item.isLocked && "opacity-50")}
             >
               <TypeIcon
                 name={item.type.icon}
                 className="text-muted-foreground"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate">{item.title}</p>
+                <p className="truncate">
+                  {item.title}
+                  {item.isLocked && (
+                    <span className="sr-only">
+                      : {LOCKED_LABEL.toLowerCase()}
+                    </span>
+                  )}
+                </p>
                 {item.preview && (
                   <p className="truncate text-xs text-muted-foreground">
                     {item.preview}
@@ -131,7 +141,12 @@ export function PaletteResults({
   const router = useRouter();
   const drawer = useItemDrawer();
 
-  function selectItem(item: SearchableItem) {
+  function selectItem(item: IndexedItem) {
+    if (item.isLocked) {
+      onClose();
+      router.push(UPGRADE_PATH);
+      return;
+    }
     if (!isItemPage(pathname, item)) {
       onDrawerOpen();
       drawer.open(item);

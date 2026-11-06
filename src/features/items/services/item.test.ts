@@ -17,6 +17,8 @@ const {
   deleteUserObject: vi.fn(),
   signFileUrls: vi.fn(),
 }));
+const getEntitlements = vi.hoisted(() => vi.fn());
+vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     $executeRaw: executeRaw,
@@ -145,6 +147,22 @@ describe("updateUserItem", () => {
     update.mockReset().mockResolvedValue({ id: "item-1" });
     findFirst.mockReset().mockResolvedValue(rawItem);
     deleteTags.mockReset().mockResolvedValue({ count: 0 });
+  });
+
+  // The answer of a save carries signed URLs.
+  it("refuses a file item to a Free user, without writing", async () => {
+    getEntitlements.mockResolvedValue({ isPro: false });
+    findFirst.mockResolvedValue({ ...rawItem, type: { name: "file" } });
+
+    const result = await updateUserItem("user-1", "item-1", { ...renamed });
+
+    expect(result).toEqual({
+      success: false,
+      error: "Files and images are a Pro feature",
+      data: null,
+    });
+    expect(update).not.toHaveBeenCalled();
+    expect(signFileUrls).not.toHaveBeenCalled();
   });
 
   it("writes only an item that belongs to the caller", async () => {
@@ -351,6 +369,19 @@ describe("deleteUserItem", () => {
 
     expect(result).toEqual({ success: false, error: "Item not found" });
     expect(remove).not.toHaveBeenCalled();
+  });
+
+  // A locked file counts toward the Free limit, and the data is the user's own:
+  // a plan check here would leave a Free user stuck with it.
+  it("deletes a file for a Free user, with no read of the plan", async () => {
+    getEntitlements.mockReset().mockResolvedValue({ isPro: false });
+    findFirst.mockResolvedValue({ fileKey: "users/user-1/abc.pdf" });
+
+    const result = await deleteUserItem("user-1", "item-1");
+
+    expect(result.success).toBe(true);
+    expect(remove).toHaveBeenCalled();
+    expect(getEntitlements).not.toHaveBeenCalled();
   });
 
   it("deletes the file in R2 before the row", async () => {

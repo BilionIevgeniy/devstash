@@ -20,9 +20,22 @@ import { useItemPins } from "@/features/items/_internal/components/hooks/use-ite
 import { useItemSheet } from "@/features/items/_internal/components/hooks/use-item-sheet";
 import { deleteItem } from "@/features/items/actions/item";
 import { ItemDrawerContext } from "@/features/items/components/hooks/use-item-drawer";
+import { requiresPro } from "@/features/items/domain/item-fields";
 import type { DashboardItem } from "@/features/items/types";
 
 const NO_HIDDEN_IDS: ReadonlySet<string> = new Set();
+// The sentinel sits above the list: the page stays where the user was.
+const NO_SCROLL = { preventScroll: true };
+
+async function deleteWithToast(id: string) {
+  try {
+    const result = await deleteItem(id);
+    if (result.success) toast.success(DELETED_MESSAGE);
+    else toast.error(result.error ?? DELETE_FAILED_MESSAGE);
+  } catch {
+    toast.error(DELETE_FAILED_MESSAGE);
+  }
+}
 
 interface ItemDrawerProviderProps {
   /**
@@ -35,12 +48,18 @@ interface ItemDrawerProviderProps {
    * card to give the focus back to (the palette).
    */
   onSheetCloseAutoFocus?: (event: Event) => void;
+  /**
+   * The user is on the Free plan, so items of a Pro type open nothing. A page
+   * that lists them passes this; a type page refuses a Free user on its own.
+   */
+  lockProItems?: boolean;
   children: ReactNode;
 }
 
 export function ItemDrawerProvider({
   basePath,
   onSheetCloseAutoFocus,
+  lockProItems = false,
   children,
 }: ItemDrawerProviderProps) {
   const router = useRouter();
@@ -70,13 +89,7 @@ export function ItemDrawerProvider({
   function remove(id: string) {
     startTransition(async () => {
       hideItem(id);
-      try {
-        const result = await deleteItem(id);
-        if (result.success) toast.success(DELETED_MESSAGE);
-        else toast.error(result.error ?? DELETE_FAILED_MESSAGE);
-      } catch {
-        toast.error(DELETE_FAILED_MESSAGE);
-      }
+      await deleteWithToast(id);
     });
   }
 
@@ -85,7 +98,16 @@ export function ItemDrawerProvider({
     remove(id);
   }
 
-  const value = { open, remove, hiddenIds, ...favorites, ...pins };
+  const value = {
+    isLocked: (item: Pick<DashboardItem, "type">) =>
+      lockProItems && requiresPro(item.type.name),
+    focusListTop: () => focusSentinelRef.current?.focus(NO_SCROLL),
+    open,
+    remove,
+    hiddenIds,
+    ...favorites,
+    ...pins,
+  };
 
   if (basePath !== undefined) {
     return (
