@@ -1,26 +1,103 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { executeRaw, updateMany, deleteMany, deleteItems } = vi.hoisted(() => ({
+const {
+  executeRaw,
+  updateMany,
+  deleteMany,
+  deleteItems,
+  create,
+  count,
+  transaction,
+  lock,
+  getEntitlements,
+} = vi.hoisted(() => ({
   executeRaw: vi.fn(),
   updateMany: vi.fn(),
   deleteMany: vi.fn(),
   deleteItems: vi.fn(),
+  create: vi.fn(),
+  count: vi.fn(),
+  transaction: vi.fn(),
+  lock: vi.fn(),
+  getEntitlements: vi.fn(),
 }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     $executeRaw: executeRaw,
-    collection: { updateMany, deleteMany },
+    $transaction: transaction,
+    collection: { create, updateMany, deleteMany },
     item: { deleteMany: deleteItems },
   },
 }));
+vi.mock("@/lib/advisory-lock", () => ({
+  LOCKED_TRANSACTION: {},
+  lockForTransaction: lock,
+}));
+vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
 
 import {
+  createUserCollection,
   deleteUserCollection,
   setUserCollectionFavorite,
   updateUserCollection,
 } from "@/features/collections/services/collection";
 
 const GONE = { success: false, error: "This collection no longer exists." };
+
+describe("createUserCollection", () => {
+  const input = { name: "React Patterns", description: null };
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    getEntitlements.mockResolvedValue({ isPro: false });
+    count.mockResolvedValue(0);
+    create.mockResolvedValue({ id: "collection-1" });
+    transaction.mockImplementation((run: (tx: unknown) => unknown) =>
+      run({ collection: { create, count } }),
+    );
+  });
+
+  it("creates the collection under the limit, counting inside the lock", async () => {
+    count.mockResolvedValue(2);
+
+    await expect(createUserCollection("user-1", input)).resolves.toEqual({
+      success: true,
+      error: null,
+    });
+
+    expect(lock.mock.calls[0][1]).toBe("free-collections:user-1");
+    expect(count).toHaveBeenCalledWith({ where: { userId: "user-1" } });
+    expect(lock.mock.invocationCallOrder[0]).toBeLessThan(
+      count.mock.invocationCallOrder[0],
+    );
+    expect(create.mock.calls[0][0].data).toEqual({
+      userId: "user-1",
+      ...input,
+    });
+  });
+
+  it("refuses the collection at the limit and writes nothing", async () => {
+    count.mockResolvedValue(3);
+
+    await expect(createUserCollection("user-1", input)).resolves.toEqual({
+      success: false,
+      error:
+        "You have reached the Free plan's limit of 3 collections. Upgrade to Pro for unlimited collections.",
+    });
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it("lets Pro skip the lock and the count", async () => {
+    getEntitlements.mockResolvedValue({ isPro: true });
+
+    const result = await createUserCollection("user-1", input);
+
+    expect(result.success).toBe(true);
+    expect(transaction).not.toHaveBeenCalled();
+    expect(lock).not.toHaveBeenCalled();
+    expect(count).not.toHaveBeenCalled();
+  });
+});
 
 describe("setUserCollectionFavorite", () => {
   beforeEach(() => {

@@ -1,16 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { verifyAccountDeletion, deleteVerifiedUserRows, purgeUserObjects } =
-  vi.hoisted(() => ({
-    verifyAccountDeletion: vi.fn(),
-    deleteVerifiedUserRows: vi.fn(),
-    purgeUserObjects: vi.fn(),
-  }));
+const {
+  verifyAccountDeletion,
+  deleteVerifiedUserRows,
+  purgeUserObjects,
+  deleteBillingCustomer,
+} = vi.hoisted(() => ({
+  verifyAccountDeletion: vi.fn(),
+  deleteVerifiedUserRows: vi.fn(),
+  purgeUserObjects: vi.fn(),
+  deleteBillingCustomer: vi.fn(),
+}));
 vi.mock("@/features/auth/services/account", () => ({
   verifyAccountDeletion,
   deleteVerifiedUserRows,
 }));
 vi.mock("@/features/files/services/objects", () => ({ purgeUserObjects }));
+vi.mock("@/features/billing/services/customer", () => ({
+  deleteBillingCustomer,
+}));
 
 import { deleteAccount } from "@/features/account/_internal/services/delete-account";
 
@@ -27,6 +35,30 @@ describe("deleteAccount", () => {
     });
     purgeUserObjects.mockResolvedValue(undefined);
     deleteVerifiedUserRows.mockResolvedValue(undefined);
+    deleteBillingCustomer.mockResolvedValue(undefined);
+  });
+
+  it("stops the billing before it touches the files", async () => {
+    await deleteAccount("user-1", { password: "pw" });
+
+    expect(deleteBillingCustomer).toHaveBeenCalledWith("user-1");
+    expect(deleteBillingCustomer.mock.invocationCallOrder[0]).toBeLessThan(
+      purgeUserObjects.mock.invocationCallOrder[0],
+    );
+  });
+
+  it("removes nothing when the cancel fails", async () => {
+    deleteBillingCustomer.mockRejectedValue(new Error("Stripe is down"));
+
+    const result = await deleteAccount("user-1", { password: "pw" });
+
+    expect(result).toEqual({
+      success: false,
+      error:
+        "Your subscription could not be cancelled, so nothing was removed. Please try again.",
+    });
+    expect(purgeUserObjects).not.toHaveBeenCalled();
+    expect(deleteVerifiedUserRows).not.toHaveBeenCalled();
   });
 
   it("purges the files before it deletes the rows", async () => {
@@ -46,7 +78,9 @@ describe("deleteAccount", () => {
     const result = await deleteAccount("user-1", { password: "pw" });
 
     expect(result.success).toBe(false);
-    expect(result.error).toMatch(/nothing was removed/);
+    expect(result.error).toBe(
+      "Your files could not be deleted, so your account was not removed. Any active subscription has been cancelled. Please try again.",
+    );
     expect(deleteVerifiedUserRows).not.toHaveBeenCalled();
   });
 
@@ -63,6 +97,7 @@ describe("deleteAccount", () => {
       success: false,
       error: "Password is incorrect",
     });
+    expect(deleteBillingCustomer).not.toHaveBeenCalled();
     expect(purgeUserObjects).not.toHaveBeenCalled();
     expect(deleteVerifiedUserRows).not.toHaveBeenCalled();
   });

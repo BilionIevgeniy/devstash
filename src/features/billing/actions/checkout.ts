@@ -1,10 +1,16 @@
 "use server";
 
+import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { getSessionUser } from "@/features/auth/nextauth/session";
-import { planSchema } from "@/features/billing/schemas";
+import { getBillingOverview } from "@/features/billing/queries";
 import {
+  checkoutSessionIdSchema,
+  planSchema,
+} from "@/features/billing/schemas";
+import {
+  confirmCheckoutSession,
   createCheckoutSession,
   createPortalSession,
 } from "@/features/billing/services/checkout";
@@ -62,4 +68,26 @@ export async function openBillingPortal(): Promise<ActionResult> {
 
   // Outside the try: redirect() throws.
   redirect(url);
+}
+
+export async function confirmCheckout(
+  sessionId: unknown,
+): Promise<ActionResult<{ isPro: boolean } | null>> {
+  const parsed = checkoutSessionIdSchema.safeParse(sessionId);
+  if (!parsed.success) return failure(parsed.error.issues[0].message);
+
+  // Outside the try: a signed-out caller is redirected by a thrown error.
+  const { id: userId } = await getSessionUser();
+
+  try {
+    const result = await confirmCheckoutSession(userId, parsed.data);
+    if (!result.success) return failure(result.error ?? GENERIC_ERROR);
+    // After the sync: this read is cached for the request.
+    const { isPro } = await getBillingOverview(userId);
+    refresh();
+    return { success: true, error: null, data: { isPro } };
+  } catch (error) {
+    console.error("Confirming the checkout failed:", error);
+    return failure(GENERIC_ERROR);
+  }
 }

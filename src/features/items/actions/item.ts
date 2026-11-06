@@ -12,8 +12,8 @@ import {
   pinValueSchema,
   updateItemSchema,
 } from "@/features/items/schemas";
+import { createUserItem } from "@/features/items/services/create-item";
 import {
-  createUserItem,
   deleteUserItem,
   setUserItemFavorite,
   setUserItemPin,

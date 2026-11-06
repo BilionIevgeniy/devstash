@@ -15,6 +15,7 @@ One short file per decision that shapes the structure of the code, in the [MADR]
 | [0009](0009-read-write-split-enforced-by-lint.md) | The split between reads and writes is enforced by lint | accepted |
 | [0010](0010-pagination-in-lib-and-object-key-reads-in-internal.md) | Pagination lives in `lib`, and reads of the object key in `_internal/queries.ts` | accepted |
 | [0011](0011-past-due-grace-and-no-event-table.md) | Pro lasts through `past_due`, and webhooks need no event table | accepted |
+| [0012](0012-webhook-writes-scoped-by-customer.md) | A webhook write is scoped by the Stripe customer, not by the user | accepted |
 
 ## How to add one
 
