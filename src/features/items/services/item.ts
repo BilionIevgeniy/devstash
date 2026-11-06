@@ -1,163 +1,27 @@
 import "server-only";
 
-import { getEntitlements } from "@/features/billing/queries";
-import type { FileKind } from "@/features/files/domain/file-rules";
+import { deleteUserObject } from "@/features/files/services/objects";
 import {
-  confirmUpload,
-  deleteUserObject,
-} from "@/features/files/services/objects";
-import { getItemTypeByName } from "@/features/item-types/queries";
-import {
-  contentTypeFor,
-  editableFields,
-  editableUpdate,
-} from "@/features/items/domain/item-fields";
+  collectionLinks,
+  isRecordNotFound,
+  tagLinks,
+} from "@/features/items/_internal/services/item-writes";
+import { editableUpdate } from "@/features/items/domain/item-fields";
 import { getItemFileKey } from "@/features/items/_internal/queries";
 import { getItemEditState } from "@/features/items/queries";
-import type {
-  CreateItemInput,
-  UpdateItemInput,
-} from "@/features/items/schemas";
+import type { UpdateItemInput } from "@/features/items/schemas";
 import { getUserItemDetail } from "@/features/items/services/item-detail";
 import type { ItemDetail } from "@/features/items/types";
-import { Prisma } from "@/generated/prisma/client";
 import type { OperationResult } from "@/lib/action-result";
 import { prisma } from "@/lib/prisma";
 
 const ITEM_NOT_FOUND = "Item not found";
-const INVALID_ITEM_TYPE = "Invalid item type";
-const PRO_ONLY = "Files and images are a Pro feature";
-const FILE_MISSING = "Upload the file first";
-const FILE_ALREADY_SAVED = "This file is already saved on another item";
 const FILE_DELETE_FAILED = "Couldn't delete the file. Please try again.";
-const COLLECTION_NOT_FOUND = "One of the collections no longer exists";
 const ITEM_OR_COLLECTION_NOT_FOUND =
   "This item or one of its collections no longer exists";
-const RECORD_NOT_FOUND_CODE = "P2025";
-const UNIQUE_VIOLATION_CODE = "P2002";
 
 export interface UpdateItemResult extends OperationResult {
   data: ItemDetail | null;
-}
-
-export interface CreateItemResult extends OperationResult {
-  data: { id: string } | null;
-}
-
-function hasPrismaCode(error: unknown, code: string): boolean {
-  return (
-    error instanceof Prisma.PrismaClientKnownRequestError && error.code === code
-  );
-}
-
-function isRecordNotFound(error: unknown): boolean {
-  return hasPrismaCode(error, RECORD_NOT_FOUND_CODE);
-}
-
-type FileColumns =
-  | { error: string }
-  | { columns: { fileKey: string; fileName: string; fileSize: number } };
-
-// A file or image item needs Pro and an upload that really is in R2 under the
-// caller's prefix, within the size and of the type of its kind. The size
-// stored is the one R2 reports, not the one the browser declared.
-async function confirmFileColumns(
-  userId: string,
-  kind: FileKind,
-  file: CreateItemInput["file"],
-): Promise<FileColumns> {
-  const { isPro } = await getEntitlements(userId);
-  if (!isPro) return { error: PRO_ONLY };
-  if (!file) return { error: FILE_MISSING };
-
-  const confirmed = await confirmUpload(userId, file.key, kind);
-  if (!confirmed.success || !confirmed.data) {
-    return { error: confirmed.error ?? FILE_MISSING };
-  }
-  return {
-    columns: {
-      fileKey: file.key,
-      fileName: file.name,
-      fileSize: confirmed.data.size,
-    },
-  };
-}
-
-// Links to the caller's tags, creating the ones the caller does not have yet.
-function tagLinks(userId: string, tags: string[]) {
-  return tags.map((name) => ({
-    tag: {
-      connectOrCreate: {
-        where: { userId_name: { userId, name } },
-        create: { userId, name },
-      },
-    },
-  }));
-}
-
-// Links to the caller's collections. The owner in the connect makes someone
-// else's collection fail like a missing one: P2025, and the write rolls back.
-function collectionLinks(userId: string, collectionIds: string[]) {
-  return collectionIds.map((id) => ({
-    collection: { connect: { id, userId } },
-  }));
-}
-
-// The type is looked up by name among the system types. Only the fields its
-// type has are stored, so a stray language on a note, or a file on a snippet,
-// never lands in the row.
-//
-// An upload that is confirmed but not saved (a failure below, or a dialog
-// closed after the upload) stays in R2 until the account is purged: deleting
-// it here would break the retry, since the form still holds its key.
-export async function createUserItem(
-  userId: string,
-  input: CreateItemInput,
-): Promise<CreateItemResult> {
-  const { typeName, title, description, content, language, url, tags } = input;
-  const { collectionIds } = input;
-
-  const type = await getItemTypeByName(typeName);
-  if (!type) return { success: false, error: INVALID_ITEM_TYPE, data: null };
-
-  const fields = editableFields(typeName);
-  let fileColumns = {};
-  if (fields.file) {
-    const file = await confirmFileColumns(userId, fields.file, input.file);
-    if ("error" in file)
-      return { success: false, error: file.error, data: null };
-    fileColumns = file.columns;
-  }
-
-  try {
-    const item = await prisma.item.create({
-      data: {
-        userId,
-        typeId: type.id,
-        contentType: contentTypeFor(typeName),
-        title,
-        description,
-        ...(fields.content && { content }),
-        ...(fields.language && { language }),
-        ...(fields.url && { url }),
-        ...fileColumns,
-        tags: { create: tagLinks(userId, tags) },
-        collections: { create: collectionLinks(userId, collectionIds) },
-      },
-      select: { id: true },
-    });
-    return { success: true, error: null, data: item };
-  } catch (error) {
-    if (isRecordNotFound(error)) {
-      return { success: false, error: COLLECTION_NOT_FOUND, data: null };
-    }
-    // fileKey is the only unique column a file item can collide on: the same
-    // upload sent twice, after a lost response.
-    if (fields.file && hasPrismaCode(error, UNIQUE_VIOLATION_CODE)) {
-      return { success: false, error: FILE_ALREADY_SAVED, data: null };
-    }
-    throw error;
-  }
 }
 
 // Removes the caller's tags no item uses any more, after an update or delete

@@ -1,14 +1,21 @@
 import "server-only";
 
 import { getStripeCustomerId } from "@/features/billing/_internal/queries";
+import { syncSubscription } from "@/features/billing/_internal/services/subscription-sync";
+import { stripeIdOf } from "@/features/billing/domain/subscription";
 import { getEntitlements } from "@/features/billing/queries";
 import type { Plan } from "@/features/billing/schemas";
 import type { OperationResult } from "@/lib/action-result";
 import { prisma } from "@/lib/prisma";
-import { getStripe, isStripeCustomerMissing } from "@/lib/stripe";
+import {
+  getStripe,
+  isStripeCustomerMissing,
+  isStripeNotFound,
+} from "@/lib/stripe";
 
 const ALREADY_PRO = "You are already on the Pro plan.";
 const NO_BILLING_ACCOUNT = "No billing account was found.";
+const NOT_CONFIRMED = "This payment could not be confirmed.";
 
 export interface RedirectResult extends OperationResult {
   data: { url: string } | null;
@@ -132,4 +139,34 @@ export async function createPortalSession(
     console.warn(`The Stripe customer of user ${userId} is missing`);
     return failure(NO_BILLING_ACCOUNT);
   }
+}
+
+async function retrieveCheckoutSession(sessionId: string) {
+  try {
+    return await getStripe().checkout.sessions.retrieve(sessionId);
+  } catch (error) {
+    if (isStripeNotFound(error)) return null;
+    throw error;
+  }
+}
+
+// The return from Checkout, when the webhook has not arrived yet. The id comes
+// from the URL, so the session must be the caller's and finished.
+export async function confirmCheckoutSession(
+  userId: string,
+  sessionId: string,
+): Promise<OperationResult> {
+  const session = await retrieveCheckoutSession(sessionId);
+  if (session?.metadata?.userId !== userId || session.status !== "complete") {
+    return { success: false, error: NOT_CONFIRMED };
+  }
+
+  const customerId = stripeIdOf(session.customer);
+  const subscriptionId = stripeIdOf(session.subscription);
+  if (!customerId || !subscriptionId) {
+    return { success: false, error: NOT_CONFIRMED };
+  }
+
+  await syncSubscription(customerId, subscriptionId);
+  return { success: true, error: null };
 }

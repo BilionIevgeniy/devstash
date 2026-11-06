@@ -7,18 +7,27 @@ const mocks = vi.hoisted(() => ({
   upsert: vi.fn(),
   getEntitlements: vi.fn(),
   getStripeCustomerId: vi.fn(),
+  retrieveCheckout: vi.fn(),
+  syncSubscription: vi.fn(),
 }));
 
 // The real check is pinned in lib/stripe.test.ts; here only this error is one.
 const DEAD_CUSTOMER = vi.hoisted(() => new Error("No such customer"));
+const MISSING_SESSION = vi.hoisted(() => new Error("No such session"));
 
 vi.mock("@/lib/stripe", () => ({
   getStripe: () => ({
     customers: { create: mocks.createCustomer },
-    checkout: { sessions: { create: mocks.createCheckout } },
+    checkout: {
+      sessions: {
+        create: mocks.createCheckout,
+        retrieve: mocks.retrieveCheckout,
+      },
+    },
     billingPortal: { sessions: { create: mocks.createPortal } },
   }),
   isStripeCustomerMissing: (error: unknown) => error === DEAD_CUSTOMER,
+  isStripeNotFound: (error: unknown) => error === MISSING_SESSION,
 }));
 vi.mock("@/lib/prisma", () => ({
   prisma: { subscription: { upsert: mocks.upsert } },
@@ -30,10 +39,15 @@ vi.mock("@/features/billing/_internal/queries", () => ({
   getStripeCustomerId: mocks.getStripeCustomerId,
 }));
 
+vi.mock("@/features/billing/_internal/services/subscription-sync", () => ({
+  syncSubscription: mocks.syncSubscription,
+}));
+
 vi.stubEnv("STRIPE_PRICE_ID_MONTHLY", "price_monthly");
 vi.stubEnv("STRIPE_PRICE_ID_YEARLY", "price_yearly");
 
 import {
+  confirmCheckoutSession,
   createCheckoutSession,
   createPortalSession,
 } from "@/features/billing/services/checkout";
@@ -177,5 +191,88 @@ describe("createPortalSession", () => {
     mocks.createPortal.mockRejectedValue(outage);
 
     await expect(createPortalSession(USER.id, ORIGIN)).rejects.toThrow(outage);
+  });
+});
+
+describe("confirmCheckoutSession", () => {
+  const FINISHED = {
+    metadata: { userId: USER.id },
+    status: "complete",
+    customer: "cus_1",
+    subscription: "sub_1",
+  };
+  const NOT_CONFIRMED = {
+    success: false,
+    error: "This payment could not be confirmed.",
+  };
+
+  beforeEach(() => {
+    mocks.retrieveCheckout.mockResolvedValue(FINISHED);
+  });
+
+  it("syncs the subscription of the caller's finished session", async () => {
+    await expect(confirmCheckoutSession(USER.id, "cs_1")).resolves.toEqual({
+      success: true,
+      error: null,
+    });
+
+    expect(mocks.syncSubscription).toHaveBeenCalledWith("cus_1", "sub_1");
+  });
+
+  it("refuses another user's session", async () => {
+    mocks.retrieveCheckout.mockResolvedValue({
+      ...FINISHED,
+      metadata: { userId: "someone-else" },
+    });
+
+    await expect(confirmCheckoutSession(USER.id, "cs_1")).resolves.toEqual(
+      NOT_CONFIRMED,
+    );
+    expect(mocks.syncSubscription).not.toHaveBeenCalled();
+  });
+
+  it("refuses a session with no owner", async () => {
+    mocks.retrieveCheckout.mockResolvedValue({ ...FINISHED, metadata: null });
+
+    await expect(confirmCheckoutSession(USER.id, "cs_1")).resolves.toEqual(
+      NOT_CONFIRMED,
+    );
+  });
+
+  it("refuses a session that is not finished", async () => {
+    mocks.retrieveCheckout.mockResolvedValue({ ...FINISHED, status: "open" });
+
+    await expect(confirmCheckoutSession(USER.id, "cs_1")).resolves.toEqual(
+      NOT_CONFIRMED,
+    );
+    expect(mocks.syncSubscription).not.toHaveBeenCalled();
+  });
+
+  it("refuses a session with no subscription", async () => {
+    mocks.retrieveCheckout.mockResolvedValue({
+      ...FINISHED,
+      subscription: null,
+    });
+
+    await expect(confirmCheckoutSession(USER.id, "cs_1")).resolves.toEqual(
+      NOT_CONFIRMED,
+    );
+    expect(mocks.syncSubscription).not.toHaveBeenCalled();
+  });
+
+  it("answers the same for a session Stripe does not have", async () => {
+    mocks.retrieveCheckout.mockRejectedValue(MISSING_SESSION);
+
+    await expect(confirmCheckoutSession(USER.id, "cs_1")).resolves.toEqual(
+      NOT_CONFIRMED,
+    );
+  });
+
+  it("throws any other Stripe failure", async () => {
+    mocks.retrieveCheckout.mockRejectedValue(new Error("Stripe is down"));
+
+    await expect(confirmCheckoutSession(USER.id, "cs_1")).rejects.toThrow(
+      "Stripe is down",
+    );
   });
 });

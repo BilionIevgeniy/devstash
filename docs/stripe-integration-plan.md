@@ -1,6 +1,6 @@
 # Stripe Integration Plan
 
-The plan for DevStash Pro ($8 a month, $72 a year). Phase 1 is built; Phase 2 is not. Section 2 describes the code as it was before Phase 1. The steps to follow are in two specs:
+The plan for DevStash Pro ($8 a month, $72 a year). Phases 1 and 2 are built. Section 2 describes the code as it was before Phase 1. The steps to follow are in two specs:
 
 - [context/features/stripe-phase-1-spec.md](../context/features/stripe-phase-1-spec.md): SDK, limits, checkout, portal, ADR 0011
 - [context/features/stripe-phase-2-spec.md](../context/features/stripe-phase-2-spec.md): webhook, gating, billing UI, account deletion
@@ -149,7 +149,7 @@ The return URL is `/settings?session_id={CHECKOUT_SESSION_ID}`.
 | Already Pro (the usual case) | Skip the action, toast "Welcome to DevStash Pro!", `router.replace("/settings")` |
 | Not Pro yet | Show "Confirming your payment…" instead of the Upgrade buttons, call `confirmCheckout` |
 | Confirmed | `refresh()` brings `isPro`, and the first row applies, so the toast never runs ahead of the screen |
-| Foreign session, not complete, Stripe down, or still not Pro | "Payment received, your plan will update shortly", then `router.replace("/settings")` |
+| Foreign session, not complete, Stripe down, or still not Pro | "We couldn't confirm your payment yet. If you paid, your plan will update shortly.", then `router.replace("/settings")` |
 
 ### Upgrade buttons
 

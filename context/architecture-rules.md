@@ -25,7 +25,7 @@ prisma/                 schema, migrations, seed
 | Rank | Feature | Owns (Prisma models) | Status (planned: created by) |
 | ---- | ------- | -------------------- | ---------------------------- |
 | 1 | `auth` | User, Account, Session, VerificationToken | exists |
-| 2 | `billing` | Subscription | exists (Subscription, `getEntitlements`, checkout and portal; the webhook: the Stripe phase 2 spec) |
+| 2 | `billing` | Subscription | exists (Subscription, `getEntitlements`, checkout and portal, the webhook, the billing section) |
 | 3 | `item-types` | ItemType | exists |
 | 3 | `files` | none (objects in R2 under `users/<userId>/`) | exists |
 | 3 | `editor` | UserPreference | exists |
@@ -75,7 +75,7 @@ features/<name>/
 1. `app/` composes only: session, queries, feature components. No Prisma, no business `if`
 2. A pure rule, limit or constant (no I/O, clock, env or package) goes in `domain/`, with its test
 3. An input shape goes in `schemas.ts`; a view or result type in `types.ts` (every other type: see "Where types live"); an email body in `_internal/emails/`
-4. A read of the feature's own models goes in `queries.ts`, scoped by `userId` (the one exception: a read before sign-in keyed by email and a one-time token or the password being checked). A read that hands a secret to its caller (password hash, OAuth token, R2 object key) goes in `_internal/queries.ts` ([ADR 0009](../docs/adr/0009-read-write-split-enforced-by-lint.md), [ADR 0010](../docs/adr/0010-pagination-in-lib-and-object-key-reads-in-internal.md))
+4. A read of the feature's own models goes in `queries.ts`, scoped by `userId` (the one exception: a read before sign-in keyed by email and a one-time token or the password being checked). A read that hands a secret to its caller (password hash, OAuth token, R2 object key) goes in `_internal/queries.ts` ([ADR 0009](../docs/adr/0009-read-write-split-enforced-by-lint.md), [ADR 0010](../docs/adr/0010-pagination-in-lib-and-object-key-reads-in-internal.md)). A write is scoped by `userId` too; the one exception is the Stripe sync, scoped by the customer ([ADR 0012](../docs/adr/0012-webhook-writes-scoped-by-customer.md))
 5. A write, a vendor call, a multi-step flow, another feature's data or a read through `tx` that shares a transaction with a write goes in `services/<topic>.ts`
 6. `"use server"` files, `route.ts` and pages are thin: session, schema, one service call, revalidate. Webhooks and streams are routes
 7. UI of one route goes in `app/<route>/_components/`; UI used across routes in the feature's `components/`
@@ -128,4 +128,4 @@ Course specs name the paths of the original layout. Put the code here instead:
 
 `eslint.config.mjs` checks the layer order and `_internal/` boundary, the role directions inside a feature (including hooks that import no `.tsx`), the pure domain core, no Prisma in actions, components (feature and `components/common`) and `app/`, no request APIs in services, no `prisma` reads in services and `nextauth/`, no writes, transactions or raw SQL in `queries.ts`, vendor SDKs only in `lib`, import cycles, deprecated APIs of the installed packages (`@typescript-eslint/no-deprecated`), and the size limits of functions, components and files ("Size limits" in `coding-standards.md`).
 
-Not checked by lint, so it is on the author and the reviewer: `userId` in every `where`, one service call per entry point, idempotent background jobs, a read through `tx` with no write in its transaction, an alias of a Prisma delegate (the read and write rules match the names `prisma` and `tx`), and the ban on foreign models (planned as a lint rule).
+Not checked by lint, so it is on the author and the reviewer: `userId` in every `where` (except the Stripe sync, [ADR 0012](../docs/adr/0012-webhook-writes-scoped-by-customer.md)), one service call per entry point, idempotent background jobs, a read through `tx` with no write in its transaction, an alias of a Prisma delegate (the read and write rules match the names `prisma` and `tx`), and the ban on foreign models (planned as a lint rule).
