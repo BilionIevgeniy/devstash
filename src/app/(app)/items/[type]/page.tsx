@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import ItemsByTypeLoading from "@/app/(app)/items/[type]/loading";
 import { PaginationNav } from "@/components/common/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
-import { UPGRADE_REDIRECT_PATH } from "@/features/billing/domain/upgrade-redirect";
+import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import { getEntitlements } from "@/features/billing/queries";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import {
@@ -135,7 +135,7 @@ export default async function ItemsByTypePage({
 
   const { id: userId } = await getSessionUser();
   if (!(await userCanUseType(userId, typeName))) {
-    redirect(UPGRADE_REDIRECT_PATH);
+    redirect(UPGRADE_PATH);
   }
 
   const page = parsePage((await searchParams).page);

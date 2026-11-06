@@ -24,5 +24,6 @@ export const config = {
     "/collections/:path*",
     "/favorites/:path*",
     "/pinned/:path*",
+    "/upgrade/:path*",
   ],
 };

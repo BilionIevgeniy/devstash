@@ -1,32 +1,33 @@
-import Link from "next/link";
+import type { ReactNode } from "react";
 
-import { Button } from "@/components/ui/button";
+import { CheckList } from "@/components/common/CheckList";
+import { GradientBadge } from "@/components/common/GradientBadge";
 import { cn } from "@/lib/utils";
-
-import { CheckList } from "./CheckList";
-import { GradientBadge } from "./GradientBadge";
 
 interface PricingCardProps {
   name: string;
   price: string;
   note: string;
   features: string[];
-  cta: string;
+  /** The button at the foot of the card, a PricingCardButton. */
+  action: ReactNode;
   highlighted?: boolean;
 }
 
+// The text size is set here and not by the page: the homepage and the upgrade
+// page sit on different roots, and the two must look the same.
 export function PricingCard({
   name,
   price,
   note,
   features,
-  cta,
+  action,
   highlighted = false,
 }: PricingCardProps) {
   return (
     <article
       className={cn(
-        "relative flex h-full flex-col rounded-[14px] border bg-card p-8",
+        "relative flex h-full flex-col rounded-[14px] border bg-card p-8 text-[15px] leading-[1.6]",
         highlighted &&
           "border-brand/50 shadow-[0_0_60px_-20px_rgba(139,92,246,0.4)]",
       )}
@@ -53,14 +54,7 @@ export function PricingCard({
         <p className="mt-1 min-h-6 text-[13px] text-dim">{note}</p>
       </div>
       <CheckList items={features} className="mt-6 mb-8" />
-      <Button
-        asChild
-        variant={highlighted ? "default" : "outline"}
-        size="lg"
-        className="mt-auto h-11 w-full px-5 text-[15px]"
-      >
-        <Link href="/register">{cta}</Link>
-      </Button>
+      <div className="mt-auto">{action}</div>
     </article>
   );
 }

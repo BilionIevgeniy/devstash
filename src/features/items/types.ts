@@ -94,6 +94,25 @@ export interface FileListItem extends DashboardItem {
   file: ItemFile | null;
 }
 
+// A file as read for a user whose plan no longer gives it: read only by the
+// locked files service, because the key never leaves the server.
+export interface LockedFileRecord {
+  id: string;
+  title: string;
+  fileKey: string | null;
+  fileName: string | null;
+  fileSize: number | null;
+}
+
+// A row of the locked files page: download only, so there is no view URL.
+export interface LockedFile {
+  id: string;
+  title: string;
+  fileName: string;
+  size: number;
+  downloadUrl: string;
+}
+
 // ItemDetail as it arrives from GET /api/items/[id]: dates become ISO strings.
 // An item of a collection as read, with its upload: read only by the
 // collection listing service, because the key never leaves the server.

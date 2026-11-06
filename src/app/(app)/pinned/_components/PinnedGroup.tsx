@@ -3,6 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { LIST_ROW_WRAPPER, ListRow } from "@/app/(app)/_components/ListRow";
 import { ListRowFrame } from "@/app/(app)/_components/ListRowFrame";
 import { SortSelect } from "@/app/(app)/_components/SortSelect";
+import { PINNED_GROUP_HEADER } from "@/app/(app)/pinned/_components/PinnedGroupSkeleton";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { typeSlug } from "@/features/item-types/domain/item-type";
 import type { ItemTypeInfo } from "@/features/item-types/types";
@@ -14,10 +15,6 @@ import {
 } from "@/features/items/domain/pinned-items";
 import type { DashboardItem } from "@/features/items/types";
 import { cn } from "@/lib/utils";
-
-// Shared with loading.tsx, so the title does not move when the content commits.
-export const PINNED_GROUP_HEADER =
-  "flex h-8 items-center justify-between gap-3";
 
 interface PinnedGroupProps {
   type: ItemTypeInfo;

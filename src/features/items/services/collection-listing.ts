@@ -1,5 +1,6 @@
 import "server-only";
 
+import { getEntitlements } from "@/features/billing/queries";
 import {
   getCollectionItemRecords,
   getCollectionTypeCounts,
@@ -27,19 +28,28 @@ function toCardItem(
   return card;
 }
 
+// With no key nothing is signed, and the card shows only its title and icon.
+function withoutUpload(item: CollectionItemRecord): CollectionItemRecord {
+  return { ...item, fileKey: null, fileName: null, fileSize: null };
+}
+
 async function toSection(
   { type, items }: TypeGroup<CollectionItemRecord>,
   totalCount: number,
   now: Date,
+  isPro: boolean,
 ): Promise<CollectionSection> {
   const listing = typeListing(type.name);
+  const uploads = isPro ? items : items.map(withoutUpload);
   switch (listing) {
     case "gallery":
       return {
         listing,
         type,
         totalCount,
-        items: await Promise.all(items.map((item) => toGalleryItem(item, now))),
+        items: await Promise.all(
+          uploads.map((item) => toGalleryItem(item, now)),
+        ),
       };
     case "files":
       return {
@@ -47,7 +57,7 @@ async function toSection(
         type,
         totalCount,
         items: await Promise.all(
-          items.map((item) => toFileListItem(item, now)),
+          uploads.map((item) => toFileListItem(item, now)),
         ),
       };
     case "cards":
@@ -65,7 +75,10 @@ export async function getUserCollectionListing(
   collectionId: string,
   requestedPage: number,
 ): Promise<CollectionListing> {
-  const typeCounts = await getCollectionTypeCounts(userId, collectionId);
+  const [typeCounts, { isPro }] = await Promise.all([
+    getCollectionTypeCounts(userId, collectionId),
+    getEntitlements(userId),
+  ]);
   const { items, totalCount, page, totalPages } = await readPage(
     requestedPage,
     ITEMS_PER_PAGE,
@@ -81,7 +94,7 @@ export async function getUserCollectionListing(
         total: typeCounts.get(group.type.id) ?? group.items.length,
       }))
       .sort((a, b) => b.total - a.total)
-      .map(({ group, total }) => toSection(group, total, now)),
+      .map(({ group, total }) => toSection(group, total, now, isPro)),
   );
   return { itemCount: totalCount, page, totalPages, sections };
 }

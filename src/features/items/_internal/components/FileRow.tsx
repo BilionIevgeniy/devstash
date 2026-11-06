@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FileTypeIcon } from "@/features/files/components/FileTypeIcon";
 import { formatFileSize } from "@/features/files/domain/file-rules";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
+import { DeleteLockedItemButton } from "@/features/items/_internal/components/DeleteLockedItemButton";
 import { ItemFavoriteButton } from "@/features/items/_internal/components/ItemFavoriteButton";
 import { PinMark } from "@/features/items/_internal/components/PinMark";
 import {
@@ -19,6 +20,40 @@ import { cn, formatLongDate } from "@/lib/utils";
 
 interface FileRowProps {
   item: FileListItem;
+}
+
+function FileRowActions({ item }: FileRowProps) {
+  const { isLocked, focusListTop } = useItemDrawer();
+  const { file } = item;
+
+  if (isLocked(item)) {
+    return (
+      <DeleteLockedItemButton
+        itemId={item.id}
+        title={item.title}
+        returnFocus={focusListTop}
+        className="size-8"
+      />
+    );
+  }
+
+  return (
+    <>
+      <ItemFavoriteButton
+        itemId={item.id}
+        title={item.title}
+        isFavorite={item.isFavorite}
+        className="size-8"
+      />
+      {file && (
+        <Button asChild variant="ghost" size="icon">
+          <a href={file.downloadUrl} aria-label={`Download ${file.name}`}>
+            <Download />
+          </a>
+        </Button>
+      )}
+    </>
+  );
 }
 
 // The trigger fills the row except the star and the Download link, which are
@@ -80,19 +115,7 @@ export function FileRow({ item }: FileRowProps) {
         </span>
       </ItemDrawerTrigger>
       <div className={FILE_ROW_ACTIONS}>
-        <ItemFavoriteButton
-          itemId={item.id}
-          title={item.title}
-          isFavorite={item.isFavorite}
-          className="size-8"
-        />
-        {file && (
-          <Button asChild variant="ghost" size="icon">
-            <a href={file.downloadUrl} aria-label={`Download ${file.name}`}>
-              <Download />
-            </a>
-          </Button>
-        )}
+        <FileRowActions item={item} />
       </div>
     </div>
   );

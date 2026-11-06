@@ -5,6 +5,21 @@ export const FREE_COLLECTION_LIMIT = 3;
 export const PRO_MONTHLY_PRICE = 8;
 export const PRO_YEARLY_PRICE = 72;
 
+export const FREE_PLAN_FEATURES = [
+  `${FREE_ITEM_LIMIT} items`,
+  `${FREE_COLLECTION_LIMIT} collections`,
+  "Snippets, prompts, commands, notes and links",
+  "Basic search",
+];
+
+// What Pro gives today: the upgrade page sells these, so nothing unbuilt goes
+// here. The homepage adds its roadmap lines on top.
+export const PRO_PLAN_FEATURES = [
+  "Unlimited items",
+  "Unlimited collections",
+  "File and image uploads",
+];
+
 const MONTHS_PER_YEAR = 12;
 
 export interface Entitlements {
@@ -18,6 +33,20 @@ export function proYearlyPricePerMonth(): number {
 export function proYearlySavingsPercent(): number {
   const fullYear = PRO_MONTHLY_PRICE * MONTHS_PER_YEAR;
   return Math.round((1 - PRO_YEARLY_PRICE / fullYear) * 100);
+}
+
+// What the Pro card of a pricing table shows for the chosen period.
+export function proPriceDisplay(yearly: boolean): {
+  price: string;
+  note: string;
+} {
+  if (yearly) {
+    return {
+      price: `$${proYearlyPricePerMonth()}`,
+      note: `Billed $${PRO_YEARLY_PRICE}/yr`,
+    };
+  }
+  return { price: `$${PRO_MONTHLY_PRICE}`, note: "Billed monthly" };
 }
 
 // The Stripe statuses that grant Pro: Pro lasts while Stripe is still trying to
@@ -34,6 +63,18 @@ export function withinFreeItemLimit(itemCount: number): boolean {
 
 export function withinFreeCollectionLimit(collectionCount: number): boolean {
   return collectionCount < FREE_COLLECTION_LIMIT;
+}
+
+// True at a limit as well as over it: from there a Free user creates nothing,
+// and a cancelled Pro account can be far over.
+export function reachedFreeLimit(
+  itemCount: number,
+  collectionCount: number,
+): boolean {
+  return (
+    !withinFreeItemLimit(itemCount) ||
+    !withinFreeCollectionLimit(collectionCount)
+  );
 }
 
 export function isProStatus(status: string): boolean {

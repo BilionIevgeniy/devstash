@@ -9,12 +9,14 @@ import { CommandPalette } from "@/features/search/components/CommandPalette";
 interface TopBarProps {
   onToggleSidebar: () => void;
   onOpenDrawer: () => void;
+  upgradeButton: ReactNode;
   newItemButton: ReactNode;
 }
 
 export function TopBar({
   onToggleSidebar,
   onOpenDrawer,
+  upgradeButton,
   newItemButton,
 }: TopBarProps) {
   return (
@@ -39,6 +41,9 @@ export function TopBar({
       </Button>
       <CommandPalette />
       <div className="ml-auto flex shrink-0 items-center gap-2">
+        {/* First in the group: it streams in, and the group is held to the
+            right, so the buttons after it do not move when it arrives. */}
+        {upgradeButton}
         <Button asChild variant="ghost" size="icon">
           <Link href="/favorites" aria-label="Favorites">
             <Star />

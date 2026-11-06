@@ -5,6 +5,7 @@ import { CollectionSections } from "@/app/(app)/collections/[id]/_components/Col
 import CollectionLoading from "@/app/(app)/collections/[id]/loading";
 import { PaginationNav } from "@/components/common/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
+import { getEntitlements } from "@/features/billing/queries";
 import { CollectionHeaderActions } from "@/features/collections/components/CollectionHeaderActions";
 import { getCollectionById } from "@/features/collections/queries";
 import { collectionIdSchema } from "@/features/collections/schemas";
@@ -19,9 +20,10 @@ interface CollectionContentProps {
 
 async function CollectionContent({ id, page }: CollectionContentProps) {
   const { id: userId } = await getSessionUser();
-  const [collection, listing] = await Promise.all([
+  const [collection, listing, { isPro }] = await Promise.all([
     getCollectionById(userId, id),
     getUserCollectionListing(userId, id, page),
+    getEntitlements(userId),
   ]);
   if (!collection) notFound();
 
@@ -46,7 +48,7 @@ async function CollectionContent({ id, page }: CollectionContentProps) {
       </header>
       {/* Around the empty state too: the last item leaving through the open
           drawer must not unmount the drawer's sheet. */}
-      <ItemDrawerProvider>
+      <ItemDrawerProvider lockProItems={!isPro}>
         <CollectionSections sections={sections} />
       </ItemDrawerProvider>
       <PaginationNav

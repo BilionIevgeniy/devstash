@@ -1,20 +1,22 @@
 "use client";
 
 import { CreditCard } from "lucide-react";
+import type { ReactNode } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { BillingActions } from "@/features/billing/_internal/components/BillingActions";
 import { useCheckoutReturn } from "@/features/billing/_internal/components/hooks/use-checkout-return";
-import { useUpgradeNotice } from "@/features/billing/_internal/components/hooks/use-upgrade-notice";
 import { UsageSummary } from "@/features/billing/_internal/components/UsageSummary";
+import { PlanBadge } from "@/features/billing/components/PlanBadge";
 import type { BillingOverview } from "@/features/billing/types";
 
 interface BillingSectionProps extends BillingOverview {
   itemCount: number;
   collectionCount: number;
   checkoutSessionId: string | null;
-  /** The user was sent here from a Pro page. */
-  upgradeRequested: boolean;
+  /** Stripe runs on a test key, so no payment is real. */
+  testMode: boolean;
+  /** A row at the end of the card, filled by the page: billing knows no items. */
+  children?: ReactNode;
 }
 
 export function BillingSection({
@@ -24,10 +26,10 @@ export function BillingSection({
   itemCount,
   collectionCount,
   checkoutSessionId,
-  upgradeRequested,
+  testMode,
+  children,
 }: BillingSectionProps) {
   const { isConfirming } = useCheckoutReturn(checkoutSessionId, isPro);
-  useUpgradeNotice(upgradeRequested, isPro);
 
   return (
     <section className="space-y-4">
@@ -38,9 +40,7 @@ export function BillingSection({
       <div className="space-y-4 rounded-lg border bg-card p-6">
         <div className="flex items-center justify-between gap-4">
           <h3 className="font-medium">Plan</h3>
-          <Badge variant={isPro ? "default" : "secondary"}>
-            {isPro ? "Pro" : "Free"}
-          </Badge>
+          <PlanBadge isPro={isPro} />
         </div>
         {!isPro && (
           <UsageSummary
@@ -57,8 +57,10 @@ export function BillingSection({
             isPro={isPro}
             hasBillingAccount={hasBillingAccount}
             paymentIssue={paymentIssue}
+            testMode={testMode}
           />
         )}
+        {children}
       </div>
     </section>
   );
