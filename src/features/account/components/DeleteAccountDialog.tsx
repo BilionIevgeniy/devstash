@@ -4,6 +4,7 @@ import { useState, useTransition, type MouseEvent } from "react";
 import { unstable_rethrow } from "next/navigation";
 
 import { deleteAccount } from "@/features/account/_internal/actions/delete-account";
+import { useClearReauthParam } from "@/features/account/_internal/components/hooks/use-clear-reauth-param";
 import { reauthenticateWithGitHub } from "@/features/auth/actions/sign-in";
 import { REAUTH_REQUIRED_MESSAGE } from "@/features/auth/domain/reauth";
 import {
@@ -26,16 +27,20 @@ interface DeleteAccountDialogProps {
   hasPassword: boolean;
   /** True when the account has no password and its sign-in is not recent. */
   requiresReauth: boolean;
+  /** An error from the GitHub sign-in that brought the user back here. */
+  returnError: string | null;
 }
 
 export function DeleteAccountDialog({
   hasPassword,
   requiresReauth,
+  returnError,
 }: DeleteAccountDialogProps) {
   const [isPending, startTransition] = useTransition();
   const [password, setPassword] = useState("");
   const [reauthNeeded, setReauthNeeded] = useState(requiresReauth);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(returnError);
+  useClearReauthParam(returnError !== null);
 
   function handleConfirm(event: MouseEvent<HTMLButtonElement>) {
     // Keep the dialog open while working; a success redirects away.
@@ -66,6 +71,7 @@ export function DeleteAccountDialog({
 
   return (
     <AlertDialog
+      defaultOpen={returnError !== null}
       onOpenChange={(open) => {
         if (open) return;
         setPassword("");
