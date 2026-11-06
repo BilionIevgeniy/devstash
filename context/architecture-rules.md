@@ -25,7 +25,7 @@ prisma/                 schema, migrations, seed
 | Rank | Feature | Owns (Prisma models) | Status (planned: created by) |
 | ---- | ------- | -------------------- | ---------------------------- |
 | 1 | `auth` | User, Account, Session, VerificationToken | exists |
-| 2 | `billing` | Subscription, StripeEvent | exists (Subscription and `getEntitlements`; StripeEvent, checkout and the webhook: the Stripe specs) |
+| 2 | `billing` | Subscription | exists (Subscription, `getEntitlements`, checkout and portal; the webhook: the Stripe phase 2 spec) |
 | 3 | `item-types` | ItemType | exists |
 | 3 | `files` | none (objects in R2 under `users/<userId>/`) | exists |
 | 3 | `editor` | UserPreference | exists |

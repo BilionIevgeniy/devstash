@@ -149,9 +149,10 @@ const domainZone = {
     "Domain files are pure: import only other domain files, types.ts and lib/utils.",
 };
 
-// Vendor SDKs are reached only through a client in src/lib.
+// Vendor SDKs are reached only through a client in src/lib. Anchored, because a
+// bare "stripe" pattern would also match our own wrapper @/lib/stripe.
 const VENDOR_SDKS = {
-  group: ["resend", "@upstash/*", "stripe", "openai", "@aws-sdk/*"],
+  regex: "^(resend|stripe|openai)(/|$)|^(@upstash|@aws-sdk)/",
   message: "Vendor SDKs are used only inside src/lib: call the client from there.",
 };
 

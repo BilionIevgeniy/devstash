@@ -8,12 +8,13 @@ One short file per decision that shapes the structure of the code, in the [MADR]
 | [0002](0002-boundaries-enforced-by-eslint.md) | Boundaries are enforced by ESLint | accepted |
 | [0003](0003-services-for-every-write.md) | Every write goes through a service | accepted |
 | [0004](0004-direct-upload-to-r2.md) | Files go from the browser straight to R2 | accepted |
-| [0005](0005-entitlements-from-the-database.md) | Entitlements come from the database, and billing owns its data | accepted |
+| [0005](0005-entitlements-from-the-database.md) | Entitlements come from the database, and billing owns its data | superseded by 0011 |
 | [0006](0006-eslint-9-and-eslint-plugin-import.md) | Stay on ESLint 9 because of `eslint-plugin-import` | accepted |
 | [0007](0007-client-hooks-in-the-components-role.md) | Client hooks belong to the components role | accepted |
 | [0008](0008-items-own-the-collection-link.md) | Items own the link to collections | accepted |
 | [0009](0009-read-write-split-enforced-by-lint.md) | The split between reads and writes is enforced by lint | accepted |
 | [0010](0010-pagination-in-lib-and-object-key-reads-in-internal.md) | Pagination lives in `lib`, and reads of the object key in `_internal/queries.ts` | accepted |
+| [0011](0011-past-due-grace-and-no-event-table.md) | Pro lasts through `past_due`, and webhooks need no event table | accepted |
 
 ## How to add one
 
