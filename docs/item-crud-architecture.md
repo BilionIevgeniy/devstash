@@ -1,5 +1,7 @@
 # Item CRUD architecture
 
+> **Historical, not maintained.** This is the proposal written on 2026-10-28, before item CRUD was built, and the code went a different way: components such as `ItemForm` and `NewItemSheet` never existed, and the ranks and the status below are out of date. For how items work today, read [modules.md](modules.md) and [architecture.md](architecture.md).
+
 A design for create, read, update and delete of items, one system for all seven item types. Sources: [project-overview.md](../context/project-overview.md), [item-types.md](item-types.md), `prisma/schema.prisma`, the code in `src/`, and the rules in [architecture-rules.md](../context/architecture-rules.md) and [coding-standards.md](../context/coding-standards.md), which win wherever this guide disagrees with them.
 
 **Status: a proposal; only the list route is built.** Built: `/items/[type]` (a read-only grid of `ItemCard` through `ItemList`, not links), `typeSlug` and `parseTypeSlug`, `getItemTypeByName`, `getItemsByType` and the proxy matcher. `features/items` also holds `ItemRow` and three dashboard reads (`getPinnedItems`, `getRecentItems`, `getItemStats`). Not built: the drawer, any item action, service or schema. The tables below still describe the full design, including `ItemRow` as the list element, which the list route replaced with `ItemCard`.
