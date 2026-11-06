@@ -8,6 +8,10 @@
    - Change H1 back to `# Current Feature`
    - Clear Goals and Notes sections (keep placeholder comments)
    - Add feature summary to the END of context/feature-history.md (not to current-feature.md)
-6. Commit the reset: `chore: reset current-feature.md after completing [feature]`
-7. Push main to origin ONCE (single push with all changes)
-8. If feature branch was previously pushed, delete it from origin
+6. Read context/todo.md and check it against what this feature built:
+   - Delete each item the feature finished
+   - Shorten an item the feature finished in part, so it says only what is left
+   - Keep anything not clearly done, and name the deleted items in the final message
+7. Commit the reset and the todo changes: `chore: reset current-feature.md after completing [feature]`
+8. Push main to origin ONCE (single push with all changes)
+9. If feature branch was previously pushed, delete it from origin
