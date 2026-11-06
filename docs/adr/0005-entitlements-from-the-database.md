@@ -1,6 +1,6 @@
 # 0005. Entitlements come from the database, and billing owns its data
 
-- Status: accepted (agreed by the architecture reviewers; the owner approved it on 2026-10-29 on that condition)
+- Status: superseded by [0011](0011-past-due-grace-and-no-event-table.md)
 - Date: 2026-10-29 (the context was corrected the same day: the first version claimed the course's JWT flag goes stale, which is wrong)
 
 ## Context

@@ -19,7 +19,7 @@ src/
     api/          route handlers: NextAuth, registration, item detail, later webhooks and streaming
   features/       the product, one folder per feature
     auth/         sign-in, registration, email verification, password reset, change password
-    billing/      the subscription and the plan (getEntitlements), the PRO badge
+    billing/      the subscription and the plan (getEntitlements), checkout and portal, the PRO badge
     item-types/   item type icons, info, URL slugs and queries
     files/        uploads to R2: file rules, presigned upload, confirm, signed downloads, purge
     editor/       the code and Markdown editors of item content
@@ -235,7 +235,7 @@ Expected failures (wrong password, expired link) are returned as a result; unexp
 | AI, one answer | `ai/actions` then `ai/services/<operation>.ts`; prompts in `ai/domain/`; the output schema in `ai/schemas.ts`; the quota check is in the service |
 | AI, streaming | `app/api/ai/<operation>/route.ts` calls the same service; the quota is checked before the stream opens |
 | Stripe checkout or portal | `billing/actions/checkout.ts` then a service then `lib/stripe.ts` |
-| Stripe webhook | `app/api/webhooks/stripe/route.ts` verifies the raw body and calls one service in `billing/services/`, idempotent by event id; the route holds no Prisma and no business `if` |
+| Stripe webhook | `app/api/webhooks/stripe/route.ts` verifies the raw body and calls one service in `billing/services/`, which saves the current state fetched from Stripe, so a repeated event writes the same state; the route holds no Prisma and no business `if` |
 | Who is signed in | `getSessionUser()` in `auth/nextauth/session.ts`, read at the entry point and passed down as `userId` |
 | Ownership | `userId` in the `where` of every query and write; a foreign id answers not found |
 | Rate limit | policy in `domain/rate-limits.ts`, mechanism in `lib/rate-limit.ts`; a limit that needs nothing but the IP is applied by the entry point; a limit that depends on the account or the address (per user, per address, and the per-IP check that must run after the per-address one) lives in the service, which receives `ip` as a parameter |

@@ -38,7 +38,7 @@ Solid lines exist in the code today, dashed lines are planned. The app is hosted
 | GitHub | OAuth sign-in | NextAuth in `auth/nextauth` | in use |
 | Resend | verification and reset emails | `lib/email.ts` | in use |
 | Upstash Redis | rate limits | `lib/rate-limit.ts` | in use |
-| Stripe | subscriptions and webhooks | `lib/stripe.ts`, owned by `billing` | planned |
+| Stripe | subscriptions and webhooks | `lib/stripe.ts`, owned by `billing` | client, checkout and portal exist; no UI or webhook yet |
 | Cloudflare R2 | files and images | `lib/r2.ts`, owned by `files` | planned |
 | OpenAI | tags, explanations | `lib/openai.ts`, owned by `ai` | planned |
 
@@ -63,5 +63,5 @@ A feature imports only features of a lower rank. What each module owns, uses and
 | Boundaries are enforced by ESLint | [0002](adr/0002-boundaries-enforced-by-eslint.md) |
 | Every write goes through a service | [0003](adr/0003-services-for-every-write.md) |
 | Files go from the browser straight to R2 | [0004](adr/0004-direct-upload-to-r2.md) |
-| Entitlements from the database; billing owns its data | [0005](adr/0005-entitlements-from-the-database.md) |
+| Entitlements from the database; billing owns its data; Pro lasts through `past_due`; no event table | [0011](adr/0011-past-due-grace-and-no-event-table.md) |
 | ESLint 9 because of `eslint-plugin-import` | [0006](adr/0006-eslint-9-and-eslint-plugin-import.md) |

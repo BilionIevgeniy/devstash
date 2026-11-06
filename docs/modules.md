@@ -13,7 +13,6 @@ A module gets its section here in the commit with its first real code, together 
 | Item, Tag, ItemTag, ItemCollection | `items` | `Tag` becomes its own module only when a second feature needs it; the link to collections is written with the item ([ADR 0008](adr/0008-items-own-the-collection-link.md)) |
 | Collection | `collections` | |
 | Subscription | `billing` | `isPro` is derived from the subscription status; no row means the Free plan |
-| StripeEvent | `billing` (planned) | The webhook's idempotency record, with the Stripe specs |
 | UserPreference | `editor` | One row per user, typed columns, an absent row means defaults, created by upsert |
 
 A module writes only the models it owns and reads only its own models. A relation `select` of scalar columns through its own relation is fine (`items` selects the type name, icon and color through `Item.type`, and the id and name of each collection through `Item.collections`). Everything else goes through the owner's queries or services.
@@ -33,11 +32,12 @@ A module writes only the models it owns and reads only its own models. A relatio
 
 ### billing
 
-- **Owns:** `Subscription` (later `StripeEvent`); the entitlements (limits, Pro) as `domain/limits.ts` plus `queries.ts` `getEntitlements`, read through `cache()` and never from the JWT or the session; later checkout, portal and the webhook service, and the billing section of the settings page
-- **Uses today:** nothing
-- **Entry points used from outside:** `queries` (`getEntitlements`), `domain/limits` (`entitlementsFor`, `Entitlements`, the Free limits and Pro prices), `components/ProBadge` (the sidebar's file and image types, the same types in the create dialog)
-- **Today:** created by the file upload spec for the Pro check. Its first migration created `Subscription`; the old `isPro`, `stripeCustomerId` and `stripeSubscriptionId` on `User` stay, read by nothing, until the contract migration in `context/todo.md` drops them. Nobody can become Pro in production until the Stripe specs; in development the seed gives the demo user an active subscription
-- **Will grow with** (from the two Stripe specs, not built): `StripeEvent`, checkout, portal, the webhook service behind the thin route `app/api/webhooks/stripe/route.ts`, `components/BillingSection`, enforcement of the Free limits. `domain/limits` already holds those limits and the Pro prices, which the homepage pricing shows; nothing enforces them yet. It will use `auth`
+- **Owns:** `Subscription`; the entitlements (limits, Pro) as `domain/limits.ts` plus `queries.ts` `getEntitlements`, read through `cache()` and never from the JWT or the session ([ADR 0011](adr/0011-past-due-grace-and-no-event-table.md)); checkout and portal sessions (`services/checkout`, `actions/checkout`); later the webhook service and the billing section of the settings page
+- **Uses today:** `auth` (`getSessionUser` in the actions)
+- **Entry points used from outside:** `queries` (`getEntitlements`, `getBillingOverview`), `domain/limits` (`entitlementsFor`, `Entitlements`, the Free limits and Pro prices), `components/ProBadge` (the sidebar's file and image types, the same types in the create dialog)
+- **Private:** `getStripeCustomerId` (`_internal/queries`)
+- **Today:** created by the file upload spec for the Pro check. Its first migration created `Subscription`; the old `isPro`, `stripeCustomerId` and `stripeSubscriptionId` on `User` stay, read by nothing, until the contract migration in `context/todo.md` drops them. The checkout and portal actions exist, but no UI calls them yet, so nobody can become Pro in production until the Stripe phase 2 spec; in development the seed gives the demo user an active subscription
+- **Will grow with** (from the Stripe phase 2 spec, not built): the webhook service behind the thin route `app/api/webhooks/stripe/route.ts`, `components/BillingSection`, enforcement of the Free limits. `domain/limits` already holds those limits, with `withinFreeItemLimit` and `withinFreeCollectionLimit`, and the Pro prices, which the homepage pricing shows; nothing enforces the limits yet
 
 ### item-types
 
