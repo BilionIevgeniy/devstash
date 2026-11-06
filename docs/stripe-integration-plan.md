@@ -31,7 +31,7 @@ The cost argument is weaker than ADR 0005 suggests. `getSessionUser` is wrapped 
 
 - `Subscription` exists: `userId` (unique), `status` (plain string), `stripeCustomerId` (unique), `stripeSubscriptionId` (unique), `currentPeriodEnd`. It cascades when the user is deleted
 - `User.isPro`, `User.stripeCustomerId` and `User.stripeSubscriptionId` are superseded, read by nothing, and wait for the contract migration in `context/todo.md`. This work does not touch them
-- Migration `20261030135922_demo_user_pro` gives `demo@devstash.io` an `active` row with **no Stripe customer**. The seed does the same in development
+- Migration `20261030135922_demo_user_pro` gives `demo@devstash.io` an `active` row with **no Stripe customer**. In development the row is removed and the seed grants none, so the demo user is on the Free plan
 
 ### Session
 

@@ -5,6 +5,7 @@ import { CreditCard } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { BillingActions } from "@/features/billing/_internal/components/BillingActions";
 import { useCheckoutReturn } from "@/features/billing/_internal/components/hooks/use-checkout-return";
+import { useUpgradeNotice } from "@/features/billing/_internal/components/hooks/use-upgrade-notice";
 import { UsageSummary } from "@/features/billing/_internal/components/UsageSummary";
 import type { BillingOverview } from "@/features/billing/types";
 
@@ -12,6 +13,8 @@ interface BillingSectionProps extends BillingOverview {
   itemCount: number;
   collectionCount: number;
   checkoutSessionId: string | null;
+  /** The user was sent here from a Pro page. */
+  upgradeRequested: boolean;
 }
 
 export function BillingSection({
@@ -21,8 +24,10 @@ export function BillingSection({
   itemCount,
   collectionCount,
   checkoutSessionId,
+  upgradeRequested,
 }: BillingSectionProps) {
   const { isConfirming } = useCheckoutReturn(checkoutSessionId, isPro);
+  useUpgradeNotice(upgradeRequested, isPro);
 
   return (
     <section className="space-y-4">

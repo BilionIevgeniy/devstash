@@ -1,9 +1,10 @@
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import ItemsByTypeLoading from "@/app/(app)/items/[type]/loading";
 import { PaginationNav } from "@/components/common/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
+import { UPGRADE_REDIRECT_PATH } from "@/features/billing/domain/upgrade-redirect";
 import { getEntitlements } from "@/features/billing/queries";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import {
@@ -22,6 +23,7 @@ import { ItemList } from "@/features/items/components/ItemList";
 import { getItemsByType } from "@/features/items/queries";
 import { getUserFileListItems } from "@/features/items/services/file-list";
 import { getUserGalleryItems } from "@/features/items/services/gallery";
+import { userCanUseType } from "@/features/items/services/type-access";
 import type {
   FileListItem,
   GalleryItem,
@@ -130,6 +132,11 @@ export default async function ItemsByTypePage({
   const { type: slug } = await params;
   const typeName = parseTypeSlug(slug);
   if (!typeName) notFound();
+
+  const { id: userId } = await getSessionUser();
+  if (!(await userCanUseType(userId, typeName))) {
+    redirect(UPGRADE_REDIRECT_PATH);
+  }
 
   const page = parsePage((await searchParams).page);
 

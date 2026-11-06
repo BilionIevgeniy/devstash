@@ -114,13 +114,18 @@ export function typeListing(typeName: string): TypeListing {
   return "cards";
 }
 
+// Whether the plan gives the user this type: a Pro type only on the Pro plan.
+export function canUseType(typeName: string, isPro: boolean): boolean {
+  return isPro || !requiresPro(typeName);
+}
+
 // Whether the user may create an item of this type now: a type the dialog
-// offers, and a Pro one only on the Pro plan.
+// offers, and one their plan gives them.
 export function canCreateType(
   typeName: CreatableTypeName,
   isPro: boolean,
 ): boolean {
-  return isPro || !requiresPro(typeName);
+  return canUseType(typeName, isPro);
 }
 
 // The contentType column of a new item: a link stores a URL, a file or image

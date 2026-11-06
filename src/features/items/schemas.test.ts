@@ -72,6 +72,20 @@ describe("updateItemSchema", () => {
     expect(parse({ title: "  useDebounce  " }).data?.title).toBe("useDebounce");
   });
 
+  // The parsed input is spread into the update: a key that passed here could
+  // attach a file or change the type, and so get around the Pro check.
+  it("drops the keys an edit must not reach", () => {
+    const { data } = parse({
+      fileKey: "users/user-1/file.pdf",
+      typeId: "type-1",
+      userId: "user-2",
+    });
+
+    expect(data).not.toHaveProperty("fileKey");
+    expect(data).not.toHaveProperty("typeId");
+    expect(data).not.toHaveProperty("userId");
+  });
+
   it("rejects an empty or whitespace-only title", () => {
     expect(parse({ title: "" }).success).toBe(false);
     expect(parse({ title: "   " }).success).toBe(false);

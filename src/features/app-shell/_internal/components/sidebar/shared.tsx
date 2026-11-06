@@ -4,6 +4,10 @@ import Link from "next/link";
 export const LINK_CLASS =
   "flex items-center gap-3 rounded-md px-2 py-1.5 text-sm text-foreground/80 hover:bg-accent hover:text-foreground";
 
+// A row the plan does not open: the shape of a link, with no hover.
+export const DISABLED_ROW_CLASS =
+  "flex cursor-not-allowed items-center gap-3 rounded-md px-2 py-1.5 text-sm text-foreground/50";
+
 export function ItemCount({ value }: { value: number }) {
   return (
     <span className="ml-auto text-xs tabular-nums text-muted-foreground">
