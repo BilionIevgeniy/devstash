@@ -6,10 +6,9 @@ const REQUEST_TIMEOUT_MS = 5000;
 const NOT_FOUND_STATUS = 404;
 
 // Removes the app's authorization for the token's owner, which also revokes
-// every token of that authorization. GitHub skips its authorize screen while
-// the app holds one, so the next GitHub sign-in shows the screen again. Best
-// effort: a failure is logged and never blocks the sign-in or the deletion
-// that calls it. A 404 means the token is already gone, which is the goal.
+// every token of that authorization. Best effort: a failure is logged and never
+// blocks the deletion that calls it. A 404 means the token is already gone,
+// which is the usual case for a stored token.
 export async function revokeGitHubGrant(accessToken: string): Promise<void> {
   const clientId = process.env.AUTH_GITHUB_ID;
   const clientSecret = process.env.AUTH_GITHUB_SECRET;

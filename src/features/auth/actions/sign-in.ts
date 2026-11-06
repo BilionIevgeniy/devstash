@@ -83,9 +83,15 @@ export async function signInWithGitHub(formData: FormData): Promise<void> {
 }
 
 // A fresh GitHub sign-in confirms the owner before a destructive action on an
-// account that has no password to type.
+// account that has no password to type. Only this sign-in asks for GitHub's
+// account picker: a usual one finishes with no screen, and here the user should
+// see which GitHub account is about to confirm.
 export async function reauthenticateWithGitHub(): Promise<void> {
-  await signIn("github", { redirectTo: SETTINGS_URL });
+  await signIn(
+    "github",
+    { redirectTo: SETTINGS_URL },
+    { prompt: "select_account" },
+  );
 }
 
 export async function signOutUser(): Promise<void> {

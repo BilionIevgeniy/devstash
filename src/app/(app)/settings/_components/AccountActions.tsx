@@ -2,15 +2,31 @@ import { Settings } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { DeleteAccountDialog } from "@/features/account/components/DeleteAccountDialog";
+import {
+  REAUTH_WRONG_ACCOUNT,
+  WRONG_GITHUB_ACCOUNT_MESSAGE,
+} from "@/features/auth/domain/reauth";
 import { needsReauthentication } from "@/features/auth/services/account";
 import { ChangePasswordForm } from "@/features/auth/components/ChangePasswordForm";
 import { getUserProfile } from "@/features/auth/queries";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 
-export async function AccountActions() {
+interface AccountActionsProps {
+  searchParams: Promise<{ reauth?: string | string[] }>;
+}
+
+export async function AccountActions({ searchParams }: AccountActionsProps) {
   const { id: userId, authenticatedAt } = await getSessionUser();
-  const profile = await getUserProfile(userId);
+  const [profile, { reauth }] = await Promise.all([
+    getUserProfile(userId),
+    searchParams,
+  ]);
   if (!profile) redirect("/sign-in");
+
+  const requiresReauth = needsReauthentication(
+    profile.hasPassword,
+    authenticatedAt,
+  );
 
   return (
     <section className="space-y-4">
@@ -28,10 +44,13 @@ export async function AccountActions() {
         </div>
         <DeleteAccountDialog
           hasPassword={profile.hasPassword}
-          requiresReauth={needsReauthentication(
-            profile.hasPassword,
-            authenticatedAt,
-          )}
+          requiresReauth={requiresReauth}
+          // The URL can outlive the refusal: after a good sign-in it means nothing.
+          returnError={
+            requiresReauth && reauth === REAUTH_WRONG_ACCOUNT
+              ? WRONG_GITHUB_ACCOUNT_MESSAGE
+              : null
+          }
         />
       </div>
     </section>

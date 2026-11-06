@@ -28,7 +28,7 @@ A module writes only the models it owns and reads only its own models. A relatio
   - `actions/sign-in`, `queries`, `schemas`, `services/registration`, `services/account`, and the `domain/` files for tokens, rate limits, reset links and callback paths, all called by pages and routes
   - `services/account` for `account` only: `verifyAccountDeletion` returns a `VerifiedDeletion` that only it can build, and `deleteVerifiedUserRows` takes nothing else, so the rows cannot be deleted without the proof check
   - `components/`: `AuthCard`, the forms (`SignInForm`, `RegisterForm`, `ForgotPasswordForm`, `ResetPasswordForm`, `ConfirmEmailForm`, `ChangePasswordForm`), `ResendVerificationButton`, `GitHubSignInButton`, `UserAvatar`; `hooks/use-has-session` (the homepage header: a static page learns of the session after mount, for display only)
-- **Private:** the actions of its own forms, emails, token and password helpers, error classes, messages, the GitHub grant service, `fetch-has-session` (the browser side of `GET /api/auth/session`), the reads that return a secret (`_internal/queries`, [ADR 0009](adr/0009-read-write-split-enforced-by-lint.md))
+- **Private:** the actions of its own forms, emails, token and password helpers, error classes, messages, the GitHub grant service, `nextauth/foreign-sign-in` (refuses a GitHub sign-in that resolves to another user while a session cookie exists), `fetch-has-session` (the browser side of `GET /api/auth/session`), the reads that return a secret (`_internal/queries`, [ADR 0009](adr/0009-read-write-split-enforced-by-lint.md))
 
 ### billing
 
@@ -96,7 +96,7 @@ A module writes only the models it owns and reads only its own models. A relatio
 - **Owns:** no model; the delete-account flow: verify the proof (`auth`), stop the billing (`billing`) and abort if that fails, purge the user's files (`files`) and abort if that fails, delete the rows (`auth`), then purge once more as best effort for an upload from another tab that landed in between ([ADR 0004](adr/0004-direct-upload-to-r2.md))
 - **Uses today:** `auth` (`verifyAccountDeletion`, `deleteVerifiedUserRows`, `auth`/`signOut` in the action, `reauthenticateWithGitHub` and `REAUTH_REQUIRED_MESSAGE` in the dialog), `files` (`purgeUserObjects`), `billing` (`deleteBillingCustomer`)
 - **Entry points used from outside:** `components/DeleteAccountDialog` (the settings page)
-- **Private:** `_internal/actions/delete-account` (signs out after a delete, outside its `try`), `_internal/services/delete-account`; `schemas` (`deleteAccountSchema`)
+- **Private:** `_internal/actions/delete-account` (signs out after a delete, outside its `try`), `_internal/services/delete-account`, `_internal/components/hooks/use-clear-reauth-param`; `schemas` (`deleteAccountSchema`)
 
 ### app-shell
 

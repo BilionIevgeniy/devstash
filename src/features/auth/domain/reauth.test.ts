@@ -1,11 +1,30 @@
 import { describe, expect, it } from "vitest";
 import {
+  isForeignSignIn,
   isRecentlyAuthenticated,
   REAUTH_WINDOW_MS,
   requiresReauthentication,
 } from "@/features/auth/domain/reauth";
 
 const NOW = 1_700_000_000_000;
+
+describe("isForeignSignIn", () => {
+  it("lets a sign-in through when no session is open", () => {
+    expect(isForeignSignIn(undefined, "user-1")).toBe(false);
+  });
+
+  it("lets the session's own user through", () => {
+    expect(isForeignSignIn("user-1", "user-1")).toBe(false);
+  });
+
+  it("refuses a different user", () => {
+    expect(isForeignSignIn("user-1", "user-2")).toBe(true);
+  });
+
+  it("refuses a sign-in with no resolved user while a session is open", () => {
+    expect(isForeignSignIn("user-1", undefined)).toBe(true);
+  });
+});
 
 describe("isRecentlyAuthenticated", () => {
   it("is false when the sign-in time is unknown", () => {

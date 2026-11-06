@@ -153,9 +153,9 @@ export async function deleteVerifiedUserRows({
   userId,
   email,
 }: VerifiedDeletion): Promise<void> {
-  // Taking the app's authorization away on GitHub makes the next GitHub
-  // sign-in start from GitHub's authorize screen and create a new account. The
-  // stored token is the one from the first link, so it may already be revoked.
+  // Best effort, for rows from before tokens stopped being stored: a newer row
+  // has no token and an older one is usually dead, so the app's authorization
+  // on GitHub normally outlives the account.
   for (const token of await getGitHubAccessTokens(userId)) {
     await revokeGitHubGrant(token);
   }
