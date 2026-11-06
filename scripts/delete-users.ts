@@ -2,14 +2,18 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { DEMO_USER_EMAIL } from "../prisma/demo-user";
+import { requireDevDatabase } from "./require-dev-database";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
   throw new Error("DATABASE_URL is not set");
 }
+requireDevDatabase(connectionString);
 
 const databaseHost = new URL(connectionString).hostname;
-const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString }),
+});
 
 async function main() {
   console.log(`Database host: ${databaseHost}`);

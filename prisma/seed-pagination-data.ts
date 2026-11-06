@@ -1,7 +1,8 @@
 import type { SeedCollection, SeedItem } from "./seed-data";
 
-// The same rows as the demo_pagination_data migration, which does nothing on a
-// fresh database: it runs before the seed creates the demo user.
+// Fewer rows than the demo_pagination_data migration: with the 12 demo items
+// these make 49, one short of the Free limit, and the snippet and command pages
+// each keep a second page.
 const PAGINATION_COLLECTION = "Pagination Test";
 const DESCRIPTION = "Sample data for checking pagination";
 
@@ -48,24 +49,18 @@ export const paginationCollections: SeedCollection[] = [
     isFavorite: false,
     updatedAt: daysBeforeNewYear(0),
   },
-  ...sampleNumbers(18).map((number) => ({
-    name: `Pagination Sample Collection ${number}`,
-    description: DESCRIPTION,
-    isFavorite: false,
-    updatedAt: daysBeforeNewYear(Number(number)),
-  })),
 ];
 
 export const paginationItems: SeedItem[] = [
   ...sampleItems(
     "snippet",
-    50,
+    18,
     "typescript",
     (number) => `export const sample${number} = true;`,
   ),
   ...sampleItems(
     "command",
-    24,
+    19,
     "bash",
     (number) => `echo "pagination sample ${number}"`,
   ),

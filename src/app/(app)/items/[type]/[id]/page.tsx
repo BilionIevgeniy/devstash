@@ -1,10 +1,12 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { getSessionUser } from "@/features/auth/nextauth/session";
+import { UPGRADE_REDIRECT_PATH } from "@/features/billing/domain/upgrade-redirect";
 import { parseTypeSlug } from "@/features/item-types/domain/item-type";
 import { ItemDetailPage } from "@/features/items/components/ItemDetailPage";
 import { toItemDetailJson } from "@/features/items/domain/item-detail";
 import { getUserItemDetailOfType } from "@/features/items/services/item-detail";
+import { userCanUseType } from "@/features/items/services/type-access";
 
 export default async function ItemPage({
   params,
@@ -14,6 +16,10 @@ export default async function ItemPage({
   if (!typeName) notFound();
 
   const { id: userId } = await getSessionUser();
+  if (!(await userCanUseType(userId, typeName))) {
+    redirect(UPGRADE_REDIRECT_PATH);
+  }
+
   const item = await getUserItemDetailOfType(userId, id, typeName);
   if (!item) notFound();
 

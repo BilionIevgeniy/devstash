@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   canCreateType,
+  canUseType,
   contentTypeFor,
   copyValueOf,
   editableFields,
@@ -44,6 +45,20 @@ describe("typeListing", () => {
     ["recipe", "cards"],
   ])("%s is listed as %s", (typeName, expected) => {
     expect(typeListing(typeName)).toBe(expected);
+  });
+});
+
+describe("canUseType", () => {
+  it.each([
+    ["file", false, false],
+    ["image", false, false],
+    ["snippet", false, true],
+    ["recipe", false, true],
+    ["file", true, true],
+    ["image", true, true],
+    ["snippet", true, true],
+  ])("%s with isPro %s: %s", (typeName, isPro, expected) => {
+    expect(canUseType(typeName, isPro)).toBe(expected);
   });
 });
 
