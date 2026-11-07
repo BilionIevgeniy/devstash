@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 // Must sit inside the form whose Server Action it reports on. The pending
 // state lasts until the browser has followed the redirect to GitHub.
-export function GitHubSignInButton() {
+export function GitHubSignInButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
 
   return (
@@ -24,7 +24,7 @@ export function GitHubSignInButton() {
           Signing in…
         </>
       ) : (
-        "Sign in with GitHub"
+        label
       )}
     </Button>
   );

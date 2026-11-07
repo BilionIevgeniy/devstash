@@ -74,7 +74,7 @@ export function MonacoEditor({
       beforeMount={defineThemes}
       onMount={handleMount}
       onChange={(next) => onChange?.(next ?? "")}
-      loading={<Skeleton className="h-full w-full rounded-none" />}
+      loading={<Skeleton className="size-full rounded-none" />}
       options={{
         ariaLabel,
         readOnly,

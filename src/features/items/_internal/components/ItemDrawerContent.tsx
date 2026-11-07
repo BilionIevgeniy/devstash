@@ -84,7 +84,7 @@ export function ItemDrawerContent({
         onEdit={onEdit}
         onDelete={onDelete}
       />
-      <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
+      <div className="flex-1 space-y-6 overflow-y-auto p-6">
         {item.description && (
           <DrawerSection title="Description">
             <p>{item.description}</p>

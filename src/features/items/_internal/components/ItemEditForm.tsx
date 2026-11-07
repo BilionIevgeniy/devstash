@@ -151,7 +151,7 @@ export function ItemEditForm({
           onDiscard={onCancel}
         />
       </EditToolbar>
-      <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
+      <div className="flex-1 space-y-6 overflow-y-auto p-6">
         <ItemFields
           fields={fields}
           values={values}
