@@ -9,6 +9,7 @@ import {
   type FileKind,
 } from "@/features/files/domain/file-rules";
 import { DrawerSection } from "@/features/items/_internal/components/DrawerSection";
+import { PromptContent } from "@/features/items/_internal/components/PromptContent";
 import {
   FILE_PREVIEW_HEIGHT,
   FILE_ROW_HEIGHT,
@@ -21,12 +22,20 @@ interface ItemBodyProps {
   typeName: string;
   title: string;
   detail: ItemDetailJson;
-  /** Pro: code gets a working Explain button, Free an upgrade link. */
+  /** Pro: code gets a working Explain button and a prompt Optimize, Free an upgrade link. */
   canUseAi: boolean;
+  /** Shows a saved detail, after an accepted prompt rewrite. */
+  onSaved: (detail: ItemDetailJson) => void;
 }
 
 // The type-specific part of the detail: the file or image, the URL, the content.
-export function ItemBody({ typeName, title, detail, canUseAi }: ItemBodyProps) {
+export function ItemBody({
+  typeName,
+  title,
+  detail,
+  canUseAi,
+  onSaved,
+}: ItemBodyProps) {
   const fields = editableFields(typeName);
 
   return (
@@ -68,6 +77,14 @@ export function ItemBody({ typeName, title, detail, canUseAi }: ItemBodyProps) {
                 />
               )}
             </AiCodeExplanation>
+          ) : typeName === "prompt" ? (
+            <PromptContent
+              itemId={detail.id}
+              title={title}
+              prompt={detail.content}
+              canUseAi={canUseAi}
+              onSaved={onSaved}
+            />
           ) : (
             <MarkdownEditor value={detail.content} readOnly />
           )}

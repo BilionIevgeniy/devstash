@@ -21,6 +21,7 @@ export const PRO_PLAN_FEATURES = [
   "AI tag suggestions",
   "AI summaries",
   "AI code explanations",
+  "AI prompt optimization",
 ];
 
 const MONTHS_PER_YEAR = 12;

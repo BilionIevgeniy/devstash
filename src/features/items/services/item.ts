@@ -6,7 +6,10 @@ import {
   isRecordNotFound,
   tagLinks,
 } from "@/features/items/_internal/services/item-writes";
-import { editableUpdate } from "@/features/items/domain/item-fields";
+import {
+  editableFields,
+  editableUpdate,
+} from "@/features/items/domain/item-fields";
 import { getItemFileKey } from "@/features/items/_internal/queries";
 import { getItemEditState } from "@/features/items/queries";
 import type { UpdateItemInput } from "@/features/items/schemas";
@@ -18,6 +21,7 @@ import { prisma } from "@/lib/prisma";
 
 const ITEM_NOT_FOUND = "Item not found";
 const PRO_ONLY = "Files and images are a Pro feature";
+const NO_CONTENT = "This item has no text content";
 const FILE_DELETE_FAILED = "Couldn't delete the file. Please try again.";
 const ITEM_OR_COLLECTION_NOT_FOUND =
   "This item or one of its collections no longer exists";
@@ -89,6 +93,38 @@ export async function updateUserItem(
     throw error;
   }
   await deleteOrphanTags(userId);
+
+  const item = await getUserItemDetail(userId, itemId);
+  if (!item) return { success: false, error: ITEM_NOT_FOUND, data: null };
+  return { success: true, error: null, data: item };
+}
+
+// Replaces only the content, for an accepted AI rewrite of it: the tags,
+// collections and other fields stay as they are. Scoped by the owner, and
+// limited to the types that have content.
+export async function setUserItemContent(
+  userId: string,
+  itemId: string,
+  content: string,
+): Promise<UpdateItemResult> {
+  const current = await getItemEditState(userId, itemId);
+  if (!current) return { success: false, error: ITEM_NOT_FOUND, data: null };
+  if (!editableFields(current.typeName).content) {
+    return { success: false, error: NO_CONTENT, data: null };
+  }
+
+  try {
+    await prisma.item.update({
+      where: { id: itemId, userId },
+      data: { content },
+      select: { id: true },
+    });
+  } catch (error) {
+    if (isRecordNotFound(error)) {
+      return { success: false, error: ITEM_NOT_FOUND, data: null };
+    }
+    throw error;
+  }
 
   const item = await getUserItemDetail(userId, itemId);
   if (!item) return { success: false, error: ITEM_NOT_FOUND, data: null };

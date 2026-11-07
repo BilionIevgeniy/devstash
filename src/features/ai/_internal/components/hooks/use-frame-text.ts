@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { readStreamText } from "@/features/ai/domain/explain";
+import { readStreamText } from "@/features/ai/domain/text-stream";
 
 // The text of a stream, shown once per animation frame: a delta is a few
 // characters, and each render parses the whole Markdown again.
@@ -39,5 +39,12 @@ export function useFrameText() {
     return complete;
   }
 
-  return { text, start, append, finish };
+  /** Drops the answer, on screen too. */
+  function clear() {
+    cancelFrame();
+    rawRef.current = "";
+    setText("");
+  }
+
+  return { text, start, append, finish, clear };
 }

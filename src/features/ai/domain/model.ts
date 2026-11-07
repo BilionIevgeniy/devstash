@@ -41,6 +41,15 @@ export const EXPLAIN_SETTINGS: AiStreamSettings = {
   totalMs: 50_000,
 };
 
+export const PROMPT_OPTIMIZE_SETTINGS: AiStreamSettings = {
+  effort: "low",
+  verbosity: "medium",
+  maxOutputTokens: 2_000,
+  connectTimeoutMs: 15_000,
+  firstTextMs: 15_000,
+  totalMs: 50_000,
+};
+
 export const SUMMARY_SETTINGS: AiOperationSettings = {
   effort: "none",
   verbosity: "low",

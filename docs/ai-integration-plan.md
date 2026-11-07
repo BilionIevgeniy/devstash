@@ -1,6 +1,6 @@
 # AI Integration Plan
 
-The plan for the Pro AI features: auto-tagging, summaries, Explain Code and prompt optimization, suggest content. Auto-tagging is built (2026-11-07), with the foundation: `openai` 7.53.0, `lib/openai.ts`, the `ai` module, the access check and the limits. Summaries and Explain Code are built too (2026-11-07), Explain Code with `streamText` and the first streaming route. Prompt optimization is not.
+The plan for the Pro AI features: auto-tagging, summaries, Explain Code and prompt optimization, suggest content. Auto-tagging is built (2026-11-07), with the foundation: `openai` 7.53.0, `lib/openai.ts`, the `ai` module, the access check and the limits. Summaries and Explain Code are built too (2026-11-07), Explain Code with `streamText` and the first streaming route. Prompt optimization is built too (2026-11-07), on the same stream core (`ai/services/text-stream.ts`).
 
 This document holds the analysis and the reasons. The steps to follow will be in the feature specs: [ai-auto-tag-spec.md](../featuresDRAFT/ai-auto-tag-spec.md), [ai-explain-spec.md](../featuresDRAFT/ai-explain-spec.md), and specs still to be written for summaries and prompt optimization.
 
@@ -328,8 +328,8 @@ Only for snippets and commands, only in the read view.
 
 Only for items of type prompt, with the same stream. Since the output would replace something the user wrote:
 
-- In the read view, a Sparkles Optimize button opens the result beside the original, with Copy. Saving it as the content is an edit, so it goes through the edit form
-- The first version compares and copies. It writes nothing
+- In the read view, a Sparkles Optimize button shows the result in place of the original (Original / Optimized), with Copy
+- Built differently from this first draft: the user asked to be offered the result, so "Use this prompt" saves it as the content through a narrow `items` action (`replaceItemContent`), not the edit form. It is not offered for an answer cut short, for a prompt longer than what the model read (the rest would be lost), for an unchanged answer, or for an answer with an image (the read view would load it)
 
 ### Everywhere
 

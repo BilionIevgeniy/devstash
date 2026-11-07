@@ -37,3 +37,16 @@ export const explainInputSchema = z.object({
 });
 
 export type ExplainInput = z.infer<typeof explainInputSchema>;
+
+const NOTHING_TO_OPTIMIZE_MESSAGE = "There is no prompt to optimize";
+
+// What prompt optimization takes: the saved prompt as shown.
+export const optimizePromptInputSchema = z.object({
+  title: aiText,
+  prompt: aiText.refine(
+    (prompt) => prompt.trim() !== "",
+    NOTHING_TO_OPTIMIZE_MESSAGE,
+  ),
+});
+
+export type OptimizePromptInput = z.infer<typeof optimizePromptInputSchema>;

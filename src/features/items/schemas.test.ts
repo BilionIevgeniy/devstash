@@ -12,6 +12,7 @@ import {
 import {
   createItemSchema,
   deleteItemOptionsSchema,
+  itemContentSchema,
   itemIdSchema,
   updateItemSchema,
 } from "@/features/items/schemas";
@@ -29,6 +30,22 @@ describe("deleteItemOptionsSchema", () => {
     expect(deleteItemOptionsSchema.safeParse({ refresh: "no" }).success).toBe(
       false,
     );
+  });
+});
+
+describe("itemContentSchema", () => {
+  it("keeps the content as written, leading spaces included", () => {
+    expect(itemContentSchema.parse("  indented")).toBe("  indented");
+  });
+
+  it("refuses blank content, which would erase the item's text", () => {
+    expect(itemContentSchema.safeParse(" \n ").success).toBe(false);
+  });
+
+  it("refuses content over the limit", () => {
+    expect(
+      itemContentSchema.safeParse("a".repeat(CONTENT_MAX + 1)).success,
+    ).toBe(false);
   });
 });
 

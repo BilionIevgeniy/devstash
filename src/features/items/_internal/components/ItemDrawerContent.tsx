@@ -102,6 +102,7 @@ export function ItemDrawerContent({
             title={item.title}
             detail={detail}
             canUseAi={canUseAi}
+            onSaved={onSaved}
           />
         )}
         {item.tags.length > 0 && <ItemTagList tags={item.tags} />}

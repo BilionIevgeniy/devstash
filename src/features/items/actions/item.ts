@@ -8,6 +8,7 @@ import {
   createItemSchema,
   deleteItemOptionsSchema,
   favoriteValueSchema,
+  itemContentSchema,
   itemIdSchema,
   pinValueSchema,
   updateItemSchema,
@@ -15,6 +16,7 @@ import {
 import { createUserItem } from "@/features/items/services/create-item";
 import {
   deleteUserItem,
+  setUserItemContent,
   setUserItemFavorite,
   setUserItemPin,
   updateUserItem,
@@ -75,6 +77,35 @@ export async function updateItem(
     return { success: true, error: null, data: toItemDetailJson(result.data) };
   } catch (error) {
     console.error("Updating the item failed:", error);
+    return failure(GENERIC_ERROR);
+  }
+}
+
+// Only the content, as the read view's AI rewrite saves it. The detail goes
+// out JSON-safe, like updateItem's.
+export async function replaceItemContent(
+  itemId: string,
+  content: unknown,
+): Promise<UpdateItemActionResult> {
+  const parsedId = itemIdSchema.safeParse(itemId);
+  if (!parsedId.success) return failure(parsedId.error.issues[0].message);
+
+  const parsed = itemContentSchema.safeParse(content);
+  if (!parsed.success) return failure(parsed.error.issues[0].message);
+
+  // Outside the try: a signed-out caller is redirected by a thrown error.
+  const { id: userId } = await getSessionUser();
+
+  try {
+    const result = await setUserItemContent(userId, parsedId.data, parsed.data);
+    if (!result.success || !result.data) {
+      return failure(result.error ?? GENERIC_ERROR);
+    }
+
+    refresh();
+    return { success: true, error: null, data: toItemDetailJson(result.data) };
+  } catch (error) {
+    console.error("Replacing the item's content failed:", error);
     return failure(GENERIC_ERROR);
   }
 }

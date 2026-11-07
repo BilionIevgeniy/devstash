@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import type { ReactNode } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,6 +28,13 @@ interface MarkdownEditorProps {
   /** The id of the textarea, so the field label focuses it. */
   id?: string;
   ariaLabel?: string;
+  /** Read view only: controls after the "markdown" label. */
+  headerActions?: ReactNode;
+  /** Read view only: shown in place of the preview, such as an AI rewrite. */
+  view?: ReactNode;
+  /** Read view only: what Copy takes while `view` shows other text. */
+  copyValue?: string;
+  copyLabel?: string;
 }
 
 export function MarkdownEditor({
@@ -35,17 +43,20 @@ export function MarkdownEditor({
   onChange,
   id,
   ariaLabel = "Content",
+  headerActions,
+  view,
+  copyValue,
+  copyLabel,
 }: MarkdownEditorProps) {
   if (readOnly) {
     return (
-      <div className={FRAME_CLASS}>
-        <EditorHeader value={value} copyLabel={COPY_LABEL}>
-          <span className="ml-auto font-mono text-xs text-muted-foreground">
-            markdown
-          </span>
-        </EditorHeader>
-        <PreviewPane value={value} />
-      </div>
+      <ReadOnlyMarkdown
+        value={value}
+        headerActions={headerActions}
+        view={view}
+        copyValue={copyValue}
+        copyLabel={copyLabel}
+      />
     );
   }
 
@@ -79,7 +90,7 @@ export function MarkdownEditor({
           value={value}
           onChange={(event) => onChange?.(event.target.value)}
           aria-label={ariaLabel}
-          className="block field-sizing-content max-h-[400px] min-h-40 w-full resize-none bg-transparent p-4 font-mono text-xs outline-none"
+          className="block field-sizing-content max-h-100 min-h-40 w-full resize-none bg-transparent p-4 font-mono text-xs outline-none"
         />
       </TabsContent>
       <TabsContent value="preview">
@@ -89,9 +100,43 @@ export function MarkdownEditor({
   );
 }
 
+type ReadOnlyMarkdownProps = Pick<
+  MarkdownEditorProps,
+  "value" | "headerActions" | "view" | "copyValue" | "copyLabel"
+>;
+
+// The read view: the preview, or the caller's view in its place, scrolling
+// at the same height as CodeEditor's view.
+function ReadOnlyMarkdown({
+  value,
+  headerActions,
+  view,
+  copyValue,
+  copyLabel,
+}: ReadOnlyMarkdownProps) {
+  return (
+    <div className={FRAME_CLASS}>
+      <EditorHeader
+        value={copyValue ?? value}
+        copyLabel={copyLabel ?? COPY_LABEL}
+      >
+        <span className="ml-auto font-mono text-xs text-muted-foreground">
+          markdown
+        </span>
+        {headerActions}
+      </EditorHeader>
+      {view ? (
+        <div className="max-h-100 overflow-y-auto">{view}</div>
+      ) : (
+        <PreviewPane value={value} />
+      )}
+    </div>
+  );
+}
+
 function PreviewPane({ value }: { value: string }) {
   return (
-    <div className="max-h-[400px] overflow-y-auto p-4">
+    <div className="max-h-100 overflow-y-auto p-4">
       {value.trim() === "" ? (
         <p className="text-sm text-muted-foreground">Nothing to preview</p>
       ) : (

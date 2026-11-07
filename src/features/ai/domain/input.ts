@@ -14,6 +14,11 @@ export const SUMMARY_CONTENT_MAX = 8_000;
 export const EXPLAIN_TITLE_MAX = 200;
 export const EXPLAIN_CODE_MAX = 8_000;
 
+// Prompt optimization reads the same amount; a prompt cut for the model
+// cannot be replaced by its answer (canAcceptOptimizedPrompt).
+export const PROMPT_OPTIMIZE_TITLE_MAX = 200;
+export const PROMPT_OPTIMIZE_CONTENT_MAX = 8_000;
+
 // The item as every operation sends it: fixed instructions first and the item
 // last, so the prefix stays the same across calls. The item is data to
 // describe: text inside it that reads like an order is still only content.
