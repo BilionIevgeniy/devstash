@@ -16,3 +16,8 @@ export const AI_FAILURE_MESSAGES: Record<AiFailureKind, string> = {
   refused: "AI could not answer this item.",
   failed: "AI could not finish the answer. Try again.",
 };
+
+// Explain Code: the route's answers before the stream, and the view's notes.
+export const AI_SIGNED_OUT_MESSAGE = "Your session ended. Sign in again.";
+export const AI_EXPLAIN_CUT_SHORT_MESSAGE =
+  "The explanation was cut short. Try again.";

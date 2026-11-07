@@ -59,6 +59,25 @@ export interface StructuredRequest<T> {
   userId: string;
 }
 
+export interface TextStreamRequest {
+  /** A short name for the logs, such as "explain". */
+  operation: string;
+  model: string;
+  instructions: string;
+  input: string;
+  effort: AiEffort;
+  verbosity: AiVerbosity;
+  maxOutputTokens: number;
+  /**
+   * Until the response headers only: OpenAI sends them at once, so this does
+   * not bound the wait for text. Bound that with `signal`.
+   */
+  connectTimeoutMs: number;
+  userId: string;
+  /** Aborts the call: the caller's deadlines and the client going away. */
+  signal: AbortSignal;
+}
+
 // 429 codes that a retry cannot fix: only we can, by adding credit or raising
 // the limit.
 const SPEND_ERROR_CODES = new Set([
@@ -150,6 +169,54 @@ export async function generateStructured<T>(
   const parsed = response.output_parsed;
   if (parsed === null) throw new AiOutputError("empty");
   return parsed;
+}
+
+// The same privacy settings as parseResponse, as a stream of events.
+function openStream(request: TextStreamRequest) {
+  return getOpenAI().responses.stream(
+    {
+      model: request.model,
+      instructions: request.instructions,
+      input: request.input,
+      reasoning: { effort: request.effort },
+      text: { verbosity: request.verbosity },
+      max_output_tokens: request.maxOutputTokens,
+      store: false,
+      safety_identifier: sha256Hex(request.userId),
+    },
+    { signal: request.signal, timeout: request.connectTimeoutMs },
+  );
+}
+
+// The answer's text as it is written. Throws AiOutputError when the model
+// stops short, fails, refuses or writes nothing, the SDK's errors when the
+// call fails, and APIUserAbortError when `signal` aborts it.
+export async function* streamText(
+  request: TextStreamRequest,
+): AsyncGenerator<string> {
+  let wroteText = false;
+  for await (const event of openStream(request)) {
+    switch (event.type) {
+      case "response.output_text.delta":
+        wroteText = true;
+        yield event.delta;
+        break;
+      case "response.refusal.delta":
+        throw new AiOutputError("refusal");
+      case "response.incomplete":
+        logUsage(request.operation, request.model, event.response.usage);
+        throw new AiOutputError(
+          toOutputReason(event.response.incomplete_details?.reason),
+        );
+      case "response.failed":
+      case "error":
+        throw new AiOutputError("other");
+      case "response.completed":
+        logUsage(request.operation, request.model, event.response.usage);
+        break;
+    }
+  }
+  if (!wroteText) throw new AiOutputError("empty");
 }
 
 export function isAiSpendError(error: unknown): boolean {

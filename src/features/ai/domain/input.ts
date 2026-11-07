@@ -10,6 +10,10 @@ export const AUTO_TAG_CONTENT_MAX = 2_000;
 export const SUMMARY_TITLE_MAX = 200;
 export const SUMMARY_CONTENT_MAX = 8_000;
 
+// An explanation reads the code, and says in the UI when it was cut.
+export const EXPLAIN_TITLE_MAX = 200;
+export const EXPLAIN_CODE_MAX = 8_000;
+
 // The item as every operation sends it: fixed instructions first and the item
 // last, so the prefix stays the same across calls. The item is data to
 // describe: text inside it that reads like an order is still only content.
@@ -27,4 +31,9 @@ export function truncateForModel(text: string, max: number): string {
   if (text.length <= max) return text;
   const end = isHighSurrogate(text.charCodeAt(max - 1)) ? max - 1 : max;
   return text.slice(0, end);
+}
+
+// Whether truncateForModel would cut the text, so the UI can say so.
+export function isCutForModel(text: string, max: number): boolean {
+  return truncateForModel(text, max).length < text.length;
 }

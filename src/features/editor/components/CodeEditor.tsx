@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, type ReactNode } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { EditorHeader } from "@/features/editor/_internal/components/EditorHeader";
@@ -9,6 +9,7 @@ import {
   editorLanguage,
   languageLabel,
 } from "@/features/editor/domain/code-language";
+import { cn } from "@/lib/utils";
 
 const MAX_HEIGHT = 400;
 const MIN_EDIT_HEIGHT = 160;
@@ -23,6 +24,10 @@ interface CodeEditorProps {
   readOnly?: boolean;
   onChange?: (value: string) => void;
   ariaLabel?: string;
+  /** Controls of the read view, after the language label. */
+  headerActions?: ReactNode;
+  /** Shown in place of the code, such as an explanation of it. */
+  view?: ReactNode;
 }
 
 export function CodeEditor({
@@ -31,6 +36,8 @@ export function CodeEditor({
   readOnly = false,
   onChange,
   ariaLabel = "Code",
+  headerActions,
+  view,
 }: CodeEditorProps) {
   const minHeight = readOnly ? MIN_READ_HEIGHT : MIN_EDIT_HEIGHT;
   const fallbackHeight = readOnly ? READ_FALLBACK_HEIGHT : EDIT_FALLBACK_HEIGHT;
@@ -46,22 +53,31 @@ export function CodeEditor({
         <span className="ml-auto font-mono text-xs text-muted-foreground">
           {languageLabel(language)}
         </span>
+        {headerActions}
       </EditorHeader>
-      <Suspense
-        fallback={
-          <Skeleton className={`${fallbackHeight} w-full rounded-none`} />
-        }
-      >
-        <MonacoEditor
-          value={value}
-          language={editorLanguage(language)}
-          height={height}
-          readOnly={readOnly}
-          ariaLabel={ariaLabel}
-          onChange={onChange}
-          onContentHeight={fit}
-        />
-      </Suspense>
+      {/* While a view is shown, Monaco stays mounted so switching back does
+          not load it again, and keeps its width: hidden at width 0 it would
+          measure every line as wrapped and come back at the wrong height. */}
+      <div className="relative">
+        {view && <div className="max-h-100 overflow-y-auto">{view}</div>}
+        <div className={cn(view && "invisible absolute inset-x-0 top-0")}>
+          <Suspense
+            fallback={
+              <Skeleton className={`${fallbackHeight} w-full rounded-none`} />
+            }
+          >
+            <MonacoEditor
+              value={value}
+              language={editorLanguage(language)}
+              height={height}
+              readOnly={readOnly}
+              ariaLabel={ariaLabel}
+              onChange={onChange}
+              onContentHeight={fit}
+            />
+          </Suspense>
+        </div>
+      </div>
     </div>
   );
 }

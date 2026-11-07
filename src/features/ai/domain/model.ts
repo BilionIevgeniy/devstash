@@ -19,6 +19,28 @@ export const AUTO_TAG_SETTINGS: AiOperationSettings = {
   timeoutMs: 10_000,
 };
 
+export interface AiStreamSettings {
+  effort: "none" | "low";
+  verbosity: "low" | "medium";
+  /** Includes reasoning tokens: a limit set too low bills and shows nothing. */
+  maxOutputTokens: number;
+  /** Until OpenAI's headers; they come at once, so this bounds little. */
+  connectTimeoutMs: number;
+  /** Until the first words: the user is looking at a spinner. */
+  firstTextMs: number;
+  /** The whole answer, below the route's maxDuration (60 s). */
+  totalMs: number;
+}
+
+export const EXPLAIN_SETTINGS: AiStreamSettings = {
+  effort: "low",
+  verbosity: "medium",
+  maxOutputTokens: 2_000,
+  connectTimeoutMs: 15_000,
+  firstTextMs: 15_000,
+  totalMs: 50_000,
+};
+
 export const SUMMARY_SETTINGS: AiOperationSettings = {
   effort: "none",
   verbosity: "low",

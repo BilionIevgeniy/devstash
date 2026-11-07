@@ -36,6 +36,7 @@ describe("checkAiAccess", () => {
     await expect(checkAiAccess("user-1")).resolves.toEqual({
       success: false,
       error: AI_PRO_ONLY_MESSAGE,
+      reason: "not-pro",
     });
     expect(consumeRateLimit).not.toHaveBeenCalled();
   });
@@ -62,6 +63,7 @@ describe("checkAiAccess", () => {
     await expect(checkAiAccess("user-1")).resolves.toEqual({
       success: false,
       error: AI_APP_LIMIT_MESSAGE,
+      reason: "limited",
     });
   });
 
@@ -71,6 +73,7 @@ describe("checkAiAccess", () => {
     const result = await checkAiAccess("user-1");
 
     expect(result.success).toBe(false);
+    expect(result).toMatchObject({ reason: "limited" });
     expect(result.error).toMatch(/minute/);
     expect(consumeRateLimit).toHaveBeenCalledTimes(1);
   });
@@ -83,6 +86,7 @@ describe("checkAiAccess", () => {
     await expect(checkAiAccess("user-1")).resolves.toEqual({
       success: false,
       error: AI_DAILY_LIMIT_MESSAGE,
+      reason: "limited",
     });
   });
 

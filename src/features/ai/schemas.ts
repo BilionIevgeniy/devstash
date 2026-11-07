@@ -24,3 +24,16 @@ export const tagSuggestionsSchema = z.object({ tags: z.array(z.string()) });
 
 // No length bound either, for the same reason: normalizeSummary keeps it.
 export const summarySchema = z.object({ summary: z.string() });
+
+const NOTHING_TO_EXPLAIN_MESSAGE = "There is no code to explain";
+// Items' LANGUAGE_MAX, which this feature cannot import.
+const LANGUAGE_MAX = 50;
+
+// What Explain Code takes: the code as shown, its language when it has one.
+export const explainInputSchema = z.object({
+  title: aiText,
+  language: z.string().max(LANGUAGE_MAX).nullable(),
+  code: aiText.refine((code) => code.trim() !== "", NOTHING_TO_EXPLAIN_MESSAGE),
+});
+
+export type ExplainInput = z.infer<typeof explainInputSchema>;

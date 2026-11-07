@@ -14,7 +14,7 @@ const COPY_LABEL = "Copy content";
 // Markdown parser (~60 KB gzip) is fetched only when a preview first renders.
 const MarkdownPreview = dynamic(
   () =>
-    import("@/features/editor/_internal/components/MarkdownPreview").then(
+    import("@/features/editor/components/MarkdownPreview").then(
       (mod) => mod.MarkdownPreview,
     ),
   { loading: () => <Skeleton className="h-16 w-full" /> },
@@ -95,7 +95,7 @@ function PreviewPane({ value }: { value: string }) {
       {value.trim() === "" ? (
         <p className="text-sm text-muted-foreground">Nothing to preview</p>
       ) : (
-        <MarkdownPreview value={value} />
+        <MarkdownPreview value={value} images="show" />
       )}
     </div>
   );

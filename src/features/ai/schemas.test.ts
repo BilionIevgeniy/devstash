@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { AI_INPUT_MAX } from "@/features/ai/domain/input";
-import { aiItemInputSchema } from "@/features/ai/schemas";
+import { aiItemInputSchema, explainInputSchema } from "@/features/ai/schemas";
 
 describe("aiItemInputSchema", () => {
   it("accepts a title without content", () => {
@@ -32,5 +32,34 @@ describe("aiItemInputSchema", () => {
     });
 
     expect(result.success).toBe(true);
+  });
+});
+
+describe("explainInputSchema", () => {
+  const input = { title: "useAuth", language: "typescript", code: "x()" };
+
+  it("accepts code with a language", () => {
+    expect(explainInputSchema.safeParse(input).success).toBe(true);
+  });
+
+  it("accepts code saved without a language", () => {
+    expect(
+      explainInputSchema.safeParse({ ...input, language: null }).success,
+    ).toBe(true);
+  });
+
+  it("refuses blank code", () => {
+    expect(
+      explainInputSchema.safeParse({ ...input, code: " \n " }).success,
+    ).toBe(false);
+  });
+
+  it("refuses code over the ceiling", () => {
+    expect(
+      explainInputSchema.safeParse({
+        ...input,
+        code: "a".repeat(AI_INPUT_MAX + 1),
+      }).success,
+    ).toBe(false);
   });
 });

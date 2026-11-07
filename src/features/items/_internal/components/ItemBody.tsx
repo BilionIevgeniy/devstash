@@ -1,6 +1,7 @@
 import { Download, File as FileIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { AiCodeExplanation } from "@/features/ai/components/AiCodeExplanation";
 import { CodeEditor } from "@/features/editor/components/CodeEditor";
 import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
 import {
@@ -18,11 +19,14 @@ import { cn } from "@/lib/utils";
 
 interface ItemBodyProps {
   typeName: string;
+  title: string;
   detail: ItemDetailJson;
+  /** Pro: code gets a working Explain button, Free an upgrade link. */
+  canUseAi: boolean;
 }
 
 // The type-specific part of the detail: the file or image, the URL, the content.
-export function ItemBody({ typeName, detail }: ItemBodyProps) {
+export function ItemBody({ typeName, title, detail, canUseAi }: ItemBodyProps) {
   const fields = editableFields(typeName);
 
   return (
@@ -47,12 +51,23 @@ export function ItemBody({ typeName, detail }: ItemBodyProps) {
       {detail.content && (
         <DrawerSection title="Content">
           {fields.codeEditor ? (
-            <CodeEditor
-              value={detail.content}
+            <AiCodeExplanation
+              title={title}
+              code={detail.content}
               language={detail.language}
-              readOnly
-              ariaLabel="Content"
-            />
+              canUseAi={canUseAi}
+            >
+              {({ headerActions, view }) => (
+                <CodeEditor
+                  value={detail.content ?? ""}
+                  language={detail.language}
+                  readOnly
+                  ariaLabel="Content"
+                  headerActions={headerActions}
+                  view={view}
+                />
+              )}
+            </AiCodeExplanation>
           ) : (
             <MarkdownEditor value={detail.content} readOnly />
           )}
