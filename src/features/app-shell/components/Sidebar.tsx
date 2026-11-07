@@ -36,7 +36,7 @@ export async function Sidebar() {
         <PlanBadge isPro={isPro} />
       </div>
 
-      <nav className="flex-1 space-y-6 overflow-y-auto px-2 py-2">
+      <nav className="flex-1 space-y-6 overflow-y-auto p-2">
         <TypesSection itemTypes={itemTypes} isPro={isPro} />
         <CollectionsSection {...collections} />
         <ItemsSection {...items} isPro={isPro} />

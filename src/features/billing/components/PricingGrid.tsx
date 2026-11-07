@@ -18,7 +18,7 @@ export function PricingGrid({ toggle, free, pro }: PricingGridProps) {
         <div className="@min-[720px]:col-span-2 @min-[720px]:mb-4">
           {toggle}
         </div>
-        <div className="order-first @min-[720px]:order-none">{free}</div>
+        <div className="order-first @min-[720px]:order-0">{free}</div>
         <div>{pro}</div>
       </div>
     </div>

@@ -44,7 +44,7 @@ export function SidebarSkeleton() {
         <Skeleton className="h-5 w-10 rounded-full" />
       </div>
 
-      <div className="min-h-0 flex-1 space-y-6 overflow-hidden px-2 py-2">
+      <div className="min-h-0 flex-1 space-y-6 overflow-hidden p-2">
         <SectionSkeleton rows={TYPE_ROWS} />
         <SectionSkeleton rows={COLLECTION_ROWS} hasLabel />
         <SectionSkeleton rows={ITEM_ROWS} hasLabel />

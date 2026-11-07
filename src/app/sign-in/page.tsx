@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { signInWithGitHub } from "@/features/auth/actions/sign-in";
 import { auth } from "@/features/auth/nextauth/auth";
 import { AuthCard } from "@/features/auth/components/AuthCard";
-import { GitHubSignInButton } from "@/features/auth/components/GitHubSignInButton";
+import { GitHubAuthSection } from "@/features/auth/components/GitHubAuthSection";
 import { SignInForm } from "@/features/auth/components/SignInForm";
 import { safeCallbackPath } from "@/features/auth/domain/callback-url";
 
@@ -45,16 +44,10 @@ export default async function SignInPage({
         initialError={getErrorMessage(error)}
       />
 
-      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-        <div className="h-px flex-1 bg-border" />
-        or
-        <div className="h-px flex-1 bg-border" />
-      </div>
-
-      <form action={signInWithGitHub}>
-        <input type="hidden" name="callbackUrl" value={callbackPath} />
-        <GitHubSignInButton />
-      </form>
+      <GitHubAuthSection
+        callbackUrl={callbackPath}
+        label="Sign in with GitHub"
+      />
 
       <p className="text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{" "}

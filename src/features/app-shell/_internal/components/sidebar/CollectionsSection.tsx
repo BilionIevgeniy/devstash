@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { Star } from "lucide-react";
 
 import { CollapsibleSection } from "@/features/app-shell/_internal/components/CollapsibleSection";
+import { SidebarNavLink } from "@/features/app-shell/_internal/components/sidebar/SidebarNavLink";
 import {
   ItemCount,
   LINK_CLASS,
@@ -19,11 +19,15 @@ interface CollectionLinkProps {
 
 function FavoriteLink({ collection }: CollectionLinkProps) {
   return (
-    <Link href={`/collections/${collection.id}`} className={LINK_CLASS}>
+    <SidebarNavLink
+      href={`/collections/${collection.id}`}
+      match="exact"
+      className={LINK_CLASS}
+    >
       <Star className="size-4 shrink-0 fill-yellow-400 text-yellow-400" />
       <span className="truncate">{collection.name}</span>
       <ItemCount value={collection.itemCount} />
-    </Link>
+    </SidebarNavLink>
   );
 }
 
@@ -31,7 +35,11 @@ function RecentLink({ collection }: CollectionLinkProps) {
   const color = collectionAccent(collection.types);
 
   return (
-    <Link href={`/collections/${collection.id}`} className={LINK_CLASS}>
+    <SidebarNavLink
+      href={`/collections/${collection.id}`}
+      match="exact"
+      className={LINK_CLASS}
+    >
       <span
         aria-hidden
         className="flex size-4 shrink-0 items-center justify-center"
@@ -43,7 +51,7 @@ function RecentLink({ collection }: CollectionLinkProps) {
       </span>
       <span className="truncate">{collection.name}</span>
       <ItemCount value={collection.itemCount} />
-    </Link>
+    </SidebarNavLink>
   );
 }
 

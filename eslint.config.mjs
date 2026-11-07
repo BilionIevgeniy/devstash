@@ -2,6 +2,7 @@ import { readdirSync } from "node:fs";
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import betterTailwindcss from "eslint-plugin-better-tailwindcss";
 
 const APP = "./src/app";
 
@@ -229,6 +230,25 @@ const eslintConfig = defineConfig([
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
     },
     rules: { "@typescript-eslint/no-deprecated": "error" },
+  },
+  {
+    // The same check as the "suggestCanonicalClasses" hint of the Tailwind
+    // extension: `max-h-[400px]` must be written `max-h-100`. Only this rule of
+    // the plugin: its other rules reorder and rewrap classes across the project.
+    // shadcn/ui primitives are left as the shadcn CLI writes them.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/components/ui/**"],
+    plugins: { "better-tailwindcss": betterTailwindcss },
+    settings: {
+      "better-tailwindcss": { entryPoint: "src/app/globals.css" },
+    },
+    // rootFontSize lets px values map to the spacing scale, as in the extension.
+    rules: {
+      "better-tailwindcss/enforce-canonical-classes": [
+        "error",
+        { rootFontSize: 16 },
+      ],
+    },
   },
   // no-restricted-imports: a later block replaces an earlier one for the files
   // it matches, so every block repeats the vendor SDK ban through restrictImports.
