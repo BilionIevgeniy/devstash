@@ -4,6 +4,7 @@ import { Field } from "@/components/common/Field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CodeEditor } from "@/features/editor/components/CodeEditor";
+import { LanguageSelect } from "@/features/editor/components/LanguageSelect";
 import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
 import type {
   ItemFormValues,
@@ -11,7 +12,6 @@ import type {
 } from "@/features/items/domain/item-changes";
 import {
   DESCRIPTION_MAX,
-  LANGUAGE_MAX,
   TITLE_MAX,
   URL_MAX,
   type EditableFields,
@@ -67,11 +67,10 @@ export function ItemFields({ fields, values, onChange }: ItemFieldsProps) {
       {fields.language && (
         <Field label="Language">
           {(id) => (
-            <Input
+            <LanguageSelect
               id={id}
               value={values.language}
-              onChange={(event) => onChange("language", event.target.value)}
-              maxLength={LANGUAGE_MAX}
+              onChange={(value) => onChange("language", value)}
             />
           )}
         </Field>

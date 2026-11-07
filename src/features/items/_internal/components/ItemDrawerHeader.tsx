@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { languageLabel } from "@/features/editor/domain/code-language";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { typeSlug } from "@/features/item-types/domain/item-type";
 import type { DashboardItem } from "@/features/items/types";
@@ -51,7 +52,9 @@ export function ItemDrawerHeader({
           <Badge variant="secondary" className="capitalize">
             {typeSlug(type.name)}
           </Badge>
-          {language && <Badge variant="outline">{language}</Badge>}
+          {language?.trim() && (
+            <Badge variant="outline">{languageLabel(language)}</Badge>
+          )}
         </div>
       </div>
     </SheetHeader>

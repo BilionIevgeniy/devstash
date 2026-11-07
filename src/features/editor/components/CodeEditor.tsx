@@ -6,9 +6,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EditorHeader } from "@/features/editor/_internal/components/EditorHeader";
 import { MonacoEditor } from "@/features/editor/_internal/components/MonacoEditor";
 import {
-  PLAIN_TEXT_LANGUAGE,
   editorLanguage,
-} from "@/features/editor/_internal/domain/code-language";
+  languageLabel,
+} from "@/features/editor/domain/code-language";
 
 const MAX_HEIGHT = 400;
 const MIN_EDIT_HEIGHT = 160;
@@ -35,7 +35,6 @@ export function CodeEditor({
   const minHeight = readOnly ? MIN_READ_HEIGHT : MIN_EDIT_HEIGHT;
   const fallbackHeight = readOnly ? READ_FALLBACK_HEIGHT : EDIT_FALLBACK_HEIGHT;
   const [height, setHeight] = useState(minHeight);
-  const languageLabel = language?.trim() || PLAIN_TEXT_LANGUAGE;
 
   // The editor grows with its content up to MAX_HEIGHT, then scrolls.
   const fit = (contentHeight: number) =>
@@ -45,7 +44,7 @@ export function CodeEditor({
     <div className="overflow-hidden rounded-md border bg-card">
       <EditorHeader value={value} copyLabel="Copy code">
         <span className="ml-auto font-mono text-xs text-muted-foreground">
-          {languageLabel}
+          {languageLabel(language)}
         </span>
       </EditorHeader>
       <Suspense
