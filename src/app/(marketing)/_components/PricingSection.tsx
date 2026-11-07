@@ -19,7 +19,7 @@ import { SectionHead } from "./SectionHead";
 const PRO_FEATURES = [
   ...PRO_PLAN_FEATURES,
   "Custom item types",
-  "More AI features (summaries, Explain Code)",
+  "More AI features (Explain Code)",
   "Export (JSON / ZIP)",
 ];
 

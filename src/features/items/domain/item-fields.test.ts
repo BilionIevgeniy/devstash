@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  aiSource,
   appendTag,
   canCreateType,
   canUseType,
@@ -140,6 +141,54 @@ describe("editableFields", () => {
 
   it("gives no type-specific fields to a type it does not know", () => {
     expect(editableFields("recipe")).toEqual(none);
+  });
+});
+
+describe("aiSource", () => {
+  const values = {
+    content: "export function useAuth() {}",
+    url: "https://react.dev",
+    fileName: "diagram.png",
+  };
+
+  it("reads the content of a text type, not a URL left from another type", () => {
+    expect(aiSource(editableFields("snippet"), values)).toEqual({
+      kind: "content",
+      text: values.content,
+    });
+  });
+
+  it("reads the URL of a link, not content left from another type", () => {
+    expect(aiSource(editableFields("link"), values)).toEqual({
+      kind: "url",
+      text: values.url,
+    });
+  });
+
+  it.each([
+    ["file", "File: diagram.png"],
+    ["image", "Image: diagram.png"],
+  ])("names the upload of a %s", (typeName, text) => {
+    expect(aiSource(editableFields(typeName), values)).toEqual({
+      kind: "file",
+      text,
+    });
+  });
+
+  it.each([[undefined], [null], ["  "]])(
+    "sends nothing for a file with no name yet (%j)",
+    (fileName) => {
+      expect(aiSource(editableFields("file"), { ...values, fileName })).toEqual(
+        { kind: "file", text: "" },
+      );
+    },
+  );
+
+  it("sends nothing besides the title for a custom type", () => {
+    expect(aiSource(editableFields("recipe"), values)).toEqual({
+      kind: "none",
+      text: "",
+    });
   });
 });
 
