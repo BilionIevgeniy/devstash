@@ -54,6 +54,13 @@ const optionalContent = z
   .nullable()
   .optional();
 
+// A whole new content, such as an accepted AI rewrite: never blank, since it
+// replaces what the user wrote.
+export const itemContentSchema = z
+  .string("Invalid content")
+  .max(CONTENT_MAX, `Content can be up to ${CONTENT_MAX} characters`)
+  .refine((value) => value.trim() !== "", "Content cannot be empty");
+
 const optionalUrl = z
   .string()
   .trim()

@@ -1,7 +1,27 @@
 import { describe, expect, it } from "vitest";
 
 import { AI_INPUT_MAX } from "@/features/ai/domain/input";
-import { aiItemInputSchema, explainInputSchema } from "@/features/ai/schemas";
+import {
+  aiItemInputSchema,
+  explainInputSchema,
+  optimizePromptInputSchema,
+} from "@/features/ai/schemas";
+
+describe("optimizePromptInputSchema", () => {
+  it("accepts a prompt with a blank title", () => {
+    expect(
+      optimizePromptInputSchema.safeParse({ title: "", prompt: "Review it" })
+        .success,
+    ).toBe(true);
+  });
+
+  it("refuses a blank prompt", () => {
+    expect(
+      optimizePromptInputSchema.safeParse({ title: "Review", prompt: " \n " })
+        .success,
+    ).toBe(false);
+  });
+});
 
 describe("aiItemInputSchema", () => {
   it("accepts a title without content", () => {

@@ -34,6 +34,7 @@ vi.mock("@/features/files/services/objects", () => ({
 import { Prisma } from "@/generated/prisma/client";
 import {
   deleteUserItem,
+  setUserItemContent,
   setUserItemFavorite,
   setUserItemPin,
   updateUserItem,
@@ -139,6 +140,62 @@ function prismaError(code: string) {
     clientVersion: "test",
   });
 }
+
+describe("setUserItemContent", () => {
+  beforeEach(() => {
+    update.mockReset().mockResolvedValue({ id: "item-1" });
+    findFirst.mockReset().mockResolvedValue({
+      ...rawItem,
+      type: { ...rawItem.type, name: "prompt" },
+    });
+  });
+
+  it("writes only the content, through the caller's id", async () => {
+    const result = await setUserItemContent("user-1", "item-1", "Better");
+
+    expect(result.success).toBe(true);
+    expect(findFirst.mock.calls[0][0].where).toEqual({
+      id: "item-1",
+      userId: "user-1",
+    });
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: "item-1", userId: "user-1" },
+        data: { content: "Better" },
+      }),
+    );
+  });
+
+  it("refuses a type without content, without writing", async () => {
+    findFirst.mockResolvedValue({ ...rawItem, type: { name: "link" } });
+
+    const result = await setUserItemContent("user-1", "item-1", "Better");
+
+    expect(result).toEqual({
+      success: false,
+      error: "This item has no text content",
+      data: null,
+    });
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it("answers not found when the item is missing or someone else's", async () => {
+    findFirst.mockResolvedValue(null);
+
+    await expect(
+      setUserItemContent("user-1", "item-1", "Better"),
+    ).resolves.toMatchObject({ success: false, error: "Item not found" });
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it("answers not found when the item is deleted before the write", async () => {
+    update.mockRejectedValue(prismaError("P2025"));
+
+    await expect(
+      setUserItemContent("user-1", "item-1", "Better"),
+    ).resolves.toMatchObject({ success: false, error: "Item not found" });
+  });
+});
 
 describe("updateUserItem", () => {
   const renamed = { title: "Renamed", tags: [], collectionIds: [] };
