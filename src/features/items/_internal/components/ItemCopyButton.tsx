@@ -10,8 +10,8 @@ interface ItemCopyButtonProps {
 }
 
 async function readCopyValue(itemId: string): Promise<string> {
-  const detail = await fetchItemDetail(itemId);
-  const value = detail && copyValueOf(detail);
+  const opened = await fetchItemDetail(itemId);
+  const value = opened && copyValueOf(opened.item);
   if (value === null) throw new Error("Nothing to copy");
   return value;
 }

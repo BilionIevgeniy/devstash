@@ -1,14 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
+  appendTag,
   canCreateType,
   canUseType,
   contentTypeFor,
   copyValueOf,
   editableFields,
   editableUpdate,
+  hasTag,
   isCreatableType,
   parseTagInput,
   requiresPro,
+  TAGS_MAX,
   typeListing,
 } from "@/features/items/domain/item-fields";
 
@@ -203,5 +206,37 @@ describe("editableUpdate", () => {
     expect(
       editableUpdate("image", { ...base, content: "x", url: "https://a.dev" }),
     ).toEqual({ data: base });
+  });
+});
+
+describe("hasTag", () => {
+  it("finds a tag whatever its case", () => {
+    expect(hasTag("React, hooks", "react")).toBe(true);
+  });
+
+  it("does not match part of a tag", () => {
+    expect(hasTag("react-native", "react")).toBe(false);
+  });
+});
+
+describe("appendTag", () => {
+  it("adds a tag to an empty field", () => {
+    expect(appendTag("", "react")).toBe("react");
+  });
+
+  it("adds a tag after the others", () => {
+    expect(appendTag("react, hooks ,", "state")).toBe("react, hooks, state");
+  });
+
+  it("leaves the field as typed when the tag is there in another case", () => {
+    expect(appendTag("React,hooks", "react")).toBe("React,hooks");
+  });
+
+  it("refuses a tag once the field is full", () => {
+    const full = Array.from({ length: TAGS_MAX }, (_, i) => `tag${i}`).join(
+      ",",
+    );
+
+    expect(appendTag(full, "react")).toBeNull();
   });
 });

@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
+import { getEntitlements } from "@/features/billing/queries";
 import { parseTypeSlug } from "@/features/item-types/domain/item-type";
 import { ItemDetailPage } from "@/features/items/components/ItemDetailPage";
 import { toItemDetailJson } from "@/features/items/domain/item-detail";
@@ -20,7 +21,11 @@ export default async function ItemPage({
     redirect(UPGRADE_PATH);
   }
 
-  const item = await getUserItemDetailOfType(userId, id, typeName);
+  // cache() shares this read with the plan check above.
+  const [item, { isPro }] = await Promise.all([
+    getUserItemDetailOfType(userId, id, typeName),
+    getEntitlements(userId),
+  ]);
   if (!item) notFound();
 
   return (
@@ -28,6 +33,7 @@ export default async function ItemPage({
       <ItemDetailPage
         item={item}
         detail={toItemDetailJson(item)}
+        canUseAi={isPro}
         listHref={`/items/${slug}`}
       />
     </div>

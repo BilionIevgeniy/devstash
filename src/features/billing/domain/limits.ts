@@ -18,6 +18,7 @@ export const PRO_PLAN_FEATURES = [
   "Unlimited items",
   "Unlimited collections",
   "File and image uploads",
+  "AI tag suggestions",
 ];
 
 const MONTHS_PER_YEAR = 12;

@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CodeEditor } from "@/features/editor/components/CodeEditor";
 import { LanguageSelect } from "@/features/editor/components/LanguageSelect";
 import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
+import { TagsField } from "@/features/items/_internal/components/TagsField";
 import type {
   ItemFormValues,
   ItemTextField,
@@ -22,11 +23,26 @@ interface ItemFieldsProps {
   values: ItemFormValues;
   /** Should close over a function update only, so it stays stable for Monaco. */
   onChange: (name: ItemTextField, value: string) => void;
+  /** Shows the AI tag suggestions (Pro). */
+  canUseAi: boolean;
+}
+
+// What the tag suggestions read besides the title: only a field this type
+// shows, so text left from another type in the create dialog is not sent.
+function suggestionSource(fields: EditableFields, values: ItemFormValues) {
+  if (fields.content) return values.content;
+  if (fields.url) return values.url;
+  return "";
 }
 
 // The text fields of the create and edit forms, in the same order in both;
 // the URL, language and content show only for the types that have them.
-export function ItemFields({ fields, values, onChange }: ItemFieldsProps) {
+export function ItemFields({
+  fields,
+  values,
+  onChange,
+  canUseAi,
+}: ItemFieldsProps) {
   return (
     <>
       <Field label="Title">
@@ -83,15 +99,13 @@ export function ItemFields({ fields, values, onChange }: ItemFieldsProps) {
           onChange={(value) => onChange("content", value)}
         />
       )}
-      <Field label="Tags" hint="Separate tags with commas">
-        {(id) => (
-          <Input
-            id={id}
-            value={values.tags}
-            onChange={(event) => onChange("tags", event.target.value)}
-          />
-        )}
-      </Field>
+      <TagsField
+        value={values.tags}
+        onChange={(value) => onChange("tags", value)}
+        canUseAi={canUseAi}
+        title={values.title}
+        content={suggestionSource(fields, values)}
+      />
     </>
   );
 }

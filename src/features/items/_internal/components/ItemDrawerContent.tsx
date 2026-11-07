@@ -58,6 +58,7 @@ export function ItemDrawerContent({
         <ItemEditForm
           item={item}
           detail={detail}
+          canUseAi={state.status === "ready" && state.canUseAi}
           onCancel={onCancelEdit}
           onSaved={onSaved}
           onDirtyChange={onDirtyChange}

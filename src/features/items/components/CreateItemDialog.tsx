@@ -23,10 +23,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ProBadge } from "@/features/billing/components/ProBadge";
-import { FileUpload } from "@/features/files/components/FileUpload";
-import type { FileKind } from "@/features/files/domain/file-rules";
 import type { UploadedFile } from "@/features/files/types";
 import { CollectionSelect } from "@/features/items/_internal/components/CollectionSelect";
+import { ItemFileField } from "@/features/items/_internal/components/ItemFileField";
 import { ItemFields } from "@/features/items/_internal/components/ItemFields";
 import { ItemTypeSelect } from "@/features/items/_internal/components/ItemTypeSelect";
 import { createItem } from "@/features/items/actions/item";
@@ -242,41 +241,41 @@ function CreateItemForm({
           disabled={isCreating}
         />
       )}
-      <ItemFields fields={fields} values={values} onChange={setField} />
+      <ItemFields
+        fields={fields}
+        values={values}
+        onChange={setField}
+        canUseAi={isPro}
+      />
       <CollectionSelect
         value={values.collectionIds}
         onChange={(ids) => setField("collectionIds", ids)}
         disabled={isCreating}
       />
-      <DialogFooter>
-        <DialogClose asChild>
-          <Button type="button" variant="ghost" disabled={isCreating}>
-            Cancel
-          </Button>
-        </DialogClose>
-        <Button type="submit" disabled={isCreating || isMissingRequired}>
-          {isCreating ? "Creating…" : "Create"}
-        </Button>
-      </DialogFooter>
+      <CreateFormFooter
+        isCreating={isCreating}
+        canCreate={!isMissingRequired}
+      />
     </form>
   );
 }
 
-interface ItemFileFieldProps {
-  kind: FileKind;
-  onChange: (file: UploadedFile | null) => void;
-  disabled: boolean;
+interface CreateFormFooterProps {
+  isCreating: boolean;
+  canCreate: boolean;
 }
 
-// Not a Field: its label points at an input, and the drop zone is named by
-// its own aria-label.
-function ItemFileField({ kind, onChange, disabled }: ItemFileFieldProps) {
+function CreateFormFooter({ isCreating, canCreate }: CreateFormFooterProps) {
   return (
-    <div className="space-y-2">
-      <p className="text-sm font-medium text-muted-foreground capitalize">
-        {kind}
-      </p>
-      <FileUpload kind={kind} onChange={onChange} disabled={disabled} />
-    </div>
+    <DialogFooter>
+      <DialogClose asChild>
+        <Button type="button" variant="ghost" disabled={isCreating}>
+          Cancel
+        </Button>
+      </DialogClose>
+      <Button type="submit" disabled={isCreating || !canCreate}>
+        {isCreating ? "Creating…" : "Create"}
+      </Button>
+    </DialogFooter>
   );
 }

@@ -17,6 +17,7 @@ const FEATURE_RANKS = {
   "item-types": 3,
   files: 3,
   editor: 3,
+  ai: 4,
   items: 5,
   collections: 6,
   search: 7,

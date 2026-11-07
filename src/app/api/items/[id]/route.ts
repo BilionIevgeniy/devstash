@@ -32,7 +32,11 @@ export async function GET(
       return failure("Renew your subscription to open this item", 403);
     }
     return Response.json(
-      { success: true, data: result.item, error: null },
+      {
+        success: true,
+        data: { item: result.item, canUseAi: result.canUseAi },
+        error: null,
+      },
       { headers: NO_STORE },
     );
   } catch (error) {
