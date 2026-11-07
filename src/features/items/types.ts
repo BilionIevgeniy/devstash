@@ -147,6 +147,14 @@ export type ItemDetailJson = Omit<ItemDetail, "createdAt" | "updatedAt"> & {
   updatedAt: string;
 };
 
+// The answer of GET /api/items/[id]. The plan stays beside the detail, not in
+// it: a save replaces the detail with the action's, which carries no plan.
+export interface OpenedItemJson {
+  item: ItemDetailJson;
+  /** Pro: the forms offer the AI features. */
+  canUseAi: boolean;
+}
+
 // What the update service reads before it writes: the type decides the editable
 // fields, and only collections not yet linked are checked and added.
 export interface ItemEditState {

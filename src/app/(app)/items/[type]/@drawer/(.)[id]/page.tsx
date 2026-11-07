@@ -23,6 +23,12 @@ export default async function ItemDrawerPage({
   if (result.status === "missing") return <ItemRouteDrawerMissing />;
   if (result.status === "locked") redirect(UPGRADE_PATH);
 
-  const { item } = result;
-  return <ItemRouteDrawerView item={item} detail={toItemDetailJson(item)} />;
+  const { item, canUseAi } = result;
+  return (
+    <ItemRouteDrawerView
+      item={item}
+      detail={toItemDetailJson(item)}
+      canUseAi={canUseAi}
+    />
+  );
 }

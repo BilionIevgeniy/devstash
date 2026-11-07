@@ -9,6 +9,8 @@ import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 interface ItemDetailViewProps {
   item: DashboardItem;
   detail: ItemDetailJson;
+  /** Pro: the edit form offers the AI features. */
+  canUseAi: boolean;
   variant: "sheet" | "page";
   onDelete: ItemDeleteHandler;
   /** Whether the edit form holds unsaved edits (see ItemEditForm). */
@@ -23,6 +25,7 @@ interface ItemDetailViewProps {
 export function ItemDetailView({
   item: initialItem,
   detail: initialDetail,
+  canUseAi,
   variant,
   onDelete,
   onDirtyChange,
@@ -49,7 +52,7 @@ export function ItemDetailView({
         isFavorite: initialItem.isFavorite,
         isPinned: initialItem.isPinned,
       }}
-      state={{ status: "ready", detail }}
+      state={{ status: "ready", detail, canUseAi }}
       isEditing={isEditing}
       onEdit={() => setIsEditing(true)}
       onCancelEdit={() => setIsEditing(false)}

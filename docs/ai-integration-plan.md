@@ -1,6 +1,6 @@
 # AI Integration Plan
 
-The plan for the Pro AI features: auto-tagging, summaries, Explain Code and prompt optimization. Nothing here is built yet. The `ai` module does not exist, and `openai` is not installed.
+The plan for the Pro AI features: auto-tagging, summaries, Explain Code and prompt optimization, suggest content. Auto-tagging is built (2026-11-07), with the foundation: `openai` 7.53.0, `lib/openai.ts`, the `ai` module, the access check and the limits. The other three are not.
 
 This document holds the analysis and the reasons. The steps to follow will be in the feature specs: [ai-auto-tag-spec.md](../featuresDRAFT/ai-auto-tag-spec.md), [ai-explain-spec.md](../featuresDRAFT/ai-explain-spec.md), and specs still to be written for summaries and prompt optimization.
 
@@ -10,12 +10,12 @@ Checked on 2026-11-07 against the code, the types of `openai` 7.53.0 (read, not 
 
 The project overview, the research prompt and both specs name `gpt-5-nano`. OpenAI has marked it Deprecated, and **it leaves the API on 2026-12-11**. At that date the model "will no longer be accessible", so a feature built on it would stop working.
 
-| Model | Input / cached / output, per 1M tokens | Knowledge cutoff | `reasoning.effort` | Status |
-| ----- | -------------------------------------- | ---------------- | ------------------ | ------ |
-| `gpt-5-nano` | $0.05 / $0.005 / $0.40 | 2024-05-31 | not shown on its page | Shutdown 2026-12-11 |
-| `gpt-5.4-nano` | $0.20 / $0.02 / $1.25 | 2025-08-31 | none (default) to xhigh | Shutdown 2027-04-01 |
-| `gpt-5.6-luna` | $0.20 / $0.02 / $1.20 | 2026-02-16 | none to max, medium default | Current; OpenAI's named replacement |
-| `gpt-6-luna` | $0.10 / $0.01 / $0.50 | 2026-05-18 | none to max, medium default | Current |
+| Model          | Input / cached / output, per 1M tokens | Knowledge cutoff | `reasoning.effort`          | Status                              |
+| -------------- | -------------------------------------- | ---------------- | --------------------------- | ----------------------------------- |
+| `gpt-5-nano`   | $0.05 / $0.005 / $0.40                 | 2024-05-31       | not shown on its page       | Shutdown 2026-12-11                 |
+| `gpt-5.4-nano` | $0.20 / $0.02 / $1.25                  | 2025-08-31       | none (default) to xhigh     | Shutdown 2027-04-01                 |
+| `gpt-5.6-luna` | $0.20 / $0.02 / $1.20                  | 2026-02-16       | none to max, medium default | Current; OpenAI's named replacement |
+| `gpt-6-luna`   | $0.10 / $0.01 / $0.50                  | 2026-05-18       | none to max, medium default | Current                             |
 
 **The decision: `gpt-6-luna`.** It is half the price of the named replacement on input and less than half on output, its cutoff is later, and it is the replacement OpenAI names for the later shutdowns (`gpt-5.4-nano`, GPT-4.1, GPT-4o). It supports the Responses API, streaming, structured outputs and prompt caching. It costs twice as much as `gpt-5-nano` on input, and 25% more on output, which section 7 shows is small at this scale.
 
@@ -35,7 +35,7 @@ The model name lives in one constant, `AI_MODEL` in `ai/domain/`, so the next de
 
 ### What is missing
 
-- **The plan does not reach the drawer.** `isPro` reaches `CreateItemDialog`, but not `ItemDetailView`, `ItemEditForm`, `ItemDrawerContent` or `ItemDetailPage`. `ItemDrawerProvider` gets `lockProItems` on some pages only, and the `items/[type]` layout passes none
+- **The plan did not reach the drawer** (fixed by auto-tagging): `isPro` reached `CreateItemDialog` only. Now `canUseAi` reaches `ItemDetailView`, `ItemEditForm` and `ItemDrawerContent` from both drawers and the full item page (section 8)
 - **`CodeEditor` has no slot for a button or a second view.** `EditorHeader` holds the language label and the copy button, and `editor` (rank 3) cannot import `ai` (rank 4)
 - **`MarkdownPreview` is private**, and it renders images, which matters for model output (section 9)
 - **There is no spec for summaries or prompt optimization**
@@ -49,17 +49,17 @@ The model name lives in one constant, `AI_MODEL` in `ai/domain/`, so the next de
 
 [ai-auto-tag-spec.md](../featuresDRAFT/ai-auto-tag-spec.md) lists gotchas. Some still stand, others conflict with the OpenAI docs.
 
-| Spec says | What the docs say | Decision |
-| --------- | ----------------- | -------- |
-| Use `gpt-5-nano` | Shutdown 2026-12-11 | `gpt-6-luna` |
-| Chat Completions returns empty content, so it does not work | The model page lists Chat Completions as supported. Reasoning tokens count against the output limit, and a response can run out "before any visible output tokens are produced" | Use the Responses API anyway: OpenAI's guides lead with it. The empty content was probably a spent output limit. That is an inference, not tested |
-| `zodResponseFormat` wastes tokens and hits length limits, so use `json_object` and parse by hand | The SDK calls `json_object` "an older method" and recommends `json_schema` where the model supports it | `zodTextFormat` with `responses.parse`. The same inference applies. Check it with one real call on the first day; if it fails, fall back to `json_object` |
-| The model may return an object or a bare array | A strict schema fixes the shape | Parse one shape. The Zod check stays as the last guard |
-| `max_tokens` is not supported | Correct: it is `max_output_tokens` on Responses | Set it, and treat `incomplete` as a failure |
-| Normalize tags to lowercase | Still needed | `ai/domain/` |
-| Truncate content to 2000 characters | Still sensible for tags | Per-operation limits, section 7 |
-| `explainCode` is a Server Action | Server Actions run one at a time ([coding-standards.md](../context/coding-standards.md)), so a slow AI call holds up the user's other actions | A streaming route, section 5 |
-| 20 requests per hour | Does not bound the monthly cost | Add a daily limit, section 7 |
+| Spec says                                                                                        | What the docs say                                                                                                                                                               | Decision                                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Use `gpt-5-nano`                                                                                 | Shutdown 2026-12-11                                                                                                                                                             | `gpt-6-luna`                                                                                                                                              |
+| Chat Completions returns empty content, so it does not work                                      | The model page lists Chat Completions as supported. Reasoning tokens count against the output limit, and a response can run out "before any visible output tokens are produced" | Use the Responses API anyway: OpenAI's guides lead with it. The empty content was probably a spent output limit. That is an inference, not tested         |
+| `zodResponseFormat` wastes tokens and hits length limits, so use `json_object` and parse by hand | The SDK calls `json_object` "an older method" and recommends `json_schema` where the model supports it                                                                          | `zodTextFormat` with `responses.parse`. The same inference applies. Check it with one real call on the first day; if it fails, fall back to `json_object` |
+| The model may return an object or a bare array                                                   | A strict schema fixes the shape                                                                                                                                                 | Parse one shape. The Zod check stays as the last guard                                                                                                    |
+| `max_tokens` is not supported                                                                    | Correct: it is `max_output_tokens` on Responses                                                                                                                                 | Set it, and treat `incomplete` as a failure                                                                                                               |
+| Normalize tags to lowercase                                                                      | Still needed                                                                                                                                                                    | `ai/domain/`                                                                                                                                              |
+| Truncate content to 2000 characters                                                              | Still sensible for tags                                                                                                                                                         | Per-operation limits, section 7                                                                                                                           |
+| `explainCode` is a Server Action                                                                 | Server Actions run one at a time ([coding-standards.md](../context/coding-standards.md)), so a slow AI call holds up the user's other actions                                   | A streaming route, section 5                                                                                                                              |
+| 20 requests per hour                                                                             | Does not bound the monthly cost                                                                                                                                                 | Add a daily limit, section 7                                                                                                                              |
 
 ## 4. SDK setup
 
@@ -100,12 +100,12 @@ The file exports two wrappers:
 
 ### Settings per operation
 
-| Operation | Output | `reasoning.effort` | `text.verbosity` | `max_output_tokens` to start |
-| --------- | ------ | ------------------ | ---------------- | ---------------------------- |
-| Auto-tagging | `{ tags: string[] }` | `none` | `low` | 300 |
-| Summary | `{ summary: string }` | `none` | `low` | 400 |
-| Explain Code | Markdown stream | `low` | `medium` | 2,000 |
-| Prompt optimization | Text stream | `low` | `medium` | 2,000 |
+| Operation           | Output                | `reasoning.effort` | `text.verbosity` | `max_output_tokens` to start |
+| ------------------- | --------------------- | ------------------ | ---------------- | ---------------------------- |
+| Auto-tagging        | `{ tags: string[] }`  | `none`             | `low`            | 300                          |
+| Summary             | `{ summary: string }` | `none`             | `low`            | 400                          |
+| Explain Code        | Markdown stream       | `low`              | `medium`         | 2,000                        |
+| Prompt optimization | Text stream           | `low`              | `medium`         | 2,000                        |
 
 These are starting points. OpenAI's guide advises a much larger reasoning buffer while experimenting (25,000 tokens), so log `usage.output_tokens_details.reasoning_tokens` and adjust. A limit set too low bills the input and the reasoning and shows the user nothing. The docs give no guidance on effort for simple tasks on Luna; the only related line is "start with `low`" for minimal effort. `none` for tags and summaries is therefore a choice to check against real output.
 
@@ -113,12 +113,12 @@ These are starting points. OpenAI's guide advises a much larger reasoning buffer
 
 ### Streaming or one answer
 
-| Operation | Choice | Why |
-| --------- | ------ | --- |
-| Auto-tagging | Server Action, one answer | Short, and a half list of tags has no use: the JSON must be whole |
-| Summary | Server Action, one answer | Short, and it goes into a form field the user accepts or rejects |
-| Explain Code | Route, streaming | 200 to 300 words: the wait is long enough to feel, and text can be read as it comes |
-| Prompt optimization | Route, streaming | Same length, and the same reason |
+| Operation           | Choice                    | Why                                                                                 |
+| ------------------- | ------------------------- | ----------------------------------------------------------------------------------- |
+| Auto-tagging        | Server Action, one answer | Short, and a half list of tags has no use: the JSON must be whole                   |
+| Summary             | Server Action, one answer | Short, and it goes into a form field the user accepts or rejects                    |
+| Explain Code        | Route, streaming          | 200 to 300 words: the wait is long enough to feel, and text can be read as it comes |
+| Prompt optimization | Route, streaming          | Same length, and the same reason                                                    |
 
 This matches "AI, one answer" and "AI, streaming" in the operations table of [architecture.md](architecture.md). The Explain spec's Server Action and spinner change to a route and live text.
 
@@ -129,7 +129,9 @@ The same shape as `items/actions/item.ts`: parse, session outside the `try`, one
 ```typescript
 "use server";
 
-export async function generateAutoTags(data: unknown): Promise<ActionResult<string[] | null>> {
+export async function generateAutoTags(
+  data: unknown,
+): Promise<ActionResult<string[] | null>> {
   const parsed = autoTagsInputSchema.safeParse(data);
   if (!parsed.success) return failure(parsed.error.issues[0].message);
 
@@ -148,6 +150,8 @@ export async function generateAutoTags(data: unknown): Promise<ActionResult<stri
 ```
 
 No `refresh()`: nothing was written.
+
+Server Actions run one at a time, so a slow call holds up the user's Save, pin and star until it ends. Accepted for one short answer, and bounded: each operation sets a per-request timeout (10 s for tags), so with the one retry the wait is about 20 s at most. A failure `aiErrorKind` of `lib/openai.ts` knows is returned by the service in its own words; anything else throws to the action.
 
 ### The service
 
@@ -177,20 +181,20 @@ The client side is a browser helper, `ai/_internal/components/stream-explanation
 
 Errors are logged by status and code only, never with the content. `aiErrorSummary` builds that line. Users see plain words, through a toast, with their form left as it was.
 
-| Failure | How it appears | User sees | Retried? |
-| ------- | -------------- | --------- | -------- |
-| Not Pro | Service check | "AI features require a Pro subscription" | No |
-| Our rate limit | `consumeRateLimit` | `getTooManyAttemptsMessage` | No |
-| Upstash outage | `RateLimitUnavailableError` | Generic error | No |
-| OpenAI rate limit | `RateLimitError` (429) | "AI is busy. Try again in a moment." | SDK, once |
-| Out of credit or over a spend limit | 429 with `credit_balance_exhausted`, `organization_spend_limit_exceeded`, `project_spend_limit_exceeded`; `error.type` can be `insufficient_quota` | "AI is unavailable right now." Log loudly: only we can fix this | OpenAI says retrying does not help |
-| Bad key | `AuthenticationError` (401) | "AI is unavailable right now." | No |
-| Server error or overload | `InternalServerError` (500, 503) | "AI is busy. Try again in a moment." | SDK, once |
-| Timeout | `APIConnectionTimeoutError` | "That took too long. Try again." | SDK, once |
-| Output limit reached | `status: "incomplete"`, reason `max_output_tokens` | Generic error. For a stream, keep what arrived and say it was cut short | No |
-| Content filter | `status: "incomplete"`, reason `content_filter` | "AI could not answer this item." | No |
-| Refusal | A `refusal` content part | "AI could not answer this item." | No |
-| User closed the view | `APIUserAbortError` | Nothing | No |
+| Failure                             | How it appears                                                                                                                                     | User sees                                                               | Retried?                           |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------- |
+| Not Pro                             | Service check                                                                                                                                      | "AI features require a Pro subscription"                                | No                                 |
+| Our rate limit                      | `consumeRateLimit`                                                                                                                                 | `getTooManyAttemptsMessage`                                             | No                                 |
+| Upstash outage                      | `RateLimitUnavailableError`                                                                                                                        | Generic error                                                           | No                                 |
+| OpenAI rate limit                   | `RateLimitError` (429)                                                                                                                             | "AI is busy. Try again in a moment."                                    | SDK, once                          |
+| Out of credit or over a spend limit | 429 with `credit_balance_exhausted`, `organization_spend_limit_exceeded`, `project_spend_limit_exceeded`; `error.type` can be `insufficient_quota` | "AI is unavailable right now." Log loudly: only we can fix this         | OpenAI says retrying does not help |
+| Bad key                             | `AuthenticationError` (401)                                                                                                                        | "AI is unavailable right now."                                          | No                                 |
+| Server error or overload            | `InternalServerError` (500, 503)                                                                                                                   | "AI is busy. Try again in a moment."                                    | SDK, once                          |
+| Timeout                             | `APIConnectionTimeoutError`                                                                                                                        | "That took too long. Try again."                                        | SDK, once                          |
+| Output limit reached                | `status: "incomplete"`, reason `max_output_tokens`                                                                                                 | Generic error. For a stream, keep what arrived and say it was cut short | No                                 |
+| Content filter                      | `status: "incomplete"`, reason `content_filter`                                                                                                    | "AI could not answer this item."                                        | No                                 |
+| Refusal                             | A `refusal` content part                                                                                                                           | "AI could not answer this item."                                        | No                                 |
+| User closed the view                | `APIUserAbortError`                                                                                                                                | Nothing                                                                 | No                                 |
 
 The SDK decides what to retry in `shouldRetry`, and it may spend its one retry on a spend error. That is harmless at `maxRetries: 1`. A failed call still uses up one count of the user's limit, which is the stricter outcome and stops a broken item from being clicked endlessly.
 
@@ -200,12 +204,12 @@ The SDK decides what to retry in `shouldRetry`, and it may spend its one retry o
 
 Estimates at `gpt-6-luna` prices, without reasoning tokens.
 
-| Operation | Input limit | Input tokens | Output tokens | Cost |
-| --------- | ----------- | ------------ | ------------- | ---- |
-| Auto-tagging | 2,000 characters | 800 | 50 | about $0.0001 |
-| Summary | 8,000 characters | 2,500 | 120 | about $0.0003 |
-| Explain Code | 8,000 characters | 3,000 | 500 | about $0.00055 |
-| Prompt optimization | 8,000 characters | 1,000 | 600 | about $0.0004 |
+| Operation           | Input limit      | Input tokens | Output tokens | Cost           |
+| ------------------- | ---------------- | ------------ | ------------- | -------------- |
+| Auto-tagging        | 2,000 characters | 800          | 50            | about $0.0001  |
+| Summary             | 8,000 characters | 2,500        | 120           | about $0.0003  |
+| Explain Code        | 8,000 characters | 3,000        | 500           | about $0.00055 |
+| Prompt optimization | 8,000 characters | 1,000        | 600           | about $0.0004  |
 
 Reasoning tokens bill as output: 500 of them on an Explain call adds about $0.00025.
 
@@ -213,16 +217,24 @@ Reasoning tokens bill as output: 500 of them on an Explain call adds about $0.00
 
 The spec's 20 requests an hour looks tight but allows 14,400 requests in a 30-day month. Pro brings in $8 a month, or $6 on the yearly plan, before Stripe's fee.
 
-| Limits | Requests a month at most | All Explain, `gpt-6-luna` | All Explain, `gpt-5.6-luna` |
-| ------ | ------------------------ | ------------------------- | --------------------------- |
-| 20 an hour | 14,400 | about $7.90 | about $17.30 |
-| 20 an hour and 100 a day | 3,000 | about $1.65 | about $3.60 |
+| Limits                   | Requests a month at most | All Explain, `gpt-6-luna` | All Explain, `gpt-5.6-luna` |
+| ------------------------ | ------------------------ | ------------------------- | --------------------------- |
+| 20 an hour               | 14,400                   | about $7.90               | about $17.30                |
+| 20 an hour and 100 a day | 3,000                    | about $1.65               | about $3.60                 |
 
-A normal user is far below either, but only the second row stays clear of the price of the plan. The policies, in `ai/domain/rate-limits.ts`, shared by all four operations:
+A normal user is far below either, but only the second row stays clear of the price of the plan. Per-user limits do not bound the total, though: anyone can reach Pro through a test-mode checkout, or open many accounts. So a third policy, `AI_BY_APP_DAY` (1,000 a day for the whole app, keyed `"app"`), caps the bill at about $0.10 a day of tags, whoever calls (added 2026-11-07). Prepaid credit with auto-recharge off is the outer bound: OpenAI's project spend limit only alerts and does not stop requests. The policies, in `ai/domain/rate-limits.ts`, shared by all four operations:
 
 ```typescript
-export const AI_BY_USER_HOUR = { name: "ai:user-hour", limit: 20, windowSeconds: HOUR_SECONDS } as const;
-export const AI_BY_USER_DAY = { name: "ai:user-day", limit: 100, windowSeconds: DAY_SECONDS } as const;
+export const AI_BY_USER_HOUR = {
+  name: "ai:user-hour",
+  limit: 20,
+  windowSeconds: HOUR_SECONDS,
+} as const;
+export const AI_BY_USER_DAY = {
+  name: "ai:user-day",
+  limit: 100,
+  windowSeconds: DAY_SECONDS,
+} as const;
 ```
 
 ### What saves money
@@ -243,7 +255,7 @@ export const AI_BY_USER_DAY = { name: "ai:user-day", limit: 100, windowSeconds: 
 
 - **The service is the enforcement.** The UI only follows it. A Free user calling the action or route directly gets the refusal
 - **Read through `getEntitlements`**, never the session or the JWT ([ADR 0005](adr/README.md))
-- **Getting the plan to the drawer:** add `canUseAi: boolean` to the `ok` result of `openUserItem` in `items/services/item-detail.ts`. The drawer and the item page both get it with the detail they already load, every page works the same, and no provider prop has to be added in each layout. `userCanUseType` already reads the entitlements there and `cache()` shares the read, so it should cost no extra query, but check that when building: on the route `GET /api/items/[id]`, `cache()` applies per request as well
+- **Getting the plan to the drawer:** add `canUseAi: boolean` to the `ok` result of `openUserItem` in `items/services/item-detail.ts`. Both drawers (the one fetched from `GET /api/items/[id]` and the intercepted route) get it with the detail they already load, every page works the same, and no provider prop has to be added in each layout. It stays beside the detail, not inside `ItemDetailJson`, because a save replaces the detail with the action's result. The full item page loads through `getUserItemDetailOfType` and renders the same edit form, so the page reads `getEntitlements` and passes `canUseAi` too. `cache()` does nothing in a route handler (Next.js docs, authentication guide), so `openUserItem` reads the plan once and decides both the lock and `canUseAi` from it; a type open to every plan pays one read per open
 - **`CreateItemDialog`** already has `isPro`
 - **`past_due`:** decided on 2026-11-07: AI is allowed during the grace period, under the same limits. `PRO_STATUSES` already grants Pro there ([ADR 0011](adr/README.md)) and a second rule would be the only exception to it, while the daily limit caps the cost of an unpaid month at about $1.65. The service checks `isPro` only, with no status check of its own
 - **What Free users see:** the specs differ, and both are kept. The Suggest Tags button is hidden in forms. The Explain button in the read view shows a Crown and a tooltip, "AI features require Pro subscription", linking to `/upgrade`
@@ -328,25 +340,25 @@ Only for items of type prompt, with the same stream. Since the output would repl
 
 ### The foundation (with the first feature)
 
-| File | What |
-| ---- | ---- |
-| `src/lib/openai.ts`, test | Client, `generateStructured`, `streamText`, `AiOutputError`, `aiErrorSummary` |
-| `eslint.config.mjs` | `ai: 4` in `FEATURE_RANKS` |
-| `docs/modules.md`, `context/architecture-rules.md` | Move `ai` from planned to built, and correct its status |
-| `src/features/ai/domain/model.ts` | `AI_MODEL`, the per-operation settings |
-| `src/features/ai/domain/rate-limits.ts` | `AI_BY_USER_HOUR`, `AI_BY_USER_DAY` |
-| `src/features/ai/domain/input.ts`, test | `AI_INPUT_MAX`, the per-operation limits, `truncateForModel` |
-| `src/features/ai/schemas.ts`, test | Input and output schemas |
-| `src/features/ai/_internal/services/access.ts`, test | Pro and limit checks |
+| File                                                 | What                                                                          |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `src/lib/openai.ts`, test                            | Client, `generateStructured`, `streamText`, `AiOutputError`, `aiErrorSummary` |
+| `eslint.config.mjs`                                  | `ai: 4` in `FEATURE_RANKS`                                                    |
+| `docs/modules.md`, `context/architecture-rules.md`   | Move `ai` from planned to built, and correct its status                       |
+| `src/features/ai/domain/model.ts`                    | `AI_MODEL`, the per-operation settings                                        |
+| `src/features/ai/domain/rate-limits.ts`              | `AI_BY_USER_HOUR`, `AI_BY_USER_DAY`                                           |
+| `src/features/ai/domain/input.ts`, test              | `AI_INPUT_MAX`, the per-operation limits, `truncateForModel`                  |
+| `src/features/ai/schemas.ts`, test                   | Input and output schemas                                                      |
+| `src/features/ai/_internal/services/access.ts`, test | Pro and limit checks                                                          |
 
 ### Per feature
 
-| Feature | Files |
-| ------- | ----- |
-| Auto-tagging | `ai/domain/tags.ts` (prompt, normalizing, test), `ai/services/auto-tags.ts` (test), `ai/actions/auto-tags.ts`, `ai/components/SuggestTagsButton.tsx`, `ai/_internal/components/TagSuggestions.tsx`; changes in `items/_internal/components/ItemFields.tsx` |
-| Explain Code | `ai/domain/explain.ts`, `ai/services/explain.ts` (test), `app/api/ai/explain/route.ts`, `ai/components/ExplainButton.tsx`, `ai/_internal/components/stream-explanation.ts`, `ai/components/hooks/use-explain-code.ts`; changes in `editor/components/CodeEditor.tsx`, `EditorHeader`, `MarkdownPreview` (moves to `components/`, no images for AI), `items/_internal/components/ItemBody.tsx`, `items/services/item-detail.ts` |
-| Summary | `ai/domain/summary.ts`, `ai/services/summary.ts`, `ai/actions/summary.ts`, the button and preview in `ai/components/` |
-| Prompt optimization | `ai/domain/prompt-optimizer.ts`, `ai/services/prompt-optimizer.ts`, `app/api/ai/optimize-prompt/route.ts`, the view in `ai/components/` |
+| Feature             | Files                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Auto-tagging        | `ai/domain/tags.ts` (prompt, normalizing, test), `ai/services/auto-tags.ts` (test), `ai/actions/auto-tags.ts`, `ai/components/SuggestTagsButton.tsx`, `ai/_internal/components/TagSuggestions.tsx`; changes in `items/_internal/components/ItemFields.tsx`; `canUseAi` in `items/services/item-detail.ts`, `api/items/[id]/route.ts` and the drawer                                                                            |
+| Explain Code        | `ai/domain/explain.ts`, `ai/services/explain.ts` (test), `app/api/ai/explain/route.ts`, `ai/components/ExplainButton.tsx`, `ai/_internal/components/stream-explanation.ts`, `ai/components/hooks/use-explain-code.ts`; changes in `editor/components/CodeEditor.tsx`, `EditorHeader`, `MarkdownPreview` (moves to `components/`, no images for AI), `items/_internal/components/ItemBody.tsx`, `items/services/item-detail.ts` |
+| Summary             | `ai/domain/summary.ts`, `ai/services/summary.ts`, `ai/actions/summary.ts`, the button and preview in `ai/components/`                                                                                                                                                                                                                                                                                                          |
+| Prompt optimization | `ai/domain/prompt-optimizer.ts`, `ai/services/prompt-optimizer.ts`, `app/api/ai/optimize-prompt/route.ts`, the view in `ai/components/`                                                                                                                                                                                                                                                                                        |
 
 `use-explain-code` is used through `ExplainButton`, so if `items` needs only the components, it can stay in `_internal/` (rule 9). Prompts are in `domain/`, since they are pure strings and the vendor's meaning for the product (rule 8).
 
@@ -373,8 +385,8 @@ Pro and Free accounts on each feature; a limit reached; closing the drawer mid-s
 ## 13. Implementation order
 
 1. **Before anything else:** create the OpenAI project, key and spend limit, and check the Node version on Vercel
-2. **Auto-tagging**, with the foundation in section 11. The smallest feature, and it proves `generateStructured`
-3. **Explain Code.** It proves streaming, and carries the `canUseAi` and `CodeEditor` changes
+2. **Auto-tagging**, with the foundation in section 11. The smallest feature, and it proves `generateStructured`. It also brings `canUseAi` to the drawer, since the edit form needs it
+3. **Explain Code.** It proves streaming, and carries the `CodeEditor` changes and `canUseAi` on the full item page
 4. **Summary**, once its spec exists. Mostly a copy of step 2
 5. **Prompt optimization**, once its spec exists. Mostly a copy of step 3
 

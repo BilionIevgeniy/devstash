@@ -120,7 +120,8 @@ describe("openUserItem", () => {
     expect(signFileUrls).toHaveBeenCalled();
   });
 
-  it("opens a text item on Free, with no read of the plan", async () => {
+  it("opens a text item on Free, without the AI features", async () => {
+    getEntitlements.mockResolvedValue({ isPro: false });
     getItemDetail.mockResolvedValue({
       ...record,
       type: { ...record.type, name: "snippet" },
@@ -128,8 +129,17 @@ describe("openUserItem", () => {
 
     const result = await openUserItem("user-1", "item-1");
 
-    expect(result.status).toBe("ok");
-    expect(getEntitlements).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ status: "ok", canUseAi: false });
+  });
+
+  it("reads the plan once for both the lock and the AI features", async () => {
+    getEntitlements.mockResolvedValue({ isPro: true });
+    getItemDetail.mockResolvedValue(upload);
+
+    const result = await openUserItem("user-1", "item-1");
+
+    expect(result).toMatchObject({ status: "ok", canUseAi: true });
+    expect(getEntitlements).toHaveBeenCalledTimes(1);
   });
 
   it("answers missing for an item that is not there", async () => {

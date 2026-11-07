@@ -1,12 +1,22 @@
 import { useRef, useState, type RefObject } from "react";
 
 import { fetchItemDetail } from "@/features/items/_internal/components/fetch-item-detail";
-import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
+import type {
+  DashboardItem,
+  ItemDetailJson,
+  OpenedItemJson,
+} from "@/features/items/types";
 
 export type ItemDetailState =
   | { status: "loading" }
   | { status: "error" }
-  | { status: "ready"; detail: ItemDetailJson };
+  | { status: "ready"; detail: ItemDetailJson; canUseAi: boolean };
+
+function openedState(opened: OpenedItemJson | null): ItemDetailState {
+  return opened
+    ? { status: "ready", detail: opened.item, canUseAi: opened.canUseAi }
+    : { status: "error" };
+}
 
 // The item sheet of the pages with no item URL (the dashboard, a collection,
 // the favorites, the pins): the card's item at once, its detail fetched from
@@ -40,9 +50,9 @@ export function useItemSheet(focusSentinelRef: RefObject<HTMLElement | null>) {
     setIsOpen(true);
 
     try {
-      const detail = await fetchItemDetail(next.id, controller.signal);
+      const opened = await fetchItemDetail(next.id, controller.signal);
       if (controller.signal.aborted) return;
-      setState(detail ? { status: "ready", detail } : { status: "error" });
+      setState(openedState(opened));
     } catch {
       if (!controller.signal.aborted) setState({ status: "error" });
     }
@@ -78,7 +88,12 @@ export function useItemSheet(focusSentinelRef: RefObject<HTMLElement | null>) {
           tags: detail.tags,
         },
     );
-    setState({ status: "ready", detail });
+    // The saved detail carries no plan, so the one read on open is kept.
+    setState((current) => ({
+      status: "ready",
+      detail,
+      canUseAi: current.status === "ready" && current.canUseAi,
+    }));
     setIsEditing(false);
   }
 

@@ -164,3 +164,21 @@ export function parseTagInput(input: string): string[] {
     .filter((tag) => tag !== "");
   return [...new Set(tags)];
 }
+
+export const TAG_JOINER = ", ";
+
+// Case-insensitive, so a suggested "react" counts as there when the field
+// holds "React": two spellings would become two tags on save.
+export function hasTag(input: string, tag: string): boolean {
+  const wanted = tag.trim().toLowerCase();
+  return parseTagInput(input).some((item) => item.toLowerCase() === wanted);
+}
+
+// Adds a tag to the comma-separated field. A tag already there leaves the
+// field as the user typed it; null when the field is full (TAGS_MAX).
+export function appendTag(input: string, tag: string): string | null {
+  const tags = parseTagInput(input);
+  if (hasTag(input, tag)) return input;
+  if (tags.length >= TAGS_MAX) return null;
+  return [...tags, tag.trim()].join(TAG_JOINER);
+}

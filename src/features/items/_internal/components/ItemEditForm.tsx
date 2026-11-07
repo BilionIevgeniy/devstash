@@ -24,11 +24,11 @@ import {
 import {
   editableFields,
   parseTagInput,
+  TAG_JOINER,
   type EditableFields,
 } from "@/features/items/domain/item-fields";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
-const TAG_JOINER = ", ";
 const SAVED_MESSAGE = "Item saved";
 const SAVE_FAILED_MESSAGE = "Couldn't save the item";
 
@@ -53,6 +53,8 @@ async function saveItem(
 interface ItemEditFormProps {
   item: DashboardItem;
   detail: ItemDetailJson;
+  /** Shows the AI tag suggestions (Pro). */
+  canUseAi: boolean;
   onCancel: () => void;
   onSaved: (detail: ItemDetailJson) => void;
   /**
@@ -93,6 +95,7 @@ function updatePayload(fields: EditableFields, values: ItemFormValues) {
 export function ItemEditForm({
   item,
   detail,
+  canUseAi,
   onCancel,
   onSaved,
   onDirtyChange,
@@ -137,31 +140,24 @@ export function ItemEditForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center justify-end gap-1 border-b px-6 py-3">
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={handleCancel}
-          disabled={isSaving}
-        >
-          <X />
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          disabled={isSaving || isMissingRequired || !isChanged}
-        >
-          <Check />
-          {isSaving ? "Saving…" : "Save"}
-        </Button>
+      <EditToolbar
+        isSaving={isSaving}
+        canSave={isChanged && !isMissingRequired}
+        onCancel={handleCancel}
+      >
         <DiscardChangesDialog
           open={isConfirmingCancel}
           onOpenChange={setIsConfirmingCancel}
           onDiscard={onCancel}
         />
-      </div>
+      </EditToolbar>
       <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
-        <ItemFields fields={fields} values={values} onChange={setField} />
+        <ItemFields
+          fields={fields}
+          values={values}
+          onChange={setField}
+          canUseAi={canUseAi}
+        />
         <CollectionSelect
           value={values.collectionIds}
           linked={detail.collections}
@@ -171,5 +167,38 @@ export function ItemEditForm({
         {children}
       </div>
     </form>
+  );
+}
+
+interface EditToolbarProps {
+  isSaving: boolean;
+  canSave: boolean;
+  onCancel: () => void;
+  children: ReactNode;
+}
+
+function EditToolbar({
+  isSaving,
+  canSave,
+  onCancel,
+  children,
+}: EditToolbarProps) {
+  return (
+    <div className="flex items-center justify-end gap-1 border-b px-6 py-3">
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={onCancel}
+        disabled={isSaving}
+      >
+        <X />
+        Cancel
+      </Button>
+      <Button type="submit" disabled={isSaving || !canSave}>
+        <Check />
+        {isSaving ? "Saving…" : "Save"}
+      </Button>
+      {children}
+    </div>
   );
 }

@@ -29,7 +29,7 @@ prisma/                 schema, migrations, seed
 | 3 | `item-types` | ItemType | exists |
 | 3 | `files` | none (objects in R2 under `users/<userId>/`) | exists |
 | 3 | `editor` | UserPreference | exists |
-| 4 | `ai` | none | planned: the auto-tagging or Explain Code spec |
+| 4 | `ai` | none | exists (auto-tagging: `SuggestTagsButton`, `generateAutoTags`, the access check and limits; `lib/openai.ts`) |
 | 5 | `items` | Item, Tag, ItemTag, ItemCollection ([ADR 0008](../docs/adr/0008-items-own-the-collection-link.md)) | exists |
 | 6 | `collections` | Collection | exists |
 | 7 | `search`, `import-export` | none | `search` exists; `import-export` planned: the import or export spec |

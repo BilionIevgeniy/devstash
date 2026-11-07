@@ -78,11 +78,13 @@ export function ItemRouteDrawer({ children }: { children: ReactNode }) {
 interface ItemRouteDrawerViewProps {
   item: DashboardItem;
   detail: ItemDetailJson;
+  canUseAi: boolean;
 }
 
 export function ItemRouteDrawerView({
   item,
   detail,
+  canUseAi,
 }: ItemRouteDrawerViewProps) {
   const context = useContext(RouteDrawerContext);
   if (!context) {
@@ -93,6 +95,7 @@ export function ItemRouteDrawerView({
     <ItemDetailView
       item={item}
       detail={detail}
+      canUseAi={canUseAi}
       variant="sheet"
       onDelete={context.closeAndDelete}
       onDirtyChange={context.setDirty}

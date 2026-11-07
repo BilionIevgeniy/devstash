@@ -60,6 +60,7 @@ describe("GET /api/items/[id]", () => {
     openUserItem.mockResolvedValue({
       status: "ok",
       item: { id: VALID_ID, title: "useAuth Hook" },
+      canUseAi: true,
     });
 
     const response = await callGet(VALID_ID);
@@ -67,7 +68,7 @@ describe("GET /api/items/[id]", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
       success: true,
-      data: { id: VALID_ID, title: "useAuth Hook" },
+      data: { item: { id: VALID_ID, title: "useAuth Hook" }, canUseAi: true },
       error: null,
     });
   });
@@ -77,6 +78,7 @@ describe("GET /api/items/[id]", () => {
     openUserItem.mockResolvedValue({
       status: "ok",
       item: { id: VALID_ID, title: "x" },
+      canUseAi: false,
     });
 
     const response = await callGet(VALID_ID);

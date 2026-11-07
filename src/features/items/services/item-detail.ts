@@ -5,11 +5,12 @@ import {
   getItemDetailOfType,
 } from "@/features/items/_internal/queries";
 import { signItemFile } from "@/features/items/_internal/services/file-urls";
-import { userCanUseType } from "@/features/items/services/type-access";
+import { getEntitlements } from "@/features/billing/queries";
+import { canUseType } from "@/features/items/domain/item-fields";
 import type { ItemDetail, ItemDetailRecord } from "@/features/items/types";
 
 export type OpenItemResult =
-  | { status: "ok"; item: ItemDetail }
+  | { status: "ok"; item: ItemDetail; canUseAi: boolean }
   | { status: "locked" }
   | { status: "missing" };
 
@@ -37,17 +38,19 @@ export async function getUserItemDetail(
 }
 
 // What a user may open: the plan is checked on the record's real type, before
-// anything is signed. The type in a drawer's URL is the page behind it.
+// anything is signed. The type in a drawer's URL is the page behind it. The
+// plan is read once for both answers: cache() shares nothing in a route
+// handler, where GET /api/items/[id] calls this.
 export async function openUserItem(
   userId: string,
   itemId: string,
 ): Promise<OpenItemResult> {
   const record = await getItemDetail(userId, itemId);
   if (!record) return { status: "missing" };
-  if (!(await userCanUseType(userId, record.type.name))) {
-    return { status: "locked" };
-  }
-  return { status: "ok", item: await toItemDetail(record) };
+
+  const { isPro } = await getEntitlements(userId);
+  if (!canUseType(record.type.name, isPro)) return { status: "locked" };
+  return { status: "ok", item: await toItemDetail(record), canUseAi: isPro };
 }
 
 // The full item page carries the type in the URL: an item of another type is

@@ -17,6 +17,7 @@ import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 interface ItemDetailPageProps {
   item: DashboardItem;
   detail: ItemDetailJson;
+  canUseAi: boolean;
   listHref: string;
 }
 
@@ -28,6 +29,7 @@ interface ItemDetailPageProps {
 export function ItemDetailPage({
   item,
   detail,
+  canUseAi,
   listHref,
 }: ItemDetailPageProps) {
   const router = useRouter();
@@ -57,6 +59,7 @@ export function ItemDetailPage({
       <ItemDetailView
         item={item}
         detail={detail}
+        canUseAi={canUseAi}
         variant="page"
         onDelete={handleDelete}
       />
