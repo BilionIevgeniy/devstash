@@ -1,14 +1,20 @@
-import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
+import { config } from "dotenv";
+import { isDevDatabase } from "../scripts/require-dev-database";
 import { PrismaClient } from "../src/generated/prisma/client";
 import {
   demoCollections,
   demoItems,
+  demoProUser,
   demoUser,
   systemItemTypes,
 } from "./seed-data";
 import { paginationCollections, paginationItems } from "./seed-pagination-data";
+
+// .env holds the secrets and is closed to Claude Code; .env.demo holds only
+// the demo password, which the ui-reviewer agent needs to sign in.
+config({ path: [".env", ".env.demo"] });
 
 const BCRYPT_ROUNDS = 12;
 const collections = [...demoCollections, ...paginationCollections];
@@ -22,8 +28,9 @@ function requireEnv(name: string): string {
   return value;
 }
 
+const connectionString = requireEnv("DATABASE_URL");
 const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: requireEnv("DATABASE_URL") }),
+  adapter: new PrismaPg({ connectionString }),
 });
 
 async function seedSystemItemTypes() {
@@ -40,15 +47,15 @@ async function seedSystemItemTypes() {
   return idsByName;
 }
 
-async function seedDemoUser() {
+async function seedUser(profile: { email: string; name: string }) {
   const password = await bcrypt.hash(
     requireEnv("SEED_DEMO_PASSWORD"),
     BCRYPT_ROUNDS,
   );
   return prisma.user.upsert({
-    where: { email: demoUser.email },
+    where: { email: profile.email },
     update: {},
-    create: { ...demoUser, password, emailVerified: new Date() },
+    create: { ...profile, password, emailVerified: new Date() },
   });
 }
 
@@ -131,16 +138,38 @@ async function seedItems(
   }
 }
 
+async function seedContent(userId: string, typeIds: Map<string, string>) {
+  const collectionIds = await seedCollections(userId);
+  const tagIds = await seedTags(userId);
+  await seedItems(userId, typeIds, collectionIds, tagIds);
+}
+
+// The Pro demo user gets an active subscription with no Stripe customer, so it
+// is a real Pro grant: it is created on the development database only.
+async function seedProUser(typeIds: Map<string, string>) {
+  if (!isDevDatabase(connectionString)) {
+    console.log(`Skipped ${demoProUser.email}: not the development database`);
+    return;
+  }
+  const user = await seedUser(demoProUser);
+  await prisma.subscription.upsert({
+    where: { userId: user.id },
+    update: { status: "active" },
+    create: { userId: user.id, status: "active" },
+  });
+  await seedContent(user.id, typeIds);
+  console.log(`Seeded Pro demo user ${user.email}`);
+}
+
 async function main() {
   const typeIds = await seedSystemItemTypes();
-  const user = await seedDemoUser();
-  const collectionIds = await seedCollections(user.id);
-  const tagIds = await seedTags(user.id);
-  await seedItems(user.id, typeIds, collectionIds, tagIds);
+  const user = await seedUser(demoUser);
+  await seedContent(user.id, typeIds);
   console.log(
     `Seeded ${typeIds.size} system types, demo user ${user.email}, ` +
-      `${collectionIds.size} collections, ${items.length} items`,
+      `${collections.length} collections, ${items.length} items`,
   );
+  await seedProUser(typeIds);
 }
 
 main()
