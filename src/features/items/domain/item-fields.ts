@@ -98,6 +98,37 @@ export function editableUpdate<T extends TypeSpecificUpdate>(
   };
 }
 
+export type AiSourceKind = "content" | "url" | "file" | "none";
+
+export interface AiSource {
+  /** Which field the text comes from; the suggestions are stale once it changes. */
+  kind: AiSourceKind;
+  text: string;
+}
+
+const FILE_SOURCE_LABELS: Record<FileKind, string> = {
+  file: "File",
+  image: "Image",
+};
+
+// What the AI reads besides the title: only a field this type shows, so text
+// left from another type in the create dialog is not sent. A file or image
+// has no text, so its file name stands in ("Image: diagram.png"). A custom
+// type edits no content, so it sends the title alone.
+export function aiSource(
+  fields: EditableFields,
+  values: { content: string; url: string; fileName?: string | null },
+): AiSource {
+  if (fields.content) return { kind: "content", text: values.content };
+  if (fields.url) return { kind: "url", text: values.url };
+  if (fields.file) {
+    const name = values.fileName?.trim() ?? "";
+    const text = name && `${FILE_SOURCE_LABELS[fields.file]}: ${name}`;
+    return { kind: "file", text };
+  }
+  return { kind: "none", text: "" };
+}
+
 // The types that store an upload are the Pro types.
 export function requiresPro(typeName: string): boolean {
   return editableFields(typeName).file !== null;

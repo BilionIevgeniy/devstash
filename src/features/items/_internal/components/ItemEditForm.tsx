@@ -53,7 +53,7 @@ async function saveItem(
 interface ItemEditFormProps {
   item: DashboardItem;
   detail: ItemDetailJson;
-  /** Shows the AI tag suggestions (Pro). */
+  /** Shows the AI buttons of the description and the tags (Pro). */
   canUseAi: boolean;
   onCancel: () => void;
   onSaved: (detail: ItemDetailJson) => void;
@@ -157,6 +157,7 @@ export function ItemEditForm({
           values={values}
           onChange={setField}
           canUseAi={canUseAi}
+          fileName={detail.file?.name}
         />
         <CollectionSelect
           value={values.collectionIds}

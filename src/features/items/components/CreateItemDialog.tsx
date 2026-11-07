@@ -246,6 +246,7 @@ function CreateItemForm({
         values={values}
         onChange={setField}
         canUseAi={isPro}
+        fileName={upload?.fileName}
       />
       <CollectionSelect
         value={values.collectionIds}

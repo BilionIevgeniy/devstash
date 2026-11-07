@@ -1,23 +1,23 @@
 import { describe, expect, it } from "vitest";
 
 import { AI_INPUT_MAX } from "@/features/ai/domain/input";
-import { autoTagsInputSchema } from "@/features/ai/schemas";
+import { aiItemInputSchema } from "@/features/ai/schemas";
 
-describe("autoTagsInputSchema", () => {
+describe("aiItemInputSchema", () => {
   it("accepts a title without content", () => {
     expect(
-      autoTagsInputSchema.safeParse({ title: "useAuth", content: "" }).success,
+      aiItemInputSchema.safeParse({ title: "useAuth", content: "" }).success,
     ).toBe(true);
   });
 
   it("refuses an item with nothing to tag", () => {
     expect(
-      autoTagsInputSchema.safeParse({ title: "  ", content: "\n" }).success,
+      aiItemInputSchema.safeParse({ title: "  ", content: "\n" }).success,
     ).toBe(false);
   });
 
   it("refuses content over the ceiling", () => {
-    const result = autoTagsInputSchema.safeParse({
+    const result = aiItemInputSchema.safeParse({
       title: "Long",
       content: "a".repeat(AI_INPUT_MAX + 1),
     });
@@ -26,7 +26,7 @@ describe("autoTagsInputSchema", () => {
   });
 
   it("accepts content at the ceiling, to be truncated later", () => {
-    const result = autoTagsInputSchema.safeParse({
+    const result = aiItemInputSchema.safeParse({
       title: "Long",
       content: "a".repeat(AI_INPUT_MAX),
     });

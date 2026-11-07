@@ -1,10 +1,11 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { toast } from "sonner";
 
 import { Field } from "@/components/common/Field";
 import { Input } from "@/components/ui/input";
-import { SuggestTagsButton } from "@/features/ai/components/SuggestTagsButton";
+import { AiTagSuggestions } from "@/features/ai/components/AiTagSuggestions";
 import {
   appendTag,
   hasTag,
@@ -42,25 +43,28 @@ export function TagsField({
     return true;
   }
 
-  return (
-    <div className="space-y-2">
-      <Field label="Tags" hint="Separate tags with commas">
-        {(id) => (
-          <Input
-            id={id}
-            value={value}
-            onChange={(event) => onChange(event.target.value)}
-          />
-        )}
-      </Field>
-      {canUseAi && (
-        <SuggestTagsButton
-          title={title}
-          content={content}
-          hasTag={(tag) => hasTag(value, tag)}
-          onAccept={handleAccept}
+  const field = (action?: ReactNode) => (
+    <Field label="Tags" hint="Separate tags with commas" action={action}>
+      {(id) => (
+        <Input
+          id={id}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
         />
       )}
-    </div>
+    </Field>
+  );
+
+  if (!canUseAi) return field();
+
+  return (
+    <AiTagSuggestions
+      title={title}
+      content={content}
+      hasTag={(tag) => hasTag(value, tag)}
+      onAccept={handleAccept}
+    >
+      {field}
+    </AiTagSuggestions>
   );
 }

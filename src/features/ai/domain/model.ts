@@ -18,3 +18,10 @@ export const AUTO_TAG_SETTINGS: AiOperationSettings = {
   maxOutputTokens: 300,
   timeoutMs: 10_000,
 };
+
+export const SUMMARY_SETTINGS: AiOperationSettings = {
+  effort: "none",
+  verbosity: "low",
+  maxOutputTokens: 400,
+  timeoutMs: 10_000,
+};

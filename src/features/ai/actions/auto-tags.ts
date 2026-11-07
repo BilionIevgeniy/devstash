@@ -1,7 +1,7 @@
 "use server";
 
 import { AI_UNAVAILABLE_MESSAGE } from "@/features/ai/domain/messages";
-import { autoTagsInputSchema } from "@/features/ai/schemas";
+import { aiItemInputSchema } from "@/features/ai/schemas";
 import { suggestTags } from "@/features/ai/services/auto-tags";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import type { ActionResult } from "@/lib/action-result";
@@ -15,7 +15,7 @@ function failure(error: string): ActionResult<null> {
 export async function generateAutoTags(
   data: unknown,
 ): Promise<ActionResult<string[] | null>> {
-  const parsed = autoTagsInputSchema.safeParse(data);
+  const parsed = aiItemInputSchema.safeParse(data);
   if (!parsed.success) return failure(parsed.error.issues[0].message);
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
