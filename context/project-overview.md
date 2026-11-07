@@ -93,7 +93,7 @@ Full‑text search across:
 - Explain Code
 - Prompt optimization
 
-> AI powered by **OpenAI gpt-5-nano**
+> AI powered by **OpenAI gpt-6-luna** (the course used gpt-5-nano, which leaves the API on 2026-12-11)
 
 ---
 
@@ -216,7 +216,7 @@ model ItemTag {
 | File Storage | Cloudflare R2                |
 | CSS/UI       | Tailwind CSS v4 + ShadCN     |
 | Auth         | NextAuth v5 (email + GitHub) |
-| AI           | OpenAI gpt-5-nano            |
+| AI           | OpenAI gpt-6-luna            |
 | Deployment   | Vercel (likely)              |
 | Monitoring   | Sentry (later)               |
 

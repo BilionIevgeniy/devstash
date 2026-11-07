@@ -329,7 +329,7 @@ Not checked by lint, so it is on the author and the reviewer: one call into a se
 - **Two open tabs on a dead customer.** Both replace it and the later save wins the row. A payment on the earlier customer then matches no row, so the user has paid and stays Free until it is fixed by hand. Accepted as rare
 - **The grace period and the write rule share a list.** `subscriptionWrite` reuses `isProStatus` for its live class, so a change to the grace policy also changes which subscription may write the row
 - **Lost webhooks.** An event lost for longer than Stripe's 3 days of retries leaves the row stale. There is no periodic sync, and at this size the Dashboard's failed deliveries are enough (`context/todo.md`)
-- **`past_due` and `ai`.** When `ai` lands, `past_due` users get paid-for usage during the grace period. Decide that together with the quota
+- **`past_due` and `ai`.** Decided on 2026-11-07: AI follows `PRO_STATUSES` like every Pro feature, so `past_due` users keep it during the grace period. The daily AI limit caps the cost of an unpaid month at about $1.65 ([ai-integration-plan.md](ai-integration-plan.md), section 8)
 - **Superseded columns.** `User.isPro`, `User.stripeCustomerId`, `User.stripeSubscriptionId` and `Item.fileUrl` are read by nothing and wait for their contract migration (`context/todo.md`). Code must not start reading them again
 
 ## Glossary
