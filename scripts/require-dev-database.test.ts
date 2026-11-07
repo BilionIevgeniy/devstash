@@ -1,9 +1,30 @@
 import { describe, expect, it } from "vitest";
-import { requireDevDatabase } from "./require-dev-database";
+import { isDevDatabase, requireDevDatabase } from "./require-dev-database";
 
 function url(host: string): string {
   return `postgresql://user:secret@${host}/neondb?sslmode=require`;
 }
+
+describe("isDevDatabase", () => {
+  it("is true only for the development endpoint", () => {
+    expect(
+      isDevDatabase(url("ep-calm-voice-b4zvdl6z.c-6.us-east-2.aws.neon.tech")),
+    ).toBe(true);
+    expect(
+      isDevDatabase(
+        url("ep-twilight-hat-b4ay1zs8.c-6.us-east-2.aws.neon.tech"),
+      ),
+    ).toBe(false);
+  });
+
+  it("is false for a host that only contains the development one", () => {
+    expect(
+      isDevDatabase(
+        url("ep-calm-voice-b4zvdl6z.c-6.us-east-2.aws.neon.tech.example.com"),
+      ),
+    ).toBe(false);
+  });
+});
 
 describe("requireDevDatabase", () => {
   it("lets a script run on the development endpoint", () => {

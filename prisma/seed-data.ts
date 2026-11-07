@@ -1,4 +1,4 @@
-import { DEMO_USER_EMAIL } from "./demo-user";
+import { DEMO_PRO_USER_EMAIL, DEMO_USER_EMAIL } from "./demo-user";
 
 export interface SeedItemType {
   name: string;
@@ -32,6 +32,11 @@ export interface SeedItem {
 export const demoUser = {
   email: DEMO_USER_EMAIL,
   name: "John Doe",
+};
+
+export const demoProUser = {
+  email: DEMO_PRO_USER_EMAIL,
+  name: "Jane Doe",
 };
 
 export const systemItemTypes: SeedItemType[] = [
