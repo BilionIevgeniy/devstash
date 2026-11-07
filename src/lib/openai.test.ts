@@ -8,14 +8,17 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
-const parse = vi.hoisted(() => vi.fn());
+const { parse, stream } = vi.hoisted(() => ({
+  parse: vi.fn(),
+  stream: vi.fn(),
+}));
 
 vi.mock("openai", async (importOriginal) => {
   const actual = await importOriginal<typeof import("openai")>();
   return {
     ...actual,
     default: class {
-      responses = { parse };
+      responses = { parse, stream };
     },
   };
 });
@@ -25,6 +28,7 @@ import {
   aiErrorSummary,
   AiOutputError,
   generateStructured,
+  streamText,
 } from "@/lib/openai";
 import { sha256Hex } from "@/lib/hash";
 
@@ -227,5 +231,116 @@ describe("aiErrorSummary", () => {
 
   it("logs the reason of an output error", () => {
     expect(aiErrorSummary(new AiOutputError("empty"))).toBe("output=empty");
+  });
+});
+
+describe("streamText", () => {
+  const streamRequest = {
+    operation: "explain",
+    model: "gpt-6-luna",
+    instructions: "Explain the code.",
+    input: "<item>useAuth</item>",
+    effort: "low",
+    verbosity: "medium",
+    maxOutputTokens: 2_000,
+    connectTimeoutMs: 15_000,
+    userId: "user-1",
+    signal: new AbortController().signal,
+  } as const;
+
+  function events(...list: Record<string, unknown>[]) {
+    return (async function* () {
+      yield* list;
+    })();
+  }
+
+  async function collect(): Promise<string[]> {
+    const chunks: string[] = [];
+    for await (const chunk of streamText(streamRequest)) chunks.push(chunk);
+    return chunks;
+  }
+
+  const completed = { type: "response.completed", response: { usage } };
+
+  beforeEach(() => {
+    stream.mockReset();
+    vi.stubEnv("OPENAI_API_KEY", "sk-test");
+    vi.spyOn(console, "info").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  it("yields the text as it is written", async () => {
+    stream.mockReturnValue(
+      events(
+        { type: "response.output_text.delta", delta: "It " },
+        { type: "response.output_text.delta", delta: "reads." },
+        completed,
+      ),
+    );
+
+    await expect(collect()).resolves.toEqual(["It ", "reads."]);
+  });
+
+  it("never lets OpenAI keep the response, names the user by hash and passes the signal", async () => {
+    stream.mockReturnValue(
+      events({ type: "response.output_text.delta", delta: "x" }, completed),
+    );
+
+    await collect();
+
+    const [body, options] = stream.mock.calls[0];
+    expect(body).toMatchObject({
+      store: false,
+      safety_identifier: sha256Hex("user-1"),
+      max_output_tokens: 2_000,
+      reasoning: { effort: "low" },
+      text: { verbosity: "medium" },
+    });
+    expect(options).toEqual({
+      signal: streamRequest.signal,
+      timeout: 15_000,
+    });
+  });
+
+  it.each([
+    [
+      "an answer cut short",
+      {
+        type: "response.incomplete",
+        response: {
+          usage,
+          incomplete_details: { reason: "max_output_tokens" },
+        },
+      },
+      "max_output_tokens",
+    ],
+    ["a failed answer", { type: "response.failed", response: {} }, "other"],
+    ["an error event", { type: "error", message: "boom" }, "other"],
+    ["a refusal", { type: "response.refusal.delta", delta: "No." }, "refusal"],
+  ])("throws on %s, after the text before it", async (_, event, reason) => {
+    stream.mockReturnValue(
+      events({ type: "response.output_text.delta", delta: "It " }, event),
+    );
+    const chunks: string[] = [];
+
+    const reading = (async () => {
+      for await (const chunk of streamText(streamRequest)) chunks.push(chunk);
+    })();
+
+    await expect(reading).rejects.toMatchObject({ reason });
+    expect(chunks).toEqual(["It "]);
+  });
+
+  it("throws on an answer with no text", async () => {
+    stream.mockReturnValue(events(completed));
+
+    await expect(collect()).rejects.toMatchObject({
+      name: "AiOutputError",
+      reason: "empty",
+    });
   });
 });

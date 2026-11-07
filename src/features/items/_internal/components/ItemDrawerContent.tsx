@@ -46,6 +46,7 @@ export function ItemDrawerContent({
   variant = "sheet",
 }: ItemDrawerContentProps) {
   const detail = state.status === "ready" ? state.detail : null;
+  const canUseAi = state.status === "ready" && state.canUseAi;
 
   if (isEditing && detail) {
     return (
@@ -58,7 +59,7 @@ export function ItemDrawerContent({
         <ItemEditForm
           item={item}
           detail={detail}
-          canUseAi={state.status === "ready" && state.canUseAi}
+          canUseAi={canUseAi}
           onCancel={onCancelEdit}
           onSaved={onSaved}
           onDirtyChange={onDirtyChange}
@@ -95,23 +96,34 @@ export function ItemDrawerContent({
         {state.status === "error" && (
           <p className="text-destructive">Couldn&apos;t load this item.</p>
         )}
-        {detail && <ItemBody typeName={item.type.name} detail={detail} />}
-        {item.tags.length > 0 && (
-          <DrawerSection title="Tags" icon={Tag}>
-            <ul className="flex flex-wrap gap-2">
-              {item.tags.map((tag) => (
-                <li
-                  key={tag}
-                  className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground"
-                >
-                  {tag}
-                </li>
-              ))}
-            </ul>
-          </DrawerSection>
+        {detail && (
+          <ItemBody
+            typeName={item.type.name}
+            title={item.title}
+            detail={detail}
+            canUseAi={canUseAi}
+          />
         )}
+        {item.tags.length > 0 && <ItemTagList tags={item.tags} />}
         {detail && <ItemMeta detail={detail} />}
       </div>
     </>
+  );
+}
+
+function ItemTagList({ tags }: { tags: string[] }) {
+  return (
+    <DrawerSection title="Tags" icon={Tag}>
+      <ul className="flex flex-wrap gap-2">
+        {tags.map((tag) => (
+          <li
+            key={tag}
+            className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+          >
+            {tag}
+          </li>
+        ))}
+      </ul>
+    </DrawerSection>
   );
 }
