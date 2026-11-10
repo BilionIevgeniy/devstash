@@ -21,7 +21,9 @@ Work deferred on purpose is listed in `context/todo.md` (not auto-loaded: read i
 ## Commands
 
 - `npm run dev` — start the dev server (Turbopack, Next.js 16 default)
-- `npm run build` — production build (Turbopack by default)
+- `npm run build` — production build (Turbopack by default); touches no database
+- `npm run typecheck` — `next typegen && tsc --noEmit`
+- `npm run db:migrate:deploy` — `prisma migrate deploy`; on Vercel migrations run in `npm run vercel-build` through a guard (ADR 0013)
 - `npm run start` — run the production build
 - `npm run lint` — ESLint via flat config
 - `npm run test` — Vitest, one run; must be green and run before every commit

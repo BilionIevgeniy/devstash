@@ -150,7 +150,7 @@ The ten placement rules are "Where does this go" in [context/architecture-rules.
 4. **Add the pages** under `src/app/(app)/<route>/` and widen the `matcher` in `src/proxy.ts` so the route is protected. Pages only compose.
 5. **Change the database** in `prisma/schema.prisma` and run `npx prisma migrate dev --name <what>` (never `db push`); update `prisma/seed.ts` if the demo data needs it.
 6. **Write the code by role:** reads in `queries.ts` (scoped by `userId`), writes in `services/`, inputs in `schemas.ts`, rules in `domain/`, the form handler in `actions/`.
-7. **Check:** `npx tsc --noEmit`, `npm run lint`, `npm run test` (all green before a commit) and `npm run build`. The build also runs `prisma migrate deploy`, which applies pending migrations to the database named in `.env`.
+7. **Check:** `npm run typecheck`, `npm run lint`, `npm run test` (all green before a commit) and `npm run build`; CI runs the same on the PR. The build touches no database: on Vercel, `npm run vercel-build` migrates the environment's own database first (see "Deployment" in the Reference).
 8. **Record it** in `context/feature-history.md` when the feature is done (see `context/ai-interaction.md` for the workflow).
 
 Adding an operation to an existing feature is the same without steps 1 to 5: input schema, then the service, then the action, then the component that calls it.
@@ -298,6 +298,12 @@ Each feature keeps its business rules in `features/[feature]/domain/` as pure Ty
 - size: 50 lines per function in the logic roles and the browser helpers, 80 per component (`.tsx`), hook (`components/hooks/use-*.ts`) and page, 250 per file, cyclomatic complexity 15 (`max-lines-per-function`, `max-lines`, `complexity`; blank lines and comments not counted; see "Size limits" in `context/coding-standards.md`)
 
 Not checked by lint, so it is on the author and the reviewer: one call into a service per entry point, `userId` in every `where` (except the Stripe sync, ADR 0012), a service taking `userId`, `ip` and `origin` as parameters, idempotent background jobs, a read through `tx` with no write in its transaction, an alias of a Prisma delegate (the read and write rules match the names `prisma` and `tx`), and reads of another feature's models (see "Known risks").
+
+### Deployment
+
+- **CI** (`.github/workflows/ci.yml`): lint, typecheck, tests and the build on every PR and every push to `main`, with dummy env values; the check `ci` is required before a merge
+- **Vercel** runs `npm run vercel-build` (`vercel.json`). `scripts/migration-guard.ts` lets production migrate only the production Neon endpoint and a preview only the `development` one, and fails the build otherwise; then `npm run build` runs
+- **Previews share `development`.** A pushed migration is never edited, and a breaking change ships as expand, then contract in a later deploy ([ADR 0013](adr/0013-how-schema-changes-reach-production.md))
 
 ### Known risks
 

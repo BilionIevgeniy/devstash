@@ -1,9 +1,11 @@
-// The endpoint of the `development` branch in Neon. A script that deletes data
-// runs only there, so a .env pointed at production stops it before any query.
-const DEV_DATABASE_HOST = "ep-calm-voice-b4zvdl6z.c-6.us-east-2.aws.neon.tech";
+import { DEV_DATABASE_HOST, endpointHost } from "./neon-endpoints";
+
+// A script that deletes data runs only on the `development` branch, so a .env
+// pointed at production stops it before any query. The pooled and the direct
+// host of the endpoint both count, as in the migration guard.
 
 export function isDevDatabase(connectionString: string): boolean {
-  return new URL(connectionString).hostname === DEV_DATABASE_HOST;
+  return endpointHost(new URL(connectionString).hostname) === DEV_DATABASE_HOST;
 }
 
 export function requireDevDatabase(connectionString: string): void {

@@ -48,6 +48,6 @@ If the argument is "run" or "fix":
 - Before fixing, follow the branch rule in `context/ai-interaction.md`: on `main`, create a `fix/` branch; with unrelated uncommitted work, ask first
 - An architecture finding that needs more than a local edit gets its own plan: don't fix it inside the cleanup. If the rule itself should change, that needs a record in `docs/adr/`
 - Confirm each file deletion by name, even with 'all'
-- After the fixes, run `npx tsc --noEmit`, `npm run lint`, `npm run test` and `npm run build`, and report the results. A failure is fixed or reported, never skipped
+- After the fixes, run `npm run typecheck`, `npm run lint`, `npm run test` and `npm run build`, and report the results. A failure is fixed or reported, never skipped
 - Do not commit: ask first
 - Report what you changed
