@@ -20,4 +20,8 @@ console.log(`Migrating the ${decision.vercelEnv} database at ${decision.host}`);
 const result = spawnSync("npx", ["prisma", "migrate", "deploy"], {
   stdio: "inherit",
 });
+// A spawn that fails to start (npx missing) leaves no status and no output.
+if (result.error) {
+  console.error(`Could not run prisma migrate deploy: ${result.error.message}`);
+}
 process.exit(result.status ?? 1);

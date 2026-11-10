@@ -17,6 +17,19 @@ describe("isDevDatabase", () => {
     ).toBe(false);
   });
 
+  it("is true for the pooled host of the development endpoint", () => {
+    expect(
+      isDevDatabase(
+        url("ep-calm-voice-b4zvdl6z-pooler.c-6.us-east-2.aws.neon.tech"),
+      ),
+    ).toBe(true);
+    expect(
+      isDevDatabase(
+        url("ep-twilight-hat-b4ay1zs8-pooler.c-6.us-east-2.aws.neon.tech"),
+      ),
+    ).toBe(false);
+  });
+
   it("is false for a host that only contains the development one", () => {
     expect(
       isDevDatabase(

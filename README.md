@@ -45,7 +45,7 @@ The seed creates the system item types and two demo users with the same password
 | `npm run start` | Run the production build |
 | `npm run lint` | ESLint, including the architecture boundaries and size limits |
 | `npm run typecheck` | `next typegen && tsc --noEmit`: route types, then the type check |
-| `npm run db:migrate:deploy` | `prisma migrate deploy` against `DIRECT_URL`: applies pending migrations without creating any |
+| `npm run db:migrate:deploy` | `prisma migrate deploy`: applies pending migrations without creating any. **It has no guard**: it migrates whatever database `DIRECT_URL` in `.env` names, so check it first |
 | `npm run vercel-build` | The Vercel Build Command (`vercel.json`): migrates the environment's own database through a guard, then builds. Refuses to run outside Vercel |
 | `npm run test` / `npm run test:watch` | Vitest, one run / watch mode |
 | `npm run db:seed` | Seed system types and demo users (safe to run again) |

@@ -41,3 +41,4 @@ So: a pushed migration is never edited, a fix is a new migration, and a branch p
 - CI runs `npm run build` with dummy URLs and never connects to a database
 - A preview's build log shows the guard's line (`Migrating the preview database at …`), which is how the setup is checked
 - Moving production to a new Neon endpoint fails the first build until `PROD_DATABASE_HOST` is changed
+- Not covered yet: a change to `schema.prisma` without its migration. CI and the build pass, `migrate deploy` applies nothing, and production fails on the missing column. The check (`prisma migrate diff --from-migrations prisma/migrations --to-schema prisma/schema.prisma --exit-code`, with a Postgres service as the shadow database) comes with Postgres in CI (`context/todo.md`)
