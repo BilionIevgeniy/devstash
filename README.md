@@ -22,7 +22,7 @@ What the product is and who it is for: [context/project-overview.md](context/pro
 
 ## Getting started
 
-1. **Node 22 or later** (`.nvmrc`, `engines` in `package.json`): `nvm use`
+1. **Node 24** (`.nvmrc`, `engines` in `package.json`, the same major as the Vercel project setting): `nvm install` once, then `nvm use`
 2. **Install**: `npm install` (it also generates the Prisma client and copies the Monaco editor files)
 3. **Environment**: copy `.env.example` to `.env` and fill it in. Each variable is explained there. Use the `development` branch of the Neon project, never production, and test keys for Stripe
 4. **Demo password**: put `SEED_DEMO_PASSWORD` in `.env.demo` rather than `.env`. The seed reads both files; `.env.demo` is the one env file Claude Code is allowed to read, so the `ui-reviewer` agent can sign in
