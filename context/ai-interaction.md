@@ -19,12 +19,11 @@ This is the common workflow that we will use for every single feature/fix. Each 
 5. **Test** (`/feature test`) - Add unit tests for new pure logic (see "Testing" in @context/coding-standards.md). Run `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build` and fix any errors; every test must be green. I check the feature in the browser myself; the `ui-reviewer` agent runs only when I ask for it
 6. **Review the code** (`/feature review`, agents `code-reviewer` and, when auth code changed, `auth-auditor`) - Both get the diff; settle their findings as described in "Working with review agents"
 7. **Iterate** - Iterate and change things if needed
-8. **Commit** (`/feature complete`) - Only after the tests are green, the build passes and everything works
-9. **Merge** - Merge to main
-10. **Delete Branch** - Delete branch after merge
-11. Mark as completed in @context/current-feature.md and add to history in context/feature-history.md (`/feature complete`)
+8. **Commit** (`/feature complete`) - Only after the tests are green, the build passes and everything works. The reset of @context/current-feature.md and the entry in context/feature-history.md go into the feature's own commit
+9. **PR and CI** (`/feature complete`) - Push the branch, open the PR with `gh`, wait for the `ci` check to be green
+10. **Merge** (`/feature complete`) - After my go, merge the PR on GitHub (`gh pr merge --merge --delete-branch`), which deletes the branch there; then update the local `main` and delete the local branch
 
-Do NOT commit without permission, and not until `npm run test` is green and the build passes. Run the tests again right before the commit, not only earlier in the feature. If a test or the build fails, fix the issues first; never skip, disable or delete a test to get a commit through. `git commit` and `git merge` run without a permission prompt, so this rule holds only because it is followed; `git push` asks first, because a push to main deploys and migrates production.
+Do NOT commit without permission, and not until `npm run test` is green and the build passes. Run the tests again right before the commit, not only earlier in the feature. If a test or the build fails, fix the issues first; never skip, disable or delete a test to get a commit through. `git commit` and `git merge` run without a permission prompt, so this rule holds only because it is followed; `git push` asks first. `main` changes only through a PR merged on GitHub, and that merge deploys and migrates production, so it waits for my go.
 
 ### Working with review agents
 
@@ -50,7 +49,7 @@ The built-in `/simplify`, `/code-review` and `/security-review` are quick checks
 
 ## Branching
 
-We will create a new branch for every feature/fix. Name branch **feature/[feature]** or **fix[fix]**, etc. Ask to delete the branch once merged.
+We will create a new branch for every feature/fix. Name branch **feature/[feature]** or **fix[fix]**, etc. `/feature complete` deletes it on GitHub and locally once the PR is merged.
 
 ## Commits
 
