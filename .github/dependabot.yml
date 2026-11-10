@@ -9,6 +9,17 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    # Majors that are upgraded on purpose, on their own branch:
+    # - @types/node follows the Node major of .nvmrc, engines and Vercel (24)
+    # - eslint 10 waits for its plugins (context/todo.md, "Tooling")
+    # - typescript waits for typescript-eslint, whose peer range ends below 6.1
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: eslint
+        update-types: ["version-update:semver-major"]
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
