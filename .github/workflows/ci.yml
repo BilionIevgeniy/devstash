@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# A new push to a PR cancels its older run. On main every run finishes, so
+# every merged commit has a result.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # The job name is the check that branch protection on main requires.
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Every variable here is a dummy: CI never connects to a database or a
+    # vendor, and no GitHub secret is used.
+    # - DATABASE_URL: src/lib/prisma.ts throws at import when it is unset. The
+    #   pg adapter connects only on a query, and no page queries at build time
+    #   (the pages that read data are dynamic).
+    # - DIRECT_URL: prisma.config.ts reads it for `prisma generate` (in
+    #   `npm ci` through postinstall, and in the build). Never connected.
+    # - AUTH_SECRET, APP_URL: read by NextAuth and the email links.
+    # Not set: vendor keys (Stripe, R2, Resend, Upstash, OpenAI, GitHub OAuth),
+    # read only when a request comes in; NEXT_PUBLIC_MONACO_VS_PATH, set by
+    # next.config.ts from package.json. The build fetches the Google Fonts of
+    # next/font, the only network access it needs.
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+      AUTH_SECRET: ci-dummy-secret-not-used-anywhere
+      APP_URL: http://localhost:3000
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build

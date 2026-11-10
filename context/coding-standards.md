@@ -88,7 +88,9 @@ Check every UI change against these before writing it; the plan names which ones
 - Use Prisma ORM for all database operations
 - Always use `prisma migrate dev` for schema changes (not `db push`)
 - Run `prisma migrate status` before committing to verify migrations are in sync
-- Production deployments must run `prisma migrate deploy` before the app starts
+- Migrations reach Vercel only through `npm run vercel-build`, which migrates the environment's own database through `scripts/migrate-if-allowed.ts` before the build; `npm run build` touches no database ([ADR 0013](../docs/adr/0013-how-schema-changes-reach-production.md))
+- Every migration is backward compatible with the deployment that is live (expand/contract): a column is dropped only in a later deploy, once nothing reads it
+- A migration is never edited after it has been pushed: previews have already applied it to `development`; a fix is a new migration
 
 ## Data Fetching
 
@@ -139,7 +141,7 @@ How to split when a unit grows past its limit, or has more than one job before i
 
 Vitest, run with `npm run test` (one run) or `npm run test:watch`. Tests are colocated as `[name].test.ts`, run in the node environment, and import `describe`, `it` and `expect` from `vitest` explicitly.
 
-- **Every test must be green, and `npm run test` must be run before every commit**, together with `npx tsc --noEmit`, `npm run lint` and `npm run build`. A failing test is fixed, or corrected on purpose when the rule changed; it is never skipped, disabled or deleted to get a commit through
+- **Every test must be green, and `npm run test` must be run before every commit**, together with `npm run typecheck`, `npm run lint` and `npm run build` (CI runs the same on every PR). A failing test is fixed, or corrected on purpose when the rule changed; it is never skipped, disabled or deleted to get a commit through
 - Test pure code first, without mocks: `domain/` files, `schemas.ts` and pure helpers in `lib` (for example `client-ip.ts`). A new business rule in `domain/` comes with its test in the same change
 - Services come next, with their boundaries mocked (`@/lib/prisma`, `@/lib/rate-limit`, `@/lib/email`, `fetch`); assert the decision the service makes, not the mock calls for their own sake. `server-only` is aliased to the empty stub `test/server-only.ts` in `vitest.config.mts`, so queries, services and routes import normally
 - Not unit-tested: layer and import rules and domain purity (ESLint enforces them), thin `actions/`, pages and `components/ui`. Vitest cannot render async Server Components, so pages belong to end-to-end tests when those are added

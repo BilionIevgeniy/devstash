@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Minor and patch updates come as one weekly PR; a major update gets a PR of
+  # its own, since it can break the build.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

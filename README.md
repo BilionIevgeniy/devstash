@@ -41,9 +41,12 @@ The seed creates the system item types and two demo users with the same password
 | Command | What it does |
 | ------- | ------------ |
 | `npm run dev` | Dev server |
-| `npm run build` | Production build. **It runs `prisma migrate deploy`** against `DATABASE_URL`, so check which database `.env` points at |
+| `npm run build` | Production build. Touches no database |
 | `npm run start` | Run the production build |
 | `npm run lint` | ESLint, including the architecture boundaries and size limits |
+| `npm run typecheck` | `next typegen && tsc --noEmit`: route types, then the type check |
+| `npm run db:migrate:deploy` | `prisma migrate deploy` against `DIRECT_URL`: applies pending migrations without creating any |
+| `npm run vercel-build` | The Vercel Build Command (`vercel.json`): migrates the environment's own database through a guard, then builds. Refuses to run outside Vercel |
 | `npm run test` / `npm run test:watch` | Vitest, one run / watch mode |
 | `npm run db:seed` | Seed system types and demo users (safe to run again) |
 | `npm run db:reset-demo` | Remove the Free demo user's items, collections, tags, files and subscription; run `db:seed` next |
@@ -51,7 +54,7 @@ The seed creates the system item types and two demo users with the same password
 | `npm run db:test` | Check the database connection and the demo data |
 | `npm run db:studio` | Prisma Studio |
 
-Before every commit: `npm run test`, `npx tsc --noEmit`, `npm run lint` and `npm run build` must all pass. Schema changes go through `prisma migrate dev`, never `db push`.
+Before every commit: `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build` must all pass. CI runs the same four on every PR and every push to `main`. Schema changes go through `prisma migrate dev`, never `db push`.
 
 ## Architecture
 
@@ -78,4 +81,15 @@ Guard rails in `.claude/settings.json`: Claude Code cannot read `.env`. Work def
 
 ## Deployment
 
-Vercel. A push to `main` deploys production, and the build applies pending migrations to the production database.
+Vercel. A push to `main` deploys production. Vercel runs `npm run vercel-build`: `scripts/migrate-if-allowed.ts` applies pending migrations to that environment's own database, then the app is built. Production migrates only the production Neon branch; every preview uses the `development` branch, and its build fails if its URLs point anywhere else. Why, and how to ship a breaking schema change: [ADR 0013](docs/adr/0013-how-schema-changes-reach-production.md).
+
+### CI and branch protection
+
+`.github/workflows/ci.yml` runs lint, typecheck, tests and the build (with dummy env values, no database) on every PR and every push to `main`. Dependabot (`.github/dependabot.yml`) opens weekly PRs for npm, minor and patch grouped, and for GitHub Actions.
+
+Branch protection on `main` is set in GitHub, not in code:
+
+1. Repository **Settings > Branches > Add branch ruleset** (or "Add classic branch protection rule"), target branch `main`
+2. Turn on **Require a pull request before merging**
+3. Turn on **Require status checks to pass**, add the check **`ci`** (it appears after the workflow has run once), and turn on **Require branches to be up to date before merging**
+4. Turn on **Block force pushes**, then save

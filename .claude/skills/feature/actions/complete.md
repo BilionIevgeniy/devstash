@@ -1,6 +1,6 @@
 # Complete Action
 
-1. Run `npm run test`, `npx tsc --noEmit`, `npm run lint` and `npm run build`; stop and fix if anything is not green
+1. Run `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build`; stop and fix if anything is not green
 2. Stage all changes and commit with a descriptive message
 3. Switch to main and merge the feature branch (no push yet)
 4. Delete the local feature branch
