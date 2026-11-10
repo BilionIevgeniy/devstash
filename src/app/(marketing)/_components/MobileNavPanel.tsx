@@ -12,12 +12,12 @@ export function MobileNavPanel({ id, signedIn, onClose }: MobileNavPanelProps) {
   return (
     <nav id={id} aria-label="Mobile" className="border-t md:hidden">
       <div className="marketing-container flex flex-col py-2 text-sm">
-        <a href="#features" className={PANEL_LINK} onClick={onClose}>
+        <Link href="/#features" className={PANEL_LINK} onClick={onClose}>
           Features
-        </a>
-        <a href="#pricing" className={PANEL_LINK} onClick={onClose}>
+        </Link>
+        <Link href="/#pricing" className={PANEL_LINK} onClick={onClose}>
           Pricing
-        </a>
+        </Link>
         {!signedIn && (
           <Link href="/sign-in" className={PANEL_LINK}>
             Sign In

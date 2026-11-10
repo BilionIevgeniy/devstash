@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 interface GenerateWithAiButtonProps {
   /** What it generates, heard only by a screen reader: "for tags". */
   target: string;
+  /** The id of the `AiDataNote` that says where the content goes. */
+  describedBy: string;
   isPending: boolean;
   disabled: boolean;
   onClick: () => void;
@@ -20,6 +22,7 @@ interface GenerateWithAiButtonProps {
 // margin keeps the row at the label's height.
 export function GenerateWithAiButton({
   target,
+  describedBy,
   isPending,
   disabled,
   onClick,
@@ -32,6 +35,7 @@ export function GenerateWithAiButton({
       variant="ghost"
       size="xs"
       className="-my-0.5"
+      aria-describedby={describedBy}
       onClick={onClick}
       disabled={isPending || disabled}
     >

@@ -26,6 +26,9 @@ export interface AiStreamButtonLabels {
 interface AiStreamButtonProps {
   labels: AiStreamButtonLabels;
   canUseAi: boolean;
+  /** The id of the `AiDataNote` that says where the content goes. A Free user's
+   *  upgrade link makes no call, so it needs none. */
+  describedBy?: string;
   hasAnswer: boolean;
   isPending: boolean;
   /** Something else runs on the answer (a save): the button waits. */
@@ -43,6 +46,7 @@ const ICON_CLASS = "text-violet-500 dark:text-violet-400";
 export function AiStreamButton({
   labels,
   canUseAi,
+  describedBy,
   hasAnswer,
   isPending,
   isBlocked = false,
@@ -58,6 +62,7 @@ export function AiStreamButton({
       type="button"
       variant="ghost"
       size="xs"
+      aria-describedby={describedBy}
       aria-disabled={isInactive}
       onClick={() => {
         if (!isInactive) onClick();

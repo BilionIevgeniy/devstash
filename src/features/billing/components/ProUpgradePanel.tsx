@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { TestModeHint } from "@/features/billing/_internal/components/TestModeHint";
+import { TestModeHint } from "@/features/billing/components/TestModeHint";
 import { UpgradePlans } from "@/features/billing/_internal/components/UpgradePlans";
 
 interface ProUpgradePanelProps {

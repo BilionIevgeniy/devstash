@@ -224,10 +224,10 @@ model ItemTag {
 
 ## 💰 Monetization
 
-| Plan | Price           | Limits                  | Features                                                  |
-| ---- | --------------- | ----------------------- | --------------------------------------------------------- |
-| Free | $0              | 50 items, 3 collections | Basic search, no AI                                       |
-| Pro  | $8/mo or $72/yr | Unlimited               | File and image uploads, custom types, AI features, export |
+| Plan | Price           | Limits                  | Features                                                                       |
+| ---- | --------------- | ----------------------- | ------------------------------------------------------------------------------ |
+| Free | $0              | 50 items, 3 collections | Basic search, no AI                                                            |
+| Pro  | $8/mo or $72/yr | Unlimited               | File and image uploads, custom types (coming soon), AI features, export (JSON) |
 
 > Stripe for subscriptions + webhooks for syncing
 

@@ -3,10 +3,10 @@ import type { Metadata } from "next";
 import { AISection } from "./_components/AISection";
 import { CTASection } from "./_components/CTASection";
 import { FeaturesSection } from "./_components/FeaturesSection";
-import { Footer } from "./_components/Footer";
 import { HeroSection } from "./_components/HeroSection";
-import { Navbar } from "./_components/Navbar";
 import { PricingSection } from "./_components/PricingSection";
+import { TestModeHint } from "@/features/billing/components/TestModeHint";
+import { isStripeTestMode } from "@/lib/stripe";
 
 export const metadata: Metadata = {
   title: "DevStash - Store Smarter. Build Faster.",
@@ -16,16 +16,12 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <div className="text-[15px] leading-[1.6]">
-      <Navbar />
-      <main>
-        <HeroSection />
-        <FeaturesSection />
-        <AISection />
-        <PricingSection />
-        <CTASection />
-      </main>
-      <Footer />
-    </div>
+    <main>
+      <HeroSection />
+      <FeaturesSection />
+      <AISection />
+      <PricingSection note={isStripeTestMode() ? <TestModeHint /> : null} />
+      <CTASection />
+    </main>
   );
 }

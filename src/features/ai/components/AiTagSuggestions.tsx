@@ -1,7 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
+import { AiDataNote } from "@/features/ai/_internal/components/AiDataNote";
 import { GenerateWithAiButton } from "@/features/ai/_internal/components/GenerateWithAiButton";
 import { TagSuggestions } from "@/features/ai/_internal/components/TagSuggestions";
 import { useTagSuggestions } from "@/features/ai/_internal/components/hooks/use-tag-suggestions";
@@ -37,6 +38,7 @@ export function AiTagSuggestions({
     suggest,
     remove,
   } = useTagSuggestions(hasTag);
+  const noteId = useId();
   const visible = suggestions.filter((tag) => !hasTag(tag));
   const isBlank = title.trim() === "" && content.trim() === "";
 
@@ -50,11 +52,13 @@ export function AiTagSuggestions({
         <GenerateWithAiButton
           ref={buttonRef}
           target="for tags"
+          describedBy={noteId}
           isPending={isPending}
           disabled={isBlank}
           onClick={() => suggest(title, content)}
         />,
       )}
+      <AiDataNote id={noteId} />
       <TagSuggestions
         tags={visible}
         answerId={answerId}

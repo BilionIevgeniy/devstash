@@ -1,4 +1,7 @@
 export const AI_PRO_ONLY_MESSAGE = "AI features require a Pro subscription";
+// Shown next to every AI button that makes a call (not the Free upgrade link),
+// and repeated in the privacy notice.
+export const AI_DATA_NOTICE = "Content is sent to OpenAI when you click.";
 export const AI_DAILY_LIMIT_MESSAGE =
   "Daily AI limit reached. Try again tomorrow.";
 export const AI_APP_LIMIT_MESSAGE =

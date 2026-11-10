@@ -1,8 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 import { AiAnswerView } from "@/features/ai/_internal/components/AiAnswerView";
+import { AiDataNote } from "@/features/ai/_internal/components/AiDataNote";
 import { AiStreamButton } from "@/features/ai/_internal/components/AiStreamButton";
 import { AiViewToggle } from "@/features/ai/_internal/components/AiViewToggle";
 import { PromptAcceptBar } from "@/features/ai/_internal/components/PromptAcceptBar";
@@ -87,6 +88,7 @@ export function AiPromptOptimizer({
     onAccept,
     reset,
   );
+  const noteId = useId();
   const isPending = status === "waiting" || status === "streaming";
   const hasAnswer = text !== "";
   const isPromptCut = isCutForModel(prompt, PROMPT_OPTIMIZE_CONTENT_MAX);
@@ -112,6 +114,7 @@ export function AiPromptOptimizer({
         ref={buttonRef}
         labels={BUTTON_LABELS}
         canUseAi={canUseAi}
+        describedBy={noteId}
         hasAnswer={hasAnswer}
         isPending={isPending}
         isBlocked={isSaving}
@@ -137,6 +140,7 @@ export function AiPromptOptimizer({
         copyLabel:
           showsAnswer && hasAnswer ? "Copy optimized prompt" : undefined,
       })}
+      {canUseAi && <AiDataNote id={noteId} className="mt-2" />}
       {showsAnswer && status === "done" && (
         <PromptAcceptBar
           note={blocker ? BLOCKER_NOTES[blocker] : null}

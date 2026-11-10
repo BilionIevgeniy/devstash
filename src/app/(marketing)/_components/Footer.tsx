@@ -1,27 +1,28 @@
+import Link from "next/link";
+
 import { Logo } from "@/components/common/Logo";
+import { IMPRINT_PATH, PRIVACY_PATH } from "@/lib/legal-paths";
 
 interface FooterEntry {
   label: string;
-  // No href: the page does not exist yet, so the entry is plain text.
-  href?: string;
+  href: string;
 }
 
+// Only pages that exist. A link is added here in the commit that adds its page.
 const COLUMNS: { heading: string; entries: FooterEntry[] }[] = [
   {
     heading: "Product",
     entries: [
-      { label: "Features", href: "#features" },
-      { label: "Pricing", href: "#pricing" },
-      { label: "Changelog" },
+      { label: "Features", href: "/#features" },
+      { label: "Pricing", href: "/#pricing" },
     ],
   },
   {
-    heading: "Resources",
-    entries: [{ label: "Documentation" }, { label: "API" }, { label: "Blog" }],
-  },
-  {
-    heading: "Company",
-    entries: [{ label: "About" }, { label: "Privacy" }, { label: "Terms" }],
+    heading: "Legal",
+    entries: [
+      { label: "Privacy", href: PRIVACY_PATH },
+      { label: "Imprint", href: IMPRINT_PATH },
+    ],
   },
 ];
 
@@ -29,7 +30,7 @@ export function Footer() {
   return (
     <footer className="border-t pt-16 pb-8">
       <div className="marketing-container">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-[2fr_1fr_1fr_1fr]">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-[2fr_1fr_1fr]">
           <div>
             <Logo />
             <p className="mt-3 text-sm text-muted-foreground">
@@ -42,16 +43,12 @@ export function Footer() {
               <ul className="mt-3 grid gap-2 text-sm text-muted-foreground">
                 {entries.map(({ label, href }) => (
                   <li key={label}>
-                    {href ? (
-                      <a
-                        href={href}
-                        className="transition-colors hover:text-foreground"
-                      >
-                        {label}
-                      </a>
-                    ) : (
-                      label
-                    )}
+                    <Link
+                      href={href}
+                      className="transition-colors hover:text-foreground"
+                    >
+                      {label}
+                    </Link>
                   </li>
                 ))}
               </ul>
