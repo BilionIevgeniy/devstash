@@ -40,4 +40,21 @@ Deferred on purpose (in `context/todo.md`, not planned here): custom item types.
 5. **ADRs that are required, not optional:** raw-SQL placement for search (8), import as batched data input (10), next-intl outside `lib` and the locale decision (11), caching strategy (16).
 6. **CI environment (1, 4, 5, 15):** every spec that adds a CI job lists which secrets are real (test-only) and which are dummies.
 
+## Relation to `context/todo.md`
+
+`/feature complete` deletes the todo items a feature finished. Items these features finish or touch:
+
+| Todo item | Feature |
+|---|---|
+| Pro features: Custom item types | stays deferred; feature 2 marks it "coming soon" on the pricing page |
+| Pro features: Export (JSON / ZIP) | 10 builds JSON export; feature 2 drops "ZIP" from the pricing text |
+| Germany: tax and legal (VAT, § 312k button, withdrawal, payment methods) | stays deferred (commercial launch); feature 2's ADR "Launch mode" points to it. Its "privacy policy and imprint" part is done by feature 2 |
+| UI review: homepage footer dead links | 2 (adds Privacy/Imprint, hides links without pages) |
+| Security: `GET /api/search` has no rate limit and ignores an abort | 8 |
+| Search: the palette searches only 1000 items | 8 |
+| Tests: React Testing Library | 3 (the item drawer states named there are the first candidates) |
+| UI review: last feature, a full Playwright pass | 15 automates the main journeys; the manual pass over every screen stays in the todo |
+| Items: focus does not return after the route drawer closes | not fixed by the plan; feature 5 does not assert it |
+| Security: script/style CSP, unclaimed uploads, `dompurify`; Tooling: ESLint 10; Items: cards as links, signed-out delete; Database items; touch targets and other UI review items | not in this plan; stay in the todo |
+
 **Main features** (implement before the deep-dive learning on them starts): 1–8 and 10. Features 9 and 11–16 follow one by one.
