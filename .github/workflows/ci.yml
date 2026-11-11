@@ -15,8 +15,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # The job names `ci` and `integration` are the checks that branch protection
-  # on main requires.
+  # The job names `ci`, `integration` and `e2e` are the checks that branch
+  # protection on main requires.
   ci:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -94,3 +94,68 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:integration
+
+  # The end-to-end tests: Playwright drives Chromium against the production
+  # build (`npm run build`, `npm run start`, started by playwright.config.ts) on
+  # a real Postgres. Runs after `ci`, so a red lint or build does not also pay
+  # for a browser.
+  e2e:
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # The same empty Postgres as the `integration` job, in a container of its
+    # own: both jobs empty their database, so they cannot share one.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: devstash_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d devstash_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    # - TEST_DATABASE_URL: read by playwright.config.ts, refused by
+    #   requireTestDatabase unless the host is local.
+    # - DATABASE_URL, DIRECT_URL: the same database. prisma.config.ts reads
+    #   DIRECT_URL for `prisma generate` in `npm ci`. The test server gets an
+    #   environment of its own (scripts/e2e-server-env.ts), with dummies for
+    #   Stripe, Resend, OpenAI, R2 and GitHub.
+    # - E2E_UPSTASH_REDIS_REST_URL, E2E_UPSTASH_REDIS_REST_TOKEN: the only
+    #   secrets of this workflow, set on the one step that runs the tests and
+    #   not on the job: `npm ci` runs the install scripts of every dependency,
+    #   and this repository is public. Sign-in is rate-limited and fails closed,
+    #   so the production build needs a real Upstash database. The free plan
+    #   allows one, so it is the app's own: the test keys never meet a user's (a
+    #   random email and a random test IP per run). GitHub passes no Actions
+    #   secrets to a fork PR and only Dependabot's own to a Dependabot PR, so
+    #   the same two are stored as Dependabot secrets too.
+    env:
+      TEST_DATABASE_URL: postgresql://postgres@localhost:5432/devstash_test
+      DATABASE_URL: postgresql://postgres@localhost:5432/devstash_test
+      DIRECT_URL: postgresql://postgres@localhost:5432/devstash_test
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+        env:
+          E2E_UPSTASH_REDIS_REST_URL: ${{ secrets.E2E_UPSTASH_REDIS_REST_URL }}
+          E2E_UPSTASH_REDIS_REST_TOKEN: ${{ secrets.E2E_UPSTASH_REDIS_REST_TOKEN }}
+      # The HTML report embeds the traces of the failed tests and of those that
+      # failed once and passed on the retry, so it is kept in both cases.
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

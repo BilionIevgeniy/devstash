@@ -301,7 +301,7 @@ Not checked by lint, so it is on the author and the reviewer: one call into a se
 
 ### Deployment
 
-- **CI** (`.github/workflows/ci.yml`): lint, typecheck, tests and the build on every PR and every push to `main`, with dummy env values; the check `ci` is required before a merge
+- **CI** (`.github/workflows/ci.yml`) on every PR and every push to `main`: `ci` (lint, typecheck, tests and the build, with dummy env values), `integration` (the integration tests on a Postgres container) and `e2e` (the Playwright smoke tests against the production build, after `ci`; the only job with secrets, the two `E2E_UPSTASH_*` ones); the checks `ci`, `integration` and `e2e` are required before a merge
 - **Vercel** runs `npm run vercel-build` (`vercel.json`). `scripts/migration-guard.ts` lets production migrate only the production Neon endpoint and a preview only the `development` one, and fails the build otherwise; then `npm run build` runs
 - **Previews share `development`.** A pushed migration is never edited, and a breaking change ships as expand, then contract in a later deploy ([ADR 0013](adr/0013-how-schema-changes-reach-production.md))
 

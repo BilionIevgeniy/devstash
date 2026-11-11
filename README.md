@@ -49,6 +49,7 @@ The seed creates the system item types and two demo users with the same password
 | `npm run vercel-build` | The Vercel Build Command (`vercel.json`): migrates the environment's own database through a guard, then builds. Refuses to run outside Vercel |
 | `npm run test` / `npm run test:watch` | Vitest, one run / watch mode. Needs no database |
 | `npm run test:integration` | The integration tests (`*.int.test.ts`) on the test database: see [Integration tests](#integration-tests) |
+| `npm run test:e2e` | The end-to-end tests (`e2e/`, Playwright) against the production build on the test database: see [End-to-end tests](#end-to-end-tests) |
 | `npm run db:seed-test` | Empty the test database and seed the system types, a Free and a Pro user. Reads `TEST_DATABASE_URL` only |
 | `npm run db:seed` | Seed system types and demo users (safe to run again) |
 | `npm run db:reset-demo` | Remove the Free demo user's items, collections, tags, files and subscription; run `db:seed` next |
@@ -56,7 +57,7 @@ The seed creates the system item types and two demo users with the same password
 | `npm run db:test` | Check the database connection and the demo data |
 | `npm run db:studio` | Prisma Studio |
 
-Before every commit: `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build` must all pass, and `npm run test:integration` when a query or service changed. CI runs all five on every PR and every push to `main`. Schema changes go through `prisma migrate dev`, never `db push`.
+Before every commit: `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build` must all pass, `npm run test:integration` when a query or service changed, and `npm run test:e2e` when a page, a route or the sign-in or item flows changed. CI runs all six on every PR and every push to `main`. Schema changes go through `prisma migrate dev`, never `db push`.
 
 ### Integration tests
 
@@ -64,11 +65,28 @@ They run the app's Prisma against a Postgres of their own and empty it before ea
 
 1. **A local Postgres**, the same major version as Neon (18):
    `docker run -d --name devstash-test -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=devstash_test -p 5433:5432 postgres:18`
-2. **`.env.test`** (ignored by git) with one line:
+2. **`.env.test`** (ignored by git) with this line (the end-to-end tests add two more, below):
    `TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5433/devstash_test`
 3. **Run**: `npm run test:integration`. It applies the migrations first
 
 A Neon branch made only for tests works too: put its **direct** URL (not `-pooler`) in `TEST_DATABASE_URL` and its host in `TEST_DATABASE_HOST`. It is slower, since every test seeds over the network.
+
+### End-to-end tests
+
+A few Playwright journeys (sign in, create a snippet, open it in the drawer and close it with Esc, the footer's legal links) against the production build, on the test database. Async Server Components cannot be rendered by Vitest, so this is where pages are proved.
+
+1. **The test database** of the integration tests (steps 1 and 2 above)
+2. **Upstash.** Sign-in is rate-limited and fails closed, so the server needs a real Upstash database. The free plan allows one, so the tests use the app's own. Their keys never meet a user's: the email is new for every run and each sign-in sends a random test IP. Put its REST URL and a read-write token in `.env.test`:
+   `E2E_UPSTASH_REDIS_REST_URL=...` and `E2E_UPSTASH_REDIS_REST_TOKEN=...`
+   The `E2E_` prefix is on purpose: nothing from `.env` reaches the tests. A dedicated database later means new values here and in the GitHub secrets, no code ([`context/todo.md`](context/todo.md))
+3. **The browser, once**: `npx playwright install chromium`
+4. **Run**: `npm run test:e2e`. It builds the app, starts it on port 3100, empties and seeds the test database and runs the journeys (about 15 seconds after the build). A failing test leaves `test-results/<test>/trace.zip`: open it with `npx playwright show-trace <file>`. `npx playwright test --repeat-each=10` is the flake check (each repeat creates two items and the Free plan allows 50, so stay under 25)
+
+Good to know:
+
+- It empties the same database as the integration tests, so never run both at once
+- The server starts with an environment built from scratch (`scripts/e2e-server-env.ts`), not from `.env`: no live Stripe, Resend, OpenAI or R2 key can reach it. Next also loads `.env.local`, `.env.production` and `.env.production.local`, which is why the map names every variable of `.env.example`, and a unit test fails when a new one is missing
+- `playwright/.auth/user.json` belongs to the user of one run. After a new seed run the whole suite, not one spec with `--no-deps`: that would reuse the session of a user who no longer exists
 
 ## Architecture
 
@@ -99,11 +117,11 @@ Vercel. A push to `main` deploys production. Vercel runs `npm run vercel-build`:
 
 ### CI and branch protection
 
-`.github/workflows/ci.yml` runs two jobs on every PR and every push to `main`: `ci` (lint, typecheck, tests and the build, with dummy env values and no database) and `integration` (the integration tests on a `postgres:18` service container, created empty for the run; no secret). Dependabot (`.github/dependabot.yml`) opens weekly PRs for npm, minor and patch grouped, and for GitHub Actions.
+`.github/workflows/ci.yml` runs three jobs on every PR and every push to `main`: `ci` (lint, typecheck, tests and the build, with dummy env values and no database), `integration` (the integration tests on a `postgres:18` service container, created empty for the run; no secret) and `e2e` (the end-to-end tests, after `ci`, on a `postgres:18` container of its own with Chromium installed in the job; the HTML report with the traces is uploaded when it fails). `e2e` is the only job with secrets, `E2E_UPSTASH_REDIS_REST_URL` and `E2E_UPSTASH_REDIS_REST_TOKEN`: add them under **Settings > Secrets and variables > Actions** and again under **Dependabot**, because GitHub gives a Dependabot PR only its own secrets. A PR from a fork gets none, and `e2e` fails with the message of the config. Dependabot (`.github/dependabot.yml`) opens weekly PRs for npm, minor and patch grouped, and for GitHub Actions.
 
 Branch protection on `main` is set in GitHub, not in code:
 
 1. Repository **Settings > Branches > Add branch ruleset** (or "Add classic branch protection rule"), target branch `main`
 2. Turn on **Require a pull request before merging**
-3. Turn on **Require status checks to pass**, add the checks **`ci`** and **`integration`** (they appear after the workflow has run once), and turn on **Require branches to be up to date before merging**
+3. Turn on **Require status checks to pass**, add the checks **`ci`**, **`integration`** and **`e2e`** (they appear after the workflow has run once), and turn on **Require branches to be up to date before merging**
 4. Turn on **Block force pushes**, then save

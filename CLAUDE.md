@@ -29,9 +29,10 @@ Work deferred on purpose is listed in `context/todo.md` (not auto-loaded: read i
 - `npm run test` — Vitest, one run; must be green and run before every commit
 - `npm run test:watch` — Vitest in watch mode
 - `npm run test:integration` — the `*.int.test.ts` files against the test database (`TEST_DATABASE_URL` from `.env.test`, a local Docker Postgres on port 5433); run it when a query or service changed
+- `npm run test:e2e` — the Playwright smoke tests in `e2e/` against the production build (`next build`, then `next start` on port 3100) on the test database; needs `TEST_DATABASE_URL` and `E2E_UPSTASH_REDIS_REST_URL`/`E2E_UPSTASH_REDIS_REST_TOKEN` in `.env.test` and Chromium (`npx playwright install chromium`, once); run it when a page, a route or the sign-in or item flows changed
 - `npm run db:seed-test` — empty and seed the test database (system types, a Free and a Pro user)
 
-Tests are colocated as `[name].test.ts` (node) and `[name].test.tsx` (components and hooks, jsdom); what to test and how is in "Testing" in `context/coding-standards.md`.
+Tests are colocated as `[name].test.ts` (node) and `[name].test.tsx` (components and hooks, jsdom); the end-to-end tests are `[name].spec.ts` in `e2e/`. What to test and how is in "Testing" in `context/coding-standards.md`.
 
 ## Neon MCP
 

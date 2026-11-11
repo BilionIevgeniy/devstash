@@ -14,6 +14,10 @@
 # testing
 /coverage
 /.playwright-mcp
+# Playwright: the saved session holds a login cookie
+/playwright/.auth/
+/playwright-report/
+/test-results/
 
 # next.js
 /.next/
