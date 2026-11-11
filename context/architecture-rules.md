@@ -113,7 +113,7 @@ Course specs name the paths of the original layout. Put the code here instead:
 
 ## Rules
 
-- Import by full path (`@/features/items/components/ItemRow`). No `index.ts` barrels. Never import another feature's `_internal/`
+- Import by full path (`@/features/items/components/ItemRow`). No `index.ts` barrels ([ADR 0015](../docs/adr/0015-no-barrel-files.md)). Never import another feature's `_internal/`
 - Circular imports are forbidden (`import/no-cycle`)
 - Prisma (`@/lib/prisma`, `@/generated/prisma`) is imported only by `queries.ts`, services and `lib`, and by `auth/nextauth/auth.ts` for `PrismaAdapter`
 - Server-only modules start with `import "server-only"`: every `queries.ts`, every file in `services/`, `auth/nextauth/auth.ts` and `session.ts`, and the `lib` files that touch secrets or Node
