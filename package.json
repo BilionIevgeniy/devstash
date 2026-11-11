@@ -32,6 +32,7 @@
     "@monaco-editor/react": "^4.7.0",
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
+    "@sentry/nextjs": "11.12.0",
     "@upstash/ratelimit": "^2.2.0",
     "@upstash/redis": "^1.41.0",
     "bcryptjs": "^3.0.3",

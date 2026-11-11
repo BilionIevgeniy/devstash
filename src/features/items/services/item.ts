@@ -17,6 +17,7 @@ import { getUserItemDetail } from "@/features/items/services/item-detail";
 import { userCanUseType } from "@/features/items/services/type-access";
 import type { ItemDetail } from "@/features/items/types";
 import type { OperationResult } from "@/lib/action-result";
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 
 const ITEM_NOT_FOUND = "Item not found";
@@ -38,7 +39,10 @@ async function deleteOrphanTags(userId: string): Promise<void> {
   try {
     await prisma.tag.deleteMany({ where: { userId, items: { none: {} } } });
   } catch (error) {
-    console.error(`Deleting the unused tags of user ${userId} failed:`, error);
+    await logger.error("Deleting the unused tags of a user failed", {
+      error,
+      userId,
+    });
   }
 }
 
@@ -178,12 +182,19 @@ async function deleteItemFile(
     const result = await deleteUserObject(userId, fileKey);
     if (!result.success) {
       // A key outside the owner's prefix was never written by this app.
-      console.error(`Item ${itemId} has a file key outside its owner's prefix`);
+      await logger.error("An item has a file key outside its owner's prefix", {
+        itemId,
+        userId,
+      });
       return { success: false, error: FILE_DELETE_FAILED };
     }
     return result;
   } catch (error) {
-    console.error(`Deleting the file of item ${itemId} failed:`, error);
+    await logger.error("Deleting the file of an item failed", {
+      error,
+      itemId,
+      userId,
+    });
     return { success: false, error: FILE_DELETE_FAILED };
   }
 }

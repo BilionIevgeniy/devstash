@@ -24,6 +24,7 @@ import { verifyPasswordByEmail } from "@/features/auth/services/account";
 import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
 import type { OperationResult } from "@/lib/action-result";
 import { sendEmail } from "@/lib/email";
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { consumeRateLimit, resetRateLimit } from "@/lib/rate-limit";
 
@@ -51,7 +52,7 @@ export async function sendVerificationLink(
   try {
     token = await createVerificationToken(email);
   } catch (error) {
-    console.error("Failed to create verification token:", error);
+    await logger.error("Failed to create verification token", { error });
     return { success: false, error: "Failed to create verification token" };
   }
 
@@ -150,7 +151,7 @@ export async function verifyEmailToken(
       return { success: true, error: null };
     });
   } catch (error) {
-    console.error("Failed to verify email:", error);
+    await logger.error("Failed to verify email", { error });
     return { success: false, error: "Something went wrong. Please try again." };
   }
 }

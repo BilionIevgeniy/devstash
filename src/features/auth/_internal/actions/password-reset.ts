@@ -9,6 +9,7 @@ import {
 import type { AuthActionState } from "@/features/auth/types";
 import { getAppOrigin } from "@/lib/app-url";
 import { getClientIp } from "@/lib/client-ip";
+import { logger } from "@/lib/logger";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 const SUCCESS: AuthActionState = { success: true, data: null, error: null };
@@ -41,7 +42,7 @@ export async function requestPasswordReset(
     );
     return result.success ? SUCCESS : failure(result.error ?? GENERIC_ERROR);
   } catch (error) {
-    console.error("Requesting a password reset failed:", error);
+    await logger.error("Requesting a password reset failed", { error });
     return failure(GENERIC_ERROR);
   }
 }

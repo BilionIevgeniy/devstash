@@ -8,6 +8,7 @@ import {
 import { deleteBillingCustomer } from "@/features/billing/services/customer";
 import { purgeUserObjects } from "@/features/files/services/objects";
 import type { OperationResult } from "@/lib/action-result";
+import { logger } from "@/lib/logger";
 
 const CANCEL_FAILED =
   "Your subscription could not be cancelled, so nothing was removed. Please try again.";
@@ -31,14 +32,20 @@ export async function deleteAccount(
   try {
     await deleteBillingCustomer(userId);
   } catch (error) {
-    console.error(`Cancelling the billing of user ${userId} failed:`, error);
+    await logger.error("Cancelling the billing of a user failed", {
+      error,
+      userId,
+    });
     return { success: false, error: CANCEL_FAILED };
   }
 
   try {
     await purgeUserObjects(userId);
   } catch (error) {
-    console.error(`Purging the files of user ${userId} failed:`, error);
+    await logger.error("Purging the files of a user failed", {
+      error,
+      userId,
+    });
     return { success: false, error: PURGE_FAILED };
   }
 
@@ -47,7 +54,10 @@ export async function deleteAccount(
   try {
     await purgeUserObjects(userId);
   } catch (error) {
-    console.error(`The second purge for deleted user ${userId} failed:`, error);
+    await logger.error("The second purge for a deleted user failed", {
+      error,
+      userId,
+    });
   }
   return { success: true, error: null };
 }

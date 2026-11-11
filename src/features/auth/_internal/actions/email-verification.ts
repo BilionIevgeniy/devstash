@@ -9,6 +9,7 @@ import {
 import type { AuthActionState } from "@/features/auth/types";
 import { getAppOrigin } from "@/lib/app-url";
 import { getClientIp } from "@/lib/client-ip";
+import { logger } from "@/lib/logger";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 const SUCCESS: AuthActionState = { success: true, data: null, error: null };
@@ -41,7 +42,7 @@ export async function resendVerificationEmail(
     );
     return result.success ? SUCCESS : failure(result.error ?? GENERIC_ERROR);
   } catch (error) {
-    console.error("Resending verification email failed:", error);
+    await logger.error("Resending the verification email failed", { error });
     return failure(GENERIC_ERROR);
   }
 }
@@ -57,7 +58,7 @@ export async function confirmEmail(
     const result = await confirmEmailAddress(email, token, password);
     return result.success ? SUCCESS : failure(result.error ?? GENERIC_ERROR);
   } catch (error) {
-    console.error("Confirming the email failed:", error);
+    await logger.error("Confirming the email failed", { error });
     return failure(GENERIC_ERROR);
   }
 }

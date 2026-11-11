@@ -53,5 +53,12 @@ export function buildE2eServerEnv({
     STRIPE_PRICE_ID_MONTHLY: DUMMY,
     STRIPE_PRICE_ID_YEARLY: DUMMY,
     OPENAI_API_KEY: DUMMY,
+    // Empty on purpose: no DSN keeps the SDK off, and no token means the build
+    // uploads nothing and generates no source maps.
+    NEXT_PUBLIC_SENTRY_DSN: "",
+    SENTRY_DSN: "",
+    SENTRY_AUTH_TOKEN: "",
+    SENTRY_ORG: "",
+    SENTRY_PROJECT: "",
   };
 }

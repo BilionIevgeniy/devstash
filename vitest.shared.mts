@@ -1,13 +1,18 @@
 import { fileURLToPath } from "node:url";
 
+function stub(file: string): string {
+  return fileURLToPath(new URL(file, import.meta.url));
+}
+
 // Shared by vitest.config.mts (unit and dom) and vitest.integration.config.mts:
-// the `@/` paths and the empty `server-only` stub, so queries, services and
-// routes import in node.
+// the `@/` paths, the empty `server-only` stub, so queries, services and routes
+// import in node, and the stub of `@/lib/sentry`, so a module that logs does
+// not load the Sentry SDK. The Sentry pattern ends at the name: `@/lib/sentry-scrub`
+// is the real file.
 export const sharedResolve = {
   tsconfigPaths: true,
-  alias: {
-    "server-only": fileURLToPath(
-      new URL("./test/server-only.ts", import.meta.url),
-    ),
-  },
+  alias: [
+    { find: "server-only", replacement: stub("./test/server-only.ts") },
+    { find: /^@\/lib\/sentry$/, replacement: stub("./test/sentry.ts") },
+  ],
 };

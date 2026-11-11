@@ -29,8 +29,9 @@ src/
     app-shell/    dashboard shell, top bar, sidebar
   components/ui/  shadcn/ui primitives only
   components/common/  hand-written UI with no feature knowledge, used by several features (CopyButton, PaginationNav)
-  lib/            feature-neutral infrastructure and vendor clients (prisma, email, rate-limit, hash, ...)
+  lib/            feature-neutral infrastructure and vendor clients (prisma, email, rate-limit, hash, logger, sentry, ...)
   proxy.ts        guards /dashboard, /profile, /settings, /items, /collections, /favorites, /pinned and /upgrade; must stay at the src root
+  instrumentation*.ts  start Sentry on the server and in the browser; Next.js reads them from the src root
 prisma/           schema, migrations, seed
 scripts/          one-off database scripts
 context/          the rulebooks (architecture-rules.md, coding-standards.md), the current feature and the history
@@ -264,7 +265,26 @@ There is no `public-api` feature: it would only wrap the owners' services. Until
 
 - One file per vendor in `lib/<vendor>.ts` (a folder from the second file): a singleton that reads its own environment variables lazily, starts with `import "server-only"` and holds no product words
 - What a vendor means for the product stays in the feature: price mapping in `billing`, prompts in `ai/domain`, the key scheme for stored files in `files/domain`
-- Vendor SDKs (`resend`, `@upstash/*`, `stripe`, `openai`, `@aws-sdk/*`) are imported only inside `lib` (lint)
+- Vendor SDKs (`resend`, `@upstash/*`, `stripe`, `openai`, `@aws-sdk/*`, `@sentry/*`) are imported only inside `lib` (lint). The one other file that imports one is `next.config.ts` (`withSentryConfig`), which is outside `src/`
+
+### Observability
+
+Errors reach Sentry (EU data region) by four paths. Each ends in `lib/sentry.ts`, the vendor client, and `scrubEvent` rebuilds every event from a list of safe fields before it leaves ([ADR 0016](adr/0016-error-monitoring-with-sentry.md): what is sent, what never is, and how it was checked).
+
+| Path | How | Reported as |
+| ---- | --- | ----------- |
+| An error nobody caught on the server (a Server Component, a Route Handler, a Server Action) | `onRequestError`, exported by `src/instrumentation.ts` | One event with the route; a render or an action also carries the `digest` as a tag |
+| A failure the code catches | `await logger.error("Fixed message", { error, userId })` (`lib/logger.ts`) | One event with our message, the user id and the id tags; once a minute per message and error class on one instance |
+| An error thrown in the browser and caught by a boundary | `useReportError` in `app/error.tsx`, `app/(app)/error.tsx` and `app/global-error.tsx`; an error that has a digest is skipped, the server reported it | One event |
+| An error thrown in the browser and caught by no boundary (an event handler) | The global handlers of the browser SDK, started in `src/instrumentation-client.ts` | One event, its message blank |
+
+- The error page shows the digest as "Reference"; the same digest is a tag on the server event, which is how what a user sees finds the event
+- `NEXT_PUBLIC_SENTRY_DSN` turns it on (it is built into the bundle: redeploy after a change); without it the SDK is off, so development needs no account. Only a DSN whose host is in the EU region (`.de.sentry.io`) is used. `SENTRY_DSN` is an optional second key of the project for the server only, so a flood of forged events through the public key cannot starve the errors of the server. `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` upload the source maps in the Vercel build, for Production only; a build without the token generates none. All five are in `.env.example`, and the end-to-end server gets them empty
+- Everything under `src/` logs through `lib/logger.ts`, one JSON line per call, and `console.*` is a lint error there. The contract (a fixed message, ids under keys that end in `Id`, the error as its class and codes, `await` on `error`) is "Logging" in `context/coding-standards.md`
+- Auth.js writes its own errors with `console.error`, so `auth/nextauth/auth-logger.ts` replaces its writer: a refused sign-in is a `warn` line, anything else goes through `logger.error` with the error that was thrown inside Auth.js. Next.js still writes an uncaught server error to the Vercel log with its message (`context/todo.md`)
+- In the tests `@/lib/sentry` is an alias for the stub `test/sentry.ts` (`vitest.shared.mts`), so a module that logs does not load the SDK
+- Two tests run the real SDK (`lib/sentry-integrations.test.ts` pins the default integrations of the Node build, `lib/sentry-client-integrations.test.tsx` the seven that the browser starts), so an upgrade that changes a name turns CI red. Repeat the check of what leaves the app (method in ADR 0016) before a Sentry bump is merged
+- The alert for new issues is set in Sentry, filtered to `environment:production`; the retention is the plan's (30 days on Developer)
 
 ### Public API of a feature
 
@@ -295,6 +315,7 @@ Each feature keeps its business rules in `features/[feature]/domain/` as pure Ty
 - the split between reads and writes (`no-restricted-syntax`, [ADR 0009](adr/0009-read-write-split-enforced-by-lint.md)): no read through `prisma` in services and `nextauth/`, while a read through `tx` is allowed; no write, `$transaction` or raw SQL in `queries.ts`
 - import cycles (`import/no-cycle`)
 - deprecated APIs of the installed packages (`@typescript-eslint/no-deprecated`, with type information from `projectService`)
+- `console.*` anywhere in `src/` but `lib/logger.ts` and the tests (`no-console`), and a promise that is not awaited in `src/` outside the tests (`@typescript-eslint/no-floating-promises`, with type information): `logger.error` returns the flush of its event
 - size: 50 lines per function in the logic roles and the browser helpers, 80 per component (`.tsx`), hook (`components/hooks/use-*.ts`) and page, 250 per file, cyclomatic complexity 15 (`max-lines-per-function`, `max-lines`, `complexity`; blank lines and comments not counted; see "Size limits" in `context/coding-standards.md`)
 
 Not checked by lint, so it is on the author and the reviewer: one call into a service per entry point, `userId` in every `where` (except the Stripe sync, ADR 0012), a service taking `userId`, `ip` and `origin` as parameters, idempotent background jobs, a read through `tx` with no write in its transaction, an alias of a Prisma delegate (the read and write rules match the names `prisma` and `tx`), and reads of another feature's models (see "Known risks").
@@ -311,7 +332,7 @@ Not checked by lint, so it is on the author and the reviewer: one call into a se
 - **One place for the provider's facts.** `_legal/operator.ts` holds name, address and contacts for both pages and both languages. A `⟦OPERATOR: …⟧` left in it fails a production build (`VERCEL_ENV=production`, `operator-guard.ts`); previews and local builds pass, and a preview must never be promoted to production. The guard covers these facts only: what the notice says about the vendors (DPAs, transfer mechanisms, regions) is not machine-checked, and the processing record lists what is still unconfirmed
 - **The vendor list has two homes that must agree.** `docs/privacy/processing-record.md` (what each vendor gets, region, transfer mechanism, DPA) and `_legal/vendors.ts` (what the notice names). Each language of the notice holds a `Record<VendorId, string>`, so a vendor added to the list fails the typecheck until both texts cover it. Adding or moving a vendor, a cookie, any browser storage, analytics or Sentry Replay changes the record, the notice and possibly the cookie and consent position: write a record in `docs/adr/` if the position changes ([ADR 0014](adr/0014-launch-mode.md))
 - **The cookie table is part of the notice.** Lifetimes come from the Auth.js defaults (`session.maxAge` is not set) and from `SIDEBAR_COOKIE` and `YEAR_SECONDS` in `app-shell/domain/sidebar.ts`; changing either changes the notice. `csrf-token` and `callback-url` are set on the first page view, because the marketing header reads the session
-- **New code logs no personal data:** "Logging" in `context/coding-standards.md`. Older calls that log a raw error are tracked in `context/todo.md`
+- **Logs and Sentry carry no personal data:** every call goes through `lib/logger.ts`, which takes a fixed message, ids and the error as its class and codes ("Logging" in `context/coding-standards.md`; see "Observability" above). Sentry is in the record and in both languages of the notice
 
 ### Known risks
 

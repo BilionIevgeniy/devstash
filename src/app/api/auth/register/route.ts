@@ -7,6 +7,7 @@ import { registerSchema } from "@/features/auth/schemas";
 import { registerAccount } from "@/features/auth/services/registration";
 import { getAppOrigin } from "@/lib/app-url";
 import { getClientIp } from "@/lib/client-ip";
+import { logger } from "@/lib/logger";
 import { consumeIpRateLimit } from "@/lib/rate-limit";
 
 // New and already registered addresses get this same response, so the route
@@ -52,7 +53,7 @@ export async function POST(request: Request) {
     await registerAccount({ name, email, password }, getAppOrigin(), ip);
     return accepted();
   } catch (error) {
-    console.error("Registration failed:", error);
+    await logger.error("Registration failed", { error });
     return failure("Something went wrong", 500);
   }
 }

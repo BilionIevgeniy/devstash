@@ -56,6 +56,18 @@ describe("buildE2eServerEnv", () => {
     }
   });
 
+  it("keeps Sentry off: no DSN, and no token to upload source maps with", () => {
+    const env = buildE2eServerEnv(INPUT);
+
+    expect(env).toMatchObject({
+      NEXT_PUBLIC_SENTRY_DSN: "",
+      SENTRY_DSN: "",
+      SENTRY_AUTH_TOKEN: "",
+      SENTRY_ORG: "",
+      SENTRY_PROJECT: "",
+    });
+  });
+
   it("never lets the legal pages treat the run as production", () => {
     expect(buildE2eServerEnv(INPUT).VERCEL_ENV).not.toBe("production");
   });

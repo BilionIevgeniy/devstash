@@ -143,7 +143,7 @@ export async function generateAutoTags(
     if (!result.success) return failure(result.error ?? GENERIC_ERROR);
     return { success: true, error: null, data: result.data };
   } catch (error) {
-    console.error("Suggesting tags failed:", aiErrorSummary(error));
+    await logger.error("Suggesting tags failed", { error, userId });
     return failure(AI_UNAVAILABLE_MESSAGE);
   }
 }
@@ -179,7 +179,7 @@ The client side is a browser helper, `ai/_internal/components/stream-explanation
 
 ## 6. Error handling
 
-Errors are logged by status and code only, never with the content. `aiErrorSummary` builds that line. Users see plain words, through a toast, with their form left as it was.
+Errors are logged by status and code only, never with the content. `logger.error` writes that line: the error goes in as `error` and is logged as its class, status and codes (`errorSummary`, `lib/error-summary.ts`). Users see plain words, through a toast, with their form left as it was.
 
 | Failure                             | How it appears                                                                                                                                     | User sees                                                               | Retried?                           |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------- |
@@ -342,7 +342,7 @@ Only for items of type prompt, with the same stream. Since the output would repl
 
 | File                                                 | What                                                                          |
 | ---------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `src/lib/openai.ts`, test                            | Client, `generateStructured`, `streamText`, `AiOutputError`, `aiErrorSummary` |
+| `src/lib/openai.ts`, test                            | Client, `generateStructured`, `streamText`, `AiOutputError` |
 | `eslint.config.mjs`                                  | `ai: 4` in `FEATURE_RANKS`                                                    |
 | `docs/modules.md`, `context/architecture-rules.md`   | Move `ai` from planned to built, and correct its status                       |
 | `src/features/ai/domain/model.ts`                    | `AI_MODEL`, the per-operation settings                                        |

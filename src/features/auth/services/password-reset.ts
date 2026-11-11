@@ -22,6 +22,7 @@ import {
 import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
 import type { OperationResult } from "@/lib/action-result";
 import { sendEmail } from "@/lib/email";
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 
 async function createPasswordResetToken(email: string): Promise<string> {
@@ -46,7 +47,7 @@ export async function sendPasswordResetLink(
   try {
     token = await createPasswordResetToken(email);
   } catch (error) {
-    console.error("Failed to create password reset token:", error);
+    await logger.error("Failed to create password reset token", { error });
     return { success: false, error: "Failed to create password reset token" };
   }
 
@@ -127,7 +128,7 @@ export async function resetPasswordWithToken(
       return { success: true, error: null };
     });
   } catch (error) {
-    console.error("Failed to reset password:", error);
+    await logger.error("Failed to reset password", { error });
     return { success: false, error: "Something went wrong. Please try again." };
   }
 }

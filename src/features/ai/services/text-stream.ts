@@ -12,7 +12,8 @@ import {
 import { AI_FAILURE_MESSAGES } from "@/features/ai/domain/messages";
 import { AI_MODEL, type AiStreamSettings } from "@/features/ai/domain/model";
 import { STREAM_END_MARK } from "@/features/ai/domain/text-stream";
-import { aiErrorSummary, AiOutputError, streamText } from "@/lib/openai";
+import { logger } from "@/lib/logger";
+import { AiOutputError, streamText } from "@/lib/openai";
 
 export type TextStreamStart =
   | { status: "refused"; reason: AiRefusalReason; error: string }
@@ -52,18 +53,18 @@ function openText(
 }
 
 // A failure before any text: the route can still answer with a status.
-function failedBeforeText(
+async function failedBeforeText(
   error: unknown,
   deadlines: StreamDeadlines,
   label: string,
-): TextStreamStart {
+): Promise<TextStreamStart> {
   deadlines.clear();
   if (deadlines.clientGone()) return { status: "aborted" };
   if (deadlines.timedOut()) {
-    console.error(`${label} timed out before any text`);
+    await logger.error(`${label} timed out before any text`);
     return { status: "failed", error: AI_FAILURE_MESSAGES.timeout };
   }
-  const { error: message } = failedCall(error, label);
+  const { error: message } = await failedCall(error, label);
   return { status: "failed", error: message ?? AI_FAILURE_MESSAGES.failed };
 }
 
@@ -93,8 +94,10 @@ function textStream(
         controller.enqueue(encoder.encode(next.value));
       } catch (error) {
         deadlines.clear();
+        // Logged before the stream ends: once it has errored the response is
+        // over, and a serverless instance can freeze with the event unsent.
         if (!deadlines.clientGone()) {
-          console.error(`${label} stopped mid-answer:`, aiErrorSummary(error));
+          await logger.error(`${label} stopped mid-answer`, { error });
         }
         controller.error(error);
       }

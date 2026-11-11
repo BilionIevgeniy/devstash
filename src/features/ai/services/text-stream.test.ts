@@ -1,10 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { consumeRateLimit, getEntitlements, streamText } = vi.hoisted(() => ({
-  consumeRateLimit: vi.fn(),
-  getEntitlements: vi.fn(),
-  streamText: vi.fn(),
-}));
+const { consumeRateLimit, flushSentry, getEntitlements, streamText } =
+  vi.hoisted(() => ({
+    consumeRateLimit: vi.fn(),
+    flushSentry: vi.fn(async () => {}),
+    getEntitlements: vi.fn(),
+    streamText: vi.fn(),
+  }));
+vi.mock("@/lib/sentry", () => ({ captureSafeError: vi.fn(), flushSentry }));
 vi.mock("@/lib/rate-limit", () => ({ consumeRateLimit }));
 vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
 vi.mock("@/lib/openai", async (importOriginal) => ({
@@ -188,6 +191,34 @@ describe("startTextStream", () => {
 
     if (result.status !== "ok") throw new Error(result.status);
     await expect(readAll(result.stream)).rejects.toThrow();
+  });
+
+  it("logs a failure midway before it ends the stream, while the function is still running", async () => {
+    const flushed = Promise.withResolvers<void>();
+    flushSentry.mockReturnValueOnce(flushed.promise);
+    streamText.mockImplementation(async function* () {
+      yield "It ";
+      throw new AiOutputError("max_output_tokens");
+    });
+    const result = await startTextStream(
+      "user-1",
+      { ...request, label: "Ordering" },
+      client.signal,
+    );
+    if (result.status !== "ok") throw new Error(result.status);
+
+    let ended = false;
+    const reading = readAll(result.stream).catch(() => {
+      ended = true;
+    });
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(flushSentry).toHaveBeenCalledOnce();
+    expect(ended).toBe(false);
+
+    flushed.resolve();
+    await reading;
+    expect(ended).toBe(true);
   });
 
   it("stops the OpenAI call when the stream is cancelled", async () => {

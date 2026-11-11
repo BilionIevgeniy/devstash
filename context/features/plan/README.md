@@ -15,7 +15,7 @@ Rules that apply to every file:
 | 3 | [Component tests with React Testing Library](3.component-tests-rtl.md) | MUST | [x] |
 | 4 | [Tenant isolation integration tests](4.tenant-isolation-integration-tests.md) | MUST | [x] |
 | 5 | [E2E smoke tests](5.e2e-smoke.md) | MUST | [x] |
-| 6 | [Observability](6.observability.md) | MUST | [ ] |
+| 6 | [Observability](6.observability.md) | MUST | [x] |
 | 7 | [URL filters and sort](7.url-filters-and-sort.md) | MUST | [ ] |
 | 8 | [Server search with debounce](8.server-search-with-debounce.md) | MUST | [ ] |
 | 9 | [Hooks, forms and editor focus](9.hooks-forms-and-editor-focus.md) | SHOULD | [ ] |

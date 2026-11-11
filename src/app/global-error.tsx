@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-
 import { ErrorState } from "@/components/common/ErrorState";
+import { useReportError } from "@/components/common/hooks/use-report-error";
 import { Button } from "@/components/ui/button";
 import "./globals.css";
 
@@ -15,9 +14,10 @@ export default function GlobalError({
   error: unknown;
   retry: () => void;
 }) {
-  useEffect(() => {
-    console.error(error);
-  }, [error]);
+  const digest = useReportError(
+    error,
+    "The root layout failed to render in the browser",
+  );
 
   return (
     <html lang="en" className="dark h-full antialiased">
@@ -26,6 +26,7 @@ export default function GlobalError({
         <ErrorState
           title="Something went wrong"
           description="DevStash could not be loaded. Please try again."
+          reference={digest}
         >
           <Button onClick={retry}>Try again</Button>
         </ErrorState>

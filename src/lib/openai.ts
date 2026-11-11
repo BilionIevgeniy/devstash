@@ -3,10 +3,8 @@ import "server-only";
 import OpenAI, {
   APIConnectionError,
   APIConnectionTimeoutError,
-  APIError,
   AuthenticationError,
   InternalServerError,
-  OpenAIError,
   PermissionDeniedError,
   RateLimitError,
 } from "openai";
@@ -15,6 +13,7 @@ import type { ResponseUsage } from "openai/resources/responses/responses";
 import { ZodError, type ZodType } from "zod";
 
 import { sha256Hex } from "@/lib/hash";
+import { logger } from "@/lib/logger";
 
 export type AiEffort = "none" | "low";
 export type AiVerbosity = "low" | "medium";
@@ -111,9 +110,13 @@ function logUsage(
   usage: ResponseUsage | undefined,
 ) {
   if (!usage) return;
-  console.info(
-    `AI usage: operation=${operation} model=${model} input=${usage.input_tokens} output=${usage.output_tokens} reasoning=${usage.output_tokens_details.reasoning_tokens}`,
-  );
+  logger.info(`AI usage: ${operation} ${model}`, {
+    numbers: {
+      inputTokens: usage.input_tokens,
+      outputTokens: usage.output_tokens,
+      reasoningTokens: usage.output_tokens_details.reasoning_tokens,
+    },
+  });
 }
 
 // store: false and safety_identifier are set here, so no caller can forget
@@ -250,15 +253,4 @@ export function aiErrorKind(error: unknown): AiErrorKind | null {
     return "busy";
   }
   return null;
-}
-
-// One log line with the status and codes only: the message of an OpenAI error
-// can quote the request, so it is left out.
-export function aiErrorSummary(error: unknown): string {
-  if (error instanceof AiOutputError) return `output=${error.reason}`;
-  if (error instanceof APIError) {
-    return `status=${error.status ?? "none"} code=${error.code ?? "none"} type=${error.type ?? "none"} request=${error.requestID ?? "none"}`;
-  }
-  if (error instanceof OpenAIError) return error.name;
-  return error instanceof Error ? `${error.name}: ${error.message}` : "unknown";
 }

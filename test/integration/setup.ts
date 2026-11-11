@@ -79,7 +79,6 @@ vi.mock("@/lib/openai", () => {
     streamText: vi.fn(unavailable),
     isAiSpendError: vi.fn(() => false),
     aiErrorKind: vi.fn(() => null),
-    aiErrorSummary: vi.fn(() => "mocked"),
   };
 });
 

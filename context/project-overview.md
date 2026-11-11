@@ -218,7 +218,7 @@ model ItemTag {
 | Auth         | NextAuth v5 (email + GitHub) |
 | AI           | OpenAI gpt-6-luna            |
 | Deployment   | Vercel (likely)              |
-| Monitoring   | Sentry (later)               |
+| Monitoring   | Sentry (EU data region)      |
 
 ---
 

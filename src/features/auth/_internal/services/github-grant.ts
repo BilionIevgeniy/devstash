@@ -1,5 +1,7 @@
 import "server-only";
 
+import { logger } from "@/lib/logger";
+
 const GITHUB_API_URL = "https://api.github.com";
 const GITHUB_API_VERSION = "2022-11-28";
 const REQUEST_TIMEOUT_MS = 5000;
@@ -13,7 +15,7 @@ export async function revokeGitHubGrant(accessToken: string): Promise<void> {
   const clientId = process.env.AUTH_GITHUB_ID;
   const clientSecret = process.env.AUTH_GITHUB_SECRET;
   if (!clientId || !clientSecret) {
-    console.error(
+    await logger.error(
       "Revoking the GitHub authorization failed: AUTH_GITHUB_ID or AUTH_GITHUB_SECRET is not set",
     );
     return;
@@ -37,11 +39,10 @@ export async function revokeGitHubGrant(accessToken: string): Promise<void> {
     );
     if (response.ok || response.status === NOT_FOUND_STATUS) return;
 
-    console.error(
-      "Revoking the GitHub authorization failed with status",
-      response.status,
-    );
+    await logger.error("Revoking the GitHub authorization was refused", {
+      numbers: { status: response.status },
+    });
   } catch (error) {
-    console.error("Revoking the GitHub authorization failed:", error);
+    await logger.error("Revoking the GitHub authorization failed", { error });
   }
 }

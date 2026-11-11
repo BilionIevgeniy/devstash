@@ -7,7 +7,7 @@ argument-hint: run|check
 Review the codebase for cleanup tasks. Start with `git status` and `npm run lint`: several checks below read the lint output. Name the files with uncommitted changes in the report, since a finding there may be work in progress.
 
 1. **History order:** `context/feature-history.md` goes from oldest to newest. The entries have no dates, so compare them with the merge order in `git log main`
-2. **Debug logs:** find `console.log`, `console.debug` and `console.info` in `src/`. `console.error` in a `catch` is the project's logging: leave it
+2. **Debug logs:** find `console.*` in `src/`. The project logs through `@/lib/logger`, and `no-console` fails the lint for any call outside it and the tests, so a hit is a leftover to remove
 3. **Unused imports and variables:** read the `no-unused-vars` warnings in the lint output
 4. **Stale comments:** find `TODO`, `FIXME` and `HACK` comments in `src/` whose work is done or no longer planned. Work deferred on purpose belongs in `context/todo.md`
 5. **Orphaned files:** find files in `src/` that nothing imports. Skip what is used without an import: Next.js files (`page`, `layout`, `loading`, `error`, `global-error`, `not-found`, `route`, `default`), `src/proxy.ts`, `components/ui`, `src/generated` and tests

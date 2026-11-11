@@ -5,6 +5,7 @@ import { requestUploadSchema } from "@/features/files/schemas";
 import { presignUpload } from "@/features/files/services/presign-upload";
 import type { PresignedUpload } from "@/features/files/types";
 import type { ActionResult } from "@/lib/action-result";
+import { logger } from "@/lib/logger";
 
 const GENERIC_ERROR = "The upload could not start. Please try again.";
 
@@ -29,7 +30,7 @@ export async function requestUpload(
     }
     return { success: true, error: null, data: result.data };
   } catch (error) {
-    console.error("Signing the upload failed:", error);
+    await logger.error("Signing the upload failed", { error, userId });
     return failure(GENERIC_ERROR);
   }
 }

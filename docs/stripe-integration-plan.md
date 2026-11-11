@@ -68,7 +68,7 @@ The settings page (`app/(app)/settings/page.tsx`) composes `EditorPreferencesSec
 
 ## 4. Patterns to follow
 
-- **Routes:** thin. `failure()` helper, `{ success, data, error }`, `try/catch` with `console.error`, see `api/auth/register/route.ts`. The proxy matcher covers pages only, so `/api/webhooks/stripe` needs no change there
+- **Routes:** thin. `failure()` helper, `{ success, data, error }`, `try/catch` with `await logger.error`, see `api/auth/register/route.ts`. The proxy matcher covers pages only, so `/api/webhooks/stripe` needs no change there
 - **Actions:** parse with a schema, `getSessionUser()` outside the `try`, one service call, `refresh()`, a local `failure()`. `redirect()` stays outside the `try` (`delete-account.ts`). `getAppOrigin()` is read in the action inside the `try` and passed in (`password-reset.ts`)
 - **Client:** `useTransition` with `try` and `unstable_rethrow(error)` first in the catch (`CreateItemDialog.tsx`)
 - **Env:** read lazily where used, never at module load; `.env.example` documents each one. `lib/r2.ts` is the model for a vendor client

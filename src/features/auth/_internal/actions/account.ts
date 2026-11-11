@@ -4,6 +4,7 @@ import { auth, signOut } from "@/features/auth/nextauth/auth";
 import { changePasswordSchema } from "@/features/auth/schemas";
 import { changeUserPassword } from "@/features/auth/services/account";
 import type { AuthActionState } from "@/features/auth/types";
+import { logger } from "@/lib/logger";
 
 const SIGN_IN_URL = "/sign-in";
 const GENERIC_ERROR = "Something went wrong. Please try again.";
@@ -38,7 +39,7 @@ export async function changePassword(
     );
     return result.success ? SUCCESS : failure(result.error ?? GENERIC_ERROR);
   } catch (error) {
-    console.error("Changing the password failed:", error);
+    await logger.error("Changing the password failed", { error, userId });
     return failure(GENERIC_ERROR);
   }
 }

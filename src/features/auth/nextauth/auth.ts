@@ -19,6 +19,7 @@ import {
 import { getSessionVersion } from "@/features/auth/queries";
 import { credentialsSchema } from "@/features/auth/schemas";
 import { getClientIp } from "@/lib/client-ip";
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import {
   consumeIpRateLimit,
@@ -26,11 +27,13 @@ import {
   resetRateLimit,
 } from "@/lib/rate-limit";
 import authConfig from "./auth.config";
+import { authLogger } from "./auth-logger";
 import { getForeignSignInRedirect } from "./foreign-sign-in";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
+  logger: authLogger,
   session: { strategy: "jwt" },
   providers: [
     // Nothing from GitHub is stored: the app never calls its API after sign-in,
@@ -97,7 +100,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // A throw here would come back as an empty session, so a database
         // error would sign the user out. The token stays valid until the read
         // works again: the app's own reads fail in the meantime anyway.
-        console.error("Reading the session version failed:", error);
+        await logger.error("Reading the session version failed", {
+          error,
+          userId: token.sub,
+        });
         return token;
       }
     },
