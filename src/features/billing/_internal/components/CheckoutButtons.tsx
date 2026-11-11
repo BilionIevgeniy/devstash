@@ -10,7 +10,7 @@ import {
   PRO_YEARLY_PRICE,
   proYearlySavingsPercent,
 } from "@/features/billing/domain/limits";
-import { TestModeHint } from "@/features/billing/_internal/components/TestModeHint";
+import { TestModeHint } from "@/features/billing/components/TestModeHint";
 import type { Plan } from "@/features/billing/schemas";
 
 interface CheckoutButtonsProps {

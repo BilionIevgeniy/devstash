@@ -53,12 +53,12 @@ export function Navbar() {
           aria-label="Main"
           className="hidden gap-6 text-sm text-muted-foreground md:flex"
         >
-          <a href="#features" className={DESKTOP_LINK}>
+          <Link href="/#features" className={DESKTOP_LINK}>
             Features
-          </a>
-          <a href="#pricing" className={DESKTOP_LINK}>
+          </Link>
+          <Link href="/#pricing" className={DESKTOP_LINK}>
             Pricing
-          </a>
+          </Link>
         </nav>
         <div className="ml-auto flex items-center gap-2">
           {!signedIn && (

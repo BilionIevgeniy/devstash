@@ -1,7 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
+import { AiDataNote } from "@/features/ai/_internal/components/AiDataNote";
 import { GenerateWithAiButton } from "@/features/ai/_internal/components/GenerateWithAiButton";
 import { SummaryPreview } from "@/features/ai/_internal/components/SummaryPreview";
 import { useDescriptionSummary } from "@/features/ai/_internal/components/hooks/use-description-summary";
@@ -37,6 +38,7 @@ export function AiDescriptionSummary({
     generate,
     clear,
   } = useDescriptionSummary();
+  const noteId = useId();
   const isBlank = title.trim() === "" && content.trim() === "";
 
   function handleAccept() {
@@ -51,11 +53,13 @@ export function AiDescriptionSummary({
         <GenerateWithAiButton
           ref={buttonRef}
           target="for description"
+          describedBy={noteId}
           isPending={isPending}
           disabled={isBlank}
           onClick={() => generate(title, content)}
         />,
       )}
+      <AiDataNote id={noteId} />
       {summary !== null && (
         <SummaryPreview
           summary={summary}

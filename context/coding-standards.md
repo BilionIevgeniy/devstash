@@ -104,6 +104,12 @@ Check every UI change against these before writing it; the plan names which ones
 - Return the `ActionResult<T>` pattern `{ success, data, error }` from actions
 - Display user-friendly error messages via toast
 
+## Logging
+
+- Log ids, status codes and the error's name or code. Never an email address, a name, an IP address or content (item text, titles, file names, prompts)
+- Never log a raw error object from Prisma, Resend or Stripe: its message can carry the arguments of the failed call. Log `error.name` or a summary (`aiErrorSummary` does this for OpenAI)
+- This holds for new code. Older calls that pass the raw error are listed in `context/todo.md` ("Security")
+
 ## Code Quality
 
 - No commented-out code unless specified

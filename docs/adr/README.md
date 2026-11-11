@@ -17,6 +17,7 @@ One short file per decision that shapes the structure of the code, in the [MADR]
 | [0011](0011-past-due-grace-and-no-event-table.md) | Pro lasts through `past_due`, and webhooks need no event table | accepted |
 | [0012](0012-webhook-writes-scoped-by-customer.md) | A webhook write is scoped by the Stripe customer, not by the user | accepted |
 | [0013](0013-how-schema-changes-reach-production.md) | Schema changes reach production through a guarded migration in the Vercel build | accepted |
+| [0014](0014-launch-mode.md) | Portfolio mode now, with real legal pages; what a commercial launch adds | accepted |
 
 ## How to add one
 

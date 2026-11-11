@@ -1,7 +1,7 @@
 # Load Action
 
 1. Check $ARGUMENTS (after "load"):
-   - If it looks like a filename (single word, no spaces): Look for `context/features/{name}.md` OR `context/fixes/{name}.md`
+   - If it looks like a filename (single word, no spaces): Look for `context/features/plan/{name}.md`
    - If it's multiple words: Use as inline feature description, generate goals
    - If empty: Error - "load" requires a spec filename or feature description
 
@@ -12,3 +12,5 @@
    - Set Status to "Not Started"
 
 3. Confirm spec loaded and show the feature summary
+
+4. Move file from "context/features/plan/" to "context/features"

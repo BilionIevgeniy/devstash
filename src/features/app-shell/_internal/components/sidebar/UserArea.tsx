@@ -1,6 +1,13 @@
 "use client";
 
-import { ChevronsUpDown, LogOut, Settings, User } from "lucide-react";
+import {
+  ChevronsUpDown,
+  LogOut,
+  Scale,
+  Settings,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 
 import { signOutUser } from "@/features/auth/actions/sign-in";
@@ -9,8 +16,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { IMPRINT_PATH, PRIVACY_PATH } from "@/lib/legal-paths";
 
 interface UserAreaProps {
   user: {
@@ -60,6 +69,20 @@ export function UserArea({ user }: UserAreaProps) {
               Settings
             </Link>
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href={PRIVACY_PATH}>
+              <ShieldCheck />
+              Privacy
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={IMPRINT_PATH}>
+              <Scale />
+              Imprint
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => signOutUser()}>
             <LogOut />
             Sign out

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import { BillingToggle } from "@/features/billing/components/BillingToggle";
 import { PricingCard } from "@/features/billing/components/PricingCard";
@@ -16,13 +16,20 @@ import {
 import { ScrollFadeIn } from "./ScrollFadeIn";
 import { SectionHead } from "./SectionHead";
 
+// The roadmap lines on top of what Pro gives today: custom item types are not
+// built yet (context/todo.md), and the export will be JSON only.
 const PRO_FEATURES = [
   ...PRO_PLAN_FEATURES,
-  "Custom item types",
-  "Export (JSON / ZIP)",
+  "Custom item types (coming soon)",
+  "Export (JSON)",
 ];
 
-export function PricingSection() {
+interface PricingSectionProps {
+  /** A line under the cards, rendered by the page: it needs the server. */
+  note?: ReactNode;
+}
+
+export function PricingSection({ note }: PricingSectionProps) {
   const [isYearly, setIsYearly] = useState(false);
 
   return (
@@ -69,6 +76,9 @@ export function PricingSection() {
             </ScrollFadeIn>
           }
         />
+        {note && (
+          <div className="mx-auto mt-8 max-w-xl text-center">{note}</div>
+        )}
       </div>
     </section>
   );

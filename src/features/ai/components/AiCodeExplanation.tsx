@@ -1,8 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 import { AiAnswerView } from "@/features/ai/_internal/components/AiAnswerView";
+import { AiDataNote } from "@/features/ai/_internal/components/AiDataNote";
 import { AiStreamButton } from "@/features/ai/_internal/components/AiStreamButton";
 import { AiViewToggle } from "@/features/ai/_internal/components/AiViewToggle";
 import { useAiTextStream } from "@/features/ai/_internal/components/hooks/use-ai-text-stream";
@@ -52,6 +53,7 @@ export function AiCodeExplanation({
 }: AiCodeExplanationProps) {
   const { status, view, text, announcement, run, setView } =
     useAiTextStream(STREAM);
+  const noteId = useId();
   const isPending = status === "waiting" || status === "streaming";
   const hasAnswer = text !== "";
 
@@ -63,6 +65,7 @@ export function AiCodeExplanation({
       <AiStreamButton
         labels={BUTTON_LABELS}
         canUseAi={canUseAi}
+        describedBy={noteId}
         hasAnswer={hasAnswer}
         isPending={isPending}
         onClick={() => void run({ title, code, language })}
@@ -87,6 +90,7 @@ export function AiCodeExplanation({
             />
           ) : undefined,
       })}
+      {canUseAi && <AiDataNote id={noteId} className="mt-2" />}
       <p className="sr-only" aria-live="polite">
         {announcement}
       </p>

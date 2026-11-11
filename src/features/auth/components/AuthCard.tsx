@@ -3,6 +3,10 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 import { Logo } from "@/components/common/Logo";
+import { IMPRINT_PATH, PRIVACY_PATH } from "@/lib/legal-paths";
+
+const LEGAL_LINK =
+  "inline-flex min-h-11 items-center underline underline-offset-4 transition-colors hover:text-foreground";
 
 interface AuthCardProps {
   title: string;
@@ -31,6 +35,17 @@ export function AuthCard({ title, description, children }: AuthCardProps) {
           </div>
           {children}
         </div>
+        <nav
+          aria-label="Legal"
+          className="flex justify-center gap-6 text-xs text-muted-foreground"
+        >
+          <Link href={PRIVACY_PATH} className={LEGAL_LINK}>
+            Privacy
+          </Link>
+          <Link href={IMPRINT_PATH} className={LEGAL_LINK}>
+            Imprint
+          </Link>
+        </nav>
       </div>
     </main>
   );
