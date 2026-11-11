@@ -10,11 +10,11 @@ Rules that apply to every file:
 
 | # | Feature | Priority | Status |
 |---|---|---|---|
-| 1 | [CI and safe migrations](1.ci-and-safe-migrations.md) | MUST | [ ] |
-| 2 | [Legal pages and privacy](2.legal-pages-and-privacy.md) | MUST | [ ] |
+| 1 | [CI and safe migrations](1.ci-and-safe-migrations.md) | MUST | [x] |
+| 2 | [Legal pages and privacy](2.legal-pages-and-privacy.md) | MUST | [x] |
 | 3 | [Component tests with React Testing Library](3.component-tests-rtl.md) | MUST | [x] |
 | 4 | [Tenant isolation integration tests](4.tenant-isolation-integration-tests.md) | MUST | [x] |
-| 5 | [E2E smoke tests](5.e2e-smoke.md) | MUST | [ ] |
+| 5 | [E2E smoke tests](5.e2e-smoke.md) | MUST | [x] |
 | 6 | [Observability](6.observability.md) | MUST | [ ] |
 | 7 | [URL filters and sort](7.url-filters-and-sort.md) | MUST | [ ] |
 | 8 | [Server search with debounce](8.server-search-with-debounce.md) | MUST | [ ] |

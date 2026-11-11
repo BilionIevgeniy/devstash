@@ -356,6 +356,16 @@ const eslintConfig = defineConfig([
     ignores: SIZE_IGNORES,
     rules: { "max-lines-per-function": maxFunctionLines(80) },
   },
+  {
+    // Playwright's `expect(...)` and page calls return promises: one that is
+    // not awaited passes the test without checking anything. Needs type
+    // information. The architecture rules above cover src/ only.
+    files: ["e2e/**/*.ts", "playwright.config.ts"],
+    languageOptions: {
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+    rules: { "@typescript-eslint/no-floating-promises": "error" },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
@@ -365,6 +375,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Copied from node_modules by scripts/copy-monaco.mjs:
     "public/monaco/**",
+    // Written by Playwright (the HTML report ships .js viewer files):
+    "playwright-report/**",
+    "test-results/**",
   ]),
 ]);
 

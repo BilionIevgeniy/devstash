@@ -9,5 +9,5 @@
    - Test happy path and error cases
    - A new or changed query or service that takes a `userId` gets a cross-user case in its `[name].int.test.ts` (see "Integration tests" in `context/coding-standards.md`)
    - Do not write tests just to write them. Use your best judgement
-5. Run `npm test` to verify all tests pass, and `npm run test:integration` when a query or service changed
+5. Run `npm test` to verify all tests pass, `npm run test:integration` when a query or service changed, and `npm run test:e2e` when a page, a route or the sign-in or item flows changed (a new journey follows "End-to-end tests" in `context/coding-standards.md`)
 6. Report test coverage for the new feature code
