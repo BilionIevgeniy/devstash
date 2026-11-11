@@ -7,6 +7,7 @@
    - Create unit tests using Vitest
    - Focus on server actions and utilities. A component or hook with real client logic (an optimistic update, a race, the state of a form) gets a `[name].test.tsx` in the `dom` project; a thin component does not (see "Testing" in `context/coding-standards.md`)
    - Test happy path and error cases
+   - A new or changed query or service that takes a `userId` gets a cross-user case in its `[name].int.test.ts` (see "Integration tests" in `context/coding-standards.md`)
    - Do not write tests just to write them. Use your best judgement
-5. Run `npm test` to verify all tests pass
+5. Run `npm test` to verify all tests pass, and `npm run test:integration` when a query or service changed
 6. Report test coverage for the new feature code

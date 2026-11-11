@@ -47,14 +47,28 @@ The seed creates the system item types and two demo users with the same password
 | `npm run typecheck` | `next typegen && tsc --noEmit`: route types, then the type check |
 | `npm run db:migrate:deploy` | `prisma migrate deploy`: applies pending migrations without creating any. **It has no guard**: it migrates whatever database `DIRECT_URL` in `.env` names, so check it first |
 | `npm run vercel-build` | The Vercel Build Command (`vercel.json`): migrates the environment's own database through a guard, then builds. Refuses to run outside Vercel |
-| `npm run test` / `npm run test:watch` | Vitest, one run / watch mode |
+| `npm run test` / `npm run test:watch` | Vitest, one run / watch mode. Needs no database |
+| `npm run test:integration` | The integration tests (`*.int.test.ts`) on the test database: see [Integration tests](#integration-tests) |
+| `npm run db:seed-test` | Empty the test database and seed the system types, a Free and a Pro user. Reads `TEST_DATABASE_URL` only |
 | `npm run db:seed` | Seed system types and demo users (safe to run again) |
 | `npm run db:reset-demo` | Remove the Free demo user's items, collections, tags, files and subscription; run `db:seed` next |
 | `npm run db:delete-users` | Delete every user except the two demo users (development database only) |
 | `npm run db:test` | Check the database connection and the demo data |
 | `npm run db:studio` | Prisma Studio |
 
-Before every commit: `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build` must all pass. CI runs the same four on every PR and every push to `main`. Schema changes go through `prisma migrate dev`, never `db push`.
+Before every commit: `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build` must all pass, and `npm run test:integration` when a query or service changed. CI runs all five on every PR and every push to `main`. Schema changes go through `prisma migrate dev`, never `db push`.
+
+### Integration tests
+
+They run the app's Prisma against a Postgres of their own and empty it before each file, so they never use the database of `.env`. `requireTestDatabase` (`scripts/require-dev-database.ts`) refuses any host but `localhost`, `127.0.0.1` or the one in `TEST_DATABASE_HOST`, and always refuses the `development` and production branches and any pooled (`-pooler`) host.
+
+1. **A local Postgres**, the same major version as Neon (18):
+   `docker run -d --name devstash-test -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=devstash_test -p 5433:5432 postgres:18`
+2. **`.env.test`** (ignored by git) with one line:
+   `TEST_DATABASE_URL=postgresql://postgres:postgres@localhost:5433/devstash_test`
+3. **Run**: `npm run test:integration`. It applies the migrations first
+
+A Neon branch made only for tests works too: put its **direct** URL (not `-pooler`) in `TEST_DATABASE_URL` and its host in `TEST_DATABASE_HOST`. It is slower, since every test seeds over the network.
 
 ## Architecture
 
@@ -85,11 +99,11 @@ Vercel. A push to `main` deploys production. Vercel runs `npm run vercel-build`:
 
 ### CI and branch protection
 
-`.github/workflows/ci.yml` runs lint, typecheck, tests and the build (with dummy env values, no database) on every PR and every push to `main`. Dependabot (`.github/dependabot.yml`) opens weekly PRs for npm, minor and patch grouped, and for GitHub Actions.
+`.github/workflows/ci.yml` runs two jobs on every PR and every push to `main`: `ci` (lint, typecheck, tests and the build, with dummy env values and no database) and `integration` (the integration tests on a `postgres:18` service container, created empty for the run; no secret). Dependabot (`.github/dependabot.yml`) opens weekly PRs for npm, minor and patch grouped, and for GitHub Actions.
 
 Branch protection on `main` is set in GitHub, not in code:
 
 1. Repository **Settings > Branches > Add branch ruleset** (or "Add classic branch protection rule"), target branch `main`
 2. Turn on **Require a pull request before merging**
-3. Turn on **Require status checks to pass**, add the check **`ci`** (it appears after the workflow has run once), and turn on **Require branches to be up to date before merging**
+3. Turn on **Require status checks to pass**, add the checks **`ci`** and **`integration`** (they appear after the workflow has run once), and turn on **Require branches to be up to date before merging**
 4. Turn on **Block force pushes**, then save

@@ -8,7 +8,7 @@ DevStash is a hub where a developer keeps snippets, prompts, commands, notes, fi
 
 What the architecture has to deliver, in order:
 
-1. **A user sees only their own data.** Every query and write carries the owner
+1. **A user sees only their own data.** Every query and write carries the owner, and the integration tests prove it on a real database: one user with another's ids gets nothing, and the other's rows stay as they were
 2. **A newcomer or an AI assistant knows where code goes.** One role per file, ranked features, checks in the lint
 3. **A feature can be added without touching the others.** One-way dependencies, no cycles
 

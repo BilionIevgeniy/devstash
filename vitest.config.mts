@@ -1,20 +1,16 @@
-import { fileURLToPath } from "node:url";
 import babel from "@rolldown/plugin-babel";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
+import { sharedResolve } from "./vitest.shared.mjs";
 
 // The extension decides the project: `.test.ts` runs in node, `.test.tsx`
 // (components and hooks) in jsdom. Only `resolve` is shared at the top; the
 // environment, the include globs and the plugins belong to one project each.
+// `.int.test.ts` files need a database and have their own config,
+// vitest.integration.config.mts, so `npm run test` and `test:watch` never run
+// them.
 export default defineConfig({
-  resolve: {
-    tsconfigPaths: true,
-    alias: {
-      "server-only": fileURLToPath(
-        new URL("./test/server-only.ts", import.meta.url),
-      ),
-    },
-  },
+  resolve: sharedResolve,
   test: {
     projects: [
       {
@@ -23,6 +19,7 @@ export default defineConfig({
           name: "unit",
           environment: "node",
           include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
+          exclude: [...configDefaults.exclude, "**/*.int.test.ts"],
         },
       },
       {

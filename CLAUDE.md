@@ -28,6 +28,8 @@ Work deferred on purpose is listed in `context/todo.md` (not auto-loaded: read i
 - `npm run lint` — ESLint via flat config
 - `npm run test` — Vitest, one run; must be green and run before every commit
 - `npm run test:watch` — Vitest in watch mode
+- `npm run test:integration` — the `*.int.test.ts` files against the test database (`TEST_DATABASE_URL` from `.env.test`, a local Docker Postgres on port 5433); run it when a query or service changed
+- `npm run db:seed-test` — empty and seed the test database (system types, a Free and a Pro user)
 
 Tests are colocated as `[name].test.ts` (node) and `[name].test.tsx` (components and hooks, jsdom); what to test and how is in "Testing" in `context/coding-standards.md`.
 

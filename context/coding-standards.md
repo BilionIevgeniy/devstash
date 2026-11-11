@@ -145,12 +145,13 @@ How to split when a unit grows past its limit, or has more than one job before i
 
 ## Testing
 
-Vitest, run with `npm run test` (one run) or `npm run test:watch`. Tests are colocated with the file they test and import `describe`, `it` and `expect` from `vitest` explicitly. The file extension picks the Vitest project in `vitest.config.mts`, and `npm run test` runs both:
+Vitest, run with `npm run test` (one run) or `npm run test:watch`. Tests are colocated with the file they test and import `describe`, `it` and `expect` from `vitest` explicitly. The file extension picks the Vitest project; `npm run test` runs `unit` and `dom`, `npm run test:integration` runs `integration`:
 
 - `unit`: `[name].test.ts` (also under `scripts/`), node environment. Domain rules, schemas, services, routes
 - `dom`: `[name].test.tsx`, jsdom, with React Testing Library. Components and hooks (`renderHook`). A hook test named `.test.ts` runs in node and fails with "document is not defined"
+- `integration`: `[name].int.test.ts`, node, the app's real Prisma on a test database. A config of its own (`vitest.integration.config.mts`), not a project of `vitest.config.mts`: `npm run test` and `test:watch` run every project of the root config and would fail where there is no database. Run with `npm run test:integration`; setup in the README, "Integration tests"
 
-- **Every test must be green, and `npm run test` must be run before every commit**, together with `npm run typecheck`, `npm run lint` and `npm run build` (CI runs the same on every PR). A failing test is fixed, or corrected on purpose when the rule changed; it is never skipped, disabled or deleted to get a commit through
+- **Every test must be green, and `npm run test` must be run before every commit**, together with `npm run typecheck`, `npm run lint` and `npm run build`, and `npm run test:integration` when a query or service changed (CI runs all of them on every PR). A failing test is fixed, or corrected on purpose when the rule changed; it is never skipped, disabled or deleted to get a commit through
 - Test pure code first, without mocks: `domain/` files, `schemas.ts` and pure helpers in `lib` (for example `client-ip.ts`). A new business rule in `domain/` comes with its test in the same change
 - Services come next, with their boundaries mocked (`@/lib/prisma`, `@/lib/rate-limit`, `@/lib/email`, `fetch`); assert the decision the service makes, not the mock calls for their own sake. `server-only` is aliased to the empty stub `test/server-only.ts` in `vitest.config.mts`, so queries, services and routes import normally
 - Components and hooks (`dom`) test what a user or the caller sees, not how the code gets there: query by role and label (`getByRole`, `getByLabelText`), `userEvent` over `fireEvent`, assert the text on screen, the value passed to a callback, the toast. No snapshot tests of markup
@@ -161,3 +162,16 @@ Vitest, run with `npm run test` (one run) or `npm run test:watch`. Tests are col
 - Not unit-tested: layer and import rules and domain purity (ESLint enforces them), thin `actions/`, pages and `components/ui`. Vitest cannot render async Server Components, so pages belong to end-to-end tests when those are added
 - A `*.test.ts` file inside `domain/` may import `vitest`: the package allowlist of the domain core applies to the rules, not to their tests
 - Each test pins a rule or an edge case that would hurt if it broke; do not write tests just to have them
+
+### Integration tests
+
+A test with a mocked Prisma passes whatever the `where` says, so ownership is proved here: every query and service that takes a `userId` gets a cross-user case in the same change.
+
+- What is real: only Prisma and Postgres. Upstash, R2, Resend, Stripe, OpenAI and the GitHub grant revocation are mocked for every file in `test/integration/setup.ts`, each name with a default answer passed to `vi.fn(impl)` (it survives `mockReset`); `fetch` throws. A test that needs another answer sets it itself
+- The database: `TEST_DATABASE_URL` (CI: a `postgres:18` service; locally `.env.test`). `test/integration/global-setup.ts` refuses anything `requireTestDatabase` does not allow, then runs `prisma migrate deploy`; the config hands the URL to each worker as `DATABASE_URL`. Files run one at a time (`fileParallelism: false`)
+- The data: `seedTenants()` in `test/integration/fixtures.ts` empties every table and seeds user A (Free) and user B (Pro) through the services. A file whose tests write seeds in `beforeEach`, a read-only one in `beforeAll`. `snapshotTenant(userId)` (`test/integration/snapshot.ts`) reads every row of a user for a `toEqual` before and after
+- A cross-user case starts with the owner: B's call finds the row, then A's call with B's id gets nothing or "not found", and `snapshotTenant(B)` is unchanged. Without the owner's call, a wrong fixture id passes as "not found". For a list, A's ids are present and B's absent. A refusal is checked by its error text, not only `success: false`; an id the fixture may leave null goes through `required()`. A and B differ in password and session version, so a read by the wrong id cannot look right
+- Writes on A's own data count too: the cleanups that run after them (`deleteOrphanTags`, the tokens of `deleteVerifiedUserRows`) must leave B's rows, so B has an unused tag and a verification token in the fixture
+- Each file sits next to the file it tests. The thin read services of `items` share `items/services/item-reads.int.test.ts`
+- Left out on purpose: the `ai` services and `checkAiAccess` (they read no rows of a user; the `userId` keys the quota), the email and token flows of `auth` (keyed by an email or a one-time token before sign-in), `files/services/objects`, `presignUpload`, `signItemFile` and `userCanUseType` (R2 keys and plan checks, unit-tested on their own). The tests prove the outcome of each operation, not every `where`: a second `where` behind a scoped read is still reviewed (see "Known risks" in `docs/architecture.md`)
+- Checked once when this was built: removing `userId` from the `WHERE` of `setUserItemPin` or of `deleteOrphanTags`, or the advisory lock from `createUserItem`, makes a test fail
