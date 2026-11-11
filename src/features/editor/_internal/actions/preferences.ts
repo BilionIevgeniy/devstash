@@ -5,6 +5,7 @@ import { SAVE_FAILED_MESSAGE } from "@/features/editor/_internal/domain/preferen
 import { saveEditorPreferences } from "@/features/editor/_internal/services/preferences";
 import { editorPreferencesSchema } from "@/features/editor/schemas";
 import type { ActionResult } from "@/lib/action-result";
+import { logger } from "@/lib/logger";
 
 function failure(error: string): ActionResult {
   return { success: false, data: null, error };
@@ -24,7 +25,10 @@ export async function updateEditorPreferences(
     if (!result.success) return failure(result.error ?? SAVE_FAILED_MESSAGE);
     return { success: true, error: null, data: null };
   } catch (error) {
-    console.error("Saving the editor preferences failed:", error);
+    await logger.error("Saving the editor preferences failed", {
+      error,
+      userId,
+    });
     return failure(SAVE_FAILED_MESSAGE);
   }
 }

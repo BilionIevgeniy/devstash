@@ -1,6 +1,7 @@
 import { auth } from "@/features/auth/nextauth/auth";
 import { openUserItem } from "@/features/items/services/item-detail";
 import { itemIdSchema } from "@/features/items/schemas";
+import { logger } from "@/lib/logger";
 
 // A user's own content and signed URLs: never kept by a shared cache.
 const NO_STORE = { "Cache-Control": "private, no-store" };
@@ -40,7 +41,7 @@ export async function GET(
       { headers: NO_STORE },
     );
   } catch (error) {
-    console.error("Item detail failed:", error);
+    await logger.error("Item detail failed", { error, userId });
     return failure("Something went wrong", 500);
   }
 }

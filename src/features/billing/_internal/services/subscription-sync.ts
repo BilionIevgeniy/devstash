@@ -5,6 +5,7 @@ import {
   type SubscriptionSnapshot,
 } from "@/features/billing/domain/subscription";
 import { LOCKED_TRANSACTION, lockForTransaction } from "@/lib/advisory-lock";
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import {
   getStripe,
@@ -51,7 +52,10 @@ export async function syncSubscription(
     // account or a customer that is not ours.
     const { count } = await tx.subscription.updateMany({ where, data });
     if (count === 0) {
-      console.warn(`No row took subscription ${subscriptionId}`);
+      logger.warn("No row took a subscription", {
+        customerId,
+        subscriptionId,
+      });
     }
   }, LOCKED_TRANSACTION);
 }

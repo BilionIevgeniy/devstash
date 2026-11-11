@@ -1,4 +1,5 @@
 import { handleStripeEvent } from "@/features/billing/services/webhook";
+import { logger } from "@/lib/logger";
 import {
   constructStripeEvent,
   isStripeSignatureError,
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
   } catch (error) {
     if (isStripeSignatureError(error)) return failure(INVALID_SIGNATURE, 400);
     // 500 so Stripe retries: a missing secret is ours to fix.
-    console.error("Verifying a Stripe event failed:", error);
+    await logger.error("Verifying a Stripe event failed", { error });
     return failure(SERVER_ERROR, 500);
   }
 
@@ -30,8 +31,11 @@ export async function POST(request: Request) {
     await handleStripeEvent(event);
     return Response.json({ received: true });
   } catch (error) {
-    // The log is the only record of an event: there is no event table.
-    console.error(`Stripe event ${event.id} (${event.type}) failed:`, error);
+    // The log and Sentry are the only record of an event: there is no event table.
+    await logger.error(`Stripe event of type ${event.type} failed`, {
+      error,
+      stripeEventId: event.id,
+    });
     return failure(SERVER_ERROR, 500);
   }
 }

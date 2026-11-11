@@ -1,7 +1,7 @@
 // The vendors the privacy notice names. Keep in step with
 // docs/privacy/processing-record.md. Each language of the notice holds a
 // `Record<VendorId, string>`, so a vendor added here fails the typecheck
-// until both texts cover it. Sentry is planned and stays out until it is used.
+// until both texts cover it.
 export const VENDOR_IDS = [
   "vercel",
   "neon",
@@ -10,6 +10,7 @@ export const VENDOR_IDS = [
   "stripe",
   "resend",
   "upstash",
+  "sentry",
   "github",
 ] as const;
 
@@ -46,6 +47,10 @@ export const VENDORS: Record<VendorId, Vendor> = {
   upstash: {
     name: "Upstash",
     privacyUrl: "https://upstash.com/trust/privacy.pdf",
+  },
+  sentry: {
+    name: "Sentry (Functional Software, Inc.)",
+    privacyUrl: "https://sentry.io/privacy/",
   },
   github: {
     name: "GitHub (Microsoft)",

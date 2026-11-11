@@ -154,7 +154,7 @@ const domainZone = {
 // Vendor SDKs are reached only through a client in src/lib. Anchored, because a
 // bare "stripe" pattern would also match our own wrapper @/lib/stripe.
 const VENDOR_SDKS = {
-  regex: "^(resend|stripe|openai)(/|$)|^(@upstash|@aws-sdk)/",
+  regex: "^(resend|stripe|openai)(/|$)|^(@upstash|@aws-sdk|@sentry)/",
   message: "Vendor SDKs are used only inside src/lib: call the client from there.",
 };
 
@@ -355,6 +355,24 @@ const eslintConfig = defineConfig([
     ],
     ignores: SIZE_IGNORES,
     rules: { "max-lines-per-function": maxFunctionLines(80) },
+  },
+  {
+    // One place writes a log line, src/lib/logger.ts: it keeps an email, a title
+    // or a raw error out of the logs and sends the caught errors to Sentry.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/lib/logger.ts", "src/**/*.test.{ts,tsx}"],
+    rules: { "no-console": "error" },
+  },
+  {
+    // `logger.error` returns a promise that is the flush of the event: a call
+    // that is not awaited can lose it when the function answers and freezes.
+    // Needs type information.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/**/*.test.{ts,tsx}", "src/generated/**"],
+    languageOptions: {
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+    },
+    rules: { "@typescript-eslint/no-floating-promises": "error" },
   },
   {
     // Playwright's `expect(...)` and page calls return promises: one that is

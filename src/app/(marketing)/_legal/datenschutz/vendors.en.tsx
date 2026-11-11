@@ -16,6 +16,8 @@ const TEXTS: Record<VendorId, string> = {
     "Sending the emails that confirm your address and reset your password. Resend receives the recipient address and the content of the email. Legal basis: Art. 6 (1) b GDPR.",
   upstash:
     "Redis database for limiting requests. Upstash receives only SHA-256 hashes of email addresses, IP addresses and user ids, and counters. Legal basis: Art. 6 (1) f GDPR.",
+  sentry:
+    "Error monitoring. When the application fails, Sentry receives the type of the error, a fixed description, the technical stack trace (file, function, line), the page path without any query string, the request method, the version of the application and the environment, and, if the failure concerns a signed-in user, the user id. Sentry does not receive your email address, your name, cookies or the content of requests or items, and does not store your IP address; it sets no cookies in your browser. The data is stored in Sentry's EU region and deleted after 30 days. Legal basis: Art. 6 (1) f GDPR.",
   github:
     "Sign-in with GitHub: GitHub processes the sign-in under its own responsibility according to its privacy statement; we receive your GitHub account id, name, email address and the address of your profile picture. When you are signed in with GitHub and have a profile picture, your browser loads it directly from GitHub servers, so GitHub learns your IP address. Legal basis: Art. 6 (1) b GDPR for the sign-in, point f for loading the picture.",
 };

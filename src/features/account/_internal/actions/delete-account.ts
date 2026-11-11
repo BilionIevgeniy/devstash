@@ -6,6 +6,7 @@ import { deleteAccountSchema } from "@/features/account/schemas";
 import { deleteAccount as deleteUserAccount } from "@/features/account/_internal/services/delete-account";
 import { auth, signOut } from "@/features/auth/nextauth/auth";
 import type { ActionResult } from "@/lib/action-result";
+import { logger } from "@/lib/logger";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 const SIGNED_OUT_ERROR = "You need to be signed in";
@@ -38,7 +39,7 @@ export async function deleteAccount(
     });
     if (!result.success) return failure(result.error ?? GENERIC_ERROR);
   } catch (error) {
-    console.error("Deleting the account failed:", error);
+    await logger.error("Deleting the account failed", { error, userId });
     return failure(GENERIC_ERROR);
   }
 

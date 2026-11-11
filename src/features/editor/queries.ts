@@ -4,6 +4,7 @@ import {
   toEditorPreferences,
   type EditorPreferences,
 } from "@/features/editor/_internal/domain/preferences";
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 
 // Read by the app layout for every editor, including those in the top bar, which
@@ -25,7 +26,10 @@ export async function getEditorPreferences(
     });
     return toEditorPreferences(stored);
   } catch (error) {
-    console.error("Reading the editor preferences failed:", error);
+    await logger.error("Reading the editor preferences failed", {
+      error,
+      userId,
+    });
     return toEditorPreferences(null);
   }
 }

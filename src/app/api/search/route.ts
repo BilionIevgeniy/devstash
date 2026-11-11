@@ -1,5 +1,6 @@
 import { auth } from "@/features/auth/nextauth/auth";
 import { getSearchIndex } from "@/features/search/services/search-index";
+import { logger } from "@/lib/logger";
 
 // A user's own content: never kept by a shared cache.
 const NO_STORE = { "Cache-Control": "private, no-store" };
@@ -26,7 +27,7 @@ export async function GET() {
       { headers: NO_STORE },
     );
   } catch (error) {
-    console.error("Search index failed:", error);
+    await logger.error("Search index failed", { error, userId });
     return failure("Something went wrong", 500);
   }
 }

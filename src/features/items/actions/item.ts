@@ -23,6 +23,7 @@ import {
 } from "@/features/items/services/item";
 import type { ItemDetailJson } from "@/features/items/types";
 import type { ActionResult } from "@/lib/action-result";
+import { logger } from "@/lib/logger";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 
@@ -46,7 +47,7 @@ export async function createItem(data: unknown): Promise<ActionResult> {
     refresh();
     return { success: true, error: null, data: null };
   } catch (error) {
-    console.error("Creating the item failed:", error);
+    await logger.error("Creating the item failed", { error, userId });
     return failure(GENERIC_ERROR);
   }
 }
@@ -76,7 +77,7 @@ export async function updateItem(
     refresh();
     return { success: true, error: null, data: toItemDetailJson(result.data) };
   } catch (error) {
-    console.error("Updating the item failed:", error);
+    await logger.error("Updating the item failed", { error, userId });
     return failure(GENERIC_ERROR);
   }
 }
@@ -105,7 +106,10 @@ export async function replaceItemContent(
     refresh();
     return { success: true, error: null, data: toItemDetailJson(result.data) };
   } catch (error) {
-    console.error("Replacing the item's content failed:", error);
+    await logger.error("Replacing the content of an item failed", {
+      error,
+      userId,
+    });
     return failure(GENERIC_ERROR);
   }
 }
@@ -136,7 +140,10 @@ export async function setItemFavorite(
     refresh();
     return { success: true, error: null, data: null };
   } catch (error) {
-    console.error("Updating the favorite failed:", error);
+    await logger.error("Updating the favorite of an item failed", {
+      error,
+      userId,
+    });
     return failure(GENERIC_ERROR);
   }
 }
@@ -168,7 +175,7 @@ export async function toggleItemPin(
     refresh();
     return { success: true, error: null, data: null };
   } catch (error) {
-    console.error("Updating the pin failed:", error);
+    await logger.error("Updating the pin of an item failed", { error, userId });
     return failure(GENERIC_ERROR);
   }
 }
@@ -198,7 +205,7 @@ export async function deleteItem(
     if (parsedOptions.data.refresh) refresh();
     return { success: true, error: null, data: null };
   } catch (error) {
-    console.error("Deleting the item failed:", error);
+    await logger.error("Deleting the item failed", { error, userId });
     return failure(GENERIC_ERROR);
   }
 }

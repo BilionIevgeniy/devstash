@@ -1,3 +1,4 @@
+import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
 
 import packageJson from "./package.json";
@@ -32,7 +33,13 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   devIndicators: false,
   poweredByHeader: false,
-  env: { NEXT_PUBLIC_MONACO_VS_PATH: `${MONACO_PATH}/vs` },
+  env: {
+    NEXT_PUBLIC_MONACO_VS_PATH: `${MONACO_PATH}/vs`,
+    // Which deployment an event came from, in the server and in the browser
+    // bundle alike (VERCEL_ENV itself is not in the browser). The alert for new
+    // issues filters on production.
+    NEXT_PUBLIC_SENTRY_ENVIRONMENT: process.env.VERCEL_ENV ?? "development",
+  },
   async headers() {
     return [
       { source: "/:path*", headers: SECURITY_HEADERS },
@@ -49,4 +56,28 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// The build side of Sentry. It reads SENTRY_ORG, SENTRY_PROJECT and
+// SENTRY_AUTH_TOKEN from the environment, and uploads the source maps of the
+// Vercel build when the token is there. The runtime side is src/lib/sentry.ts.
+export default withSentryConfig(nextConfig, {
+  telemetry: false,
+  silent: !process.env.CI,
+  // Tracing is not used and the SDK's debug logging is never switched on, so
+  // their code stays out of the bundle every visitor downloads.
+  bundleSizeOptimizations: {
+    excludeDebugStatements: true,
+    excludeTracing: true,
+  },
+  sourcemaps: {
+    // No token, no upload, and then no source maps at all: a build without the
+    // token (CI, the end-to-end tests, a preview) has no .map file to serve.
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+    // With the token the maps are uploaded and then deleted from the build.
+    deleteSourcemapsAfterUpload: true,
+  },
+  // By default a failed upload stops the build. Readable stack traces are not
+  // worth a failed deploy, so it warns and the deploy goes on.
+  errorHandler: (error) => {
+    console.warn(`Sentry: ${error.message}. The build goes on without it.`);
+  },
+});

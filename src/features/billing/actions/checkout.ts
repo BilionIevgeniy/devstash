@@ -16,6 +16,7 @@ import {
 } from "@/features/billing/services/checkout";
 import type { ActionResult } from "@/lib/action-result";
 import { getAppOrigin } from "@/lib/app-url";
+import { logger } from "@/lib/logger";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 
@@ -42,7 +43,10 @@ export async function startCheckout(plan: unknown): Promise<ActionResult> {
     }
     url = result.data.url;
   } catch (error) {
-    console.error("Starting the checkout failed:", error);
+    await logger.error("Starting the checkout failed", {
+      error,
+      userId: user.id,
+    });
     return failure(GENERIC_ERROR);
   }
 
@@ -62,7 +66,10 @@ export async function openBillingPortal(): Promise<ActionResult> {
     }
     url = result.data.url;
   } catch (error) {
-    console.error("Opening the billing portal failed:", error);
+    await logger.error("Opening the billing portal failed", {
+      error,
+      userId: user.id,
+    });
     return failure(GENERIC_ERROR);
   }
 
@@ -87,7 +94,7 @@ export async function confirmCheckout(
     refresh();
     return { success: true, error: null, data: { isPro } };
   } catch (error) {
-    console.error("Confirming the checkout failed:", error);
+    await logger.error("Confirming the checkout failed", { error, userId });
     return failure(GENERIC_ERROR);
   }
 }

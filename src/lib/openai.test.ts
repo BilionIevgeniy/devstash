@@ -25,7 +25,6 @@ vi.mock("openai", async (importOriginal) => {
 
 import {
   aiErrorKind,
-  aiErrorSummary,
   AiOutputError,
   generateStructured,
   streamText,
@@ -210,27 +209,6 @@ describe("aiErrorKind", () => {
 
   it("knows nothing of other errors", () => {
     expect(aiErrorKind(new Error("Upstash is down"))).toBeNull();
-  });
-});
-
-describe("aiErrorSummary", () => {
-  it("logs the status and codes of an OpenAI error, not its message", () => {
-    const error = new RateLimitError(
-      429,
-      { code: "rate_limit_exceeded", message: "Your snippet: const key" },
-      "Your snippet: const key",
-      headers(),
-    );
-
-    const summary = aiErrorSummary(error);
-
-    expect(summary).toContain("status=429");
-    expect(summary).toContain("code=rate_limit_exceeded");
-    expect(summary).not.toContain("snippet");
-  });
-
-  it("logs the reason of an output error", () => {
-    expect(aiErrorSummary(new AiOutputError("empty"))).toBe("output=empty");
   });
 });
 

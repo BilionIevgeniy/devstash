@@ -17,6 +17,7 @@ import {
 } from "@/features/collections/services/collection";
 import { favoriteValueSchema } from "@/features/items/schemas";
 import type { ActionResult } from "@/lib/action-result";
+import { logger } from "@/lib/logger";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 
@@ -38,7 +39,7 @@ export async function createCollection(data: unknown): Promise<ActionResult> {
     refresh();
     return { success: true, error: null, data: null };
   } catch (error) {
-    console.error("Creating the collection failed:", error);
+    await logger.error("Creating the collection failed", { error, userId });
     return failure(GENERIC_ERROR);
   }
 }
@@ -67,7 +68,7 @@ export async function updateCollection(
     refresh();
     return { success: true, error: null, data: null };
   } catch (error) {
-    console.error("Updating the collection failed:", error);
+    await logger.error("Updating the collection failed", { error, userId });
     return failure(GENERIC_ERROR);
   }
 }
@@ -97,7 +98,10 @@ export async function setCollectionFavorite(
     refresh();
     return { success: true, error: null, data: null };
   } catch (error) {
-    console.error("Updating the favorite failed:", error);
+    await logger.error("Updating the favorite of a collection failed", {
+      error,
+      userId,
+    });
     return failure(GENERIC_ERROR);
   }
 }
@@ -125,7 +129,7 @@ export async function deleteCollection(
     if (parsedOptions.data.refresh) refresh();
     return { success: true, error: null, data: null };
   } catch (error) {
-    console.error("Deleting the collection failed:", error);
+    await logger.error("Deleting the collection failed", { error, userId });
     return failure(GENERIC_ERROR);
   }
 }

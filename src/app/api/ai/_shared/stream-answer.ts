@@ -3,6 +3,7 @@ import type { ZodType } from "zod";
 import { AI_SIGNED_OUT_MESSAGE } from "@/features/ai/domain/messages";
 import type { TextStreamStart } from "@/features/ai/services/text-stream";
 import { auth } from "@/features/auth/nextauth/auth";
+import { logger } from "@/lib/logger";
 
 // A user's own item and its answer: never kept by a shared cache.
 const NO_STORE = { "Cache-Control": "private, no-store" };
@@ -69,10 +70,7 @@ export async function streamAiAnswer<T>(
   try {
     return toResponse(await start(userId, parsed.data, request.signal));
   } catch (error) {
-    console.error(
-      `${label} failed:`,
-      error instanceof Error ? error.name : "unknown",
-    );
+    await logger.error(`${label} failed`, { error, userId });
     return failure(UNEXPECTED_MESSAGE, 500);
   }
 }

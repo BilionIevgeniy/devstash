@@ -76,6 +76,13 @@ export const GENERAL_EN: LegalSection[] = [
           basis: Art. 6 (1) f GDPR (legitimate interest in secure, stable
           operation).
         </li>
+        <li>
+          <strong>Error monitoring:</strong> when something fails in the
+          application, technical details of the failure (none of your content)
+          are sent to our provider Sentry, see Recipients below. Purpose: to
+          find and fix errors. Legal basis: Art. 6 (1) f GDPR (legitimate
+          interest in stable operation).
+        </li>
       </ul>
     ),
   },
@@ -115,7 +122,8 @@ export const GENERAL_EN: LegalSection[] = [
           We set only cookies that the service technically needs or that you
           trigger yourself with a setting (§ 25 (2) no. 2 TDDDG). That is why we
           do not ask for consent. We do not set analytics, advertising or
-          tracking cookies.
+          tracking cookies. The error monitoring (see Recipients) sets no
+          cookies and stores nothing in your browser.
         </p>
         <ul>
           <li>

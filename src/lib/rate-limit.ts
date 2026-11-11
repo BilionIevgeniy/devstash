@@ -3,6 +3,7 @@ import "server-only";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { sha256Hex } from "@/lib/hash";
+import { logger } from "@/lib/logger";
 
 export interface RateLimitPolicy {
   name: string;
@@ -86,7 +87,7 @@ export async function consumeRateLimit(
 
     return { success, remaining, reset };
   } catch (error) {
-    console.error("Rate limit check failed:", error);
+    await logger.error("Rate limit check failed", { error });
     throw new RateLimitUnavailableError({ cause: error });
   }
 }
@@ -100,7 +101,7 @@ export async function resetRateLimit(
   try {
     await getLimiter(policy).resetUsedTokens(toIdentifier(identifier));
   } catch (error) {
-    console.error("Resetting a rate limit failed:", error);
+    await logger.error("Resetting a rate limit failed", { error });
   }
 }
 
@@ -122,7 +123,7 @@ export async function getRateLimitStatus(
     );
     return { remaining, reset };
   } catch (error) {
-    console.error("Reading a rate limit failed:", error);
+    await logger.error("Reading a rate limit failed", { error });
     return null;
   }
 }
@@ -137,7 +138,7 @@ export async function consumeIpRateLimit(
   if (!ip) {
     if (!hasWarnedAboutMissingIp) {
       hasWarnedAboutMissingIp = true;
-      console.warn("No client IP in the request headers; IP rate limits are skipped");
+      logger.warn("No client IP in the request headers; IP rate limits are skipped");
     }
     return { success: true, remaining: policy.limit, reset: Date.now() };
   }

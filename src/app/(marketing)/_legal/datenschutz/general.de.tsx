@@ -77,6 +77,14 @@ export const GENERAL_DE: LegalSection[] = [
           Browserkennung. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO
           (berechtigtes Interesse an einem sicheren, stabilen Betrieb).
         </li>
+        <li>
+          <strong>Fehlerüberwachung:</strong> Wenn in der Anwendung etwas
+          fehlschlägt, werden technische Angaben zum Fehler (keine Inhalte von
+          Ihnen) an unseren Dienstleister Sentry übermittelt, siehe „Empfänger“
+          unten. Zweck: Fehler erkennen und beheben. Rechtsgrundlage: Art. 6
+          Abs. 1 lit. f DSGVO (berechtigtes Interesse an einem stabilen
+          Betrieb).
+        </li>
       </ul>
     ),
   },
@@ -118,7 +126,9 @@ export const GENERAL_DE: LegalSection[] = [
           Wir setzen nur Cookies, die für den Dienst technisch erforderlich sind
           oder die Sie selbst durch eine Einstellung auslösen (§ 25 Abs. 2 Nr. 2
           TDDDG). Deshalb fragen wir nicht nach einer Einwilligung. Wir setzen
-          keine Analyse-, Werbe- oder Tracking-Cookies.
+          keine Analyse-, Werbe- oder Tracking-Cookies. Die Fehlerüberwachung
+          (siehe „Empfänger“) setzt keine Cookies und speichert nichts in Ihrem
+          Browser.
         </p>
         <ul>
           <li>

@@ -5,7 +5,7 @@ import { aiItemInputSchema } from "@/features/ai/schemas";
 import { suggestTags } from "@/features/ai/services/auto-tags";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import type { ActionResult } from "@/lib/action-result";
-import { aiErrorSummary } from "@/lib/openai";
+import { logger } from "@/lib/logger";
 
 function failure(error: string): ActionResult<null> {
   return { success: false, data: null, error };
@@ -26,7 +26,7 @@ export async function generateAutoTags(
     if (!result.success) return failure(result.error ?? AI_UNAVAILABLE_MESSAGE);
     return { success: true, error: null, data: result.data };
   } catch (error) {
-    console.error("Suggesting tags failed:", aiErrorSummary(error));
+    await logger.error("Suggesting tags failed", { error, userId });
     return failure(AI_UNAVAILABLE_MESSAGE);
   }
 }

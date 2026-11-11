@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { revokeGitHubGrant } from "@/features/auth/_internal/services/github-grant";
+import { logger } from "@/lib/logger";
+
+vi.mock("@/lib/logger", () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
+}));
 
 const fetchMock = vi.fn();
 
@@ -13,7 +18,7 @@ describe("revokeGitHubGrant", () => {
     vi.stubEnv("AUTH_GITHUB_ID", "client-id");
     vi.stubEnv("AUTH_GITHUB_SECRET", "client-secret");
     vi.stubGlobal("fetch", fetchMock);
-    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.clearAllMocks();
     fetchMock.mockReset();
   });
 
@@ -29,7 +34,7 @@ describe("revokeGitHubGrant", () => {
     await revokeGitHubGrant("token");
 
     expect(fetchMock).toHaveBeenCalledOnce();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(logger.error).not.toHaveBeenCalled();
   });
 
   it("logs nothing after a 404: a stored token is usually dead", async () => {
@@ -38,7 +43,7 @@ describe("revokeGitHubGrant", () => {
     await revokeGitHubGrant("token");
 
     expect(fetchMock).toHaveBeenCalledOnce();
-    expect(console.error).not.toHaveBeenCalled();
+    expect(logger.error).not.toHaveBeenCalled();
   });
 
   it("logs any other status", async () => {
@@ -47,14 +52,17 @@ describe("revokeGitHubGrant", () => {
     await revokeGitHubGrant("token");
 
     expect(fetchMock).toHaveBeenCalledOnce();
-    expect(console.error).toHaveBeenCalledWith(expect.any(String), 422);
+    expect(logger.error).toHaveBeenCalledExactlyOnceWith(
+      "Revoking the GitHub authorization was refused",
+      { numbers: { status: 422 } },
+    );
   });
 
   it("never throws, so a failure cannot stop an account deletion", async () => {
     fetchMock.mockRejectedValue(new Error("network down"));
 
     await expect(revokeGitHubGrant("token")).resolves.toBeUndefined();
-    expect(console.error).toHaveBeenCalledOnce();
+    expect(logger.error).toHaveBeenCalledOnce();
   });
 
   it("makes no request without the app's credentials", async () => {

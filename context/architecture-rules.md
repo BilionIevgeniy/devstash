@@ -118,7 +118,7 @@ Course specs name the paths of the original layout. Put the code here instead:
 - Prisma (`@/lib/prisma`, `@/generated/prisma`) is imported only by `queries.ts`, services and `lib`, and by `auth/nextauth/auth.ts` for `PrismaAdapter`
 - Server-only modules start with `import "server-only"`: every `queries.ts`, every file in `services/`, `auth/nextauth/auth.ts` and `session.ts`, and the `lib` files that touch secrets or Node
 - Browser-only modules that are not components or hooks start with `import "client-only"` (`put-file`, `fetch-item-detail`). `"use client"` goes only on the component that is the boundary, never on a hook or a helper
-- A hook with no feature knowledge, needed by two features, goes to `src/components/common/hooks/` (created with its first hook)
+- A hook with no feature knowledge, needed by two features or by several routes of `app/` (the three error boundaries share `useReportError`), goes to `src/components/common/hooks/` (created with its first hook)
 - Vendor SDKs (`resend`, `@upstash/*`, `stripe`, `openai`, `@aws-sdk/*`) are imported only inside `lib`
 - Server Actions return `ActionResult<T>`, services return `OperationResult` (`src/lib/action-result.ts`). Expected failures are returned; unexpected ones throw and the entry point catches them
 - Authenticated routes live in `app/(app)/`; widen the matcher in `src/proxy.ts` in the same change

@@ -6,6 +6,7 @@ import { stripeIdOf } from "@/features/billing/domain/subscription";
 import { getEntitlements } from "@/features/billing/queries";
 import type { Plan } from "@/features/billing/schemas";
 import type { OperationResult } from "@/lib/action-result";
+import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import {
   getStripe,
@@ -136,7 +137,7 @@ export async function createPortalSession(
 
     // The id stays: the webhook finds the row only by it, and clearing it could
     // leave a Pro row that no later event can end.
-    console.warn(`The Stripe customer of user ${userId} is missing`);
+    logger.warn("The Stripe customer of a user is missing", { userId });
     return failure(NO_BILLING_ACCOUNT);
   }
 }
