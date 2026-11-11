@@ -29,7 +29,7 @@ Work deferred on purpose is listed in `context/todo.md` (not auto-loaded: read i
 - `npm run test` — Vitest, one run; must be green and run before every commit
 - `npm run test:watch` — Vitest in watch mode
 
-Tests are colocated as `[name].test.ts`; what to test and how is in "Testing" in `context/coding-standards.md`.
+Tests are colocated as `[name].test.ts` (node) and `[name].test.tsx` (components and hooks, jsdom); what to test and how is in "Testing" in `context/coding-standards.md`.
 
 ## Neon MCP
 

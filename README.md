@@ -17,7 +17,7 @@ What the product is and who it is for: [context/project-overview.md](context/pro
 | Billing | Stripe subscriptions, synced by webhook |
 | AI | OpenAI |
 | Email, rate limits | Resend, Upstash Redis |
-| Tests | Vitest |
+| Tests | Vitest, React Testing Library |
 | Hosting | Vercel |
 
 ## Getting started
