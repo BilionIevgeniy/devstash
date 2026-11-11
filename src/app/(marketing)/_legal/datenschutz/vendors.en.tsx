@@ -28,11 +28,12 @@ export const VENDORS_EN: LegalSection[] = [
       <>
         <p>
           We use the service providers below. Unless stated otherwise, they
-          process data on our behalf under data processing agreements (Art. 28
-          GDPR). All are US companies or part of US groups. Transfers rely on
-          the adequacy decision for the EU-US Data Privacy Framework or on the
-          standard contractual clauses of the European Commission (Art. 45 and
-          46 GDPR). You can get a copy of the safeguards on request.
+          process data on our behalf and under the data processing terms that
+          each provider offers its customers (Art. 28 GDPR). All are US
+          companies or part of US groups. Depending on the provider, transfers
+          rely on the adequacy decision for the EU-US Data Privacy Framework or
+          on the standard contractual clauses of the European Commission (Art.
+          45 and 46 GDPR). You can get a copy of the safeguards on request.
         </p>
         <VendorList texts={TEXTS} linkLabel="Provider privacy notice" />
       </>

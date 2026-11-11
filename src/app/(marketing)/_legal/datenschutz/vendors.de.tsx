@@ -7,7 +7,7 @@ const TEXTS: Record<VendorId, string> = {
     "Hosting und Auslieferung der Website und der Anwendung. Bei jedem Aufruf entstehen Server-Protokolle mit IP-Adresse und Anfragedaten. Die Anwendung läuft in der Region Washington, D.C. (USA). Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.",
   neon: "Datenbank: speichert Ihr Konto und alle Ihre Inhalte mit Ausnahme der Dateien. Standort: AWS-Region us-east-2 (Ohio, USA). Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.",
   cloudflare:
-    "Cloudflare R2: nicht öffentlicher Speicher für hochgeladene Dateien und Bilder. Sie sind nur über kurzzeitig gültige, signierte Adressen abrufbar. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.",
+    "Cloudflare R2: nicht öffentlicher Speicher für hochgeladene Dateien und Bilder. Die Dateien sind nur über kurzzeitig gültige, signierte Adressen abrufbar. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.",
   openai:
     "Sprachmodell für die KI-Funktionen, nur nach Ihrem Klick (siehe „KI-Funktionen“). Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.",
   stripe:
@@ -28,12 +28,13 @@ export const VENDORS_DE: LegalSection[] = [
       <>
         <p>
           Wir setzen die folgenden Dienstleister ein. Soweit unten nichts
-          anderes steht, verarbeiten sie Daten in unserem Auftrag auf Grundlage
-          von Auftragsverarbeitungsverträgen (Art. 28 DSGVO). Alle sind
-          US-Unternehmen oder gehören zu US-Konzernen. Die Übermittlung stützt
-          sich auf den Angemessenheitsbeschluss zum EU-US Data Privacy Framework
-          oder auf Standardvertragsklauseln der EU-Kommission (Art. 45 und 46
-          DSGVO). Eine Kopie der Garantien erhalten Sie auf Anfrage.
+          anderes steht, verarbeiten sie Daten in unserem Auftrag und nach den
+          Auftragsverarbeitungsbedingungen, die der jeweilige Anbieter für seine
+          Kunden bereithält (Art. 28 DSGVO). Alle sind US-Unternehmen oder
+          gehören zu US-Konzernen. Für die Übermittlung gelten je nach Anbieter
+          der Angemessenheitsbeschluss zum EU-US Data Privacy Framework oder
+          Standardvertragsklauseln der EU-Kommission (Art. 45 und 46 DSGVO).
+          Eine Kopie der Garantien erhalten Sie auf Anfrage.
         </p>
         <VendorList
           texts={TEXTS}

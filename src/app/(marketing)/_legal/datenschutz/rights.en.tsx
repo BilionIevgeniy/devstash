@@ -40,12 +40,22 @@ export const RIGHTS_EN: LegalSection[] = [
           account yourself in the application; to correct your name or email
           address, and for anything else, send us an email.
         </p>
-        <p>
-          You can object at any time, on grounds relating to your particular
-          situation, to processing that we base on legitimate interests (Art. 21
-          GDPR).
-        </p>
       </>
+    ),
+  },
+  {
+    id: "objection",
+    heading: "Right to object",
+    body: (
+      <p>
+        You have the right to object at any time, on grounds relating to your
+        particular situation, to the processing of personal data concerning you
+        that we base on legitimate interests (Art. 6 (1) f GDPR; Art. 21 GDPR).
+        We will then stop processing the data unless we can demonstrate
+        compelling legitimate grounds that override your interests, rights and
+        freedoms, or the processing serves the establishment, exercise or
+        defence of legal claims. An email is enough to object.
+      </p>
     ),
   },
   {

@@ -41,12 +41,24 @@ export const RIGHTS_DE: LegalSection[] = [
           Name oder E-Mail-Adresse und für alles andere schreiben Sie uns eine
           E-Mail.
         </p>
-        <p>
-          Sie können der Verarbeitung, die wir auf berechtigte Interessen
-          stützen, jederzeit aus Gründen widersprechen, die sich aus Ihrer
-          besonderen Situation ergeben (Art. 21 DSGVO).
-        </p>
       </>
+    ),
+  },
+  {
+    id: "objection",
+    heading: "Widerspruchsrecht",
+    body: (
+      <p>
+        Sie haben das Recht, aus Gründen, die sich aus Ihrer besonderen
+        Situation ergeben, jederzeit gegen die Verarbeitung Sie betreffender
+        personenbezogener Daten, die wir auf berechtigte Interessen stützen
+        (Art. 6 Abs. 1 lit. f DSGVO), Widerspruch einzulegen (Art. 21 DSGVO).
+        Wir verarbeiten die Daten dann nicht mehr, es sei denn, wir können
+        zwingende schutzwürdige Gründe dafür nachweisen, die Ihre Interessen,
+        Rechte und Freiheiten überwiegen, oder die Verarbeitung dient der
+        Geltendmachung, Ausübung oder Verteidigung von Rechtsansprüchen. Es
+        genügt ein Widerspruch per E-Mail.
+      </p>
     ),
   },
   {

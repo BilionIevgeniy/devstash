@@ -2,6 +2,8 @@
 
 **Status: draft for the operator.** Facts as of 2026-11-11. This is engineering documentation, not legal advice. `⟦OPERATOR: …⟧` marks what only the owner can know or decide (dates of accepted DPAs, regions, transfer mechanisms); nothing marked so has been guessed. The privacy notice (`src/app/(marketing)/_legal/datenschutz/`) is written from this file, and the reasons behind the launch mode are in [ADR 0014](../adr/0014-launch-mode.md).
 
+**Owner decision, 2026-11-11:** this is a portfolio project, and the owner chose not to research the vendor facts. Every `⟦OPERATOR⟧` below about a DPA, a transfer mechanism or a region therefore stays open, and the published notice only says what each provider's own terms offer (processing terms, and per provider the DPF or SCCs), not that each has been checked. `context/todo.md` ("Germany: tax and legal") keeps the item for the day real users or live payments arrive.
+
 When a vendor is added, removed or moved, change this file, the `VENDORS` list in `_legal/vendors.ts` and both language files of the notice in the same change.
 
 ## 1. Controller
