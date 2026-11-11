@@ -15,7 +15,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # The job name is the check that branch protection on main requires.
+  # The job names `ci` and `integration` are the checks that branch protection
+  # on main requires.
   ci:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -48,3 +49,48 @@ jobs:
       - run: npm run typecheck
       - run: npm run test
       - run: npm run build
+
+  # The integration tests: the app's Prisma on a real Postgres, so a `where`
+  # without `userId` fails a test. Runs beside `ci`, on every PR.
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # The test database is the only real service: a Postgres container of the
+    # same major version as Neon, created empty for this run and thrown away
+    # after it. It takes connections without a password (trust): it is reached
+    # only from this runner, and a URL with no password is no secret to a
+    # scanner. No GitHub secret is used.
+    # - TEST_DATABASE_URL: read by vitest.integration.config.mts, refused by
+    #   requireTestDatabase unless the host is local.
+    # - DATABASE_URL, DIRECT_URL: the same database. prisma.config.ts reads
+    #   DIRECT_URL for `prisma generate` in `npm ci`; the tests hand both to
+    #   Prisma themselves.
+    # Upstash, R2, Resend, Stripe, OpenAI and GitHub are mocked in
+    # test/integration/setup.ts, so none of their keys is set.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: devstash_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d devstash_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://postgres@localhost:5432/devstash_test
+      DATABASE_URL: postgresql://postgres@localhost:5432/devstash_test
+      DIRECT_URL: postgresql://postgres@localhost:5432/devstash_test
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run test:integration

@@ -18,6 +18,9 @@ export const itemTypeSelect = {
   color: true,
 } satisfies Prisma.ItemTypeSelect;
 
+// System types only, shared by every user, so no owner in the where. When
+// custom types arrive, a lookup by name must add the caller (see "Known risks"
+// in docs/architecture.md).
 export async function getItemTypeByName(
   name: string,
 ): Promise<ItemTypeInfo | null> {
@@ -28,11 +31,14 @@ export async function getItemTypeByName(
   return type ? toItemTypeInfo(type) : null;
 }
 
+// The shared system types, and the caller's own types once custom types exist:
+// someone else's custom type is never read, whatever ids come in.
 export async function getItemTypesById(
+  userId: string,
   typeIds: string[],
 ): Promise<Map<string, ItemTypeInfo>> {
   const types = await prisma.itemType.findMany({
-    where: { id: { in: typeIds } },
+    where: { id: { in: typeIds }, OR: [{ isSystem: true }, { userId }] },
     select: itemTypeSelect,
   });
 

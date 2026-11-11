@@ -47,11 +47,11 @@ interface CollectionItemTypes {
 }
 
 // One read of the types of all the rows; the result ranks those of one row.
-async function typeRanker(rows: CollectionItemTypes[]) {
+async function typeRanker(userId: string, rows: CollectionItemTypes[]) {
   const typeIds = new Set(
     rows.flatMap(({ items }) => items.map(({ item }) => item.typeId)),
   );
-  const typesById = await getItemTypesById([...typeIds]);
+  const typesById = await getItemTypesById(userId, [...typeIds]);
 
   return ({ items }: CollectionItemTypes) =>
     rankTypesByUsage(
@@ -73,7 +73,7 @@ async function fetchCollections(
     select: collectionSelect,
   });
 
-  const rankTypes = await typeRanker(collections);
+  const rankTypes = await typeRanker(userId, collections);
 
   return collections.map(({ items, _count, ...collection }) => ({
     ...collection,
@@ -151,7 +151,7 @@ export async function getFavoriteCollections(
       ...collectionItemTypesSelect,
     },
   });
-  const rankTypes = await typeRanker(collections);
+  const rankTypes = await typeRanker(userId, collections);
 
   return collections.map(({ id, name, favoritedAt, updatedAt, items }) => ({
     id,
