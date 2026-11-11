@@ -71,6 +71,18 @@ We will create a new branch for every feature/fix. Name branch **feature/[featur
 - Don't add "nice to have" features
 - Preserve existing patterns in the codebase
 
+## Production standard
+
+What a production project would not ship without is part of the feature. It is not a "nice to have" in the sense of "Code Changes" above. These items go into the plan from the start, as plan items and not as questions: the user's go on the plan covers them. Report what was done and why, instead of asking whether to do it.
+
+- A check a feature adds to CI (a job, a test suite) becomes a required check on `main` once it has run green on the PR, and the docs that list the checks change in the same commit
+- The secrets a new CI job needs come from the user (an account, a token). Once they are in `.env.test`, set them in GitHub with `gh`: piped from the file straight to `gh`, so the values never enter the conversation (the only use of an env file other than `.env.demo`, which is the only one `.env.example` lets Claude Code read)
+- A new rule or flow comes with its tests; the docs and instructions that name it change in the same commit; a new variable, secret or job is written down where the next person looks (README, `.env.example`)
+- Security basics hold without being asked: no secret in code, logs or URLs, least privilege (a CI secret is set on the step that needs it, not on the job), a migration that is backward compatible
+- Ask only for what only the user can give or choose: an account, a token, a payment, a choice between vendors or plans, or a trade-off with no standard answer
+
+This does not lift the gates above or the plan-first rule of the user's global instructions: the plan is shown and gets its go, the commit and the push of a feature wait for the user's go, `main` changes only through a PR merged on GitHub, and that merge waits for the user's go because it deploys production.
+
 ## Code Review
 
 Review AI-generated code periodically, especially for:
