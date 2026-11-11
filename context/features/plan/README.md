@@ -12,7 +12,7 @@ Rules that apply to every file:
 |---|---|---|---|
 | 1 | [CI and safe migrations](1.ci-and-safe-migrations.md) | MUST | [ ] |
 | 2 | [Legal pages and privacy](2.legal-pages-and-privacy.md) | MUST | [ ] |
-| 3 | [Component tests with React Testing Library](3.component-tests-rtl.md) | MUST | [ ] |
+| 3 | [Component tests with React Testing Library](3.component-tests-rtl.md) | MUST | [x] |
 | 4 | [Tenant isolation integration tests](4.tenant-isolation-integration-tests.md) | MUST | [ ] |
 | 5 | [E2E smoke tests](5.e2e-smoke.md) | MUST | [ ] |
 | 6 | [Observability](6.observability.md) | MUST | [ ] |

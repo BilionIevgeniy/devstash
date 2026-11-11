@@ -122,7 +122,7 @@ Course specs name the paths of the original layout. Put the code here instead:
 - Vendor SDKs (`resend`, `@upstash/*`, `stripe`, `openai`, `@aws-sdk/*`) are imported only inside `lib`
 - Server Actions return `ActionResult<T>`, services return `OperationResult` (`src/lib/action-result.ts`). Expected failures are returned; unexpected ones throw and the entry point catches them
 - Authenticated routes live in `app/(app)/`; widen the matcher in `src/proxy.ts` in the same change
-- Tests are colocated as `[name].test.ts` (see "Testing" in `coding-standards.md`)
+- Tests are colocated as `[name].test.ts` and, for components and hooks, `[name].test.tsx` (see "Testing" in `coding-standards.md`)
 
 ## What the lint enforces
 

@@ -191,6 +191,7 @@ const restrictSyntax = (selectors, message) => [
 // 80 lines per function, since JSX is long but flat; every other role gets 50.
 const SIZE_IGNORES = [
   "src/**/*.test.ts",
+  "src/**/*.test.tsx",
   "src/components/ui/**",
   "src/generated/**",
 ];
