@@ -1,11 +1,19 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { ReactNode } from "react";
+import {
+  useImperativeHandle,
+  useRef,
+  useState,
+  type ReactNode,
+  type Ref,
+} from "react";
+import { flushSync } from "react-dom";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditorHeader } from "@/features/editor/_internal/components/EditorHeader";
+import type { EditorHandle } from "@/features/editor/types";
 import { cn } from "@/lib/utils";
 
 const FRAME_CLASS = "overflow-hidden rounded-md border bg-card";
@@ -35,6 +43,8 @@ interface MarkdownEditorProps {
   /** Read view only: what Copy takes while `view` shows other text. */
   copyValue?: string;
   copyLabel?: string;
+  /** Focuses the textarea, from the Preview tab too. Does nothing when read-only. */
+  ref?: Ref<EditorHandle>;
 }
 
 export function MarkdownEditor({
@@ -47,7 +57,26 @@ export function MarkdownEditor({
   view,
   copyValue,
   copyLabel,
+  ref,
 }: MarkdownEditorProps) {
+  const [tab, setTab] = useState("write");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // The Write panel is hidden while Preview is open, and a hidden textarea
+  // cannot take the focus. The tab is switched and committed first, so the
+  // focus lands on a visible one. Called from event handlers only.
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus() {
+        if (!textareaRef.current) return;
+        flushSync(() => setTab("write"));
+        textareaRef.current.focus();
+      },
+    }),
+    [],
+  );
+
   if (readOnly) {
     return (
       <ReadOnlyMarkdown
@@ -62,7 +91,8 @@ export function MarkdownEditor({
 
   return (
     <Tabs
-      defaultValue="write"
+      value={tab}
+      onValueChange={setTab}
       className={cn(
         FRAME_CLASS,
         "gap-0 transition-[color,box-shadow] has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-3 has-[textarea:focus-visible]:ring-ring/50",
@@ -86,6 +116,7 @@ export function MarkdownEditor({
         className="data-[state=inactive]:hidden"
       >
         <textarea
+          ref={textareaRef}
           id={id}
           value={value}
           onChange={(event) => onChange?.(event.target.value)}

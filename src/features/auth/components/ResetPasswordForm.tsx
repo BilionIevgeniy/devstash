@@ -2,26 +2,69 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition, type SubmitEvent } from "react";
+import { useActionState } from "react";
 import { toast } from "sonner";
 
 import { resetPassword } from "@/features/auth/_internal/actions/password-reset";
+import {
+  emptyFormValues,
+  formValues,
+} from "@/features/auth/_internal/domain/form-values";
+import { GENERIC_ERROR_MESSAGE } from "@/features/auth/_internal/messages";
 import {
   INVALID_RESET_LINK_MESSAGE,
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
+import type { FormActionState } from "@/features/auth/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const SUCCESS_MESSAGE = "Password updated. You can now sign in.";
 const SIGN_IN_URL = "/sign-in";
-const GENERIC_ERROR = "Something went wrong. Please try again.";
 
 const FIELDS = [
   { name: "password", label: "New password" },
   { name: "confirmPassword", label: "Confirm new password" },
 ] as const;
+
+const FIELD_NAMES = FIELDS.map(({ name }) => name);
+type State = FormActionState<(typeof FIELD_NAMES)[number]>;
+const INITIAL_STATE: State = {
+  error: null,
+  values: emptyFormValues(FIELD_NAMES),
+};
+
+type Router = ReturnType<typeof useRouter>;
+
+// Runs in the browser, since the answer decides what the page does next: a
+// toast and a move to the sign-in page. The values come back with the state, so
+// the form keeps what the user typed, and are dropped once the reset worked.
+async function submit(
+  router: Router,
+  email: string,
+  token: string,
+  formData: FormData,
+): Promise<State> {
+  const values = formValues(formData, FIELD_NAMES);
+  if (values.password !== values.confirmPassword) {
+    return { error: "Passwords do not match", values };
+  }
+
+  try {
+    const result = await resetPassword({ ...values, email, token });
+    if (!result.success) {
+      return { error: result.error ?? GENERIC_ERROR_MESSAGE, values };
+    }
+    toast.success(SUCCESS_MESSAGE);
+    // replace: Back must not lead to the link that was just used.
+    router.replace(SIGN_IN_URL);
+    return INITIAL_STATE;
+  } catch {
+    // A rejection left in an action would show the error page.
+    return { error: GENERIC_ERROR_MESSAGE, values };
+  }
+}
 
 interface ResetPasswordFormProps {
   email: string;
@@ -30,45 +73,16 @@ interface ResetPasswordFormProps {
 
 export function ResetPasswordForm({ email, token }: ResetPasswordFormProps) {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
-
-  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const password = String(formData.get("password"));
-    const confirmPassword = String(formData.get("confirmPassword"));
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    setError(null);
-    startTransition(async () => {
-      try {
-        const result = await resetPassword({
-          email,
-          token,
-          password,
-          confirmPassword,
-        });
-        if (result.success) {
-          toast.success(SUCCESS_MESSAGE);
-          // replace: Back must not lead to the link that was just used.
-          router.replace(SIGN_IN_URL);
-          return;
-        }
-        setError(result.error);
-      } catch {
-        // A rejection left in the transition would show the error page.
-        setError(GENERIC_ERROR);
-      }
-    });
-  }
+  const [state, formAction, isPending] = useActionState(
+    (_previous: State, formData: FormData) =>
+      submit(router, email, token, formData),
+    INITIAL_STATE,
+  );
+  // Gone while a new attempt runs, so a repeated error is announced again.
+  const error = isPending ? null : state.error;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form action={formAction} className="space-y-4">
       {FIELDS.map(({ name, label }) => (
         <div key={name} className="space-y-2">
           <label htmlFor={name} className="text-sm font-medium">
@@ -79,6 +93,7 @@ export function ResetPasswordForm({ email, token }: ResetPasswordFormProps) {
             name={name}
             type="password"
             autoComplete="new-password"
+            defaultValue={state.values[name]}
             required
             minLength={MIN_PASSWORD_LENGTH}
             maxLength={MAX_PASSWORD_LENGTH}

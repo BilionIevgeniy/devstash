@@ -1,7 +1,7 @@
 "use client";
 
 import { unstable_rethrow } from "next/navigation";
-import { useState, useTransition, type SubmitEvent } from "react";
+import { useActionState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -9,14 +9,23 @@ import {
   signOutAfterPasswordChange,
 } from "@/features/auth/_internal/actions/account";
 import {
+  emptyFormValues,
+  formValues,
+} from "@/features/auth/_internal/domain/form-values";
+import { GENERIC_ERROR_MESSAGE } from "@/features/auth/_internal/messages";
+import {
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
+import type { FormActionState } from "@/features/auth/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const SUCCESS_MESSAGE = "Password updated. Please sign in again.";
-const GENERIC_ERROR = "Something went wrong. Please try again.";
+// The password is changed and every session is revoked, so a retry would only
+// be refused: the user is told to start over from the sign-in page.
+const SIGN_OUT_FAILED_MESSAGE =
+  "Password updated. Reload the page to sign in again.";
 
 const FIELDS = [
   {
@@ -39,46 +48,50 @@ const FIELDS = [
   },
 ] as const;
 
-export function ChangePasswordForm() {
-  const [error, setError] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
+const FIELD_NAMES = FIELDS.map(({ name }) => name);
+type State = FormActionState<(typeof FIELD_NAMES)[number]>;
+const INITIAL_STATE: State = {
+  error: null,
+  values: emptyFormValues(FIELD_NAMES),
+};
 
-  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-    const currentPassword = String(formData.get("currentPassword"));
-    const newPassword = String(formData.get("newPassword"));
-    const confirmPassword = String(formData.get("confirmPassword"));
-
-    if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    setError(null);
-    startTransition(async () => {
-      try {
-        const result = await changePassword({
-          currentPassword,
-          newPassword,
-          confirmPassword,
-        });
-        if (result.success) {
-          // The change revoked every session, this one included; signing out
-          // clears the cookie and redirects to /sign-in.
-          toast.success(SUCCESS_MESSAGE);
-          await signOutAfterPasswordChange();
-          return;
-        }
-        setError(result.error);
-      } catch (error) {
-        // The sign-out's redirect arrives here too, and must go on.
-        unstable_rethrow(error);
-        setError(GENERIC_ERROR);
-      }
-    });
+// Runs in the browser, since the answer decides what the page does next: a
+// toast and a sign-out that redirects. The values come back with the state, so
+// the form keeps what the user typed, and are dropped once the password is
+// changed.
+async function submit(_previous: State, formData: FormData): Promise<State> {
+  const values = formValues(formData, FIELD_NAMES);
+  if (values.newPassword !== values.confirmPassword) {
+    return { error: "Passwords do not match", values };
   }
+
+  try {
+    const result = await changePassword(values);
+    if (!result.success) {
+      return { error: result.error ?? GENERIC_ERROR_MESSAGE, values };
+    }
+  } catch (error) {
+    unstable_rethrow(error);
+    return { error: GENERIC_ERROR_MESSAGE, values };
+  }
+
+  // The change revoked every session, this one included; signing out clears
+  // the cookie and redirects to /sign-in.
+  toast.success(SUCCESS_MESSAGE);
+  try {
+    await signOutAfterPasswordChange();
+  } catch (error) {
+    // The sign-out's redirect arrives here too, and must go on.
+    unstable_rethrow(error);
+    return { error: SIGN_OUT_FAILED_MESSAGE, values: INITIAL_STATE.values };
+  }
+  return INITIAL_STATE;
+}
+
+export function ChangePasswordForm() {
+  const [state, formAction, isPending] = useActionState(submit, INITIAL_STATE);
+  // Gone while a new attempt runs, so a repeated error is announced again.
+  const error = isPending ? null : state.error;
 
   return (
     <div className="rounded-lg border bg-card p-6">
@@ -86,7 +99,7 @@ export function ChangePasswordForm() {
       <p className="text-sm text-muted-foreground">
         Enter your current password to set a new one.
       </p>
-      <form onSubmit={handleSubmit} className="mt-4 max-w-sm space-y-4">
+      <form action={formAction} className="mt-4 max-w-sm space-y-4">
         {FIELDS.map(({ name, label, autoComplete, isNewPassword }) => (
           <div key={name} className="space-y-2">
             <label htmlFor={name} className="text-sm font-medium">
@@ -97,6 +110,7 @@ export function ChangePasswordForm() {
               name={name}
               type="password"
               autoComplete={autoComplete}
+              defaultValue={state.values[name]}
               required
               minLength={isNewPassword ? MIN_PASSWORD_LENGTH : undefined}
               maxLength={isNewPassword ? MAX_PASSWORD_LENGTH : undefined}

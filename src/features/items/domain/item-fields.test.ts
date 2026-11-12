@@ -4,6 +4,9 @@ import {
   appendTag,
   canCreateType,
   canUseType,
+  CONTENT_MAX,
+  CONTENT_TOO_LONG_MESSAGE,
+  contentError,
   contentTypeFor,
   copyValueOf,
   editableFields,
@@ -287,5 +290,28 @@ describe("appendTag", () => {
     );
 
     expect(appendTag(full, "react")).toBeNull();
+  });
+});
+
+describe("contentError", () => {
+  const snippet = editableFields("snippet");
+
+  it("accepts content up to the limit", () => {
+    expect(contentError(snippet, "x".repeat(CONTENT_MAX))).toBeNull();
+  });
+
+  it("refuses content one character over the limit, in the words the server uses", () => {
+    expect(contentError(snippet, "x".repeat(CONTENT_MAX + 1))).toBe(
+      CONTENT_TOO_LONG_MESSAGE,
+    );
+    expect(CONTENT_TOO_LONG_MESSAGE).toBe(
+      `Content can be up to ${CONTENT_MAX} characters`,
+    );
+  });
+
+  it("does not judge the content of a type that has no content field", () => {
+    expect(
+      contentError(editableFields("link"), "x".repeat(CONTENT_MAX + 1)),
+    ).toBeNull();
   });
 });

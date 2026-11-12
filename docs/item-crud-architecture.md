@@ -209,7 +209,7 @@ Adding things:
 | `DeleteItemDialog`    | client | confirmation; on success closes the drawer                                                           | `id`, title        | `deleteItem`                   |
 | `NewItemSheet`        | client | hosts `ItemForm` in create mode; opened by the top bar's "New Item" button                           | system types       | none (the form calls)          |
 
-- Server components call queries; client components call actions through `useTransition` and report failures with `toast`, as `ChangePasswordForm` does.
+- Server components call queries; client components call actions through `useTransition` and report failures with `toast`, as `ItemEditForm` does.
 - Data passed to the form is plain strings and arrays (`ItemFormValues`), mapped from `ItemDetail` by a pure function, so no `Date` or Prisma shape crosses into a client component.
 - `TopBar` is in `app-shell` (rank 10) and may import `items` (rank 6). Today its "New Item" button has no handler.
 

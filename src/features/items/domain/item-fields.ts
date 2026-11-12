@@ -34,6 +34,7 @@ export const TAG_MAX = 50;
 export const COLLECTIONS_MAX = 100;
 
 export const URL_REQUIRED_MESSAGE = "URL is required";
+export const CONTENT_TOO_LONG_MESSAGE = `Content can be up to ${CONTENT_MAX} characters`;
 
 // The types the create dialog offers. File and image need Pro (requiresPro).
 export const CREATABLE_TYPES = [
@@ -65,6 +66,18 @@ export function editableFields(typeName: string): EditableFields {
     url: URL_TYPES.includes(typeName),
     file: FILE_TYPES[typeName] ?? null,
   };
+}
+
+// What is wrong with the content of a form before it is sent, or null. The
+// editors have no maxLength to stop a long paste, and the server refuses the
+// same limit; a type without a content field has nothing to refuse.
+export function contentError(
+  fields: EditableFields,
+  content: string,
+): string | null {
+  return fields.content && content.length > CONTENT_MAX
+    ? CONTENT_TOO_LONG_MESSAGE
+    : null;
 }
 
 interface TypeSpecificUpdate {

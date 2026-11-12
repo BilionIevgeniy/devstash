@@ -7,15 +7,26 @@ interface FieldProps {
   hint?: string;
   /** A control for the whole field, at the end of the label row. */
   action?: ReactNode;
+  /**
+   * Runs when the label is clicked, for a control the label cannot reach by
+   * `htmlFor`, such as an editor that owns its own textarea.
+   */
+  onLabelClick?: () => void;
   children: (id: string) => ReactNode;
 }
 
 const LABEL_CLASS = "block text-sm font-medium text-muted-foreground";
 
-export function Field({ label, hint, action, children }: FieldProps) {
+export function Field({
+  label,
+  hint,
+  action,
+  onLabelClick,
+  children,
+}: FieldProps) {
   const id = useId();
   const labelElement = (
-    <label htmlFor={id} className={LABEL_CLASS}>
+    <label htmlFor={id} className={LABEL_CLASS} onClick={onLabelClick}>
       {label}
     </label>
   );

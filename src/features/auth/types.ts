@@ -2,6 +2,15 @@ import type { ActionResult } from "@/lib/action-result";
 
 export type AuthActionState = ActionResult;
 
+/**
+ * The state of a form whose action runs in the browser: the error to show and
+ * the values to put back, since React clears a form after its action.
+ */
+export interface FormActionState<Field extends string> {
+  error: string | null;
+  values: Readonly<Record<Field, string>>;
+}
+
 export interface AccountState {
   hasPassword: boolean;
   isEmailVerified: boolean;
