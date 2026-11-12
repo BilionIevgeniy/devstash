@@ -7,7 +7,6 @@ import {
   type SubmitEvent,
   type TransitionStartFunction,
 } from "react";
-import { unstable_rethrow } from "next/navigation";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,22 +22,18 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ProBadge } from "@/features/billing/components/ProBadge";
+import type { EditorHandle } from "@/features/editor/types";
 import type { UploadedFile } from "@/features/files/types";
 import { CollectionSelect } from "@/features/items/_internal/components/CollectionSelect";
 import { ItemFileField } from "@/features/items/_internal/components/ItemFileField";
 import { ItemFields } from "@/features/items/_internal/components/ItemFields";
 import { ItemTypeSelect } from "@/features/items/_internal/components/ItemTypeSelect";
-import { createItem } from "@/features/items/actions/item";
-import {
-  typeFieldValues,
-  type ItemFormValues,
-} from "@/features/items/domain/item-changes";
+import { submitNewItem } from "@/features/items/_internal/components/submit-new-item";
+import type { ItemFormValues } from "@/features/items/domain/item-changes";
 import {
   canCreateType,
   editableFields,
-  parseTagInput,
   type CreatableTypeName,
-  type EditableFields,
 } from "@/features/items/domain/item-fields";
 
 const DEFAULT_TYPE: CreatableTypeName = "snippet";
@@ -52,7 +47,6 @@ const EMPTY_VALUES: ItemFormValues = {
   collectionIds: [],
 };
 const CREATED_MESSAGE = "Item created";
-const CREATE_FAILED_MESSAGE = "Couldn't create the item";
 
 interface CreateItemDialogProps {
   /** The type chosen when the dialog opens; also names the button. */
@@ -150,26 +144,6 @@ interface CreateItemFormProps {
   onCreated: () => void;
 }
 
-// Only the fields of the chosen type are sent; the others keep their input in
-// case the type is switched back.
-function createPayload(
-  typeName: CreatableTypeName,
-  fields: EditableFields,
-  values: ItemFormValues,
-  upload: UploadedFile | null,
-) {
-  return {
-    typeName,
-    title: values.title,
-    description: values.description,
-    tags: parseTagInput(values.tags),
-    collectionIds: values.collectionIds,
-    ...typeFieldValues(fields, values),
-    ...(fields.file &&
-      upload && { file: { key: upload.key, name: upload.fileName } }),
-  };
-}
-
 function CreateItemForm({
   initialType,
   isPro,
@@ -180,6 +154,7 @@ function CreateItemForm({
   const [typeName, setTypeName] = useState<CreatableTypeName>(initialType);
   const [values, setValues] = useState<ItemFormValues>(EMPTY_VALUES);
   const [upload, setUpload] = useState<UploadedFile | null>(null);
+  const contentRef = useRef<EditorHandle>(null);
   const fields = editableFields(typeName);
   const isMissingRequired =
     values.title.trim() === "" ||
@@ -202,26 +177,14 @@ function CreateItemForm({
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    startCreating(async () => {
-      try {
-        const result = await createItem(
-          createPayload(typeName, fields, values, upload),
-        );
-        if (result.success) {
-          // After the await this is no longer part of the transition, so it
-          // is wrapped again: the dialog closes in the commit that brings the
-          // refreshed page with the new item, not before it.
-          startCreating(onCreated);
-        } else {
-          toast.error(result.error ?? CREATE_FAILED_MESSAGE);
-        }
-      } catch (error) {
-        // A signed-out caller's redirect arrives here too, and must go on. A
-        // rejection left in the transition would replace the page with an
-        // error page, the root one or `(app)/error.tsx`, by where this mounts.
-        unstable_rethrow(error);
-        toast.error(CREATE_FAILED_MESSAGE);
-      }
+    submitNewItem({
+      typeName,
+      fields,
+      values,
+      upload,
+      contentRef,
+      startCreating,
+      onCreated,
     });
   }
 
@@ -247,6 +210,7 @@ function CreateItemForm({
         onChange={setField}
         canUseAi={isPro}
         fileName={upload?.fileName}
+        contentRef={contentRef}
       />
       <CollectionSelect
         value={values.collectionIds}

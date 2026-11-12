@@ -3,6 +3,7 @@ import Editor, {
   type BeforeMount,
   type OnMount,
 } from "@monaco-editor/react";
+import { useImperativeHandle, useRef, type Ref } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { EditorFallback } from "@/features/editor/_internal/components/EditorFallback";
@@ -13,6 +14,7 @@ import {
 } from "@/features/editor/_internal/domain/editor-themes";
 import { EDITOR_THEMES } from "@/features/editor/_internal/domain/preferences";
 import { useEditorPreferences } from "@/features/editor/components/EditorPreferencesProvider";
+import type { EditorHandle } from "@/features/editor/types";
 
 // At the top of the module: the loader reads this once, when the first Editor
 // mounts, and this is the only file that renders one. Without it Monaco comes
@@ -33,6 +35,7 @@ interface MonacoEditorProps {
   ariaLabel: string;
   onChange?: (value: string) => void;
   onContentHeight: (contentHeight: number) => void;
+  ref?: Ref<EditorHandle>;
 }
 
 export function MonacoEditor({
@@ -43,11 +46,27 @@ export function MonacoEditor({
   ariaLabel,
   onChange,
   onContentHeight,
+  ref,
 }: MonacoEditorProps) {
   const { preferences } = useEditorPreferences();
   const hasLoadFailed = useMonacoLoadFailed();
+  const monacoRef = useRef<Parameters<OnMount>[0] | null>(null);
+  const fallbackRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // The fallback textarea wins when it is shown: Monaco's instance is gone by
+  // then. Before Monaco has mounted there is nothing to focus yet.
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus() {
+        (fallbackRef.current ?? monacoRef.current)?.focus();
+      },
+    }),
+    [],
+  );
 
   const handleMount: OnMount = (editor) => {
+    monacoRef.current = editor;
     onContentHeight(editor.getContentHeight());
     editor.onDidContentSizeChange((event) =>
       onContentHeight(event.contentHeight),
@@ -61,6 +80,7 @@ export function MonacoEditor({
         readOnly={readOnly}
         ariaLabel={ariaLabel}
         onChange={onChange}
+        textareaRef={fallbackRef}
       />
     );
   }

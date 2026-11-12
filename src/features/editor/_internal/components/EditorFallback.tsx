@@ -1,3 +1,5 @@
+import type { Ref } from "react";
+
 import { Textarea } from "@/components/ui/textarea";
 
 interface EditorFallbackProps {
@@ -5,6 +7,8 @@ interface EditorFallbackProps {
   readOnly: boolean;
   ariaLabel: string;
   onChange?: (value: string) => void;
+  /** The textarea, so the editor's handle can focus it. */
+  textareaRef?: Ref<HTMLTextAreaElement>;
 }
 
 // Shown when Monaco could not load: the code stays readable, and editable in a
@@ -14,6 +18,7 @@ export function EditorFallback({
   readOnly,
   ariaLabel,
   onChange,
+  textareaRef,
 }: EditorFallbackProps) {
   return (
     <div className="space-y-2 p-3">
@@ -21,6 +26,7 @@ export function EditorFallback({
         The code editor couldn&apos;t load. Reload the page to try again.
       </p>
       <Textarea
+        ref={textareaRef}
         value={value}
         readOnly={readOnly}
         aria-label={ariaLabel}

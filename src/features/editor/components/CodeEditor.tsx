@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, type ReactNode } from "react";
+import { Suspense, useState, type ReactNode, type Ref } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { EditorHeader } from "@/features/editor/_internal/components/EditorHeader";
@@ -9,6 +9,7 @@ import {
   editorLanguage,
   languageLabel,
 } from "@/features/editor/domain/code-language";
+import type { EditorHandle } from "@/features/editor/types";
 import { cn } from "@/lib/utils";
 
 const MAX_HEIGHT = 400;
@@ -28,6 +29,8 @@ interface CodeEditorProps {
   headerActions?: ReactNode;
   /** Shown in place of the code, such as an explanation of it. */
   view?: ReactNode;
+  /** Focuses the editor. Does nothing until Monaco has loaded. */
+  ref?: Ref<EditorHandle>;
 }
 
 export function CodeEditor({
@@ -38,6 +41,7 @@ export function CodeEditor({
   ariaLabel = "Code",
   headerActions,
   view,
+  ref,
 }: CodeEditorProps) {
   const minHeight = readOnly ? MIN_READ_HEIGHT : MIN_EDIT_HEIGHT;
   const fallbackHeight = readOnly ? READ_FALLBACK_HEIGHT : EDIT_FALLBACK_HEIGHT;
@@ -74,6 +78,7 @@ export function CodeEditor({
               ariaLabel={ariaLabel}
               onChange={onChange}
               onContentHeight={fit}
+              ref={ref}
             />
           </Suspense>
         </div>

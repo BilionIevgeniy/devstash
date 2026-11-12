@@ -1,10 +1,13 @@
 "use client";
 
+import type { RefObject } from "react";
+
 import { Field } from "@/components/common/Field";
 import { Input } from "@/components/ui/input";
 import { CodeEditor } from "@/features/editor/components/CodeEditor";
 import { LanguageSelect } from "@/features/editor/components/LanguageSelect";
 import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
+import type { EditorHandle } from "@/features/editor/types";
 import { DescriptionField } from "@/features/items/_internal/components/DescriptionField";
 import { TagsField } from "@/features/items/_internal/components/TagsField";
 import type {
@@ -27,6 +30,8 @@ interface ItemFieldsProps {
   canUseAi: boolean;
   /** The upload's name, which the AI reads for a file or image. */
   fileName?: string | null;
+  /** Reaches the content editor, for a label click and a refused submit. */
+  contentRef: RefObject<EditorHandle | null>;
 }
 
 // The text fields of the create and edit forms, in the same order in both;
@@ -39,6 +44,7 @@ export function ItemFields({
   onChange,
   canUseAi,
   fileName,
+  contentRef,
 }: ItemFieldsProps) {
   const source = aiSource(fields, { ...values, fileName });
 
@@ -94,6 +100,7 @@ export function ItemFields({
           value={values.content}
           language={values.language}
           onChange={(value) => onChange("content", value)}
+          editorRef={contentRef}
         />
       )}
       <TagsField
@@ -113,26 +120,37 @@ interface ContentFieldProps {
   value: string;
   language: string;
   onChange: (value: string) => void;
+  editorRef: RefObject<EditorHandle | null>;
 }
 
+// The label cannot reach Monaco's own textarea by `htmlFor`, so a click on it
+// goes through the editor's handle. Both editors take that way: the handle of
+// the Markdown editor also leaves its Preview tab, which `htmlFor` cannot.
 function ContentField({
   isCode,
   value,
   language,
   onChange,
+  editorRef,
 }: ContentFieldProps) {
   return (
-    <Field label="Content">
+    <Field label="Content" onLabelClick={() => editorRef.current?.focus()}>
       {(id) =>
         isCode ? (
           <CodeEditor
+            ref={editorRef}
             value={value}
             language={language}
             onChange={onChange}
             ariaLabel="Content"
           />
         ) : (
-          <MarkdownEditor id={id} value={value} onChange={onChange} />
+          <MarkdownEditor
+            ref={editorRef}
+            id={id}
+            value={value}
+            onChange={onChange}
+          />
         )
       }
     </Field>

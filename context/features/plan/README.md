@@ -9,16 +9,16 @@ Rules that apply to every file:
 - When a feature is merged, tick it in the table below and add it to `context/feature-history.md` as usual.
 
 | # | Feature | Priority | Status |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 1 | [CI and safe migrations](1.ci-and-safe-migrations.md) | MUST | [x] |
 | 2 | [Legal pages and privacy](2.legal-pages-and-privacy.md) | MUST | [x] |
 | 3 | [Component tests with React Testing Library](3.component-tests-rtl.md) | MUST | [x] |
 | 4 | [Tenant isolation integration tests](4.tenant-isolation-integration-tests.md) | MUST | [x] |
 | 5 | [E2E smoke tests](5.e2e-smoke.md) | MUST | [x] |
 | 6 | [Observability](6.observability.md) | MUST | [x] |
-| 7 | [URL filters and sort](7.url-filters-and-sort.md) | MUST | [ ] |
-| 8 | [Server search with debounce](8.server-search-with-debounce.md) | MUST | [ ] |
-| 9 | [Hooks, forms and editor focus](9.hooks-forms-and-editor-focus.md) | SHOULD | [ ] |
+| 7 | [URL filters and sort](7.url-filters-and-sort.md) | MUST | [x] |
+| 8 | [Server search with debounce](8.server-search-with-debounce.md) | MUST | [x] |
+| 9 | [Hooks, forms and editor focus](9.hooks-forms-and-editor-focus.md) | SHOULD | [x] |
 | 10 | [Import and export](10.import-export.md) | MUST | [ ] |
 | 11 | [English and German (i18n)](11.i18n-en-de.md) | SHOULD | [ ] |
 | 12 | [Client data and infinite lists](12.client-data-and-infinite-lists.md) | SHOULD | [ ] |
@@ -45,7 +45,7 @@ Deferred on purpose (in `context/todo.md`, not planned here): custom item types.
 `/feature complete` deletes the todo items a feature finished. Items these features finish or touch:
 
 | Todo item | Feature |
-|---|---|
+| --- | --- |
 | Pro features: Custom item types | stays deferred; feature 2 marks it "coming soon" on the pricing page |
 | Pro features: Export (JSON / ZIP) | 10 builds JSON export; feature 2 drops "ZIP" from the pricing text |
 | Germany: tax and legal (VAT, § 312k button, withdrawal, payment methods) | stays deferred (commercial launch); feature 2's ADR "Launch mode" points to it. Its "privacy policy and imprint" part is done by feature 2 |

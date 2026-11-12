@@ -8,6 +8,7 @@ import { FAVORITE_ITEM_SORTS } from "@/features/items/domain/favorite-sort";
 import {
   COLLECTIONS_MAX,
   CONTENT_MAX,
+  CONTENT_TOO_LONG_MESSAGE,
   CREATABLE_TYPES,
   DESCRIPTION_MAX,
   editableFields,
@@ -57,7 +58,7 @@ function optionalText(max: number, message: string) {
 // Not trimmed: leading whitespace is part of code. Only a blank field is null.
 const optionalContent = z
   .string()
-  .max(CONTENT_MAX, `Content can be up to ${CONTENT_MAX} characters`)
+  .max(CONTENT_MAX, CONTENT_TOO_LONG_MESSAGE)
   .transform((value) => (value.trim() === "" ? null : value))
   .nullable()
   .optional();
@@ -66,7 +67,7 @@ const optionalContent = z
 // replaces what the user wrote.
 export const itemContentSchema = z
   .string("Invalid content")
-  .max(CONTENT_MAX, `Content can be up to ${CONTENT_MAX} characters`)
+  .max(CONTENT_MAX, CONTENT_TOO_LONG_MESSAGE)
   .refine((value) => value.trim() !== "", "Content cannot be empty");
 
 const optionalUrl = z

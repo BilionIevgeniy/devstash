@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useRef,
   useState,
   useTransition,
   type SubmitEvent,
@@ -11,10 +12,12 @@ import { unstable_rethrow } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import type { EditorHandle } from "@/features/editor/types";
 import { CollectionSelect } from "@/features/items/_internal/components/CollectionSelect";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
 import { ItemFields } from "@/features/items/_internal/components/ItemFields";
 import { useUnsavedChanges } from "@/features/items/_internal/components/hooks/use-unsaved-changes";
+import { rejectInvalidContent } from "@/features/items/_internal/components/reject-invalid-content";
 import { updateItem } from "@/features/items/actions/item";
 import {
   hasItemChanges,
@@ -106,6 +109,7 @@ export function ItemEditForm({
   const [values, setValues] = useState(initial);
   const [isSaving, startSaving] = useTransition();
   const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
+  const contentRef = useRef<EditorHandle>(null);
   const isChanged = hasItemChanges(fields, initial, values);
   const isMissingRequired =
     values.title.trim() === "" || (fields.url && values.url.trim() === "");
@@ -126,6 +130,7 @@ export function ItemEditForm({
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!isChanged) return;
+    if (rejectInvalidContent(fields, values.content, contentRef)) return;
     startSaving(async () => {
       const saved = await saveItem(item.id, updatePayload(fields, values));
       if (!saved) return;
@@ -158,6 +163,7 @@ export function ItemEditForm({
           onChange={setField}
           canUseAi={canUseAi}
           fileName={detail.file?.name}
+          contentRef={contentRef}
         />
         <CollectionSelect
           value={values.collectionIds}

@@ -51,7 +51,7 @@ prisma/                 schema, migrations, seed
 features/<name>/
   domain/<topic>.ts      pure rules: limits, gating, expiry, ranking, serializers
   schemas.ts             Zod shapes of every input
-  types.ts               view and result types, JSON-safe
+  types.ts               view and result types (JSON-safe), and the handle a component hands to its parent through `ref`
   queries.ts             reads of the feature's own models; may split into queries/<topic>.ts (ADR 0017)
   services/<topic>.ts    every write and every multi-step operation
   actions/<noun>.ts      Server Actions ("use server" files export only async functions)
@@ -89,7 +89,8 @@ A type lives with the value it comes from.
 
 | Type | Where | Examples |
 | ---- | ----- | -------- |
-| What a query or service hands to pages and components (view, DTO, action state) | `types.ts` | `ItemDetail` (items), `UserProfile` (auth), `DashboardCollection` (collections) |
+| What a query or service hands to pages and components (view, DTO, action state), or the state of a form whose action runs in the browser | `types.ts` | `ItemDetail` (items), `UserProfile` (auth), `DashboardCollection` (collections), `FormActionState` (auth) |
+| The handle a component hands to the one that holds it through `ref`, shared by the component, the code under it and its callers | `types.ts` | `EditorHandle` (editor) |
 | An input | `schemas.ts`, as `z.infer` next to its schema | `CreateItemInput` (items) |
 | Derived from a constant, or the arguments or result of one function | the file of that constant or function | `CreatableTypeName`, `EditableFields` (items/domain), `ItemTypeRow` (item-types/domain), `EmailSendCheck` (auth/services), `ActionEmailCopy` (auth/_internal/emails) |
 | Used by one file only | that file, not exported | `UpdateItemActionResult` (items/actions) |
