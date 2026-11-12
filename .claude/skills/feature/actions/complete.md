@@ -19,7 +19,7 @@ The feature reaches `main` through a PR merged on GitHub after green `ci`, `inte
 6. Wait for the `ci`, `integration` and `e2e` checks: `gh pr checks <number> --watch`
    - Red: fix, commit, push, wait again
    - No run starts within a few minutes (GitHub sometimes drops the PR event): `gh pr close <number>` and `gh pr reopen <number>`, then wait again
-7. Ask before merging: the merge deploys production and runs its migrations (ADR 0013)
+7. Do not ask before merging: once all three checks are green, the merge is the natural end of the task and goes ahead. It deploys production and runs its migrations (ADR 0013), so a red, pending or missing check means no merge
 8. Merge on GitHub and delete the branch there: `gh pr merge <number> --merge --delete-branch`
 9. Update the local `main` and remove the local branch:
    - `git switch main` and `git pull --ff-only`
