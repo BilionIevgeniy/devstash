@@ -20,6 +20,7 @@ One short file per decision that shapes the structure of the code, in the [MADR]
 | [0014](0014-launch-mode.md) | Portfolio mode now, with real legal pages; what a commercial launch adds | accepted |
 | [0015](0015-no-barrel-files.md) | No barrel files; a feature's public API is defined by lint | accepted |
 | [0016](0016-error-monitoring-with-sentry.md) | Error monitoring with Sentry: what leaves the server, and how it is kept small | accepted |
+| [0017](0017-queries-split-by-topic.md) | `queries.ts` may split into `queries/<topic>.ts` | accepted |
 
 ## How to add one
 

@@ -1,130 +1,34 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 
-import ItemsByTypeLoading from "@/app/(app)/items/[type]/loading";
+import { ItemListFilters } from "@/app/(app)/items/[type]/_components/ItemListFilters";
+import { ItemsHeader } from "@/app/(app)/items/[type]/_components/ItemsHeader";
+import { ItemsListing } from "@/app/(app)/items/[type]/_components/ItemsListing";
+import { ListingSkeleton } from "@/app/(app)/items/[type]/_components/ListingSkeleton";
 import { PaginationNav } from "@/components/common/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import { getEntitlements } from "@/features/billing/queries";
-import { TypeIcon } from "@/features/item-types/components/TypeIcon";
-import {
-  parseTypeSlug,
-  typeSlug,
-} from "@/features/item-types/domain/item-type";
+import { parseTypeSlug } from "@/features/item-types/domain/item-type";
 import { getItemTypeByName } from "@/features/item-types/queries";
-import { CreateItemDialog } from "@/features/items/components/CreateItemDialog";
-import { FileList } from "@/features/items/components/FileList";
-import { ImageGallery } from "@/features/items/components/ImageGallery";
-import {
-  isCreatableType,
-  typeListing,
-} from "@/features/items/domain/item-fields";
-import { ItemList } from "@/features/items/components/ItemList";
-import { getItemsByType } from "@/features/items/queries";
-import { getUserFileListItems } from "@/features/items/services/file-list";
-import { getUserGalleryItems } from "@/features/items/services/gallery";
+import { typeListing } from "@/features/items/domain/item-fields";
+import { itemListHref } from "@/features/items/domain/list-params";
+import { ITEMS_PER_PAGE } from "@/features/items/domain/pagination";
+import { countItemsOfType, getTypeTagNames } from "@/features/items/queries";
+import { parseItemListParams } from "@/features/items/schemas";
 import { userCanUseType } from "@/features/items/services/type-access";
-import type {
-  FileListItem,
-  GalleryItem,
-  ItemCardData,
-} from "@/features/items/types";
-import { type Paginated, parsePage } from "@/lib/pagination";
+import { pagePosition } from "@/lib/pagination";
 
-type Listing =
-  | ({ kind: "gallery" } & Paginated<GalleryItem>)
-  | ({ kind: "files" } & Paginated<FileListItem>)
-  | ({ kind: "cards" } & Paginated<ItemCardData>);
-
-// An image type shows its items as thumbnails, a file type as rows of files,
-// every other type as cards.
-async function loadListing(
-  userId: string,
-  typeId: string,
-  typeName: string,
-  page: number,
-): Promise<Listing> {
-  switch (typeListing(typeName)) {
-    case "gallery":
-      return {
-        kind: "gallery",
-        ...(await getUserGalleryItems(userId, typeId, page)),
-      };
-    case "files":
-      return {
-        kind: "files",
-        ...(await getUserFileListItems(userId, typeId, page)),
-      };
-    case "cards":
-      return {
-        kind: "cards",
-        ...(await getItemsByType(userId, typeId, page)),
-      };
-  }
-}
-
-interface ItemsByTypeContentProps {
-  slug: string;
-  typeName: string;
-  page: number;
-}
-
-async function ItemsByTypeContent({
-  slug,
-  typeName,
-  page,
-}: ItemsByTypeContentProps) {
-  const { id: userId } = await getSessionUser();
-  const type = await getItemTypeByName(typeName);
-  if (!type) notFound();
-
-  const [list, { isPro }] = await Promise.all([
-    loadListing(userId, type.id, type.name, page),
-    getEntitlements(userId),
-  ]);
-  const itemLabel = list.totalCount === 1 ? "item" : "items";
-  const emptyMessage = `No ${typeSlug(type.name)} yet.`;
-
-  return (
-    <div className="space-y-8">
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="flex items-center gap-3 text-3xl font-bold capitalize">
-            <TypeIcon
-              name={type.icon}
-              className="size-7"
-              style={{ color: type.color }}
-            />
-            {typeSlug(type.name)}
-          </h1>
-          <p className="text-muted-foreground">
-            {list.totalCount} {itemLabel}
-          </p>
-        </div>
-        {isCreatableType(type.name) && (
-          <CreateItemDialog defaultType={type.name} isPro={isPro} />
-        )}
-      </header>
-      {list.kind === "gallery" && (
-        <ImageGallery items={list.items} emptyMessage={emptyMessage} />
-      )}
-      {list.kind === "files" && (
-        <FileList items={list.items} emptyMessage={emptyMessage} />
-      )}
-      {list.kind === "cards" && (
-        <ItemList items={list.items} emptyMessage={emptyMessage} />
-      )}
-      <PaginationNav
-        basePath={`/items/${slug}`}
-        page={list.page}
-        totalPages={list.totalPages}
-      />
-    </div>
-  );
-}
-
-// loading.tsx does not show when only the query string changes, since the
-// segment stays the same: the key gives each page its own loading state.
+// The URL holds the view: ?sort=&tag=&page= (feature 7). The header, the
+// filters and the pagination read the count and stay outside the Suspense, so
+// they keep their place and their focus while the rows change. The boundary
+// has no key: every change here is a navigation in a transition, which keeps
+// the rows on screen, dimmed through `group-has-data-pending/list:` (the
+// filters and the page links set data-pending), until the new ones are ready.
+// The group is named: an unnamed one would match every `group-hover:` below it,
+// such as the zoom of each gallery card. The filters show for an empty type
+// too, so the skeleton of loading.tsx fits every type. The first load and a
+// change of type show loading.tsx.
 export default async function ItemsByTypePage({
   params,
   searchParams,
@@ -138,11 +42,43 @@ export default async function ItemsByTypePage({
     redirect(UPGRADE_PATH);
   }
 
-  const page = parsePage((await searchParams).page);
+  const type = await getItemTypeByName(typeName);
+  if (!type) notFound();
 
+  const requested = parseItemListParams(await searchParams);
+  const [totalCount, tags, { isPro }] = await Promise.all([
+    countItemsOfType(userId, type.id, requested.tag),
+    getTypeTagNames(userId, type.id),
+    getEntitlements(userId),
+  ]);
+  const position = pagePosition(totalCount, ITEMS_PER_PAGE, requested.page);
+  const current = { ...requested, page: position.page };
+  const basePath = `/items/${slug}`;
   return (
-    <Suspense key={page} fallback={<ItemsByTypeLoading />}>
-      <ItemsByTypeContent slug={slug} typeName={typeName} page={page} />
-    </Suspense>
+    <div className="group/list space-y-8">
+      <ItemsHeader type={type} totalCount={totalCount} isPro={isPro} />
+      <div className="space-y-4">
+        <ItemListFilters basePath={basePath} params={current} tags={tags} />
+        <div className="transition-opacity group-has-data-pending/list:opacity-50">
+          <Suspense
+            fallback={<ListingSkeleton listing={typeListing(type.name)} />}
+          >
+            <ItemsListing
+              userId={userId}
+              type={type}
+              params={current}
+              totalCount={totalCount}
+              basePath={basePath}
+            />
+          </Suspense>
+        </div>
+      </div>
+      <PaginationNav
+        basePath={basePath}
+        page={position.page}
+        totalPages={position.totalPages}
+        hrefFor={(page) => itemListHref(basePath, current, { page })}
+      />
+    </div>
   );
 }

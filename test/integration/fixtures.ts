@@ -46,7 +46,11 @@ function expectSuccess(result: { success: boolean; error: string | null }) {
   if (!result.success) throw new Error(`Fixture step failed: ${result.error}`);
 }
 
-async function createItem(userId: string, input: object): Promise<string> {
+// Also for a test file that needs rows of its own on top of the seed.
+export async function createItem(
+  userId: string,
+  input: object,
+): Promise<string> {
   const parsed = createItemSchema.parse({
     tags: [],
     collectionIds: [],

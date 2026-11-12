@@ -12,7 +12,7 @@ src/
     api/                route handlers: NextAuth, registration; later webhooks, export, AI streaming
   features/             the product, one folder per feature (see Ranks)
   components/ui/        shadcn/ui primitives only
-  components/common/    hand-written UI with no feature knowledge: CheckList, CopyButton, ErrorState, Field, GradientBadge, Logo, PaginationNav; EmptyState (planned)
+  components/common/    hand-written UI with no feature knowledge: CheckList, CopyButton, ErrorState, Field, GradientBadge, LinkPendingMark, Logo, PaginationNav; hooks/ (useReportError, useSearchParam); EmptyState (planned)
   lib/                  feature-neutral infrastructure and vendor clients
   proxy.ts              Next.js proxy, stays at the src root; its matcher must cover every authenticated route
 prisma/                 schema, migrations, seed
@@ -52,7 +52,7 @@ features/<name>/
   domain/<topic>.ts      pure rules: limits, gating, expiry, ranking, serializers
   schemas.ts             Zod shapes of every input
   types.ts               view and result types, JSON-safe
-  queries.ts             reads of the feature's own models
+  queries.ts             reads of the feature's own models; may split into queries/<topic>.ts (ADR 0017)
   services/<topic>.ts    every write and every multi-step operation
   actions/<noun>.ts      Server Actions ("use server" files export only async functions)
   components/            React components, grouped by topic when the folder grows
@@ -94,7 +94,7 @@ A type lives with the value it comes from.
 | Derived from a constant, or the arguments or result of one function | the file of that constant or function | `CreatableTypeName`, `EditableFields` (items/domain), `ItemTypeRow` (item-types/domain), `EmailSendCheck` (auth/services), `ActionEmailCopy` (auth/_internal/emails) |
 | Used by one file only | that file, not exported | `UpdateItemActionResult` (items/actions) |
 
-There is no `types/` folder; `types.ts` splits into `types/<topic>.ts` only when it grows.
+There is no `types/` folder; `types.ts` splits into `types/<topic>.ts` only when it grows. `queries.ts` and `_internal/queries.ts` split the same way into `queries/<topic>.ts`, and every file there keeps the query role and its lint ([ADR 0017](../docs/adr/0017-queries-split-by-topic.md)).
 
 ## Old paths in specs
 

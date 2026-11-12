@@ -7,6 +7,7 @@ import {
   collectionIdSchema,
   createCollectionSchema,
   deleteCollectionOptionsSchema,
+  favoriteCollectionSortSchema,
 } from "@/features/collections/schemas";
 
 describe("deleteCollectionOptionsSchema", () => {
@@ -92,5 +93,13 @@ describe("createCollectionSchema", () => {
     expect(
       createCollectionSchema.parse({ name: "Notes", userId: "someone-else" }),
     ).toEqual({ name: "Notes" });
+  });
+});
+
+describe("favoriteCollectionSortSchema", () => {
+  it("keeps a known sort and falls back to newest for anything else", () => {
+    expect(favoriteCollectionSortSchema.parse("a-z")).toBe("a-z");
+    expect(favoriteCollectionSortSchema.parse("type")).toBe("newest");
+    expect(favoriteCollectionSortSchema.parse(null)).toBe("newest");
   });
 });

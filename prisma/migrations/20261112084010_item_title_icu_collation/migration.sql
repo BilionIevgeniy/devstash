@@ -1,0 +1,13 @@
+-- The A-Z sort of a type page runs in the database. Neon's database collation
+-- is C.UTF-8, which puts every capital before every small letter ("Zebra"
+-- before "apple"). The ICU root collation orders by letter first, like
+-- compareNames in items/domain/favorite-sort.ts.
+--
+-- Deterministic, so equality, LIKE and the unique checks are unchanged. Only
+-- the collation changes, so Postgres does not rewrite the table; it takes an
+-- ACCESS EXCLUSIVE lock for the catalog change, and no index covers "title".
+--
+-- Prisma does not model a column collation: it lives only here. A later
+-- migration that recreates the column must set it again (an integration test
+-- in items/_internal/queries/type-list.int.test.ts pins the order).
+ALTER TABLE "Item" ALTER COLUMN "title" TYPE TEXT COLLATE "und-x-icu";
