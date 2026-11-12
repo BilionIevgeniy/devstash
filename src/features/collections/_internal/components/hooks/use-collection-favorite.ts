@@ -1,8 +1,10 @@
 import { useOptimistic, useTransition } from "react";
+import { unstable_rethrow } from "next/navigation";
 import { toast } from "sonner";
 
 import { setCollectionFavorite } from "@/features/collections/actions/collection";
 import { UNDO_TOAST_DURATION } from "@/features/items/domain/list-rows";
+import { isNavigationError } from "@/lib/navigation-error";
 
 const FAVORITE_FAILED_MESSAGE = "Couldn't update the favorite.";
 const UNFAVORITED_MESSAGE = "Removed from favorites";
@@ -25,7 +27,8 @@ async function restoreFavorite(collectionId: string) {
     if (!result.success) {
       toast.error(result.error ?? FAVORITE_FAILED_MESSAGE);
     }
-  } catch {
+  } catch (error) {
+    if (isNavigationError(error)) return;
     toast.error(FAVORITE_FAILED_MESSAGE);
   }
 }
@@ -60,7 +63,9 @@ export function useCollectionFavorite(
             },
           });
         }
-      } catch {
+      } catch (error) {
+        // Inside useTransition: the redirect goes on, as in the dialogs.
+        unstable_rethrow(error);
         toast.error(FAVORITE_FAILED_MESSAGE);
       }
     });

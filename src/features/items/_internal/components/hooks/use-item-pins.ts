@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { toggleItemPin } from "@/features/items/actions/item";
 import type { ToggleOptions } from "@/features/items/components/hooks/use-item-drawer";
 import { UNDO_TOAST_DURATION } from "@/features/items/domain/list-rows";
+import { isNavigationError } from "@/lib/navigation-error";
 
 const PIN_FAILED_MESSAGE = "Couldn't update the pin.";
 const PINNED_MESSAGE = "Item pinned";
@@ -49,7 +50,8 @@ export function useItemPins(onSaved: (id: string, isPinned: boolean) => void) {
         } else {
           toast.error(result.error ?? PIN_FAILED_MESSAGE);
         }
-      } catch {
+      } catch (error) {
+        if (isNavigationError(error)) return;
         toast.error(PIN_FAILED_MESSAGE);
       }
     });

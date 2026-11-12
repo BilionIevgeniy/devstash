@@ -1,4 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
+import { redirect } from "next/navigation";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ActionResult } from "@/lib/action-result";
@@ -12,6 +13,15 @@ import { useItemFavorites } from "@/features/items/_internal/components/hooks/us
 
 const SAVED: ActionResult = { success: true, data: null, error: null };
 const GENERIC_ERROR = "Couldn't update the favorite.";
+
+// The error Next itself throws, so the hook's check is tested against it.
+function redirectError(): unknown {
+  try {
+    redirect("/sign-in");
+  } catch (error) {
+    return error;
+  }
+}
 
 function setup() {
   const onSaved = vi.fn();
@@ -86,6 +96,18 @@ describe("useItemFavorites", () => {
       expect(onSaved).not.toHaveBeenCalled();
     },
   );
+
+  // A session that ended: the action rejects with Next's redirect error while
+  // the router goes to sign-in on its own. No error toast on the way out.
+  it("shows no error toast when the action redirects", async () => {
+    setItemFavorite.mockRejectedValue(redirectError());
+    const { result, onSaved } = setup();
+
+    await act(async () => result.current.toggleFavorite("item-1", true));
+
+    expect(toast.error).not.toHaveBeenCalled();
+    expect(onSaved).not.toHaveBeenCalled();
+  });
 
   it("offers Undo after an undoable unfavorite, and Undo stars the item again", async () => {
     setItemFavorite.mockResolvedValue(SAVED);

@@ -22,6 +22,7 @@ import { deleteItem } from "@/features/items/actions/item";
 import { ItemDrawerContext } from "@/features/items/components/hooks/use-item-drawer";
 import { requiresPro } from "@/features/items/domain/item-fields";
 import type { DashboardItem } from "@/features/items/types";
+import { isNavigationError } from "@/lib/navigation-error";
 
 const NO_HIDDEN_IDS: ReadonlySet<string> = new Set();
 // The sentinel sits above the list: the page stays where the user was.
@@ -32,7 +33,8 @@ async function deleteWithToast(id: string) {
     const result = await deleteItem(id);
     if (result.success) toast.success(DELETED_MESSAGE);
     else toast.error(result.error ?? DELETE_FAILED_MESSAGE);
-  } catch {
+  } catch (error) {
+    if (isNavigationError(error)) return;
     toast.error(DELETE_FAILED_MESSAGE);
   }
 }

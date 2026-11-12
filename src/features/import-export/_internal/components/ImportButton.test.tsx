@@ -11,9 +11,30 @@ vi.mock("@/features/import-export/actions/import", () => ({
   importCollections,
   importItems,
 }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
+// The real unstable_rethrow: the run tells a redirect from a failure with it,
+// and the real redirect makes the error the test sends.
+vi.mock("next/navigation", async (importOriginal) => {
+  const actual = await importOriginal<typeof Navigation>();
+  return {
+    redirect: actual.redirect,
+    unstable_rethrow: actual.unstable_rethrow,
+    useRouter: () => ({ refresh }),
+  };
+});
+
+import { redirect } from "next/navigation";
+import type * as Navigation from "next/navigation";
 
 import { ImportButton } from "@/features/import-export/_internal/components/ImportButton";
+
+// The error Next itself throws when an action redirects (a session that ended).
+function redirectError(): unknown {
+  try {
+    redirect("/sign-in");
+  } catch (error) {
+    return error;
+  }
+}
 
 const summary = (fields: object = {}) => ({
   created: 0,
@@ -140,6 +161,33 @@ describe("ImportButton", () => {
     expect(status).toHaveTextContent("The import stopped early.");
     expect(status).toHaveTextContent("Import is a Pro feature");
     expect(status).toHaveTextContent("Bad: Enter a name");
+  });
+
+  it("stops with what went through when the server cannot be reached", async () => {
+    importItems.mockRejectedValue(new TypeError("Failed to fetch"));
+    render(<ImportButton />);
+
+    await choose(jsonFile(exportFile));
+
+    const status = await screen.findByRole("status");
+    expect(status).toHaveTextContent("The import stopped early.");
+    expect(status).toHaveTextContent("the server could not be reached");
+  });
+
+  // The router is already on its way to sign-in: no summary, no error, and
+  // nothing more is sent.
+  it("stops quietly when an action redirects to sign-in", async () => {
+    importCollections.mockRejectedValue(redirectError());
+    render(<ImportButton />);
+
+    await choose(jsonFile(exportFile));
+    await act(async () => {});
+
+    expect(importCollections).toHaveBeenCalledTimes(1);
+    expect(importItems).not.toHaveBeenCalled();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(refresh).not.toHaveBeenCalled();
   });
 
   it("is disabled with its progress while the import runs", async () => {

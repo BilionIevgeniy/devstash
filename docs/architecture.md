@@ -383,4 +383,4 @@ Not checked by lint, so it is on the author and the reviewer: one call into a se
 - **Route handler**: a `route.ts` file that answers an HTTP request; used for webhooks, streaming and the public API.
 - **`_internal/`**: the private part of a feature, enforced by lint.
 - **`server-only`**: an import that makes the build fail if client code ever imports the file.
-- **Proxy**: `src/proxy.ts`, which redirects signed-out visitors away from protected routes.
+- **Proxy**: `src/proxy.ts`, which redirects signed-out visitors away from protected routes. A Server Action call (`POST` with a `Next-Action` header) passes: a 307 there reached the browser as "An unexpected response was received from the server", so the page showed an error instead of going to sign-in. Each action checks the session itself and redirects to `/sign-in` (without `callbackUrl`), and the router follows that redirect on its own.
