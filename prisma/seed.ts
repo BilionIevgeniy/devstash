@@ -11,6 +11,7 @@ import {
   systemItemTypes,
 } from "./seed-data";
 import { paginationCollections, paginationItems } from "./seed-pagination-data";
+import { toSearchTags } from "../src/features/items/domain/search-text";
 
 // .env holds the secrets and is closed to Claude Code; .env.demo holds only
 // the demo password, which the ui-reviewer agent needs to sign in.
@@ -120,6 +121,7 @@ async function seedItems(
           favoritedAt: fields.isFavorite ? new Date() : null,
           userId,
           typeId: getId(typeIds, typeName, "item type"),
+          searchTags: toSearchTags(tags),
           tags: {
             create: tags.map((tag) => ({
               tagId: getId(tagIds, tag, "tag"),

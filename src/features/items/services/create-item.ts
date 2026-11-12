@@ -19,6 +19,7 @@ import {
   contentTypeFor,
   editableFields,
 } from "@/features/items/domain/item-fields";
+import { toSearchTags } from "@/features/items/domain/search-text";
 import type { CreateItemInput } from "@/features/items/schemas";
 import type { Prisma } from "@/generated/prisma/client";
 import type { OperationResult } from "@/lib/action-result";
@@ -86,6 +87,7 @@ function itemData(
     ...(fields.url && { url }),
     ...fileColumns,
     tags: { create: tagLinks(userId, input.tags) },
+    searchTags: toSearchTags(input.tags),
     collections: { create: collectionLinks(userId, input.collectionIds) },
   };
 }

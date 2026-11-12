@@ -9,12 +9,10 @@ import {
 } from "@/components/ui/dialog";
 import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvider";
 import { PaletteResults } from "@/features/search/_internal/components/PaletteResults";
-import type { SearchIndexState } from "@/features/search/_internal/components/hooks/use-search-index";
 
 interface PaletteDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  indexState: SearchIndexState;
   /** The dialog has no Radix trigger, so it hands the focus back here. */
   onReturnFocus: () => void;
 }
@@ -26,7 +24,6 @@ interface PaletteDialogProps {
 export function PaletteDialog({
   isOpen,
   onClose,
-  indexState,
   onReturnFocus,
 }: PaletteDialogProps) {
   const drawerHasFocusRef = useRef(false);
@@ -60,7 +57,6 @@ export function PaletteDialog({
             </DialogDescription>
           </DialogHeader>
           <PaletteResults
-            indexState={indexState}
             onClose={onClose}
             onDrawerOpen={() => {
               drawerHasFocusRef.current = true;

@@ -136,6 +136,18 @@ model Item {
   collections ItemCollection[]
   tags        ItemTag[]
 
+  // Search (ADR 0018). The item's tag names joined by toSearchTags
+  // (items/domain/search-text.ts); every write of ItemTag sets it in the same
+  // write: the items services, prisma/seed.ts, a future import.
+  searchTags   String                   @default("")
+  // A stored generated column over title, searchTags, description, content and
+  // url, created by the migration search_vectors. Prisma does not model
+  // generated columns and reads the expression as a default, so dbgenerated
+  // holds it exactly as Postgres prints it (pg_get_expr): without it every
+  // migrate dev would try to drop it. A change of the expression is a new
+  // migration that drops and adds the column, and this text copied again.
+  searchVector Unsupported("tsvector")? @default(dbgenerated("(((setweight(to_tsvector('simple'::regconfig, regexp_replace(title, '[^[:alnum:]]+'::text, ' '::text, 'g'::text)), 'A'::\"char\") || setweight(to_tsvector('simple'::regconfig, regexp_replace(\"searchTags\", '[^[:alnum:]]+'::text, ' '::text, 'g'::text)), 'A'::\"char\")) || setweight(to_tsvector('simple'::regconfig, regexp_replace(COALESCE(description, ''::text), '[^[:alnum:]]+'::text, ' '::text, 'g'::text)), 'B'::\"char\")) || setweight(to_tsvector('simple'::regconfig, regexp_replace(((COALESCE(content, ''::text) || ' '::text) || COALESCE(url, ''::text)), '[^[:alnum:]]+'::text, ' '::text, 'g'::text)), 'C'::\"char\"))"))
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -143,6 +155,9 @@ model Item {
   @@index([userId, createdAt])
   @@index([userId, typeId, createdAt])
   @@index([typeId])
+  // Full-text search, and typos in a title (pg_trgm).
+  @@index([searchVector], type: Gin)
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin)
 }
 
 model ItemType {
@@ -173,10 +188,16 @@ model Collection {
 
   items ItemCollection[]
 
+  // Search (ADR 0018): a stored generated column over name and description,
+  // kept in dbgenerated for the same reason as Item.searchVector.
+  searchVector Unsupported("tsvector")? @default(dbgenerated("(setweight(to_tsvector('simple'::regconfig, regexp_replace(name, '[^[:alnum:]]+'::text, ' '::text, 'g'::text)), 'A'::\"char\") || setweight(to_tsvector('simple'::regconfig, regexp_replace(COALESCE(description, ''::text), '[^[:alnum:]]+'::text, ' '::text, 'g'::text)), 'B'::\"char\"))"))
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([searchVector], type: Gin)
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
 }
 
 model ItemCollection {

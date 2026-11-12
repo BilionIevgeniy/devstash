@@ -12,9 +12,9 @@ import {
   getItemStats,
   getPinnedItems,
   getRecentItems,
-  getSearchableItems,
   getSidebarItems,
 } from "@/features/items/queries";
+import { getRecentSearchableItems } from "@/features/items/queries/search";
 
 // Read-only: one seed for the file. Each list holds the caller's own rows and
 // none of the other user's.
@@ -37,7 +37,7 @@ describe("item lists show only the caller's items", () => {
 
   it.each([
     ["getRecentItems", getRecentItems],
-    ["getSearchableItems", getSearchableItems],
+    ["getRecentSearchableItems", getRecentSearchableItems],
   ] as const)("%s", async (_name, read) => {
     const [a, b] = await Promise.all([read(t.a.userId), read(t.b.userId)]);
     expect(idsOf(a).sort()).toEqual(allItemIds(t.a).sort());

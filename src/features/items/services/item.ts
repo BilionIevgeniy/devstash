@@ -10,6 +10,7 @@ import {
   editableFields,
   editableUpdate,
 } from "@/features/items/domain/item-fields";
+import { toSearchTags } from "@/features/items/domain/search-text";
 import { getItemFileKey } from "@/features/items/_internal/queries";
 import { getItemEditState } from "@/features/items/queries";
 import type { UpdateItemInput } from "@/features/items/schemas";
@@ -79,6 +80,7 @@ export async function updateUserItem(
       data: {
         ...fields,
         tags: { deleteMany: {}, create: tagLinks(userId, tags) },
+        searchTags: toSearchTags(tags),
         collections: {
           deleteMany: { collectionId: { notIn: collectionIds } },
           create: collectionLinks(userId, added),

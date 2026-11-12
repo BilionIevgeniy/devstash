@@ -7,7 +7,6 @@ import { Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { usePaletteHotkey } from "@/features/search/_internal/components/hooks/use-palette-hotkey";
-import { useSearchIndex } from "@/features/search/_internal/components/hooks/use-search-index";
 
 // Always rendered, so its chunk loads after hydration and the first Cmd+K shows
 // at once; the top bar is on every page and most of them have no drawer code.
@@ -25,7 +24,6 @@ export function CommandPalette() {
   const [openPathname, setOpenPathname] = useState(pathname);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const returnFocusRef = useRef<HTMLElement | null>(null);
-  const { state, refresh } = useSearchIndex();
 
   // Back or Forward changes the page under the palette, so it closes, adjusted
   // during render as the shell's mobile drawer does.
@@ -39,7 +37,6 @@ export function CommandPalette() {
     returnFocusRef.current =
       active instanceof HTMLElement && active !== document.body ? active : null;
     setIsOpen(true);
-    refresh();
   }
 
   function toggle() {
@@ -75,7 +72,6 @@ export function CommandPalette() {
       <PaletteDialog
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        indexState={state}
         onReturnFocus={returnFocus}
       />
     </>

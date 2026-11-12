@@ -2,7 +2,6 @@ import "server-only";
 
 import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
 import { itemTypeSelect } from "@/features/item-types/queries";
-import { toSearchPreview } from "@/features/items/_internal/domain/search-preview";
 import {
   cardItemSelect,
   dashboardItemSelect,
@@ -15,7 +14,6 @@ import {
   itemListWhere,
 } from "@/features/items/_internal/queries/type-list";
 import { compareNames } from "@/features/items/domain/favorite-sort";
-import { copyValueOf } from "@/features/items/domain/item-fields";
 import type { ItemListFilter } from "@/features/items/domain/list-params";
 import {
   limitSidebarRows,
@@ -27,7 +25,6 @@ import type {
   ItemCardData,
   ItemEditState,
   ItemStats,
-  SearchableItem,
   SidebarItem,
   SidebarItems,
 } from "@/features/items/types";
@@ -37,7 +34,6 @@ import { prisma } from "@/lib/prisma";
 const DASHBOARD_RECENT_ITEMS_LIMIT = 10;
 // Matches the planned item limit of the Free plan.
 const DASHBOARD_PINNED_ITEMS_LIMIT = 50;
-const SEARCH_INDEX_ITEM_LIMIT = 1000;
 
 // The id settles equal dates, so rows keep their order between refreshes.
 const LAST_STARRED_FIRST = [
@@ -172,23 +168,6 @@ export async function getTypeTagNames(
     select: { name: true },
   });
   return tags.map(({ name }) => name).toSorted(compareNames);
-}
-
-// The items the command palette searches, last edited first. The content is
-// read only to build the preview; it stays on the server.
-export async function getSearchableItems(
-  userId: string,
-): Promise<SearchableItem[]> {
-  const items = await prisma.item.findMany({
-    where: { userId },
-    orderBy: { updatedAt: "desc" },
-    take: SEARCH_INDEX_ITEM_LIMIT,
-    select: cardItemSelect,
-  });
-  return items.map(({ contentType, content, url, ...item }) => ({
-    ...toDashboardItem(item),
-    preview: toSearchPreview(copyValueOf({ contentType, content, url })),
-  }));
 }
 
 export async function getItemEditState(

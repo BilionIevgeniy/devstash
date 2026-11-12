@@ -40,7 +40,6 @@ Decide these before Stripe goes to live mode. Researched only briefly on 2026-11
 - **A script and style Content-Security-Policy.** Since the audit hardening (2026-10-31) `next.config.ts` sends a CSP that covers only `frame-ancestors`, `object-src` and `base-uri`. A full policy needs per-request nonces (set in `src/proxy.ts`, which then has to run on every page, not only the authenticated ones), `script-src`/`style-src`/`worker-src`/`font-src` for Monaco (served from the app's own origin under `/monaco/`), `img-src` and `connect-src` for the R2 endpoint and the Sentry ingest (`https://*.ingest.de.sentry.io`), or the browser SDK stops reporting (the gallery and the browser's PUT) and `img-src` for GitHub avatars. Do not add `form-action 'self'` without testing: Chrome applies it to the redirect after a form post, which would break the GitHub sign-in (a Server Action redirecting to github.com). Start in `Content-Security-Policy-Report-Only`.
 - **Remove uploads no item points to.** Signing is rate limited (`PRESIGN_BY_USER`), but an upload never attached to an item stays in R2 until the account is purged ("Unclaimed uploads" in `docs/architecture.md`). Fix idea: upload under a staging prefix with an R2 lifecycle rule that expires it after a day, and move or copy it to its final key in the create; or a scheduled sweep of keys no item holds.
 - **`dompurify` in the audit.** `npm audit --omit=dev` reports `dompurify` (critical) through `monaco-editor`. Since 2026-11-04 the app serves Monaco itself, so this code runs in production: 0.57.0, the latest stable release on that date, pins and bundles `dompurify` 3.4.15, and `npm audit fix` cannot change a bundled copy. Upgrade `monaco-editor` when a release carries a fixed version: change the exact version in `package.json`; the copy script and the path follow it.
-- **`GET /api/search` has no rate limit and ignores an abort.** The palette reads the index on app load and on every open, and an aborted read keeps running on the server. Found in the audit review of 2026-11-04. Fix idea: a per-user limit, and pass the request's signal down or skip a read while one runs.
 
 ## Observability
 
@@ -59,10 +58,6 @@ Decide these before Stripe goes to live mode. Researched only briefly on 2026-11
 ## Collections
 
 - **Ranking a collection's types reads every link.** `collections/queries.ts` `fetchCollections` selects each collection's `ItemCollection` rows with the item's `typeId` to rank its types, and the dashboard renders it three times (two sidebar reads and the recent collections); `/collections` reads it for each of the 21 collections of a page. Pagination bounds the collections, not their links: fine at today's sizes, but with large collections it reads one row per item. Fix idea: count `(collectionId, typeId)` in the database. That needs raw SQL or a denormalized count, and either a read of `Item` from `collections` (a foreign model, so a query in `items` that collections calls) or a column of its own: an architecture decision of its own. Left out of the collections pages and of their pagination (2026-11-04) for that reason.
-
-## Search
-
-- **The palette searches only the 1000 most recently edited items.** `SEARCH_INDEX_ITEM_LIMIT` in `items/queries.ts` bounds the index, because the whole index goes to the browser and is read again on every open. A Pro user past the limit does not find their oldest items, with nothing on screen to say so. Fix idea: past the limit, search on the server (a Postgres full-text index behind `GET /api/search?q=`), keeping the client index for smaller accounts.
 
 ## Database
 

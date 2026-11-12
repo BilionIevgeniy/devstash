@@ -9,7 +9,6 @@ import type {
   CollectionSummary,
   DashboardCollection,
   FavoriteCollection,
-  SearchableCollection,
   SidebarCollections,
 } from "@/features/collections/types";
 import { getItemTypesById } from "@/features/item-types/queries";
@@ -169,22 +168,6 @@ export function getCollectionOptions(
     orderBy: { name: "asc" },
     select: { id: true, name: true },
   });
-}
-
-// The collections the command palette searches. Narrower than
-// getUserCollections: the palette runs this on every open and shows no types.
-export async function getSearchableCollections(
-  userId: string,
-): Promise<SearchableCollection[]> {
-  const collections = await prisma.collection.findMany({
-    where: { userId },
-    orderBy: { updatedAt: "desc" },
-    select: { id: true, name: true, _count: { select: { items: true } } },
-  });
-  return collections.map(({ _count, ...collection }) => ({
-    ...collection,
-    itemCount: _count.items,
-  }));
 }
 
 export async function getCollectionStats(
