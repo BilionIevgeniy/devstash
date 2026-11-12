@@ -25,6 +25,12 @@ export interface SearchableItem extends DashboardItem {
   preview: string | null;
 }
 
+// One page of search results; nextOffset is null on the last page.
+export interface SearchableItemPage {
+  items: SearchableItem[];
+  nextOffset: number | null;
+}
+
 // A row of the favorites page, dated by when it was starred.
 export interface FavoriteItem extends DashboardItem {
   favoritedAt: Date;

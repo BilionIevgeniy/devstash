@@ -33,7 +33,24 @@ const edit = (collectionIds: string[] = []) =>
     collectionIds,
   });
 
+const searchTagsOf = async (id: string) =>
+  (
+    await prisma.item.findUniqueOrThrow({
+      where: { id },
+      select: { searchTags: true },
+    })
+  ).searchTags;
+
 describe("updateUserItem", () => {
+  // The search vector reads the tags from this column (ADR 0018).
+  it("writes searchTags on create and replaces them on update", async () => {
+    expect(await searchTagsOf(t.a.items.snippet)).toBe("react shared");
+
+    await updateUserItem(t.a.userId, t.a.items.snippet, edit());
+
+    expect(await searchTagsOf(t.a.items.snippet)).toBe("changed");
+  });
+
   it("refuses B's item for A and leaves B unchanged", async () => {
     const before = await snapshotTenant(t.b.userId);
     const result = await updateUserItem(t.a.userId, t.b.items.note, edit());

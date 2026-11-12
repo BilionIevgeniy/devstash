@@ -16,3 +16,11 @@ afterEach(() => {
 // two when it opens (SortSelect.test.tsx).
 Element.prototype.hasPointerCapture ??= () => false;
 Element.prototype.scrollIntoView ??= () => undefined;
+
+// jsdom has no ResizeObserver. cmdk's list measures its height with one
+// (PaletteResults.test.tsx).
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};

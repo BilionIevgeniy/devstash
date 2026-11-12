@@ -10,10 +10,10 @@ import {
   getCollectionStats,
   getFavoriteCollections,
   getRecentCollections,
-  getSearchableCollections,
   getSidebarCollections,
   getUserCollections,
 } from "@/features/collections/queries";
+import { getRecentSearchableCollections } from "@/features/collections/queries/search";
 
 // Read-only: one seed for the file.
 let t: Tenants;
@@ -29,7 +29,7 @@ describe("collection lists show only the caller's collections", () => {
   it.each([
     ["getRecentCollections", getRecentCollections],
     ["getCollectionOptions", getCollectionOptions],
-    ["getSearchableCollections", getSearchableCollections],
+    ["getRecentSearchableCollections", getRecentSearchableCollections],
   ] as const)("%s", async (_name, read) => {
     expect(idsOf(await read(t.a.userId)).sort()).toEqual(both(t.a));
     expect(idsOf(await read(t.b.userId)).sort()).toEqual(both(t.b));

@@ -17,7 +17,6 @@ import {
   getCollectionById,
   getCollectionOptions,
   getFavoriteCollections,
-  getSearchableCollections,
   getSidebarCollections,
   getUserCollections,
 } from "@/features/collections/queries";
@@ -160,30 +159,6 @@ describe("getFavoriteCollections", () => {
     const { select } = findMany.mock.calls[0][0];
     expect(select).not.toHaveProperty("_count");
     expect(select).not.toHaveProperty("description");
-  });
-});
-
-describe("getSearchableCollections", () => {
-  beforeEach(() => {
-    findMany.mockReset().mockResolvedValue([]);
-    findTypes.mockReset();
-  });
-
-  it("reads only the caller's collections, with no type lookup", async () => {
-    await getSearchableCollections("user-1");
-
-    expect(findMany.mock.calls[0][0].where).toEqual({ userId: "user-1" });
-    expect(findTypes).not.toHaveBeenCalled();
-  });
-
-  it("gives the item count as itemCount, in the shape the route sends", async () => {
-    findMany.mockResolvedValue([
-      { id: "col-1", name: "React", _count: { items: 3 } },
-    ]);
-
-    await expect(getSearchableCollections("user-1")).resolves.toEqual([
-      { id: "col-1", name: "React", itemCount: 3 },
-    ]);
   });
 });
 
