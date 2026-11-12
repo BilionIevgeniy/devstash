@@ -5,7 +5,7 @@ The feature reaches `main` through a PR merged on GitHub after green `ci`, `inte
 1. Run `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build`, `npm run test:integration` when a query or service changed, and `npm run test:e2e` when a page, a route or the sign-in or item flows changed; stop and fix if anything is not green
 2. Reset current-feature.md:
    - Change H1 back to `# Current Feature`
-   - Clear Goals and Notes sections (keep placeholder comments)
+   - Clear Goals, Notes and Model sections (keep placeholder comments)
    - Add feature summary to the END of context/feature-history.md (not to current-feature.md)
 3. Read context/todo.md and check it against what this feature built:
    - Delete each item the feature finished

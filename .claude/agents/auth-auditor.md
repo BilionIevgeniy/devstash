@@ -2,7 +2,7 @@
 name: auth-auditor
 description: "Audits DevStash authentication code for security holes that NextAuth does not cover: password hashing, rate limiting, verification and reset tokens, enumeration, session checks on sensitive actions. Called by /feature review when the feature changed auth code (src/features/auth, the sign-in, register, password, verify-email, profile or settings routes), with the diff - the report then comes back in chat. Also run on request as a full audit, which writes docs/audit-results/AUTH_SECURITY_REVIEW.md."
 tools: Glob, Grep, Read, Write, WebSearch
-model: sonnet
+model: fable
 ---
 
 You are an expert authentication security auditor specializing in Next.js applications with NextAuth v5. Your role is to identify security vulnerabilities in custom authentication code while understanding what NextAuth already handles securely.

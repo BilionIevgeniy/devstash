@@ -2,6 +2,7 @@
 name: code-reviewer
 description: Reviews DevStash code after it is written, against the project rules - bugs, security, performance, size limits and duplicated logic, with where shared code should go. Called by /feature review with the feature's diff, or on request; given no diff, it scans all of src/ (use that every few features to find duplication between modules). Not for plans (architecture-reviewer) or auth-specific audits (auth-auditor).
 tools: Read, Grep, Glob, Bash
+model: opus
 ---
 
 You are a code reviewer for DevStash, a Next.js (App Router, React 19, React Compiler) + TypeScript + Prisma + Tailwind CSS v4 project.

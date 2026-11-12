@@ -12,12 +12,12 @@
 
 This is the common workflow that we will use for every single feature/fix. Each step names the skill or agent that runs it; this section is the one place that says so (the README and `.claude/skills/README.md` link here).
 
-1. **Document** (`/feature load`) - Document the feature in @context/current-feature.md
+1. **Document** (`/feature load`) - Document the feature in @context/current-feature.md, with the model for each phase ("Choosing the model" below)
 2. **Branch** (`/feature start`) - Create new branch for feature, fix, etc
 3. **Review the plan** (`/feature start`, agent `architecture-reviewer`) - Before any code, send the plan to the agent: the whole feature plan at `/feature start`, and again for every later step that changes structure (new routes, providers, a different data flow, new or changed actions). Cosmetic steps (a color, a text, a spacing) skip it. Give the agent the plan and the file paths only, not your reasoning, so its review stays independent. Settle the findings as described in "Working with review agents", then show me the agreed plan and wait for my go
 4. **Implement** - Implement the feature/fix that I create in @context/current-feature.md
 5. **Test** (`/feature test`) - Add unit tests for new pure logic (see "Testing" in @context/coding-standards.md). Run `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build`, `npm run test:integration` when a query or service changed (a cross-user case for each new one), and `npm run test:e2e` when a page, a route or the sign-in or item flows changed, and fix any errors; every test must be green. I check the feature in the browser myself; the `ui-reviewer` agent runs only when I ask for it
-6. **Review the code** (`/feature review`, agents `code-reviewer` and, when auth code changed, `auth-auditor`) - Both get the diff; settle their findings as described in "Working with review agents"
+6. **Review the code** (`/feature review`, agents `code-reviewer` and, when auth code changed, `auth-auditor`) - Both get the diff; settle their findings as described in "Working with review agents". The review also reads the IDE diagnostics and the lint ("Warnings at review" below)
 7. **Iterate** - Iterate and change things if needed
 8. **Commit** (`/feature complete`) - Only after the tests are green, the build passes and everything works. The reset of @context/current-feature.md and the entry in context/feature-history.md go into the feature's own commit
 9. **PR and CI** (`/feature complete`) - Push the branch, open the PR with `gh`, wait for the `ci`, `integration` and `e2e` checks to be green
@@ -29,14 +29,37 @@ Do NOT commit without permission, and not until `npm run test` is green and the 
 
 An agent's findings are not handed to me to decide. For each one, take it, or answer the agent with your reasons and let it reply. At most 2 rounds: what is still open after that, you decide. Then tell me what was concluded, point by point, and why.
 
+### Warnings at review
+
+`/feature review` reads the IDE diagnostics of all files (`getDiagnostics` of the VS Code extension; the review agents have no IDE tools, so the main session does it) and runs `npm run lint`. The Problems panel stays clean, Tailwind canonical-class hints included:
+
+- A warning in a file the feature changed is fixed in the feature
+- A warning in another file is named in the verdict with its fix and goes into its own change, so the feature does not grow
+- A warning that the IDE shows and `npm run lint` does not is a gap in the lint, so its fix comes with the guard that closes the gap, in this order: an ESLint rule, or a change of the scope of one, in `eslint.config.mjs` with its line in "What the lint enforces" in `architecture-rules.md` (example: `components/ui` is exempt from `better-tailwindcss/enforce-canonical-classes`, so a canonical-class hint there reaches the Problems panel and never the lint); else a line in the matching section of `coding-standards.md`, or in `architecture-rules.md` when it is about where code goes. A rule change that is more than a new check gets an ADR in `docs/adr/` (rule 10 of "Where does this go")
+- The final message names each warning, what fixed it and which guard was added
+
+### Choosing the model
+
+`/feature load` rates the spec by what it builds, not by its length, and writes the result under `## Model` in @context/current-feature.md; `/feature start` compares it with the model of the session before it plans. The table is a recommendation: the session model changes with `/model`, and an agent uses the `model:` line of its file, which a call can override.
+
+| What the spec builds                                                                                    | Plan (`/feature start`) | Implementation | `architecture-reviewer` |
+| ------------------------------------------------------------------------------------------------------- | ----------------------- | -------------- | ----------------------- |
+| A new module or rank, a Prisma migration, auth, billing, a different data flow, a change to a lint rule | Fable                   | Opus           | Fable                   |
+| A new route, action or query inside an existing module, a new dependency                                | Opus                    | Sonnet         | Opus                    |
+| Cosmetic work, a text, a color, a known API with no new decision                                        | Sonnet                  | Sonnet         | Opus                    |
+
+The plan is where a mistake costs most, so it gets the strongest model. `/feature start` rates again after it has read `docs/modules.md`: a spec that turns out to be a new module or a migration moves up a row. The names are the aliases of the `model:` field (`sonnet`, `opus`, `fable`), so no version goes stale here.
+
 ### Agents
 
-| Agent | When | Input |
-| ----- | ---- | ----- |
-| `architecture-reviewer` | Before code: the feature plan, and every later step that changes structure | The plan and the file paths |
-| `code-reviewer` | After code, in `/feature review`; on request over all of `src/` every few features, to find duplication between modules | The diff, or nothing for a full scan |
-| `auth-auditor` | In `/feature review` when auth code changed (report in chat); on request as a full audit (writes `docs/audit-results/AUTH_SECURITY_REVIEW.md`) | The diff, or "full audit" |
-| `ui-reviewer` | Only when I ask, with the dev server running | The pages or the change, and the demo password from `.env.demo` |
+| Agent | Model | When | Input |
+| ----- | ----- | ---- | ----- |
+| `architecture-reviewer` | Opus; Fable where the table above says so | Before code: the feature plan, and every later step that changes structure | The plan and the file paths |
+| `code-reviewer` | Opus; Fable for a full scan of `src/` | After code, in `/feature review`; on request over all of `src/` every few features, to find duplication between modules | The diff, or nothing for a full scan |
+| `auth-auditor` | Fable | In `/feature review` when auth code changed (report in chat); on request as a full audit (writes `docs/audit-results/AUTH_SECURITY_REVIEW.md`) | The diff, or "full audit" |
+| `ui-reviewer` | Sonnet | Only when I ask, with the dev server running | The pages or the change, and the demo password from `.env.demo` |
+
+Where the Model column names a model other than the file's `model:` line, Claude passes it as the `model` of that call.
 
 The built-in `/simplify`, `/code-review` and `/security-review` are quick checks that do not know the project rules; they do not replace the agents.
 
