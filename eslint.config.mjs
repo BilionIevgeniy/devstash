@@ -244,9 +244,9 @@ const eslintConfig = defineConfig([
     // The same check as the "suggestCanonicalClasses" hint of the Tailwind
     // extension: `max-h-[400px]` must be written `max-h-100`. Only this rule of
     // the plugin: its other rules reorder and rewrap classes across the project.
-    // shadcn/ui primitives are left as the shadcn CLI writes them.
+    // components/ui is included, since the extension flags it too: a primitive
+    // added with the shadcn CLI gets its canonical classes fixed by hand.
     files: ["src/**/*.{ts,tsx}"],
-    ignores: ["src/components/ui/**"],
     plugins: { "better-tailwindcss": betterTailwindcss },
     settings: {
       "better-tailwindcss": { entryPoint: "src/app/globals.css" },

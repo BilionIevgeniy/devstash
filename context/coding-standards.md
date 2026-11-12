@@ -68,6 +68,7 @@ The architecture rules (layout, ranks, roles inside a feature, where new code go
 
 - Tailwind CSS for all styling
 - Use shadcn/ui components where applicable
+- A primitive added with `npx shadcn add` goes through `npm run lint`: the canonical-class rule covers `components/ui` too. Fix a hit with `npx eslint --fix <file>`, not with the editor's format on save, which rewrites the whole file (see the style item in `context/todo.md`)
 - No inline styles
 - Dark mode first, light mode as option
 
