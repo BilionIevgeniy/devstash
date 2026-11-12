@@ -63,16 +63,15 @@ export async function createItem(
   return result.data.id;
 }
 
-// createUserCollection returns no id, so the fixture looks it up by name.
 async function createCollection(userId: string, name: string): Promise<string> {
-  expectSuccess(
-    await createUserCollection(userId, { name, description: null }),
-  );
-  const { id } = await prisma.collection.findFirstOrThrow({
-    where: { userId, name },
-    select: { id: true },
+  const result = await createUserCollection(userId, {
+    name,
+    description: null,
   });
-  return id;
+  if (!result.success || !result.data) {
+    throw new Error(`Fixture collection failed: ${result.error}`);
+  }
+  return result.data.id;
 }
 
 async function createFileItem(userId: string): Promise<string> {

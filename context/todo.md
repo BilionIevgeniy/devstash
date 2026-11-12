@@ -7,7 +7,6 @@ Things decided for later. CLAUDE.md does not import this file: read it when the 
 `PricingSection` sells these under Pro, and they do not exist yet (the AI features are all built since 2026-11-07). Each one is built before Stripe goes to live mode (section 10 of `docs/stripe-integration-plan.md`); until then the homepage says so.
 
 - **Custom item types.** Not built, and no spec yet. `item-types` owns them, gated by `getEntitlements`. The homepage and the plan table in `context/project-overview.md` say "(coming soon)" since 2026-11-11; remove that when they are built.
-- **Export (JSON).** Built by feature 10 (import-export). The homepage and the plan table say "Export (JSON)" since 2026-11-11 (ZIP is not planned); until feature 10 lands the line is a promise.
 
 ## Billing
 

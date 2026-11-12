@@ -47,3 +47,11 @@ export interface CollectionStats {
   total: number;
   favorites: number;
 }
+
+// A collection as the export file writes it.
+export interface ExportedCollection {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: Date;
+}

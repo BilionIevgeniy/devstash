@@ -22,6 +22,8 @@ One short file per decision that shapes the structure of the code, in the [MADR]
 | [0016](0016-error-monitoring-with-sentry.md) | Error monitoring with Sentry: what leaves the server, and how it is kept small | accepted |
 | [0017](0017-queries-split-by-topic.md) | `queries.ts` may split into `queries/<topic>.ts` | accepted |
 | [0018](0018-search-in-postgres.md) | Search runs in Postgres, with one narrow raw-SQL exception | accepted |
+| [0019](0019-export-without-file-bytes.md) | The export carries no file bytes, and streams page by page | accepted |
+| [0020](0020-import-as-batched-data-input.md) | An import is data input in batches, not a file upload | accepted |
 
 ## How to add one
 
