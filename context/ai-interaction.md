@@ -21,9 +21,9 @@ This is the common workflow that we will use for every single feature/fix. Each 
 7. **Iterate** - Iterate and change things if needed
 8. **Commit** (`/feature complete`) - Only after the tests are green, the build passes and everything works. The reset of @context/current-feature.md and the entry in context/feature-history.md go into the feature's own commit
 9. **PR and CI** (`/feature complete`) - Push the branch, open the PR with `gh`, wait for the `ci`, `integration` and `e2e` checks to be green
-10. **Merge** (`/feature complete`) - After my go, merge the PR on GitHub (`gh pr merge --merge --delete-branch`), which deletes the branch there; then update the local `main` and delete the local branch
+10. **Merge** (`/feature complete`) - Once the `ci`, `integration` and `e2e` checks are green, merge the PR on GitHub (`gh pr merge --merge --delete-branch`) without asking: it is the natural end of the task. The branch is deleted there; then update the local `main` and delete the local branch. A red or missing check means no merge
 
-Do NOT commit without permission, and not until `npm run test` is green and the build passes. Run the tests again right before the commit, not only earlier in the feature. If a test or the build fails, fix the issues first; never skip, disable or delete a test to get a commit through. `git commit` and `git merge` run without a permission prompt, so this rule holds only because it is followed; `git push` asks first. `main` changes only through a PR merged on GitHub, and that merge deploys and migrates production, so it waits for my go.
+Do NOT commit without permission, and not until `npm run test` is green and the build passes. Run the tests again right before the commit, not only earlier in the feature. If a test or the build fails, fix the issues first; never skip, disable or delete a test to get a commit through. `git commit` and `git merge` run without a permission prompt, so this rule holds only because it is followed; `git push` asks first. `main` changes only through a PR merged on GitHub. That merge deploys and migrates production, so it happens only when every required check (`ci`, `integration`, `e2e`) is green; then it runs without asking me.
 
 ### Working with review agents
 
@@ -106,7 +106,7 @@ What a production project would not ship without is part of the feature. It is n
 - Security basics hold without being asked: no secret in code, logs or URLs, least privilege (a CI secret is set on the step that needs it, not on the job), a migration that is backward compatible
 - Ask only for what only the user can give or choose: an account, a token, a payment, a choice between vendors or plans, or a trade-off with no standard answer
 
-This does not lift the gates above or the plan-first rule of the user's global instructions: the plan is shown and gets its go, the commit and the push of a feature wait for the user's go, `main` changes only through a PR merged on GitHub, and that merge waits for the user's go because it deploys production.
+This does not lift the gates above or the plan-first rule of the user's global instructions: the plan is shown and gets its go, the commit and the push of a feature wait for the user's go, `main` changes only through a PR merged on GitHub, and that merge waits for green required checks because it deploys production (no separate go: the merge is the end of the task).
 
 ## Code Review
 
