@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import {
   clampPage,
   pageHref,
+  pagePosition,
+  pageSkip,
   pageNumbers,
   parsePage,
   readPage,
@@ -45,6 +47,24 @@ describe("totalPages", () => {
     expect(totalPages(0, 21)).toBe(1);
     expect(totalPages(21, 21)).toBe(1);
     expect(totalPages(22, 21)).toBe(2);
+  });
+});
+
+describe("pagePosition", () => {
+  it("keeps a page inside the list and clamps one past the end", () => {
+    expect(pagePosition(50, 21, 2)).toEqual({ page: 2, totalPages: 3 });
+    expect(pagePosition(50, 21, 9)).toEqual({ page: 3, totalPages: 3 });
+  });
+
+  it("has one page for an empty list", () => {
+    expect(pagePosition(0, 21, 4)).toEqual({ page: 1, totalPages: 1 });
+  });
+});
+
+describe("pageSkip", () => {
+  it("skips the rows of the pages before", () => {
+    expect(pageSkip(1, 21)).toBe(0);
+    expect(pageSkip(3, 21)).toBe(42);
   });
 });
 

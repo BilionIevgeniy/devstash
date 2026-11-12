@@ -16,6 +16,10 @@ vi.mock("@/features/items/_internal/queries", () => ({
   getCollectionItemRecords,
   getCollectionTypeCounts,
 }));
+// Read by the file list and gallery services, whose mappers this one reuses.
+vi.mock("@/features/items/_internal/queries/type-list", () => ({
+  getUploadItemsOfType: vi.fn(),
+}));
 vi.mock("@/features/files/services/objects", () => ({ signFileUrls }));
 
 import { getUserCollectionListing } from "@/features/items/services/collection-listing";

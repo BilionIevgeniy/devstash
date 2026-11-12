@@ -14,7 +14,6 @@ import {
   getItemDetail,
   getItemDetailOfType,
   getItemFileKey,
-  getUploadItemsByType,
 } from "@/features/items/_internal/queries";
 
 // Read-only: one seed for the file. The owner's call finds the row first, so
@@ -77,15 +76,6 @@ describe("reads of B's collection by A", () => {
 });
 
 describe("reads of uploads", () => {
-  it("getUploadItemsByType", async () => {
-    const file = await systemTypeId("file");
-    const own = await getUploadItemsByType(t.b.userId, file, 1);
-    expect(idsOf(own.items)).toEqual([t.b.items.file]);
-    const other = await getUploadItemsByType(t.a.userId, file, 1);
-    expect(other.items).toEqual([]);
-    expect(other.totalCount).toBe(0);
-  });
-
   it("countFileItems and getFileItemRecords", async () => {
     await expect(countFileItems(t.b.userId)).resolves.toBe(1);
     await expect(countFileItems(t.a.userId)).resolves.toBe(0);

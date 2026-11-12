@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getUploadItemsByType, signFileUrls } = vi.hoisted(() => ({
-  getUploadItemsByType: vi.fn(),
+const { getUploadItemsOfType, signFileUrls } = vi.hoisted(() => ({
+  getUploadItemsOfType: vi.fn(),
   signFileUrls: vi.fn(),
 }));
-vi.mock("@/features/items/_internal/queries", () => ({
-  getUploadItemsByType,
+vi.mock("@/features/items/_internal/queries/type-list", () => ({
+  getUploadItemsOfType,
 }));
 vi.mock("@/features/files/services/objects", () => ({ signFileUrls }));
 
@@ -25,9 +25,7 @@ const record = {
   fileSize: null,
 };
 
-function onePage<T>(items: T[]) {
-  return { items, totalCount: items.length, page: 1, totalPages: 1 };
-}
+const FILTER = { sort: "newest", tag: null } as const;
 
 describe("getUserFileListItems", () => {
   beforeEach(() => {
@@ -39,31 +37,37 @@ describe("getUserFileListItems", () => {
   });
 
   it("signs nothing for an item without a file", async () => {
-    getUploadItemsByType.mockResolvedValue(onePage([record]));
+    getUploadItemsOfType.mockResolvedValue([record]);
 
-    const {
-      items: [item],
-    } = await getUserFileListItems("user-1", "type-1", 1);
+    const [item] = await getUserFileListItems(
+      "user-1",
+      "type-1",
+      FILTER,
+      0,
+      21,
+    );
 
     expect(item.file).toBeNull();
     expect(signFileUrls).not.toHaveBeenCalled();
   });
 
   it("hands out the name, size and download URL but never the key", async () => {
-    getUploadItemsByType.mockResolvedValue(
-      onePage([
-        {
-          ...record,
-          fileKey: "users/user-1/a.csv",
-          fileName: "export(3).csv",
-          fileSize: 2048,
-        },
-      ]),
-    );
+    getUploadItemsOfType.mockResolvedValue([
+      {
+        ...record,
+        fileKey: "users/user-1/a.csv",
+        fileName: "export(3).csv",
+        fileSize: 2048,
+      },
+    ]);
 
-    const {
-      items: [item],
-    } = await getUserFileListItems("user-1", "type-1", 1);
+    const [item] = await getUserFileListItems(
+      "user-1",
+      "type-1",
+      FILTER,
+      0,
+      21,
+    );
 
     expect(item.file).toMatchObject({
       name: "export(3).csv",
@@ -77,11 +81,11 @@ describe("getUserFileListItems", () => {
   // The drawer signs with the same name, so the file is saved under the same
   // name from the list and from the drawer.
   it("signs a file without a name under its key, like the item detail", async () => {
-    getUploadItemsByType.mockResolvedValue(
-      onePage([{ ...record, fileKey: "users/user-1/a.csv" }]),
-    );
+    getUploadItemsOfType.mockResolvedValue([
+      { ...record, fileKey: "users/user-1/a.csv" },
+    ]);
 
-    await getUserFileListItems("user-1", "type-1", 1);
+    await getUserFileListItems("user-1", "type-1", FILTER, 0, 21);
 
     expect(signFileUrls).toHaveBeenCalledWith(
       "users/user-1/a.csv",
@@ -91,14 +95,12 @@ describe("getUserFileListItems", () => {
   });
 
   it("keeps the order of the query", async () => {
-    getUploadItemsByType.mockResolvedValue(
-      onePage([
-        { ...record, id: "b", fileKey: "users/user-1/b.csv" },
-        { ...record, id: "a" },
-      ]),
-    );
+    getUploadItemsOfType.mockResolvedValue([
+      { ...record, id: "b", fileKey: "users/user-1/b.csv" },
+      { ...record, id: "a" },
+    ]);
 
-    const { items } = await getUserFileListItems("user-1", "type-1", 1);
+    const items = await getUserFileListItems("user-1", "type-1", FILTER, 0, 21);
 
     expect(items.map(({ id }) => id)).toEqual(["b", "a"]);
   });

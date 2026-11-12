@@ -108,6 +108,8 @@ model VerificationToken {
 
 model Item {
   id          String    @id @default(cuid())
+  // Collated "und-x-icu" by the migration item_title_icu_collation, which Prisma
+  // cannot express: a migration that recreates this column must set it again.
   title       String
   contentType String
   content     String?

@@ -1,36 +1,44 @@
 "use client";
 
-import { useState } from "react";
-
 import { useRowFocus } from "@/app/(app)/_components/hooks/use-row-focus";
 import { FavoriteCollections } from "@/app/(app)/favorites/_components/FavoriteCollections";
 import { FavoriteItems } from "@/app/(app)/favorites/_components/FavoriteItems";
-import {
-  sortFavoriteCollections,
-  type FavoriteCollectionSort,
-} from "@/features/collections/domain/favorite-sort";
+import { useSearchParam } from "@/components/common/hooks/use-search-param";
+import { sortFavoriteCollections } from "@/features/collections/domain/favorite-sort";
+import { favoriteCollectionSortSchema } from "@/features/collections/schemas";
 import type { FavoriteCollection } from "@/features/collections/types";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
 import { visibleListItems } from "@/features/items/domain/list-rows";
-import {
-  sortFavoriteItems,
-  type FavoriteItemSort,
-} from "@/features/items/domain/favorite-sort";
+import { sortFavoriteItems } from "@/features/items/domain/favorite-sort";
+import { favoriteItemSortSchema } from "@/features/items/schemas";
 import type { FavoriteItem } from "@/features/items/types";
+
+// Both lists start newest first; the default stays out of the URL.
+const DEFAULT_SORT = "newest";
 
 interface FavoriteListsProps {
   items: FavoriteItem[];
   collections: FavoriteCollection[];
 }
 
-// Owns the empty state too, so both sorts survive the last favorite leaving and
-// coming back through the open drawer. The rows that leave at once are left out
-// first: the empty state, the sort and the counts all follow from what remains.
+// Owns the empty state too, so both sorts stay shown when the last favorite
+// leaves and comes back through the open drawer. The sorts live in the URL
+// (?itemSort=&collectionSort=, feature 7) and sort the rows here, in memory.
+// The rows that leave at once are left out first: the empty state, the sort
+// and the counts all follow from what remains.
 export function FavoriteLists({ items, collections }: FavoriteListsProps) {
   const { hiddenIds, favoriteOverrides } = useItemDrawer();
-  const [itemSort, setItemSort] = useState<FavoriteItemSort>("newest");
-  const [collectionSort, setCollectionSort] =
-    useState<FavoriteCollectionSort>("newest");
+  const [itemSortValue, setItemSortValue] = useSearchParam(
+    "itemSort",
+    DEFAULT_SORT,
+  );
+  const [collectionSortValue, setCollectionSortValue] = useSearchParam(
+    "collectionSort",
+    DEFAULT_SORT,
+  );
+  const itemSort = favoriteItemSortSchema.parse(itemSortValue);
+  const collectionSort =
+    favoriteCollectionSortSchema.parse(collectionSortValue);
 
   const visibleItems = visibleListItems(items, hiddenIds, favoriteOverrides);
   const rowCount = visibleItems.length + collections.length;
@@ -51,12 +59,12 @@ export function FavoriteLists({ items, collections }: FavoriteListsProps) {
           <FavoriteItems
             items={sortFavoriteItems(visibleItems, itemSort)}
             sort={itemSort}
-            onSortChange={setItemSort}
+            onSortChange={(sort) => setItemSortValue(sort)}
           />
           <FavoriteCollections
             collections={sortFavoriteCollections(collections, collectionSort)}
             sort={collectionSort}
-            onSortChange={setCollectionSort}
+            onSortChange={(sort) => setCollectionSortValue(sort)}
           />
         </>
       )}

@@ -4,6 +4,7 @@ import {
   fileExtension,
   FILE_NAME_MAX,
 } from "@/features/files/domain/file-rules";
+import { FAVORITE_ITEM_SORTS } from "@/features/items/domain/favorite-sort";
 import {
   COLLECTIONS_MAX,
   CONTENT_MAX,
@@ -17,6 +18,13 @@ import {
   URL_MAX,
   URL_REQUIRED_MESSAGE,
 } from "@/features/items/domain/item-fields";
+import {
+  DEFAULT_ITEM_LIST_PARAMS,
+  ITEM_LIST_SORTS,
+  type ItemListParams,
+} from "@/features/items/domain/list-params";
+import { PINNED_ITEM_SORTS } from "@/features/items/domain/pinned-items";
+import { parsePage } from "@/lib/pagination";
 
 // Prisma generates CUID v1 ids, which also match the cuid2 format.
 export const itemIdSchema = z.cuid2("Invalid item id");
@@ -171,3 +179,37 @@ export const createItemSchema = updateItemSchema
   });
 
 export type CreateItemInput = z.infer<typeof createItemSchema>;
+
+// The URL state of the lists. A value that is missing, repeated (an array) or
+// unknown falls back to the default; a parser here never throws.
+type SearchParamValue = string | string[] | null | undefined;
+
+const itemListSortSchema = z
+  .enum(ITEM_LIST_SORTS)
+  .catch(DEFAULT_ITEM_LIST_PARAMS.sort);
+
+// Only the shape is checked. A well-formed tag the user has no item with still
+// filters, and the page says that nothing matches.
+const listTagSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(TAG_MAX)
+  .nullable()
+  .catch(null);
+
+export function parseItemListParams(
+  searchParams: Record<string, SearchParamValue>,
+): ItemListParams {
+  return {
+    sort: itemListSortSchema.parse(searchParams.sort),
+    tag: listTagSchema.parse(searchParams.tag ?? null),
+    page: parsePage(searchParams.page ?? undefined),
+  };
+}
+
+export const favoriteItemSortSchema = z
+  .enum(FAVORITE_ITEM_SORTS)
+  .catch("newest");
+
+export const pinnedItemSortSchema = z.enum(PINNED_ITEM_SORTS).catch("newest");

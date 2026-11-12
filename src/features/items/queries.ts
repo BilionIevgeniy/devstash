@@ -7,12 +7,16 @@ import {
   cardItemSelect,
   dashboardItemSelect,
   NEWEST_FIRST,
-  PINNED_FIRST,
   toDashboardItem,
   toItemCardData,
 } from "@/features/items/_internal/queries";
+import {
+  itemListOrderBy,
+  itemListWhere,
+} from "@/features/items/_internal/queries/type-list";
+import { compareNames } from "@/features/items/domain/favorite-sort";
 import { copyValueOf } from "@/features/items/domain/item-fields";
-import { ITEMS_PER_PAGE } from "@/features/items/domain/pagination";
+import type { ItemListFilter } from "@/features/items/domain/list-params";
 import {
   limitSidebarRows,
   SIDEBAR_ITEMS_LIMIT,
@@ -28,7 +32,6 @@ import type {
   SidebarItems,
 } from "@/features/items/types";
 import type { Prisma } from "@/generated/prisma/client";
-import { type Paginated, readPage } from "@/lib/pagination";
 import { prisma } from "@/lib/prisma";
 
 const DASHBOARD_RECENT_ITEMS_LIMIT = 10;
@@ -129,28 +132,46 @@ export async function getSidebarItems(userId: string): Promise<SidebarItems> {
   };
 }
 
-export function getItemsByType(
+// The rows of a type page with a sort and a tag (feature 7). The page reads
+// the count first and works out its position from it, so the count and the
+// rows are read once each.
+export function countItemsOfType(
   userId: string,
   typeId: string,
-  page: number,
-): Promise<Paginated<ItemCardData>> {
-  const where = { userId, typeId };
+  tag: string | null,
+): Promise<number> {
+  return prisma.item.count({ where: itemListWhere(userId, typeId, tag) });
+}
 
-  return readPage(
-    page,
-    ITEMS_PER_PAGE,
-    () => prisma.item.count({ where }),
-    async (skip, take) => {
-      const items = await prisma.item.findMany({
-        where,
-        orderBy: PINNED_FIRST,
-        skip,
-        take,
-        select: cardItemSelect,
-      });
-      return items.map(toItemCardData);
-    },
-  );
+export async function getItemsOfType(
+  userId: string,
+  typeId: string,
+  { sort, tag }: ItemListFilter,
+  skip: number,
+  take: number,
+): Promise<ItemCardData[]> {
+  const items = await prisma.item.findMany({
+    where: itemListWhere(userId, typeId, tag),
+    orderBy: itemListOrderBy(sort),
+    skip,
+    take,
+    select: cardItemSelect,
+  });
+  return items.map(toItemCardData);
+}
+
+// The tags the user put on items of this type, for the tag filter. Ordered
+// here and not in the database, whose collation would put "React" before
+// "api".
+export async function getTypeTagNames(
+  userId: string,
+  typeId: string,
+): Promise<string[]> {
+  const tags = await prisma.tag.findMany({
+    where: { userId, items: { some: { item: { userId, typeId } } } },
+    select: { name: true },
+  });
+  return tags.map(({ name }) => name).toSorted(compareNames);
 }
 
 // The items the command palette searches, last edited first. The content is

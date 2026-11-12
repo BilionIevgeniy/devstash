@@ -96,7 +96,13 @@ const intraFeatureZones = FEATURE_NAMES.flatMap((name) => {
   const dir = `./src/features/${name}`;
   return [
     {
-      target: [`${dir}/queries.ts`, `${dir}/_internal/queries.ts`],
+      // A query file may split into a folder of the same name (ADR 0017).
+      target: [
+        `${dir}/queries.ts`,
+        `${dir}/queries`,
+        `${dir}/_internal/queries.ts`,
+        `${dir}/_internal/queries`,
+      ],
       from: roleFolders(name, "services", "actions", "components"),
       message: "queries.ts cannot import services, actions or components.",
     },
@@ -104,7 +110,9 @@ const intraFeatureZones = FEATURE_NAMES.flatMap((name) => {
       target: [`${dir}/schemas.ts`],
       from: [
         `${dir}/queries.ts`,
+        `${dir}/queries`,
         `${dir}/_internal/queries.ts`,
+        `${dir}/_internal/queries`,
         ...roleFolders(name, "services", "actions", "components"),
       ],
       message: "schemas.ts cannot import queries, services, actions or components.",
@@ -302,7 +310,8 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    files: ["src/features/**/queries.ts"],
+    files: ["src/features/**/queries.ts", "src/features/**/queries/**/*.ts"],
+    ignores: ["src/**/*.test.ts"],
     rules: {
       "no-restricted-syntax": restrictSyntax(
         WRITE_IN_QUERIES_SELECTORS,

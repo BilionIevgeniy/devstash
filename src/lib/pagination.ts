@@ -28,6 +28,26 @@ export function clampPage(page: number, lastPage: number): number {
   return Math.min(page, lastPage);
 }
 
+export interface PagePosition {
+  page: number;
+  totalPages: number;
+}
+
+// A page past the end shows the last one: deleting the only item of the last
+// page leaves its URL behind, and that must not become an empty list.
+export function pagePosition(
+  count: number,
+  perPage: number,
+  requestedPage: number,
+): PagePosition {
+  const lastPage = totalPages(count, perPage);
+  return { page: clampPage(requestedPage, lastPage), totalPages: lastPage };
+}
+
+export function pageSkip(page: number, perPage: number): number {
+  return (page - 1) * perPage;
+}
+
 export function pageHref(basePath: string, page: number): string {
   return page <= 1 ? basePath : `${basePath}?page=${page}`;
 }
@@ -46,8 +66,6 @@ export function pageNumbers(current: number, lastPage: number): PageMark[] {
   });
 }
 
-// A page past the end shows the last one: deleting the only item of the last
-// page leaves its URL behind, and that must not become an empty list.
 export async function readPage<T>(
   requestedPage: number,
   perPage: number,
@@ -55,8 +73,7 @@ export async function readPage<T>(
   read: (skip: number, take: number) => Promise<T[]>,
 ): Promise<Paginated<T>> {
   const totalCount = await count();
-  const lastPage = totalPages(totalCount, perPage);
-  const page = clampPage(requestedPage, lastPage);
-  const items = await read((page - 1) * perPage, perPage);
-  return { items, totalCount, page, totalPages: lastPage };
+  const position = pagePosition(totalCount, perPage, requestedPage);
+  const items = await read(pageSkip(position.page, perPage), perPage);
+  return { items, totalCount, ...position };
 }

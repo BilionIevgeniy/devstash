@@ -1,6 +1,5 @@
 import { LIST_ROW_HEIGHT } from "@/app/(app)/_components/ListRow";
 import { LIST_ROW_ACTIONS_WIDTH } from "@/app/(app)/_components/ListRowFrame";
-import { SORT_SELECT_WIDTH } from "@/app/(app)/_components/SortSelect";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +8,10 @@ import { cn } from "@/lib/utils";
 // client code.
 export const PINNED_GROUP_HEADER =
   "flex h-8 items-center justify-between gap-3";
+
+// The row of the one sort above the groups, shared with loading.tsx the same
+// way.
+export const PINNED_SORT_ROW = "flex h-8 justify-end";
 
 interface PinnedGroupSkeletonProps {
   rows: number;
@@ -19,7 +22,6 @@ export function PinnedGroupSkeleton({ rows }: PinnedGroupSkeletonProps) {
     <section className="space-y-2">
       <div className={PINNED_GROUP_HEADER}>
         <Skeleton className="h-5 w-28" />
-        <Skeleton className={cn(SORT_SELECT_WIDTH, "h-8")} />
       </div>
       <div>
         {Array.from({ length: rows }, (_, index) => (

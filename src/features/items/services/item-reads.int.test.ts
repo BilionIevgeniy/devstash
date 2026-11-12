@@ -72,12 +72,13 @@ describe("collection-listing", () => {
 describe("file-list and gallery", () => {
   it("show only the caller's uploads", async () => {
     const file = await systemTypeId("file");
-    const own = await getUserFileListItems(t.b.userId, file, 1);
-    expect(idsOf(own.items)).toEqual([t.b.items.file]);
-    const other = await getUserFileListItems(t.a.userId, file, 1);
-    expect(other.items).toEqual([]);
-    const gallery = await getUserGalleryItems(t.a.userId, file, 1);
-    expect(gallery.items).toEqual([]);
+    const filter = { sort: "newest", tag: null } as const;
+    const own = await getUserFileListItems(t.b.userId, file, filter, 0, 21);
+    expect(idsOf(own)).toEqual([t.b.items.file]);
+    const other = await getUserFileListItems(t.a.userId, file, filter, 0, 21);
+    expect(other).toEqual([]);
+    const gallery = await getUserGalleryItems(t.a.userId, file, filter, 0, 21);
+    expect(gallery).toEqual([]);
   });
 });
 

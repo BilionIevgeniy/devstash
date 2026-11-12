@@ -18,7 +18,6 @@ import {
   getItemDetail,
   getItemDetailOfType,
   getItemFileKey,
-  getUploadItemsByType,
 } from "@/features/items/_internal/queries";
 
 const createdAt = new Date("2026-01-15T00:00:00Z");
@@ -248,24 +247,5 @@ describe("getCollectionTypeCounts", () => {
     });
     expect(counts.get("t-note")).toBe(30);
     expect(counts.get("t-image")).toBe(2);
-  });
-});
-
-describe("getUploadItemsByType", () => {
-  beforeEach(() => {
-    count.mockReset().mockResolvedValue(30);
-    findMany.mockReset().mockResolvedValue([]);
-  });
-
-  it("counts and reads the same rows, one page of them, pinned first", async () => {
-    const result = await getUploadItemsByType("user-1", "type-1", 2);
-
-    const where = { userId: "user-1", typeId: "type-1" };
-    const { skip, take, orderBy } = findMany.mock.calls[0][0];
-    expect(count.mock.calls[0][0].where).toEqual(where);
-    expect(findMany.mock.calls[0][0].where).toEqual(where);
-    expect({ skip, take }).toEqual({ skip: 21, take: 21 });
-    expect(orderBy).toEqual(PINNED_FIRST_ORDER);
-    expect(result).toMatchObject({ totalCount: 30, page: 2, totalPages: 2 });
   });
 });

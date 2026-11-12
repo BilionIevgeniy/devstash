@@ -10,7 +10,6 @@ import type {
   ItemCardData,
   ItemDetailRecord,
   LockedFileRecord,
-  UploadItemRecord,
 } from "@/features/items/types";
 import type { Prisma } from "@/generated/prisma/client";
 import { type Paginated, readPage } from "@/lib/pagination";
@@ -81,26 +80,6 @@ export function toItemCardData({
     ...toDashboardItem(item),
     canCopy: copyValueOf({ contentType, content, url }) !== null,
   };
-}
-
-const uploadItemSelect = {
-  ...dashboardItemSelect,
-  fileKey: true,
-  fileName: true,
-  fileSize: true,
-} satisfies Prisma.ItemSelect;
-
-type RawUploadItem = Prisma.ItemGetPayload<{
-  select: typeof uploadItemSelect;
-}>;
-
-function toUploadItem({
-  fileKey,
-  fileName,
-  fileSize,
-  ...item
-}: RawUploadItem): UploadItemRecord {
-  return { ...toDashboardItem(item), fileKey, fileName, fileSize };
 }
 
 const collectionItemSelect = {
@@ -193,32 +172,6 @@ export async function getCollectionItemRecords(
     select: collectionItemSelect,
   });
   return items.map(toCollectionItemRecord);
-}
-
-// One page of a file or image type with its uploads, read only by the gallery
-// and file list services.
-export function getUploadItemsByType(
-  userId: string,
-  typeId: string,
-  page: number,
-): Promise<Paginated<UploadItemRecord>> {
-  const where = { userId, typeId };
-
-  return readPage(
-    page,
-    ITEMS_PER_PAGE,
-    () => prisma.item.count({ where }),
-    async (skip, take) => {
-      const items = await prisma.item.findMany({
-        where,
-        orderBy: PINNED_FIRST,
-        skip,
-        take,
-        select: uploadItemSelect,
-      });
-      return items.map(toUploadItem);
-    },
-  );
 }
 
 export async function getItemDetail(

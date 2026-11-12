@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getUploadItemsByType, signFileUrls } = vi.hoisted(() => ({
-  getUploadItemsByType: vi.fn(),
+const { getUploadItemsOfType, signFileUrls } = vi.hoisted(() => ({
+  getUploadItemsOfType: vi.fn(),
   signFileUrls: vi.fn(),
 }));
-vi.mock("@/features/items/_internal/queries", () => ({
-  getUploadItemsByType,
+vi.mock("@/features/items/_internal/queries/type-list", () => ({
+  getUploadItemsOfType,
 }));
 vi.mock("@/features/files/services/objects", () => ({ signFileUrls }));
 
@@ -25,9 +25,7 @@ const record = {
   fileSize: null,
 };
 
-function onePage<T>(items: T[]) {
-  return { items, totalCount: items.length, page: 1, totalPages: 1 };
-}
+const FILTER = { sort: "newest", tag: null } as const;
 
 describe("getUserGalleryItems", () => {
   beforeEach(() => {
@@ -39,26 +37,20 @@ describe("getUserGalleryItems", () => {
   });
 
   it("signs nothing for an item without a file", async () => {
-    getUploadItemsByType.mockResolvedValue(onePage([record]));
+    getUploadItemsOfType.mockResolvedValue([record]);
 
-    const {
-      items: [item],
-    } = await getUserGalleryItems("user-1", "type-1", 1);
+    const [item] = await getUserGalleryItems("user-1", "type-1", FILTER, 0, 21);
 
     expect(item.imageUrl).toBeNull();
     expect(signFileUrls).not.toHaveBeenCalled();
   });
 
   it("hands out the view URL and never the key or the file name", async () => {
-    getUploadItemsByType.mockResolvedValue(
-      onePage([
-        { ...record, fileKey: "users/user-1/a.png", fileName: "cat.png" },
-      ]),
-    );
+    getUploadItemsOfType.mockResolvedValue([
+      { ...record, fileKey: "users/user-1/a.png", fileName: "cat.png" },
+    ]);
 
-    const {
-      items: [item],
-    } = await getUserGalleryItems("user-1", "type-1", 1);
+    const [item] = await getUserGalleryItems("user-1", "type-1", FILTER, 0, 21);
 
     expect(item.imageUrl).toBe("https://r2.example/view/users/user-1/a.png");
     expect(item).not.toHaveProperty("fileKey");
@@ -68,11 +60,11 @@ describe("getUserGalleryItems", () => {
   // The drawer signs with the same name, so both URLs match and the browser
   // loads the image once.
   it("signs a file without a name under its key, like the item detail", async () => {
-    getUploadItemsByType.mockResolvedValue(
-      onePage([{ ...record, fileKey: "users/user-1/a.png" }]),
-    );
+    getUploadItemsOfType.mockResolvedValue([
+      { ...record, fileKey: "users/user-1/a.png" },
+    ]);
 
-    await getUserGalleryItems("user-1", "type-1", 1);
+    await getUserGalleryItems("user-1", "type-1", FILTER, 0, 21);
 
     expect(signFileUrls).toHaveBeenCalledWith(
       "users/user-1/a.png",
@@ -82,14 +74,12 @@ describe("getUserGalleryItems", () => {
   });
 
   it("keeps the order of the query", async () => {
-    getUploadItemsByType.mockResolvedValue(
-      onePage([
-        { ...record, id: "b", fileKey: "users/user-1/b.png" },
-        { ...record, id: "a" },
-      ]),
-    );
+    getUploadItemsOfType.mockResolvedValue([
+      { ...record, id: "b", fileKey: "users/user-1/b.png" },
+      { ...record, id: "a" },
+    ]);
 
-    const { items } = await getUserGalleryItems("user-1", "type-1", 1);
+    const items = await getUserGalleryItems("user-1", "type-1", FILTER, 0, 21);
 
     expect(items.map(({ id }) => id)).toEqual(["b", "a"]);
   });

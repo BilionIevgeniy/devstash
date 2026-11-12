@@ -12,8 +12,11 @@ import {
 import {
   createItemSchema,
   deleteItemOptionsSchema,
+  favoriteItemSortSchema,
   itemContentSchema,
   itemIdSchema,
+  parseItemListParams,
+  pinnedItemSortSchema,
   updateItemSchema,
 } from "@/features/items/schemas";
 
@@ -320,5 +323,56 @@ describe("createItemSchema", () => {
 
   it("drops duplicate tags", () => {
     expect(parse({ tags: ["react", "react "] }).data?.tags).toEqual(["react"]);
+  });
+});
+
+describe("parseItemListParams", () => {
+  const DEFAULTS = { sort: "newest", tag: null, page: 1 };
+
+  it("gives the default view for no parameters", () => {
+    expect(parseItemListParams({})).toEqual(DEFAULTS);
+  });
+
+  it("reads a valid sort, tag and page", () => {
+    expect(
+      parseItemListParams({ sort: "z-a", tag: "  react ", page: "3" }),
+    ).toEqual({ sort: "z-a", tag: "react", page: 3 });
+  });
+
+  it("falls back to the defaults for invalid values instead of throwing", () => {
+    expect(parseItemListParams({ sort: "foo", page: "-3" })).toEqual(DEFAULTS);
+    expect(parseItemListParams({ sort: "type", page: "1e3" })).toEqual(
+      DEFAULTS,
+    );
+    expect(parseItemListParams({ tag: "   ", page: "0" })).toEqual(DEFAULTS);
+    expect(parseItemListParams({ tag: "x".repeat(TAG_MAX + 1) })).toEqual(
+      DEFAULTS,
+    );
+  });
+
+  it("ignores a parameter given twice", () => {
+    expect(
+      parseItemListParams({
+        sort: ["a-z", "z-a"],
+        tag: ["a", "b"],
+        page: ["2"],
+      }),
+    ).toEqual(DEFAULTS);
+  });
+
+  it("reads the null that URLSearchParams.get gives for a missing value", () => {
+    expect(parseItemListParams({ sort: null, tag: null, page: null })).toEqual(
+      DEFAULTS,
+    );
+  });
+});
+
+describe("list sort schemas", () => {
+  it("keep a known sort and fall back to newest for anything else", () => {
+    expect(favoriteItemSortSchema.parse("type")).toBe("type");
+    expect(favoriteItemSortSchema.parse("foo")).toBe("newest");
+    expect(favoriteItemSortSchema.parse(null)).toBe("newest");
+    expect(pinnedItemSortSchema.parse("z-a")).toBe("z-a");
+    expect(pinnedItemSortSchema.parse("type")).toBe("newest");
   });
 });

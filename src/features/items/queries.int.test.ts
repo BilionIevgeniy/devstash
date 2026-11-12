@@ -3,7 +3,6 @@ import {
   allItemIds,
   idsOf,
   seedTenants,
-  systemTypeId,
   type Tenants,
 } from "../../../test/integration/fixtures";
 import {
@@ -11,7 +10,6 @@ import {
   getFavoriteItems,
   getItemEditState,
   getItemStats,
-  getItemsByType,
   getPinnedItems,
   getRecentItems,
   getSearchableItems,
@@ -50,17 +48,6 @@ describe("item lists show only the caller's items", () => {
     const a = await getSidebarItems(t.a.userId);
     expect(idsOf(a.favorites)).toEqual([t.a.items.note]);
     expect(idsOf(a.pinned)).toEqual([t.a.items.snippet]);
-  });
-
-  it("getItemsByType, even with a type B also uses", async () => {
-    const snippet = await systemTypeId("snippet");
-    const [a, b] = await Promise.all([
-      getItemsByType(t.a.userId, snippet, 1),
-      getItemsByType(t.b.userId, snippet, 1),
-    ]);
-    expect(idsOf(a.items)).toEqual([t.a.items.snippet]);
-    expect(a.totalCount).toBe(1);
-    expect(idsOf(b.items)).toEqual([t.b.items.snippet]);
   });
 });
 

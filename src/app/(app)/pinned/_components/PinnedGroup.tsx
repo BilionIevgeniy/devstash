@@ -2,26 +2,19 @@ import { ChevronDown } from "lucide-react";
 
 import { LIST_ROW_WRAPPER, ListRow } from "@/app/(app)/_components/ListRow";
 import { ListRowFrame } from "@/app/(app)/_components/ListRowFrame";
-import { SortSelect } from "@/app/(app)/_components/SortSelect";
 import { PINNED_GROUP_HEADER } from "@/app/(app)/pinned/_components/PinnedGroupSkeleton";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { typeSlug } from "@/features/item-types/domain/item-type";
 import type { ItemTypeInfo } from "@/features/item-types/types";
 import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
 import { ItemRowActions } from "@/features/items/components/ItemRowActions";
-import {
-  PINNED_ITEM_SORTS,
-  type PinnedItemSort,
-} from "@/features/items/domain/pinned-items";
 import type { DashboardItem } from "@/features/items/types";
 import { cn } from "@/lib/utils";
 
 interface PinnedGroupProps {
   type: ItemTypeInfo;
   items: DashboardItem[];
-  sort: PinnedItemSort;
   isOpen: boolean;
-  onSortChange: (sort: PinnedItemSort) => void;
   onToggle: () => void;
 }
 
@@ -29,9 +22,7 @@ interface PinnedGroupProps {
 export function PinnedGroup({
   type,
   items,
-  sort,
   isOpen,
-  onSortChange,
   onToggle,
 }: PinnedGroupProps) {
   const label = typeSlug(type.name);
@@ -60,12 +51,6 @@ export function PinnedGroup({
             />
           </button>
         </h2>
-        <SortSelect
-          sorts={PINNED_ITEM_SORTS}
-          value={sort}
-          onChange={onSortChange}
-          ariaLabel={`Sort ${label}`}
-        />
       </div>
       <div id={panelId} hidden={!isOpen}>
         {items.map((item) => (
