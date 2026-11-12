@@ -20,6 +20,7 @@ import {
   SAVE_FAILED_MESSAGE,
   type EditorPreferences,
 } from "@/features/editor/_internal/domain/preferences";
+import { isNavigationError } from "@/lib/navigation-error";
 
 const SAVED_MESSAGE = "Editor preferences saved";
 // One toast for all saves, so quick changes replace it instead of stacking.
@@ -72,7 +73,9 @@ export function EditorPreferencesProvider({
     try {
       const result = await updateEditorPreferences(next);
       error = result.success ? null : (result.error ?? SAVE_FAILED_MESSAGE);
-    } catch {
+    } catch (thrown) {
+      // A session that ended: the router is leaving, nothing to roll back.
+      if (isNavigationError(thrown)) return;
       error = SAVE_FAILED_MESSAGE;
     }
 

@@ -13,6 +13,7 @@ import {
 import { ItemDetailView } from "@/features/items/_internal/components/ItemDetailView";
 import { deleteItem } from "@/features/items/actions/item";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
+import { isNavigationError } from "@/lib/navigation-error";
 
 interface ItemDetailPageProps {
   item: DashboardItem;
@@ -41,7 +42,10 @@ export function ItemDetailPage({
         toast.error(result.error ?? DELETE_FAILED_MESSAGE);
         return false;
       }
-    } catch {
+    } catch (error) {
+      // The router is taking the user to sign-in: the dialog stays locked on
+      // "Deleting…" until that page replaces this one.
+      if (isNavigationError(error)) return true;
       toast.error(DELETE_FAILED_MESSAGE);
       return false;
     }

@@ -20,6 +20,8 @@ This Next.js version has breaking changes from what you may know. If you are uns
 - Code quality
 - Code that can be broken up into separate files/components ("Size limits" in `coding-standards.md`)
 - Duplicated logic (below)
+- A new Server Action that does not check the session itself (`getSessionUser`, or `auth()` in `auth` and `account`): the proxy lets action calls through ("Rules" in `architecture-rules.md`)
+- A `catch` around a Server Action call in the browser that shows a redirect as a failure ("React patterns" in `coding-standards.md`)
 
 Auth code (`src/features/auth`, the sign-in, register, password and verify-email routes) is audited in depth by the `auth-auditor` agent: report only the obvious there.
 

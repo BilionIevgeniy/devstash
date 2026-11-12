@@ -18,6 +18,7 @@ import {
 import type { ImportFile } from "@/features/import-export/schemas";
 import type { ImportSummary } from "@/features/import-export/types";
 import type { ActionResult } from "@/lib/action-result";
+import { isNavigationError } from "@/lib/navigation-error";
 
 const LIMITS = {
   maxRecords: IMPORT_BATCH_MAX_RECORDS,
@@ -44,20 +45,23 @@ const sizeOf = (record: unknown) =>
   encoder.encode(JSON.stringify(record)).length;
 
 // A thrown action (the network, a body over the limit) stops the run like a
-// refused one, with the summary of what went through.
+// refused one, with the summary of what went through. Null for a session that
+// ended: the router is leaving for sign-in, so the run stops like a cancel and
+// reports nothing; running it again skips what went through.
 async function send<T>(
   action: (batch: unknown[]) => Promise<ActionResult<T | null>>,
   batch: unknown[],
-): Promise<ActionResult<T | null>> {
+): Promise<ActionResult<T | null> | null> {
   try {
     return await action(batch);
-  } catch {
+  } catch (error) {
+    if (isNavigationError(error)) return null;
     return { success: false, data: null, error: CONNECTION_LOST };
   }
 }
 
 // Sends each batch in turn and sums the answers. `toSummary` takes the data of a
-// batch and returns its summary. Null when cancelled.
+// batch and returns its summary. Null when cancelled or leaving for sign-in.
 async function sendAll<T>(
   records: readonly unknown[],
   action: (batch: unknown[]) => Promise<ActionResult<T | null>>,
@@ -79,6 +83,7 @@ async function sendAll<T>(
   for (const batch of batches) {
     if (options.isCancelled()) return null;
     const result = await send(action, batch);
+    if (!result) return null;
     if (!result.success || !result.data) {
       return { summary, error: result.error ?? CONNECTION_LOST };
     }

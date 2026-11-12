@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { unstable_rethrow } from "next/navigation";
 
 import { startPut } from "@/features/files/_internal/components/put-file";
 import { requestUpload } from "@/features/files/actions/upload";
@@ -8,6 +7,10 @@ import {
   type FileKind,
 } from "@/features/files/domain/file-rules";
 import type { UploadedFile } from "@/features/files/types";
+import { isNavigationError } from "@/lib/navigation-error";
+
+// The router is already leaving the page (a session that ended).
+const NAVIGATING = "navigating";
 
 const UPLOAD_FAILED_MESSAGE =
   "The upload failed. Check your connection and try again.";
@@ -20,13 +23,12 @@ export type UploadState =
 
 // null when the request itself failed (the connection, a server error), so the
 // upload ends as failed instead of staying at 0%. The redirect of a signed-out
-// caller rejects too, and must go on.
+// caller rejects too: the router navigates on its own, so it is no failure.
 async function requestSignedUpload(input: Parameters<typeof requestUpload>[0]) {
   try {
     return await requestUpload(input);
   } catch (error) {
-    unstable_rethrow(error);
-    return null;
+    return isNavigationError(error) ? NAVIGATING : null;
   }
 }
 
@@ -68,7 +70,7 @@ export function useFileUpload(
       fileName: file.name,
       size: file.size,
     });
-    if (attempt !== attemptRef.current) return;
+    if (attempt !== attemptRef.current || signed === NAVIGATING) return;
     if (!signed?.success || !signed.data) {
       const error = signed?.error ?? UPLOAD_FAILED_MESSAGE;
       setState({ status: "failed", file, error });

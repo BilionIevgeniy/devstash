@@ -123,6 +123,7 @@ Course specs name the paths of the original layout. Put the code here instead:
 - Vendor SDKs (`resend`, `@upstash/*`, `stripe`, `openai`, `@aws-sdk/*`) are imported only inside `lib`
 - Server Actions return `ActionResult<T>`, services return `OperationResult` (`src/lib/action-result.ts`). Expected failures are returned; unexpected ones throw and the entry point catches them
 - Authenticated routes live in `app/(app)/`; widen the matcher in `src/proxy.ts` in the same change
+- The proxy lets a `POST` with a `Next-Action` header through (a Server Action call), so every Server Action checks the session itself: `getSessionUser`, or `auth()` for the actions of `auth` and `account`. An action without that check is open to signed-out callers, and no lint catches it
 - Tests are colocated as `[name].test.ts` and, for components and hooks, `[name].test.tsx` (see "Testing" in `coding-standards.md`)
 
 ## What the lint enforces

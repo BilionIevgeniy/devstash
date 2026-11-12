@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { setItemFavorite } from "@/features/items/actions/item";
 import type { ToggleOptions } from "@/features/items/components/hooks/use-item-drawer";
 import { UNDO_TOAST_DURATION } from "@/features/items/domain/list-rows";
+import { isNavigationError } from "@/lib/navigation-error";
 
 const FAVORITE_FAILED_MESSAGE = "Couldn't update the favorite.";
 const UNFAVORITED_MESSAGE = "Removed from favorites";
@@ -51,7 +52,8 @@ export function useItemFavorites(
         } else {
           toast.error(result.error ?? FAVORITE_FAILED_MESSAGE);
         }
-      } catch {
+      } catch (error) {
+        if (isNavigationError(error)) return;
         toast.error(FAVORITE_FAILED_MESSAGE);
       }
     });
