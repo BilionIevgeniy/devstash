@@ -17,6 +17,7 @@ current-feature.md has these sections:
 - `## Status` - Not Started | In Progress | Complete
 - `## Goals` - Bullet points of what success looks like
 - `## Notes` - Additional context, constraints, or details from spec
+- `## Model` - The model for the plan, for the implementation and for `architecture-reviewer`, written by `load` and read by `start` (see "Choosing the model" in context/ai-interaction.md)
 - `## History` - Pointer to context/feature-history.md, where completed features are appended (append only)
 
 ## Task
