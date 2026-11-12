@@ -42,21 +42,23 @@ An agent's findings are not handed to me to decide. For each one, take it, or an
 
 `/feature load` rates the spec by what it builds, not by its length, and writes the result under `## Model` in @context/current-feature.md; `/feature start` compares it with the model of the session before it plans. The table is a recommendation: the session model changes with `/model`, and an agent uses the `model:` line of its file, which a call can override.
 
+Only Opus and Sonnet are used, for the session and for every agent. Fable, and any model that costs extra usage or eats the plan's limit faster, is never chosen, recommended or passed as an agent's `model`, whatever the spec builds.
+
 | What the spec builds                                                                                    | Plan (`/feature start`) | Implementation | `architecture-reviewer` |
 | ------------------------------------------------------------------------------------------------------- | ----------------------- | -------------- | ----------------------- |
-| A new module or rank, a Prisma migration, auth, billing, a different data flow, a change to a lint rule | Fable                   | Opus           | Fable                   |
+| A new module or rank, a Prisma migration, auth, billing, a different data flow, a change to a lint rule | Opus                    | Opus           | Opus                    |
 | A new route, action or query inside an existing module, a new dependency                                | Opus                    | Sonnet         | Opus                    |
 | Cosmetic work, a text, a color, a known API with no new decision                                        | Sonnet                  | Sonnet         | Opus                    |
 
-The plan is where a mistake costs most, so it gets the strongest model. `/feature start` rates again after it has read `docs/modules.md`: a spec that turns out to be a new module or a migration moves up a row. The names are the aliases of the `model:` field (`sonnet`, `opus`, `fable`), so no version goes stale here.
+The plan is where a mistake costs most, so it gets Opus. `/feature start` rates again after it has read `docs/modules.md`: a spec that turns out to be a new module or a migration moves up a row. The names are the aliases of the `model:` field (`sonnet`, `opus`), so no version goes stale here.
 
 ### Agents
 
 | Agent | Model | When | Input |
 | ----- | ----- | ---- | ----- |
-| `architecture-reviewer` | Opus; Fable where the table above says so | Before code: the feature plan, and every later step that changes structure | The plan and the file paths |
-| `code-reviewer` | Opus; Fable for a full scan of `src/` | After code, in `/feature review`; on request over all of `src/` every few features, to find duplication between modules | The diff, or nothing for a full scan |
-| `auth-auditor` | Fable | In `/feature review` when auth code changed (report in chat); on request as a full audit (writes `docs/audit-results/AUTH_SECURITY_REVIEW.md`) | The diff, or "full audit" |
+| `architecture-reviewer` | Opus | Before code: the feature plan, and every later step that changes structure | The plan and the file paths |
+| `code-reviewer` | Opus | After code, in `/feature review`; on request over all of `src/` every few features, to find duplication between modules | The diff, or nothing for a full scan |
+| `auth-auditor` | Opus | In `/feature review` when auth code changed (report in chat); on request as a full audit (writes `docs/audit-results/AUTH_SECURITY_REVIEW.md`) | The diff, or "full audit" |
 | `ui-reviewer` | Sonnet | Only when I ask, with the dev server running | The pages or the change, and the demo password from `.env.demo` |
 
 Where the Model column names a model other than the file's `model:` line, Claude passes it as the `model` of that call.
