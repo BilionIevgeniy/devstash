@@ -22,6 +22,7 @@ const FEATURE_RANKS = {
   items: 5,
   collections: 6,
   search: 7,
+  "import-export": 7,
   account: 8,
   "app-shell": 9,
 };

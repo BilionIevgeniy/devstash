@@ -12,7 +12,7 @@ src/
     api/                route handlers: NextAuth, registration; later webhooks, export, AI streaming
   features/             the product, one folder per feature (see Ranks)
   components/ui/        shadcn/ui primitives only
-  components/common/    hand-written UI with no feature knowledge: CheckList, CopyButton, ErrorState, Field, GradientBadge, LinkPendingMark, Logo, PaginationNav; hooks/ (useReportError, useSearchParam); EmptyState (planned)
+  components/common/    hand-written UI with no feature knowledge: CheckList, CopyButton, ErrorState, Field, GradientBadge, LinkPendingMark, Logo, PaginationNav; hooks/ (useLeaveWarning, useReportError, useSearchParam); EmptyState (planned)
   lib/                  feature-neutral infrastructure and vendor clients
   proxy.ts              Next.js proxy, stays at the src root; its matcher must cover every authenticated route
 prisma/                 schema, migrations, seed
@@ -32,7 +32,7 @@ prisma/                 schema, migrations, seed
 | 4 | `ai` | none | exists (auto-tagging: `SuggestTagsButton`, `generateAutoTags`, the access check and limits; `lib/openai.ts`) |
 | 5 | `items` | Item, Tag, ItemTag, ItemCollection ([ADR 0008](../docs/adr/0008-items-own-the-collection-link.md)) | exists |
 | 6 | `collections` | Collection | exists |
-| 7 | `search`, `import-export` | none | `search` exists; `import-export` planned: the import or export spec |
+| 7 | `search`, `import-export` | none | `search` exists; `import-export` exists (JSON export and import, [ADR 0019](../docs/adr/0019-export-without-file-bytes.md), [ADR 0020](../docs/adr/0020-import-as-batched-data-input.md)) |
 | 8 | `account` | none (delete-account flow: cancel Stripe, purge files, delete rows) | exists |
 | 9 | `app-shell` | none | exists |
 | 10 | `app` | routes only | exists |

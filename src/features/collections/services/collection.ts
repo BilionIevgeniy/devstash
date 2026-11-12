@@ -34,10 +34,14 @@ async function insertCollection(
   }, LOCKED_TRANSACTION);
 }
 
+export interface CreateCollectionResult extends OperationResult {
+  data: { id: string } | null;
+}
+
 export async function createUserCollection(
   userId: string,
   { name, description }: CreateCollectionInput,
-): Promise<OperationResult> {
+): Promise<CreateCollectionResult> {
   const { isPro } = await getEntitlements(userId);
   const collection = await insertCollection(isPro, {
     userId,
@@ -45,8 +49,10 @@ export async function createUserCollection(
     description,
   });
 
-  if (!collection) return { success: false, error: COLLECTION_LIMIT_REACHED };
-  return { success: true, error: null };
+  if (!collection) {
+    return { success: false, error: COLLECTION_LIMIT_REACHED, data: null };
+  }
+  return { success: true, error: null, data: collection };
 }
 
 export async function updateUserCollection(

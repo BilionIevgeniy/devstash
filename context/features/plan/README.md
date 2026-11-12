@@ -19,7 +19,7 @@ Rules that apply to every file:
 | 7 | [URL filters and sort](7.url-filters-and-sort.md) | MUST | [x] |
 | 8 | [Server search with debounce](8.server-search-with-debounce.md) | MUST | [x] |
 | 9 | [Hooks, forms and editor focus](9.hooks-forms-and-editor-focus.md) | SHOULD | [x] |
-| 10 | [Import and export](10.import-export.md) | MUST | [ ] |
+| 10 | [Import and export](10.import-export.md) | MUST | [x] |
 | 11 | [English and German (i18n)](11.i18n-en-de.md) | SHOULD | [ ] |
 | 12 | [Client data and infinite lists](12.client-data-and-infinite-lists.md) | SHOULD | [ ] |
 | 13 | [Performance and SEO](13.performance-and-seo.md) | SHOULD | [ ] |

@@ -63,6 +63,7 @@ describe("createUserCollection", () => {
     await expect(createUserCollection("user-1", input)).resolves.toEqual({
       success: true,
       error: null,
+      data: { id: "collection-1" },
     });
 
     expect(lock.mock.calls[0][1]).toBe("free-collections:user-1");
@@ -83,6 +84,7 @@ describe("createUserCollection", () => {
       success: false,
       error:
         "You have reached the Free plan's limit of 3 collections. Upgrade to Pro for unlimited collections.",
+      data: null,
     });
     expect(create).not.toHaveBeenCalled();
   });

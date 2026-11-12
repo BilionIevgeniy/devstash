@@ -172,3 +172,44 @@ export interface ItemStats {
   total: number;
   favorites: number;
 }
+
+// The upload of an exported item: a presigned download link, never the bytes
+// (ADR 0019). Null on a plan that does not give the file.
+export interface ExportedItemFile {
+  name: string;
+  size: number | null;
+  downloadUrl: string | null;
+}
+
+// An item as the export file writes it, with no object key.
+export interface ExportedItem {
+  id: string;
+  type: string;
+  title: string;
+  description: string | null;
+  content: string | null;
+  url: string | null;
+  language: string | null;
+  tags: string[];
+  collectionIds: string[];
+  isFavorite: boolean;
+  isPinned: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  file: ExportedItemFile | null;
+}
+
+// One page of the export; nextCursor is null on the last page.
+export interface ExportedItemPage {
+  items: ExportedItem[];
+  nextCursor: string | null;
+}
+
+// What makes an item the same as another for an import: the fields its type
+// stores, as stored.
+export interface ItemIdentity {
+  typeName: string;
+  title: string;
+  content: string | null;
+  url: string | null;
+}

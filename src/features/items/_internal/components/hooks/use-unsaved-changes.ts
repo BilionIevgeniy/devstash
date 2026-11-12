@@ -1,5 +1,7 @@
 import { useEffect, useEffectEvent } from "react";
 
+import { useLeaveWarning } from "@/components/common/hooks/use-leave-warning";
+
 // Tells the owner whether a form holds unsaved edits, and warns before a
 // reload or a closed tab drops them. `onDirtyChange` must report to the same
 // place for as long as the form lives: it is read when the state changes, so a
@@ -21,12 +23,5 @@ export function useUnsavedChanges(
   }, [isChanged]);
 
   // A reload or a closed tab would drop the edits without a word.
-  useEffect(() => {
-    if (!isChanged) return;
-    function warn(event: BeforeUnloadEvent) {
-      event.preventDefault();
-    }
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [isChanged]);
+  useLeaveWarning(isChanged);
 }
