@@ -1,6 +1,7 @@
 "use server";
 
-import { auth, signOut } from "@/features/auth/nextauth/auth";
+import { signOut } from "@/features/auth/nextauth/auth";
+import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { changePasswordSchema } from "@/features/auth/schemas";
 import { changeUserPassword } from "@/features/auth/services/account";
 import type { AuthActionState } from "@/features/auth/types";
@@ -24,8 +25,7 @@ export async function changePassword(
   const parsed = changePasswordSchema.safeParse(input);
   if (!parsed.success) return fail(firstIssueMessage(parsed.error));
 
-  const session = await auth();
-  const userId = session?.user?.id;
+  const userId = await getSignedInUserId();
   if (!userId) return fail(SIGNED_OUT_ERROR);
 
   try {

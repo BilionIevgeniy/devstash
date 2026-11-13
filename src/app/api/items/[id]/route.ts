@@ -1,18 +1,9 @@
-import { auth } from "@/features/auth/nextauth/auth";
+import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { openUserItem } from "@/features/items/services/item-detail";
 import { itemIdSchema } from "@/features/items/schemas";
+import { jsonError, jsonOk, SERVER_ERROR_MESSAGE } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import { firstIssueMessage } from "@/lib/validation";
-
-// A user's own content and signed URLs: never kept by a shared cache.
-const NO_STORE = { "Cache-Control": "private, no-store" };
-
-function failure(error: string, status: number) {
-  return Response.json(
-    { success: false, data: null, error },
-    { status, headers: NO_STORE },
-  );
-}
 
 // Answers 401 instead of redirecting to sign-in: the drawer and the cards'
 // copy buttons call this with fetch and expect JSON back.
@@ -20,29 +11,21 @@ export async function GET(
   _request: Request,
   ctx: RouteContext<"/api/items/[id]">,
 ) {
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) return failure("Unauthorized", 401);
+  const userId = await getSignedInUserId();
+  if (!userId) return jsonError("Unauthorized", 401);
 
   const parsed = itemIdSchema.safeParse((await ctx.params).id);
-  if (!parsed.success) return failure(firstIssueMessage(parsed.error), 400);
+  if (!parsed.success) return jsonError(firstIssueMessage(parsed.error), 400);
 
   try {
     const result = await openUserItem(userId, parsed.data);
-    if (result.status === "missing") return failure("Item not found", 404);
+    if (result.status === "missing") return jsonError("Item not found", 404);
     if (result.status === "locked") {
-      return failure("Renew your subscription to open this item", 403);
+      return jsonError("Renew your subscription to open this item", 403);
     }
-    return Response.json(
-      {
-        success: true,
-        data: { item: result.item, canUseAi: result.canUseAi },
-        error: null,
-      },
-      { headers: NO_STORE },
-    );
+    return jsonOk({ item: result.item, canUseAi: result.canUseAi });
   } catch (error) {
     await logger.error("Item detail failed", { error, userId });
-    return failure("Something went wrong", 500);
+    return jsonError(SERVER_ERROR_MESSAGE, 500);
   }
 }

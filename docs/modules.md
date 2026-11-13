@@ -24,7 +24,7 @@ A module writes only the models it owns and reads only its own models. A relatio
 - **Owns:** the identity and the session: sign-in, registration, email verification, password reset, change password; for deleting an account, the proof check and the deletion of its rows (the flow itself is `account`'s)
 - **Uses today:** `lib` only
 - **Entry points used from outside:**
-  - `nextauth/session` (`getSessionUser`), `nextauth/auth` (route handlers, `signIn`, `signOut`), `nextauth/auth.config` (used by `proxy.ts`)
+  - `nextauth/session` (`getSessionUser` for pages and actions, which redirects a signed-out caller; `getSignedInUserId` for routes answered with fetch, which returns null instead), `nextauth/auth` (route handlers, `signIn`, `signOut`), `nextauth/auth.config` (used by `proxy.ts`)
   - `actions/sign-in`, `queries`, `schemas`, `services/registration`, `services/account`, and the `domain/` files for tokens, rate limits, reset links and callback paths, all called by pages and routes
   - `services/account` for `account` only: `verifyAccountDeletion` returns a `VerifiedDeletion` that only it can build, and `deleteVerifiedUserRows` takes nothing else, so the rows cannot be deleted without the proof check
   - `components/`: `AuthCard`, the forms (`SignInForm`, `RegisterForm`, `ForgotPasswordForm`, `ResetPasswordForm`, `ConfirmEmailForm`, `ChangePasswordForm`; each a `<form action>` with `useActionState`, see [architecture.md](architecture.md)), `ResendVerificationButton`, `GitHubSignInButton`, `UserAvatar`; `hooks/use-has-session` (the homepage header: a static page learns of the session after mount, for display only)
