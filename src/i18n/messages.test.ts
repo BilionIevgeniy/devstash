@@ -55,15 +55,20 @@ describe.each(LOCALES)("every %s message", (locale) => {
       onError,
       timeZone: "Europe/Berlin",
     });
-    const names = [...messageAt(messages, key).matchAll(/\{(\w+)/g)].map(
-      ([, name]) => name,
-    );
-    const params = Object.fromEntries(names.map((name) => [name, 2]));
+    const message = messageAt(messages, key);
+    const names = [...message.matchAll(/\{(\w+)/g)].map(([, name]) => name);
+    const tags = [...message.matchAll(/<(\w+)>/g)].map(([, tag]) => tag);
+    const params = Object.fromEntries([
+      ...names.map((name) => [name, 2]),
+      ...tags.map((tag) => [tag, (chunks: string) => chunks]),
+    ]);
 
-    const text = (translate as (key: string, values: object) => string)(
-      key,
-      params,
-    );
+    // A message with tags (<strong>) is formatted as markup, like t.rich.
+    const format = (tags.length > 0 ? translate.markup : translate) as (
+      key: string,
+      values: object,
+    ) => string;
+    const text = format(key, params);
 
     expect(onError).not.toHaveBeenCalled();
     expect(text).not.toMatch(/[{}]/);

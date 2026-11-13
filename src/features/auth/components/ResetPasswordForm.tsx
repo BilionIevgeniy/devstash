@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { toast } from "sonner";
 
@@ -19,12 +20,11 @@ import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const SUCCESS_MESSAGE = "Password updated. You can now sign in.";
 const SIGN_IN_URL = "/sign-in";
 
 const FIELDS = [
-  { name: "password", label: "New password" },
-  { name: "confirmPassword", label: "Confirm new password" },
+  { name: "password", label: "newPassword" },
+  { name: "confirmPassword", label: "confirmNewPassword" },
 ] as const;
 
 const FIELD_NAMES = FIELDS.map(({ name }) => name);
@@ -43,6 +43,7 @@ async function submit(
   router: Router,
   email: string,
   token: string,
+  successText: string,
   formData: FormData,
 ): Promise<State> {
   const values = formValues(formData, FIELD_NAMES);
@@ -55,7 +56,7 @@ async function submit(
     if (!result.success) {
       return { error: result, values };
     }
-    toast.success(SUCCESS_MESSAGE);
+    toast.success(successText);
     // replace: Back must not lead to the link that was just used.
     router.replace(SIGN_IN_URL);
     return INITIAL_STATE;
@@ -72,9 +73,10 @@ interface ResetPasswordFormProps {
 
 export function ResetPasswordForm({ email, token }: ResetPasswordFormProps) {
   const router = useRouter();
+  const t = useTranslations("auth");
   const [state, formAction, isPending] = useActionState(
     (_previous: State, formData: FormData) =>
-      submit(router, email, token, formData),
+      submit(router, email, token, t("reset.success"), formData),
     INITIAL_STATE,
   );
   // Gone while a new attempt runs, so a repeated error is announced again.
@@ -86,7 +88,7 @@ export function ResetPasswordForm({ email, token }: ResetPasswordFormProps) {
       {FIELDS.map(({ name, label }) => (
         <div key={name} className="space-y-2">
           <label htmlFor={name} className="text-sm font-medium">
-            {label}
+            {t(`fields.${label}`)}
           </label>
           <Input
             id={name}
@@ -106,14 +108,14 @@ export function ResetPasswordForm({ email, token }: ResetPasswordFormProps) {
         </p>
       )}
       <Button type="submit" size="lg" className="w-full" disabled={isPending}>
-        {isPending ? "Updating password…" : "Update password"}
+        {isPending ? t("reset.pending") : t("reset.submit")}
       </Button>
       {error?.error === "invalidResetLink" && (
         <Link
           href="/forgot-password"
           className="block text-center text-sm text-foreground underline-offset-4 hover:underline"
         >
-          Request a new reset link
+          {t("reset.requestNewLink")}
         </Link>
       )}
     </form>

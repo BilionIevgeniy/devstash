@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { ConfirmEmailForm } from "@/features/auth/components/ConfirmEmailForm";
@@ -12,16 +13,14 @@ export default async function VerifyEmailPage({
   searchParams,
 }: PageProps<"/verify-email">) {
   const parsed = emailLinkParamsSchema.safeParse(await searchParams);
+  const t = await getTranslations("auth.verify");
 
   if (
     parsed.success &&
     (await isVerificationTokenValid(parsed.data.email, parsed.data.token))
   ) {
     return (
-      <AuthCard
-        title="Confirm your email"
-        description="Enter your account password to finish verification"
-      >
+      <AuthCard title={t("title")} description={t("description")}>
         <ConfirmEmailForm email={parsed.data.email} token={parsed.data.token} />
       </AuthCard>
     );
@@ -30,12 +29,12 @@ export default async function VerifyEmailPage({
   const errorText = await getErrorText();
   return (
     <AuthCard
-      title="Verification failed"
+      title={t("failedTitle")}
       description={errorText("invalidVerificationLink")}
     >
       {parsed.success && <ResendVerificationButton email={parsed.data.email} />}
       <Button asChild variant="outline" size="lg" className="w-full">
-        <Link href="/sign-in">Back to sign in</Link>
+        <Link href="/sign-in">{t("backToSignIn")}</Link>
       </Button>
     </AuthCard>
   );

@@ -44,3 +44,29 @@ test.describe("the homepage in two languages", () => {
     ).toBeVisible();
   });
 });
+
+// Without a chosen language, the auth pages follow the browser's.
+test.describe("the auth pages", () => {
+  test.use({ storageState: SIGNED_OUT });
+
+  test.describe("for a German browser", () => {
+    test.use({ locale: "de-DE" });
+
+    test("/sign-in is German", async ({ page }) => {
+      await page.goto("/sign-in");
+
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Anmelden" }),
+      ).toBeVisible();
+      await expect(page.getByLabel("Passwort", { exact: true })).toBeVisible();
+    });
+  });
+
+  test("/sign-in is English for an English browser", async ({ page }) => {
+    await page.goto("/sign-in");
+
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Sign in" }),
+    ).toBeVisible();
+  });
+});

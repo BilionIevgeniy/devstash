@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { auth } from "@/features/auth/nextauth/auth";
 import { AuthCard } from "@/features/auth/components/AuthCard";
@@ -34,26 +35,24 @@ export default async function SignInPage({
 
   const session = await auth();
   if (session?.user) redirect(callbackPath);
+  const t = await getTranslations("auth.signIn");
 
   return (
-    <AuthCard title="Sign in" description="Welcome back to DevStash">
+    <AuthCard title={t("title")} description={t("description")}>
       <SignInForm
         callbackUrl={callbackPath}
         initialError={getErrorCode(error)}
       />
 
-      <GitHubAuthSection
-        callbackUrl={callbackPath}
-        label="Sign in with GitHub"
-      />
+      <GitHubAuthSection callbackUrl={callbackPath} label={t("github")} />
 
       <p className="text-center text-sm text-muted-foreground">
-        Don&apos;t have an account?{" "}
+        {t("noAccount")}{" "}
         <Link
           href="/register"
           className="text-foreground underline-offset-4 hover:underline"
         >
-          Register
+          {t("register")}
         </Link>
       </p>
     </AuthCard>

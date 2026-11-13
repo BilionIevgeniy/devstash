@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { Logo } from "@/components/common/Logo";
 import { IMPRINT_PATH, PRIVACY_PATH } from "@/lib/legal-paths";
@@ -15,6 +16,8 @@ interface AuthCardProps {
 }
 
 export function AuthCard({ title, description, children }: AuthCardProps) {
+  const t = useTranslations("auth.card");
+
   return (
     <main className="flex flex-1 items-center justify-center p-4">
       <div className="w-full max-w-sm">
@@ -23,7 +26,7 @@ export function AuthCard({ title, description, children }: AuthCardProps) {
           className="inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-          Back to home
+          {t("backHome")}
         </Link>
         <div className="space-y-6 rounded-xl border bg-card p-6 text-card-foreground">
           <div className="space-y-2 text-center">
@@ -36,14 +39,14 @@ export function AuthCard({ title, description, children }: AuthCardProps) {
           {children}
         </div>
         <nav
-          aria-label="Legal"
+          aria-label={t("legal")}
           className="flex justify-center gap-6 text-xs text-muted-foreground"
         >
           <Link href={PRIVACY_PATH} className={LEGAL_LINK}>
-            Privacy
+            {t("privacy")}
           </Link>
           <Link href={IMPRINT_PATH} className={LEGAL_LINK}>
-            Imprint
+            {t("imprint")}
           </Link>
         </nav>
       </div>

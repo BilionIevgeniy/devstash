@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { ResetPasswordForm } from "@/features/auth/components/ResetPasswordForm";
@@ -17,26 +18,25 @@ export default async function ResetPasswordPage({
     !(await isPasswordResetTokenValid(parsed.data.email, parsed.data.token))
   ) {
     const errorText = await getErrorText();
+    const t = await getTranslations("auth.reset");
     return (
       <AuthCard
-        title="Reset link expired"
+        title={t("expiredTitle")}
         description={errorText("invalidResetLink")}
       >
         <Button asChild size="lg" className="w-full">
-          <Link href="/forgot-password">Request a new link</Link>
+          <Link href="/forgot-password">{t("requestNew")}</Link>
         </Button>
         <Button asChild variant="outline" size="lg" className="w-full">
-          <Link href="/sign-in">Back to sign in</Link>
+          <Link href="/sign-in">{t("backToSignIn")}</Link>
         </Button>
       </AuthCard>
     );
   }
 
+  const t = await getTranslations("auth.reset");
   return (
-    <AuthCard
-      title="Reset your password"
-      description="Choose a new password for your account"
-    >
+    <AuthCard title={t("title")} description={t("description")}>
       <ResetPasswordForm email={parsed.data.email} token={parsed.data.token} />
     </AuthCard>
   );

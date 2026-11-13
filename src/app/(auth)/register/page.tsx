@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { GitHubAuthSection } from "@/features/auth/components/GitHubAuthSection";
@@ -14,26 +15,21 @@ const DASHBOARD_PATH = "/dashboard";
 export default async function RegisterPage() {
   const session = await auth();
   if (session?.user) redirect(DASHBOARD_PATH);
+  const t = await getTranslations("auth.register");
 
   return (
-    <AuthCard
-      title="Create an account"
-      description="Start building your DevStash"
-    >
+    <AuthCard title={t("title")} description={t("description")}>
       <RegisterForm />
 
-      <GitHubAuthSection
-        callbackUrl={DASHBOARD_PATH}
-        label="Sign up with GitHub"
-      />
+      <GitHubAuthSection callbackUrl={DASHBOARD_PATH} label={t("github")} />
 
       <p className="text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
+        {t("haveAccount")}{" "}
         <Link
           href="/sign-in"
           className="text-foreground underline-offset-4 hover:underline"
         >
-          Sign in
+          {t("signIn")}
         </Link>
       </p>
     </AuthCard>

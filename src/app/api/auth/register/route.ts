@@ -1,3 +1,5 @@
+import { getLocale } from "next-intl/server";
+
 import {
   getRetryAfterSeconds,
   tooManyAttemptsParams,
@@ -47,7 +49,12 @@ export async function POST(request: Request) {
       );
     }
 
-    await registerAccount({ name, email, password }, getAppOrigin(), ip);
+    await registerAccount(
+      { name, email, password },
+      getAppOrigin(),
+      ip,
+      await getLocale(),
+    );
     return accepted();
   } catch (error) {
     await logger.error("Registration failed", { error });

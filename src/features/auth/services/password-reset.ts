@@ -21,6 +21,7 @@ import {
 import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
 import { fail, ok, type OperationResult } from "@/lib/action-result";
 import { sendEmail } from "@/lib/email";
+import type { Locale } from "@/i18n/config";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 
@@ -41,6 +42,7 @@ async function createPasswordResetToken(email: string): Promise<string> {
 export async function sendPasswordResetLink(
   email: string,
   origin: string,
+  locale: Locale,
 ): Promise<OperationResult> {
   let token: string;
   try {
@@ -55,6 +57,7 @@ export async function sendPasswordResetLink(
     ...buildPasswordResetEmail(
       buildPasswordResetUrl(origin, email, token),
       PASSWORD_RESET_TOKEN_TTL_HOURS,
+      locale,
     ),
   });
 }
@@ -66,6 +69,7 @@ export async function requestPasswordResetLink(
   email: string,
   origin: string,
   ip: string | null,
+  locale: Locale,
 ): Promise<OperationResult> {
   const check = await checkEmailSend(RESET_EMAIL_BY_ADDRESS, email, ip);
   if (check.status === "ip-limited") {
@@ -79,7 +83,7 @@ export async function requestPasswordResetLink(
   const account = await getAccountState(email);
   if (!account?.hasPassword) return ok();
 
-  await sendPasswordResetLink(email, origin);
+  await sendPasswordResetLink(email, origin, locale);
   return ok();
 }
 

@@ -1,23 +1,23 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { ForgotPasswordForm } from "@/features/auth/components/ForgotPasswordForm";
 
-export default function ForgotPasswordPage() {
+export default async function ForgotPasswordPage() {
+  const t = await getTranslations("auth.forgot");
+
   return (
-    <AuthCard
-      title="Forgot your password?"
-      description="Enter your email and we'll send you a link to reset it"
-    >
+    <AuthCard title={t("title")} description={t("description")}>
       <ForgotPasswordForm />
 
       <p className="text-center text-sm text-muted-foreground">
-        Remembered it?{" "}
+        {t("remembered")}{" "}
         <Link
           href="/sign-in"
           className="text-foreground underline-offset-4 hover:underline"
         >
-          Sign in
+          {t("signIn")}
         </Link>
       </p>
     </AuthCard>

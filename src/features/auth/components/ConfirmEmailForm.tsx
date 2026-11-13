@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { toast } from "sonner";
 
@@ -16,7 +17,6 @@ import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const SUCCESS_MESSAGE = "Email verified. You can now sign in.";
 const SIGN_IN_URL = "/sign-in";
 
 const FIELD_NAMES = ["password"] as const;
@@ -36,6 +36,7 @@ async function submit(
   router: Router,
   email: string,
   token: string,
+  successText: string,
   formData: FormData,
 ): Promise<State> {
   const values = formValues(formData, FIELD_NAMES);
@@ -45,7 +46,7 @@ async function submit(
     if (!result.success) {
       return { error: result, values };
     }
-    toast.success(SUCCESS_MESSAGE);
+    toast.success(successText);
     // replace: Back must not lead to the link that was just used.
     router.replace(SIGN_IN_URL);
     return INITIAL_STATE;
@@ -62,9 +63,10 @@ interface ConfirmEmailFormProps {
 
 export function ConfirmEmailForm({ email, token }: ConfirmEmailFormProps) {
   const router = useRouter();
+  const t = useTranslations("auth");
   const [state, formAction, isPending] = useActionState(
     (_previous: State, formData: FormData) =>
-      submit(router, email, token, formData),
+      submit(router, email, token, t("verify.success"), formData),
     INITIAL_STATE,
   );
   // Gone while a new attempt runs, so a repeated error is announced again.
@@ -75,7 +77,7 @@ export function ConfirmEmailForm({ email, token }: ConfirmEmailFormProps) {
     <form action={formAction} className="space-y-4">
       <div className="space-y-2">
         <label htmlFor="password" className="text-sm font-medium">
-          Password
+          {t("fields.password")}
         </label>
         <Input
           id="password"
@@ -92,14 +94,14 @@ export function ConfirmEmailForm({ email, token }: ConfirmEmailFormProps) {
         </p>
       )}
       <Button type="submit" size="lg" className="w-full" disabled={isPending}>
-        {isPending ? "Verifying…" : "Verify email"}
+        {isPending ? t("verify.pending") : t("verify.submit")}
       </Button>
       {error?.error === "wrongConfirmPassword" && (
         <Link
           href="/forgot-password"
           className="block text-center text-sm text-foreground underline-offset-4 hover:underline"
         >
-          Forgot password?
+          {t("verify.forgot")}
         </Link>
       )}
       {error?.error === "invalidVerificationLink" && (

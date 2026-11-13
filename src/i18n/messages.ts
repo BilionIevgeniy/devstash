@@ -1,8 +1,12 @@
 import type { Locale } from "@/i18n/config";
+import deAuth from "@/i18n/messages/de/auth.json";
 import deBilling from "@/i18n/messages/de/billing.json";
+import deEmails from "@/i18n/messages/de/emails.json";
 import deErrors from "@/i18n/messages/de/errors.json";
 import deMarketing from "@/i18n/messages/de/marketing.json";
+import enAuth from "@/i18n/messages/en/auth.json";
 import enBilling from "@/i18n/messages/en/billing.json";
+import enEmails from "@/i18n/messages/en/emails.json";
 import enErrors from "@/i18n/messages/en/errors.json";
 import enMarketing from "@/i18n/messages/en/marketing.json";
 
@@ -13,7 +17,9 @@ import enMarketing from "@/i18n/messages/en/marketing.json";
 // and that every message formats.
 
 const EN = {
+  auth: enAuth,
   billing: enBilling,
+  emails: enEmails,
   errors: enErrors,
   marketing: enMarketing,
 };
@@ -22,7 +28,9 @@ export type Messages = typeof EN;
 export type Namespace = keyof Messages;
 
 const DE = {
+  auth: deAuth,
   billing: deBilling,
+  emails: deEmails,
   errors: deErrors,
   marketing: deMarketing,
 } satisfies Messages;

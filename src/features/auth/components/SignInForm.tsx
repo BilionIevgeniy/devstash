@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { signInWithCredentials } from "@/features/auth/actions/sign-in";
 import { ResendVerificationButton } from "@/features/auth/components/ResendVerificationButton";
@@ -23,6 +24,7 @@ export function SignInForm({ callbackUrl, initialError }: SignInFormProps) {
   );
   const [email, setEmail] = useState("");
   const errorText = useErrorText();
+  const t = useTranslations("auth");
   const error: ErrorRef | null =
     state && !state.success
       ? state
@@ -35,7 +37,7 @@ export function SignInForm({ callbackUrl, initialError }: SignInFormProps) {
       <input type="hidden" name="callbackUrl" value={callbackUrl} />
       <div className="space-y-2">
         <label htmlFor="email" className="text-sm font-medium">
-          Email
+          {t("fields.email")}
         </label>
         <Input
           id="email"
@@ -50,13 +52,13 @@ export function SignInForm({ callbackUrl, initialError }: SignInFormProps) {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <label htmlFor="password" className="text-sm font-medium">
-            Password
+            {t("fields.password")}
           </label>
           <Link
             href="/forgot-password"
             className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
-            Forgot password?
+            {t("signIn.forgot")}
           </Link>
         </div>
         <Input
@@ -73,7 +75,7 @@ export function SignInForm({ callbackUrl, initialError }: SignInFormProps) {
         </p>
       )}
       <Button type="submit" size="lg" className="w-full" disabled={isPending}>
-        {isPending ? "Signing in…" : "Sign in"}
+        {isPending ? t("signIn.pending") : t("signIn.submit")}
       </Button>
       {error?.error === "emailNotVerified" && (
         <ResendVerificationButton email={email} />

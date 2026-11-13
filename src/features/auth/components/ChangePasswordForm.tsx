@@ -1,6 +1,7 @@
 "use client";
 
 import { unstable_rethrow } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useActionState } from "react";
 import { toast } from "sonner";
 
@@ -21,25 +22,24 @@ import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const SUCCESS_MESSAGE = "Password updated. Please sign in again.";
 // The password is changed and every session is revoked, so a retry would only
 // be refused: the user is told to start over from the sign-in page.
 const FIELDS = [
   {
     name: "currentPassword",
-    label: "Current password",
+    label: "currentPassword",
     autoComplete: "current-password",
     isNewPassword: false,
   },
   {
     name: "newPassword",
-    label: "New password",
+    label: "newPassword",
     autoComplete: "new-password",
     isNewPassword: true,
   },
   {
     name: "confirmPassword",
-    label: "Confirm new password",
+    label: "confirmNewPassword",
     autoComplete: "new-password",
     isNewPassword: true,
   },
@@ -56,7 +56,7 @@ const INITIAL_STATE: State = {
 // toast and a sign-out that redirects. The values come back with the state, so
 // the form keeps what the user typed, and are dropped once the password is
 // changed.
-async function submit(_previous: State, formData: FormData): Promise<State> {
+async function submit(successText: string, formData: FormData): Promise<State> {
   const values = formValues(formData, FIELD_NAMES);
   if (values.newPassword !== values.confirmPassword) {
     return { error: { error: "passwordsDoNotMatch" }, values };
@@ -74,7 +74,7 @@ async function submit(_previous: State, formData: FormData): Promise<State> {
 
   // The change revoked every session, this one included; signing out clears
   // the cookie and redirects to /sign-in.
-  toast.success(SUCCESS_MESSAGE);
+  toast.success(successText);
   try {
     await signOutAfterPasswordChange();
   } catch (error) {
@@ -89,22 +89,27 @@ async function submit(_previous: State, formData: FormData): Promise<State> {
 }
 
 export function ChangePasswordForm() {
-  const [state, formAction, isPending] = useActionState(submit, INITIAL_STATE);
+  const t = useTranslations("auth");
+  const [state, formAction, isPending] = useActionState(
+    (_previous: State, formData: FormData) =>
+      submit(t("changePassword.success"), formData),
+    INITIAL_STATE,
+  );
   // Gone while a new attempt runs, so a repeated error is announced again.
   const error = isPending ? null : state.error;
   const errorText = useErrorText();
 
   return (
     <div className="rounded-lg border bg-card p-6">
-      <h3 className="font-medium">Change password</h3>
+      <h3 className="font-medium">{t("changePassword.title")}</h3>
       <p className="text-sm text-muted-foreground">
-        Enter your current password to set a new one.
+        {t("changePassword.description")}
       </p>
       <form action={formAction} className="mt-4 max-w-sm space-y-4">
         {FIELDS.map(({ name, label, autoComplete, isNewPassword }) => (
           <div key={name} className="space-y-2">
             <label htmlFor={name} className="text-sm font-medium">
-              {label}
+              {t(`fields.${label}`)}
             </label>
             <Input
               id={name}
@@ -124,7 +129,7 @@ export function ChangePasswordForm() {
           </p>
         )}
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Updating password…" : "Update password"}
+          {isPending ? t("changePassword.pending") : t("changePassword.submit")}
         </Button>
       </form>
     </div>

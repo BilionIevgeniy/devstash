@@ -6,6 +6,7 @@ import { VERIFICATION_EMAIL_BY_ADDRESS } from "@/features/auth/domain/rate-limit
 import { shouldResendVerification } from "@/features/auth/domain/registration";
 import { getAccountState } from "@/features/auth/queries";
 import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
+import type { Locale } from "@/i18n/config";
 import { sendVerificationLink } from "@/features/auth/services/email-verification";
 import { prisma } from "@/lib/prisma";
 
@@ -30,6 +31,7 @@ export async function registerAccount(
   { name, email, password }: RegistrationInput,
   origin: string,
   ip: string | null,
+  locale: Locale,
 ): Promise<void> {
   // Hashed before the lookup so a new and an existing address cost the same.
   const hashedPassword = await hashPassword(password);
@@ -41,7 +43,9 @@ export async function registerAccount(
     const check = shouldResendVerification(existing)
       ? await checkEmailSend(VERIFICATION_EMAIL_BY_ADDRESS, email, ip)
       : null;
-    if (check?.status === "allowed") await sendVerificationLink(email, origin);
+    if (check?.status === "allowed") {
+      await sendVerificationLink(email, origin, locale);
+    }
     return;
   }
 
@@ -55,5 +59,5 @@ export async function registerAccount(
     throw error;
   }
 
-  await sendVerificationLink(email, origin);
+  await sendVerificationLink(email, origin, locale);
 }
