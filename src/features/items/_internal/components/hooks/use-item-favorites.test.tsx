@@ -1,4 +1,4 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook } from "../../../../../../test/intl";
 import { redirect } from "next/navigation";
 import { describe, expect, it, vi } from "vitest";
 

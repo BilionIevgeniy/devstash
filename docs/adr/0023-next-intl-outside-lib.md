@@ -1,6 +1,6 @@
 # 0023. next-intl is used outside `lib`, and `src/i18n/` sits below it
 
-- Status: accepted
+- Status: accepted; the place of the request config amended by [0024](0024-locale-decision.md)
 - Date: 2026-11-13
 
 ## Context

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "../../../../../test/intl";
 import userEvent from "@testing-library/user-event";
 import { useImperativeHandle, type RefObject } from "react";
 import { describe, expect, it, vi } from "vitest";

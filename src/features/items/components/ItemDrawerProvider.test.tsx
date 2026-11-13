@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "../../../../test/intl";
 import userEvent from "@testing-library/user-event";
 import { useEffect, type ComponentProps } from "react";
 import { describe, expect, it, vi } from "vitest";

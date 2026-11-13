@@ -1,16 +1,12 @@
 import "server-only";
 
-import { createErrorText, type ErrorText } from "@/i18n/error-text";
-import { logger } from "@/lib/logger";
+import { getTranslations } from "next-intl/server";
 
-// A code this build does not know or a message that cannot be formatted is a
-// bug of ours: the page shows the generic text and the log says so.
-const errorText = createErrorText((error) => {
-  logger.warn("Formatting an error message failed", { error });
-});
+import { errorTextFrom, type ErrorText } from "@/i18n/error-text";
 
-// The words of a failure for a server component. Async because the locale
-// will be read from the request here (feature 11, step 1); its callers stay.
+// The words of a failure for a server component, in the locale of the request
+// (lib/i18n-request.ts). An unknown code or a message that cannot be formatted
+// shows the generic text; the request config logs it.
 export async function getErrorText(): Promise<ErrorText> {
-  return errorText;
+  return errorTextFrom(await getTranslations("errors"));
 }

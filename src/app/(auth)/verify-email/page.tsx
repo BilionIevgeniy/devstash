@@ -22,10 +22,7 @@ export default async function VerifyEmailPage({
         title="Confirm your email"
         description="Enter your account password to finish verification"
       >
-        <ConfirmEmailForm
-          email={parsed.data.email}
-          token={parsed.data.token}
-        />
+        <ConfirmEmailForm email={parsed.data.email} token={parsed.data.token} />
       </AuthCard>
     );
   }

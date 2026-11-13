@@ -1,4 +1,4 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook } from "../../../../../../test/intl";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ActionResult } from "@/lib/action-result";

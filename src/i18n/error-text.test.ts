@@ -56,3 +56,24 @@ describe("createErrorText", () => {
     expect(onError).toHaveBeenCalledOnce();
   });
 });
+
+describe("createErrorText in German", () => {
+  it("says Minute and Minuten for the rate limit", () => {
+    const errorText = createErrorText(undefined, "de");
+
+    expect(
+      errorText({ error: "tooManyAttempts", params: { minutes: 1 } }),
+    ).toBe("Zu viele Versuche. Bitte versuch es in 1 Minute noch einmal.");
+    expect(
+      errorText({ error: "tooManyAttempts", params: { minutes: 5 } }),
+    ).toBe("Zu viele Versuche. Bitte versuch es in 5 Minuten noch einmal.");
+  });
+
+  it("falls back to the German generic text", () => {
+    const unknown = { error: "removedCode" } as unknown as { error: ErrorCode };
+
+    expect(createErrorText(undefined, "de")(unknown)).toBe(
+      "Etwas ist schiefgelaufen. Bitte versuch es noch einmal.",
+    );
+  });
+});
