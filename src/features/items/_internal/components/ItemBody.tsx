@@ -1,13 +1,12 @@
 import { Download, File as FileIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { AiCodeExplanation } from "@/features/ai/components/AiCodeExplanation";
 import { CodeEditor } from "@/features/editor/components/CodeEditor";
 import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
-import {
-  formatFileSize,
-  type FileKind,
-} from "@/features/files/domain/file-rules";
+import { type FileKind } from "@/features/files/domain/file-rules";
+import { useFileSize } from "@/features/files/components/hooks/use-file-size";
 import { DrawerSection } from "@/features/items/_internal/components/DrawerSection";
 import { PromptContent } from "@/features/items/_internal/components/PromptContent";
 import {
@@ -36,17 +35,18 @@ export function ItemBody({
   canUseAi,
   onSaved,
 }: ItemBodyProps) {
+  const t = useTranslations("items.fields");
   const fields = editableFields(typeName);
 
   return (
     <>
       {fields.file && detail.file && (
-        <DrawerSection title={fields.file === "image" ? "Image" : "File"}>
+        <DrawerSection title={t(fields.file)}>
           <ItemFileView kind={fields.file} file={detail.file} />
         </DrawerSection>
       )}
       {detail.url && (
-        <DrawerSection title="URL">
+        <DrawerSection title={t("url")}>
           <a
             href={detail.url}
             target="_blank"
@@ -58,7 +58,7 @@ export function ItemBody({
         </DrawerSection>
       )}
       {detail.content && (
-        <DrawerSection title="Content">
+        <DrawerSection title={t("content")}>
           {fields.codeEditor ? (
             <AiCodeExplanation
               title={title}
@@ -71,7 +71,7 @@ export function ItemBody({
                   value={detail.content ?? ""}
                   language={detail.language}
                   readOnly
-                  ariaLabel="Content"
+                  ariaLabel={t("content")}
                   headerActions={headerActions}
                   view={view}
                 />
@@ -103,6 +103,8 @@ interface ItemFileViewProps {
 // nothing shifts when the detail arrives or the image loads. The URLs are
 // signed for at least an hour after the render.
 function ItemFileView({ kind, file }: ItemFileViewProps) {
+  const fileSize = useFileSize();
+  const t = useTranslations("common.actions");
   return (
     <div className="space-y-3">
       {kind === "image" && (
@@ -132,14 +134,12 @@ function ItemFileView({ kind, file }: ItemFileViewProps) {
         <FileIcon className="size-5 shrink-0 text-muted-foreground" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm">{file.name}</p>
-          <p className="text-xs text-muted-foreground">
-            {formatFileSize(file.size)}
-          </p>
+          <p className="text-xs text-muted-foreground">{fileSize(file.size)}</p>
         </div>
         <Button asChild variant="outline" size="sm">
           <a href={file.downloadUrl}>
             <Download />
-            Download
+            {t("download")}
           </a>
         </Button>
       </div>

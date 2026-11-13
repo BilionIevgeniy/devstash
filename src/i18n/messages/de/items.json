@@ -1,0 +1,66 @@
+{
+  "fields": {
+    "title": "Titel",
+    "url": "URL",
+    "language": "Sprache",
+    "content": "Inhalt",
+    "description": "Beschreibung",
+    "tags": "Tags",
+    "tagsHint": "Tags durch Kommas trennen",
+    "type": "Typ",
+    "collections": "Sammlungen",
+    "file": "Datei",
+    "image": "Bild"
+  },
+  "collectionSelect": {
+    "loading": "Wird geladen …",
+    "loadFailed": "Deine Sammlungen konnten nicht geladen werden",
+    "empty": "Noch keine Sammlungen",
+    "choose": "Sammlungen wählen",
+    "selected": "{count} ausgewählt"
+  },
+  "drawer": {
+    "loadFailed": "Dieser Eintrag konnte nicht geladen werden.",
+    "missing": "Dieser Eintrag existiert nicht mehr",
+    "loading": "Eintrag wird geladen",
+    "details": "Details",
+    "created": "Erstellt",
+    "updated": "Geändert"
+  },
+  "actions": {
+    "favorite": "Favorit",
+    "pin": "Anheften",
+    "favoriteNamed": "{title} als Favorit markieren",
+    "pinNamed": "{title} anheften",
+    "copyNamed": "{title} kopieren",
+    "deleteNamed": "{title} löschen"
+  },
+  "delete": {
+    "title": "Diesen Eintrag löschen?",
+    "description": "„{title}“ wird endgültig gelöscht. Das kann nicht rückgängig gemacht werden."
+  },
+  "discard": {
+    "title": "Änderungen verwerfen?",
+    "description": "Deine ungespeicherten Änderungen an diesem Eintrag gehen verloren."
+  },
+  "create": {
+    "newItem": "Neuer Eintrag",
+    "newType": "Neu: {type}",
+    "description": "Speichere ein Snippet, einen Prompt, einen Befehl, eine Notiz, einen Link, eine Datei oder ein Bild."
+  },
+  "toasts": {
+    "created": "Eintrag erstellt",
+    "saved": "Eintrag gespeichert",
+    "deleted": "Eintrag gelöscht",
+    "pinned": "Eintrag angeheftet",
+    "unpinned": "Eintrag nicht mehr angeheftet",
+    "promptUpdated": "Prompt aktualisiert"
+  },
+  "locked": {
+    "none": "Du hast keine gesperrten Dateien.",
+    "count": "Du hast {count, plural, one {# gesperrte Datei} other {# gesperrte Dateien}}",
+    "manage": "Herunterladen oder löschen",
+    "label": "Verlängere dein Abo, um ihn zu öffnen",
+    "named": "{title}: Verlängere dein Abo, um ihn zu öffnen"
+  }
+}

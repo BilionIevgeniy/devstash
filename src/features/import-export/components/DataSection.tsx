@@ -1,4 +1,5 @@
 import { Database } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -13,19 +14,15 @@ interface DataSectionProps {
 // Export and import of the settings page. The plan comes from the page's
 // panel; the route and the actions check it again.
 export function DataSection({ isPro }: DataSectionProps) {
+  const t = useTranslations("importExport");
   return (
     <section className="space-y-4">
       <h2 className="flex items-center gap-2 text-lg font-semibold">
         <Database className="size-4 text-muted-foreground" />
-        Data
+        {t("title")}
       </h2>
       <div className="space-y-4 rounded-lg border bg-card p-6">
-        <p className="text-sm text-muted-foreground">
-          Download every item and collection as JSON, or import a DevStash
-          export. Files and images come as download links that expire after
-          about an hour. An import skips what is already there and does not
-          restore favorites, pins or dates.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("description")}</p>
         {isPro ? (
           <div className="flex flex-wrap items-start gap-3">
             <ExportButton />
@@ -33,9 +30,9 @@ export function DataSection({ isPro }: DataSectionProps) {
           </div>
         ) : (
           <div className="flex flex-wrap items-center gap-3">
-            <p className="text-sm">Export and import are part of Pro.</p>
+            <p className="text-sm">{t("proOnly")}</p>
             <Button asChild variant="outline">
-              <Link href={UPGRADE_PATH}>Upgrade to Pro</Link>
+              <Link href={UPGRADE_PATH}>{t("upgrade")}</Link>
             </Button>
           </div>
         )}

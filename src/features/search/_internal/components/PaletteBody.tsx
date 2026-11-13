@@ -1,4 +1,5 @@
 import { useErrorText } from "@/components/common/hooks/use-error-text";
+import { useTranslations } from "next-intl";
 import { CommandItem } from "@/components/ui/command";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PaletteSearch } from "@/features/search/_internal/components/hooks/use-palette-search";
@@ -19,8 +20,13 @@ interface PaletteBodyProps extends MatchHandlers {
 }
 
 function PaletteLoading() {
+  const t = useTranslations("search");
   return (
-    <div className="space-y-1 p-1" role="status" aria-label="Loading search">
+    <div
+      className="space-y-1 p-1"
+      role="status"
+      aria-label={t("loadingSearch")}
+    >
       {LOADING_ROWS.map((row) => (
         <Skeleton key={row} className="h-11 w-full rounded-lg" />
       ))}
@@ -35,6 +41,7 @@ function PaletteFailure({
   status: keyof typeof FAILURE_CODES;
   onRetry: () => void;
 }) {
+  const t = useTranslations("search");
   const errorText = useErrorText();
   return (
     <>
@@ -45,18 +52,19 @@ function PaletteFailure({
         {errorText(FAILURE_CODES[status])}
       </p>
       <CommandItem value="retry" onSelect={onRetry} className="justify-center">
-        Try again
+        {t("tryAgain")}
       </CommandItem>
     </>
   );
 }
 
 function ShowMore({ search }: { search: PaletteSearch }) {
+  const t = useTranslations("search");
   const label = search.isLoadingMore
-    ? "Loading…"
+    ? t("loading")
     : search.loadMoreFailed
-      ? "Couldn't load more. Try again"
-      : "Show more results";
+      ? t("loadMoreFailed")
+      : t("showMore");
   return (
     <CommandItem
       value="show-more"
@@ -73,6 +81,7 @@ function ShowMore({ search }: { search: PaletteSearch }) {
 // the last results dimmed and not selectable (or the skeleton when there are
 // none yet); a failure in plain words with a way to retry.
 export function PaletteBody({ search, ...handlers }: PaletteBodyProps) {
+  const t = useTranslations("search");
   const { outcome, previous, isPending } = search;
 
   if (isPending) {
@@ -92,7 +101,7 @@ export function PaletteBody({ search, ...handlers }: PaletteBodyProps) {
   if (results.items.length === 0 && results.collections.length === 0) {
     return (
       <p className="py-6 text-center text-sm" role="status">
-        No results found.
+        {t("noResults")}
       </p>
     );
   }

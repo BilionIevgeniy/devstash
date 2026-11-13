@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Folder } from "lucide-react";
 
 import { LIST_ROW_WRAPPER, ListRow } from "@/app/(app)/_components/ListRow";
@@ -24,18 +25,19 @@ export function FavoriteCollections({
   sort,
   onSortChange,
 }: FavoriteCollectionsProps) {
+  const t = useTranslations("pages.favorites");
   if (collections.length === 0) return null;
 
   return (
     <FavoriteSection
-      title="Collections"
+      title={t("collections")}
       count={collections.length}
       action={
         <SortSelect
           sorts={FAVORITE_COLLECTION_SORTS}
           value={sort}
           onChange={onSortChange}
-          ariaLabel="Sort collections"
+          ariaLabel={t("sortCollections")}
         />
       }
     >
@@ -66,7 +68,7 @@ export function FavoriteCollections({
                 />
               }
               title={collection.name}
-              badge="collection"
+              badge={t("collectionBadge")}
               date={collection.favoritedAt}
             />
           </Link>

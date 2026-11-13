@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { CreditCard } from "lucide-react";
 import type { ReactNode } from "react";
@@ -29,17 +30,18 @@ export function BillingSection({
   testMode,
   children,
 }: BillingSectionProps) {
+  const t = useTranslations("billing.settings");
   const { isConfirming } = useCheckoutReturn(checkoutSessionId, isPro);
 
   return (
     <section className="space-y-4">
       <h2 className="flex items-center gap-2 text-lg font-semibold">
         <CreditCard className="size-4 text-muted-foreground" />
-        Billing
+        {t("title")}
       </h2>
       <div className="space-y-4 rounded-lg border bg-card p-6">
         <div className="flex items-center justify-between gap-4">
-          <h3 className="font-medium">Plan</h3>
+          <h3 className="font-medium">{t("plan")}</h3>
           <PlanBadge isPro={isPro} />
         </div>
         {!isPro && (
@@ -50,7 +52,7 @@ export function BillingSection({
         )}
         {isConfirming ? (
           <p className="text-sm text-muted-foreground" role="status">
-            Confirming your payment…
+            {t("confirming")}
           </p>
         ) : (
           <BillingActions

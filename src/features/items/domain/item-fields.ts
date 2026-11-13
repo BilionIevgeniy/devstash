@@ -156,9 +156,6 @@ export function typeListing(typeName: string): TypeListing {
 // Where a Free user downloads or deletes the files of a past subscription.
 export const LOCKED_FILES_PATH = "/settings/locked-files";
 
-// What a locked item says, on a card and to a screen reader everywhere else.
-export const LOCKED_LABEL = "Renew your subscription to open";
-
 // Whether the plan gives the user this type: a Pro type only on the Pro plan.
 export function canUseType(typeName: string, isPro: boolean): boolean {
   return isPro || !requiresPro(typeName);

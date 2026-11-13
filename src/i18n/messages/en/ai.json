@@ -1,0 +1,52 @@
+{
+  "dataNotice": "Content is sent to OpenAI when you click.",
+  "generate": {
+    "idle": "Generate with AI",
+    "pending": "Generating…",
+    "forTags": "for tags",
+    "forDescription": "for description"
+  },
+  "explain": {
+    "idle": "Explain",
+    "pending": "Explaining…",
+    "again": "Regenerate",
+    "done": "Explanation ready",
+    "cutShort": "Explanation cut short",
+    "source": "Code",
+    "answer": "Explain",
+    "cutMessage": "The explanation was cut short. Try again.",
+    "codeCut": "Only the first {max, number} characters were explained."
+  },
+  "optimize": {
+    "idle": "Optimize",
+    "pending": "Optimizing…",
+    "again": "Regenerate",
+    "done": "Optimized prompt ready",
+    "cutShort": "Optimized prompt cut short",
+    "source": "Original",
+    "answer": "Optimized",
+    "copy": "Copy optimized prompt",
+    "cutMessage": "The optimized prompt was cut short. Try again.",
+    "image": "The optimized prompt contains an image, so it cannot be used as is. Copy it instead.",
+    "unchanged": "The prompt is already in good shape: nothing to change.",
+    "promptCut": "Only the start of this long prompt was read, so the result cannot replace it. Copy what you need.",
+    "question": "Use this prompt?",
+    "accept": "Use this prompt",
+    "saving": "Saving…",
+    "discard": "Discard"
+  },
+  "summary": {
+    "ready": "Summary ready",
+    "suggested": "Suggested description",
+    "hint": "Accept replaces the current description",
+    "accept": "Accept",
+    "dismiss": "Dismiss"
+  },
+  "tags": {
+    "none": "No new tags to suggest",
+    "suggested": "Suggested tags",
+    "announce": "{count, plural, one {# tag suggested} other {# tags suggested}}",
+    "add": "Add tag {tag}",
+    "dismiss": "Dismiss tag {tag}"
+  }
+}

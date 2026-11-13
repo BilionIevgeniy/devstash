@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
@@ -19,6 +20,7 @@ const PaletteDialog = dynamic(
 );
 
 export function CommandPalette() {
+  const t = useTranslations("search");
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const [openPathname, setOpenPathname] = useState(pathname);
@@ -59,12 +61,12 @@ export function CommandPalette() {
         ref={triggerRef}
         variant="outline"
         aria-haspopup="dialog"
-        aria-label="Search items and collections"
+        aria-label={t("trigger")}
         className="w-full min-w-0 max-w-md shrink justify-start font-normal text-muted-foreground"
         onClick={open}
       >
         <Search />
-        <span className="truncate">Search items and collections...</span>
+        <span className="truncate">{t("placeholder")}</span>
         <kbd className="ml-auto hidden rounded border px-1.5 text-xs sm:inline">
           ⌘K
         </kbd>

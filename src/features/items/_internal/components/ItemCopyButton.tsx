@@ -1,6 +1,7 @@
 "use client";
 
 import { CopyButton } from "@/components/common/CopyButton";
+import { useTranslations } from "next-intl";
 import { fetchItemDetail } from "@/features/items/_internal/components/fetch-item-detail";
 import { copyValueOf } from "@/features/items/domain/item-fields";
 
@@ -19,10 +20,11 @@ async function readCopyValue(itemId: string): Promise<string> {
 // The copy button of a card or row. The list does not carry the content, so
 // the text is read from the item's detail when the button is clicked.
 export function ItemCopyButton({ itemId, title }: ItemCopyButtonProps) {
+  const t = useTranslations("items.actions");
   return (
     <CopyButton
       getValue={() => readCopyValue(itemId)}
-      label={`Copy ${title}`}
+      label={t("copyNamed", { title })}
       className="size-9 text-muted-foreground"
     />
   );

@@ -2,11 +2,6 @@
   "meta": {
     "description": "A developer knowledge hub for snippets, commands, prompts, notes, files, images, links and custom types."
   },
-  "notFound": {
-    "title": "Page not found",
-    "description": "This page does not exist or was deleted.",
-    "home": "Go to the homepage"
-  },
   "appError": {
     "title": "Something went wrong",
     "description": "This page could not be loaded. Check your connection and try again.",
@@ -27,5 +22,22 @@
     "de": "Deutsch",
     "switching": "Switching…",
     "failed": "Couldn't change the language. Please try again."
-  }
+  },
+  "actions": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting…",
+    "save": "Save",
+    "saving": "Saving…",
+    "create": "Create",
+    "creating": "Creating…",
+    "edit": "Edit",
+    "copy": "Copy",
+    "undo": "Undo",
+    "download": "Download",
+    "discard": "Discard",
+    "keepEditing": "Keep editing"
+  },
+  "removedFromFavorites": "Removed from favorites",
+  "copied": "Copied to clipboard"
 }

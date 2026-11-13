@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useId, type ReactNode } from "react";
 
@@ -29,6 +30,7 @@ export function AiDescriptionSummary({
   onAccept,
   children,
 }: AiDescriptionSummaryProps) {
+  const t = useTranslations("ai.generate");
   const {
     summary,
     announcement,
@@ -52,7 +54,7 @@ export function AiDescriptionSummary({
       {children(
         <GenerateWithAiButton
           ref={buttonRef}
-          target="for description"
+          target={t("forDescription")}
           describedBy={noteId}
           isPending={isPending}
           disabled={isBlank}

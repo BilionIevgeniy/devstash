@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -7,7 +8,6 @@ import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Skeleton } from "@/components/ui/skeleton";
 import { parseTypeSlug } from "@/features/item-types/domain/item-type";
 import { ItemDrawerSkeleton } from "@/features/items/_internal/components/ItemDrawerSkeleton";
-import { DELETED_MESSAGE } from "@/features/items/_internal/components/hooks/use-item-removal";
 import { ItemDetailView } from "@/features/items/_internal/components/ItemDetailView";
 import { deleteItem } from "@/features/items/actions/item";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
@@ -31,6 +31,7 @@ export function ItemDetailPage({
   canUseAi,
   listHref,
 }: ItemDetailPageProps) {
+  const t = useTranslations("items.toasts");
   const router = useRouter();
   const errorText = useErrorText();
 
@@ -49,7 +50,7 @@ export function ItemDetailPage({
       return false;
     }
 
-    toast.success(DELETED_MESSAGE);
+    toast.success(t("deleted"));
     router.replace(listHref);
     // The shared layout (the sidebar's counts) is not fetched again on a
     // navigation; the router runs this refresh after the replace, on the list.

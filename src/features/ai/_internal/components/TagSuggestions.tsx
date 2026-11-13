@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useEffect, useRef, type RefObject } from "react";
 import { Check, Sparkles, X } from "lucide-react";
@@ -33,6 +34,7 @@ export function TagSuggestions({
   onDismiss,
   fallbackFocusRef,
 }: TagSuggestionsProps) {
+  const t = useTranslations("ai.tags");
   const listRef = useRef<HTMLUListElement>(null);
   const focusIndexRef = useRef<number | null>(null);
 
@@ -65,7 +67,7 @@ export function TagSuggestions({
     <ul
       ref={listRef}
       className="flex flex-wrap gap-2"
-      aria-label="Suggested tags"
+      aria-label={t("suggested")}
     >
       {tags.map((tag, index) => (
         <li
@@ -86,7 +88,7 @@ export function TagSuggestions({
             size="icon-xs"
             data-accept
             className={ACCEPT_CLASS}
-            aria-label={`Add tag ${tag}`}
+            aria-label={t("add", { tag })}
             onClick={() => handle(index, tag, onAccept)}
           >
             <Check />
@@ -96,7 +98,7 @@ export function TagSuggestions({
             variant="ghost"
             size="icon-xs"
             className={DISMISS_CLASS}
-            aria-label={`Dismiss tag ${tag}`}
+            aria-label={t("dismiss", { tag })}
             onClick={() => handle(index, tag, onDismiss)}
           >
             <X />

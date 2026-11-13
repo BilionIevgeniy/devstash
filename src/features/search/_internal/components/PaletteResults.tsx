@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
 
 import { Command, CommandInput, CommandList } from "@/components/ui/command";
@@ -19,6 +20,7 @@ interface PaletteResultsProps {
 // Holds the query and the search, so both start fresh each time the palette
 // opens: the dialog unmounts this when it closes.
 export function PaletteResults({ onClose, onDrawerOpen }: PaletteResultsProps) {
+  const t = useTranslations("search");
   const [query, setQuery] = useState("");
   const search = usePaletteSearch(query);
   const pathname = usePathname();
@@ -44,11 +46,11 @@ export function PaletteResults({ onClose, onDrawerOpen }: PaletteResultsProps) {
   }
 
   return (
-    <Command label="Search" shouldFilter={false}>
+    <Command label={t("title")} shouldFilter={false}>
       <CommandInput
         value={query}
         onValueChange={setQuery}
-        placeholder="Search items and collections..."
+        placeholder={t("placeholder")}
       />
       <CommandList className="h-72">
         <PaletteBody

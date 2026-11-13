@@ -1,16 +1,16 @@
 import { unstable_rethrow } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { useMountedRef } from "@/features/ai/_internal/components/hooks/use-mounted-ref";
 import { generateAutoTags } from "@/features/ai/actions/auto-tags";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 
-const NO_NEW_TAGS_MESSAGE = "No new tags to suggest";
-
 // The suggestions of one form. They only change the form when accepted, so
 // nothing here is saved and nothing is optimistic.
 export function useTagSuggestions(hasTag: (tag: string) => boolean) {
+  const t = useTranslations("ai.tags");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   // Set once per answer, so a screen reader hears of the suggestions once and
   // not again on each accept or dismiss.
@@ -23,11 +23,9 @@ export function useTagSuggestions(hasTag: (tag: string) => boolean) {
   const errorText = useErrorText();
 
   function showAnswer(fresh: string[]) {
-    if (fresh.length === 0) toast.info(NO_NEW_TAGS_MESSAGE);
+    if (fresh.length === 0) toast.info(t("none"));
     setSuggestions(fresh);
-    setAnnouncement(
-      fresh.length === 1 ? "1 tag suggested" : `${fresh.length} tags suggested`,
-    );
+    setAnnouncement(t("announce", { count: fresh.length }));
     setAnswerId((current) => current + 1);
   }
 

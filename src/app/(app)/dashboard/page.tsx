@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 
 import {
   CollectionsSkeleton,
@@ -16,6 +17,7 @@ import { getEntitlements } from "@/features/billing/queries";
 import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvider";
 
 export default async function DashboardPage() {
+  const t = await getTranslations("pages.dashboard");
   const { id: userId } = await getSessionUser();
   const { isPro } = await getEntitlements(userId);
 
@@ -23,8 +25,8 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <ItemDrawerProvider lockProItems={!isPro}>
         <header>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Your developer knowledge hub</p>
+          <h1 className="text-3xl font-bold">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("lead")}</p>
         </header>
         <Suspense fallback={<StatsSkeleton />}>
           <StatsCards />

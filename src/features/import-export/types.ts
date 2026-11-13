@@ -2,7 +2,8 @@ import type { ErrorRef } from "@/i18n/error-codes";
 
 // A record the import could not create, and why, as the owner's error code.
 export interface ImportFailure {
-  title: string;
+  /** Null for a record without a title or name. */
+  title: string | null;
   reason: ErrorRef;
 }
 

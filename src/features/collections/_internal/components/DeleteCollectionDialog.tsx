@@ -1,4 +1,5 @@
 import type { MouseEvent } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
@@ -18,8 +19,6 @@ import type { CollectionDialogState } from "@/features/collections/_internal/com
 import { deleteCollection } from "@/features/collections/actions/collection";
 import type { CollectionSummary } from "@/features/collections/types";
 
-const DELETED_MESSAGE = "Collection deleted";
-
 interface DeleteCollectionDialogProps extends CollectionDialogState {
   collection: CollectionSummary;
   /** The page to leave for: the current one is the collection being deleted. */
@@ -33,6 +32,7 @@ export function DeleteCollectionDialog({
   onOpenChange,
   returnFocus,
 }: DeleteCollectionDialogProps) {
+  const t = useTranslations();
   const router = useRouter();
   const { isPending: isDeleting, run, takeDone } = useSubmitDialog();
 
@@ -65,21 +65,22 @@ export function DeleteCollectionDialog({
   function handleCloseAutoFocus(event: Event) {
     event.preventDefault();
     returnFocus();
-    if (takeDone()) toast.success(DELETED_MESSAGE);
+    if (takeDone()) toast.success(t("collections.toasts.deleted"));
   }
 
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogContent onCloseAutoFocus={handleCloseAutoFocus}>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete this collection?</AlertDialogTitle>
+          <AlertDialogTitle>{t("collections.delete.title")}</AlertDialogTitle>
           <AlertDialogDescription>
-            &ldquo;{collection.name}&rdquo; will be permanently deleted. Its
-            items are kept and only leave this collection.
+            {t("collections.delete.description", { name: collection.name })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>
+            {t("common.actions.cancel")}
+          </AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             disabled={isDeleting}
@@ -88,10 +89,10 @@ export function DeleteCollectionDialog({
             {isDeleting ? (
               <>
                 <Loader2Icon className="size-4 animate-spin" />
-                Deleting…
+                {t("common.actions.deleting")}
               </>
             ) : (
-              "Delete"
+              t("common.actions.delete")
             )}
           </AlertDialogAction>
         </AlertDialogFooter>

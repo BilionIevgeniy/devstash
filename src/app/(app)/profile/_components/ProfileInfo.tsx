@@ -1,11 +1,13 @@
 import { redirect } from "next/navigation";
+import { getFormatter, getTranslations } from "next-intl/server";
 
 import { UserAvatar } from "@/features/auth/components/UserAvatar";
 import { getUserProfile } from "@/features/auth/queries";
 import { getSessionUser } from "@/features/auth/nextauth/session";
-import { formatLongDate } from "@/lib/utils";
 
 export async function ProfileInfo() {
+  const format = await getFormatter();
+  const t = await getTranslations("pages.profile");
   const { id: userId } = await getSessionUser();
   const profile = await getUserProfile(userId);
   if (!profile) redirect("/sign-in");
@@ -26,7 +28,9 @@ export async function ProfileInfo() {
           {profile.email}
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          Member since {formatLongDate(profile.createdAt)}
+          {t("memberSince", {
+            date: format.dateTime(profile.createdAt, "long"),
+          })}
         </p>
       </div>
     </div>

@@ -1,0 +1,9 @@
+{
+  "drop": "Zieh {kind, select, image {das Bild} other {die Datei}} hierher oder klick zum Auswählen",
+  "limits": "{extensions} · bis {size}",
+  "upload": "{kind, select, image {Bild} other {Datei}} hochladen",
+  "uploading": "Wird hochgeladen … {progress} %",
+  "cancelUpload": "Upload abbrechen",
+  "remove": "{kind, select, image {Bild} other {Datei}} entfernen",
+  "retry": "Erneut versuchen"
+}

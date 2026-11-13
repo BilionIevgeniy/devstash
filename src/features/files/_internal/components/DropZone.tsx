@@ -1,26 +1,28 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useRef, useState, type DragEvent } from "react";
 import { FileUp } from "lucide-react";
 
 import {
   acceptedExtensions,
-  formatFileSize,
   maxFileSize,
   type FileKind,
 } from "@/features/files/domain/file-rules";
+import { useFileSize } from "@/features/files/components/hooks/use-file-size";
 import { cn } from "@/lib/utils";
 
 interface DropZoneProps {
   kind: FileKind;
-  label: string;
   disabled?: boolean;
   onFile: (file: File) => void;
 }
 
 // A file dropped on the zone or picked with the hidden input; the zone is a
 // button for the keyboard too.
-export function DropZone({ kind, label, disabled, onFile }: DropZoneProps) {
+export function DropZone({ kind, disabled, onFile }: DropZoneProps) {
+  const t = useTranslations("files");
+  const fileSize = useFileSize();
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -40,7 +42,7 @@ export function DropZone({ kind, label, disabled, onFile }: DropZoneProps) {
       <div
         role="button"
         tabIndex={disabled ? -1 : 0}
-        aria-label={`Upload ${label}`}
+        aria-label={t("upload", { kind })}
         aria-disabled={disabled}
         onClick={openPicker}
         onKeyDown={(event) => {
@@ -61,10 +63,12 @@ export function DropZone({ kind, label, disabled, onFile }: DropZoneProps) {
         )}
       >
         <FileUp className="size-5 text-muted-foreground" />
-        <span>Drop the {label} here or click to choose</span>
+        <span>{t("drop", { kind })}</span>
         <span className="text-xs text-muted-foreground">
-          {acceptedExtensions(kind).replaceAll(",", ", ")} · up to{" "}
-          {formatFileSize(maxFileSize(kind))}
+          {t("limits", {
+            extensions: acceptedExtensions(kind).replaceAll(",", ", "),
+            size: fileSize(maxFileSize(kind)),
+          })}
         </span>
       </div>
       <input

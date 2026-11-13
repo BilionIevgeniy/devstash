@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useEffect, useRef, type RefObject } from "react";
 import { Check, Sparkles, X } from "lucide-react";
@@ -37,6 +38,7 @@ export function SummaryPreview({
   onDismiss,
   fallbackFocusRef,
 }: SummaryPreviewProps) {
+  const t = useTranslations("ai.summary");
   const acceptRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -50,7 +52,7 @@ export function SummaryPreview({
 
   return (
     <section
-      aria-label="Suggested description"
+      aria-label={t("suggested")}
       className={cn("space-y-2 p-3 text-sm", SUGGESTION_FRAME_CLASS)}
     >
       <p className="flex gap-2">
@@ -62,9 +64,7 @@ export function SummaryPreview({
       </p>
       <div className="flex flex-wrap items-center justify-end gap-1">
         {replaces && (
-          <p className="mr-auto text-xs text-muted-foreground">
-            Accept replaces the current description
-          </p>
+          <p className="mr-auto text-xs text-muted-foreground">{t("hint")}</p>
         )}
         <Button
           ref={acceptRef}
@@ -76,7 +76,7 @@ export function SummaryPreview({
           onClick={() => handle(onAccept)}
         >
           <Check aria-hidden />
-          Accept
+          {t("accept")}
         </Button>
         <Button
           type="button"
@@ -86,7 +86,7 @@ export function SummaryPreview({
           onClick={() => handle(onDismiss)}
         >
           <X aria-hidden />
-          Dismiss
+          {t("dismiss")}
         </Button>
       </div>
     </section>

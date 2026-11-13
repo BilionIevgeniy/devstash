@@ -1,10 +1,18 @@
-// The words of the root error pages, which render outside every provider and
-// cannot know the locale (the cookie is httpOnly): English first, German with
+// The words of the root error and not-found pages, which render outside every
+// provider and cannot know the locale (the cookie is httpOnly, and reading it
+// in the root not-found would make every page dynamic): English first, German with
 // its own `lang`, like the legal pages (ADR 0024). The literal-string lint
 // leaves this file out by name.
 
 interface BilingualErrorTextProps {
-  part: "title" | "description" | "retry" | "home" | "reference";
+  part:
+    | "title"
+    | "description"
+    | "retry"
+    | "home"
+    | "reference"
+    | "notFoundTitle"
+    | "notFoundDescription";
   /** The digest, for the reference line. */
   digest?: string;
   /** The description of the root layout's own failure. */
@@ -53,6 +61,24 @@ export function BilingualErrorText({
       return (
         <>
           Go to the homepage <span lang="de">· Zur Startseite</span>
+        </>
+      );
+    case "notFoundTitle":
+      return (
+        <>
+          Page not found{" "}
+          <span lang="de" className="block text-lg font-normal">
+            Seite nicht gefunden
+          </span>
+        </>
+      );
+    case "notFoundDescription":
+      return (
+        <>
+          This page does not exist or was deleted.{" "}
+          <span lang="de">
+            Diese Seite existiert nicht oder wurde gelöscht.
+          </span>
         </>
       );
     case "reference":

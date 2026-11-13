@@ -137,7 +137,7 @@ describe("importUserItems", () => {
         duplicates: 0,
         files: 1,
         failed: [
-          { title: "Untitled item", reason: { error: "titleRequired" } },
+          { title: null, reason: { error: "titleRequired" } },
           {
             title: "a",
             reason: { error: "itemLimitReached", params: { limit: 50 } },

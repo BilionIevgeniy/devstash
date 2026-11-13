@@ -2,11 +2,6 @@
   "meta": {
     "description": "Ein Wissensspeicher für Entwickler: Snippets, Befehle, Prompts, Notizen, Dateien, Bilder, Links und eigene Typen."
   },
-  "notFound": {
-    "title": "Seite nicht gefunden",
-    "description": "Diese Seite existiert nicht oder wurde gelöscht.",
-    "home": "Zur Startseite"
-  },
   "appError": {
     "title": "Etwas ist schiefgelaufen",
     "description": "Diese Seite konnte nicht geladen werden. Prüf deine Verbindung und versuch es noch einmal.",
@@ -27,5 +22,22 @@
     "de": "Deutsch",
     "switching": "Wird umgestellt …",
     "failed": "Die Sprache konnte nicht geändert werden. Bitte versuch es noch einmal."
-  }
+  },
+  "actions": {
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "deleting": "Wird gelöscht …",
+    "save": "Speichern",
+    "saving": "Wird gespeichert …",
+    "create": "Erstellen",
+    "creating": "Wird erstellt …",
+    "edit": "Bearbeiten",
+    "copy": "Kopieren",
+    "undo": "Rückgängig",
+    "download": "Herunterladen",
+    "discard": "Verwerfen",
+    "keepEditing": "Weiter bearbeiten"
+  },
+  "removedFromFavorites": "Aus den Favoriten entfernt",
+  "copied": "In die Zwischenablage kopiert"
 }

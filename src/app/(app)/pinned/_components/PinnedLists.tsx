@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useState } from "react";
 
@@ -27,6 +28,7 @@ interface PinnedListsProps {
 // drawer. An item being deleted or unpinned is left out, so its group and the
 // empty state do not wait for the refresh.
 export function PinnedLists({ items }: PinnedListsProps) {
+  const t = useTranslations("pages.pinned");
   const { hiddenIds, pinOverrides } = useItemDrawer();
   const [sortValue, setSortValue] = useSearchParam("sort", "newest");
   const sort = pinnedItemSortSchema.parse(sortValue);
@@ -54,7 +56,7 @@ export function PinnedLists({ items }: PinnedListsProps) {
           tabIndex={-1}
           className="text-sm text-muted-foreground outline-none"
         >
-          No pinned items yet.
+          {t("empty")}
         </p>
       )}
       {groups.length > 0 && (
@@ -63,7 +65,7 @@ export function PinnedLists({ items }: PinnedListsProps) {
             sorts={PINNED_ITEM_SORTS}
             value={sort}
             onChange={setSortValue}
-            ariaLabel="Sort pins"
+            ariaLabel={t("sort")}
           />
         </div>
       )}

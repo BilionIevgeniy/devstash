@@ -135,17 +135,23 @@ export function checkDeclaredFile(
   return { contentType };
 }
 
-// 980 B, 12.4 KB, 3.1 MB: one decimal below 100 of a unit, none above.
-export function formatFileSize(bytes: number): string {
-  const units = ["B", "KB", "MB"];
+const SIZE_UNITS = ["B", "KB", "MB"] as const;
+
+// 980 B, 12.4 KB, 3.1 MB: the unit, and one decimal below 100 of it, none
+// above. The component formats the number for the locale (useFileSize).
+export function fileSizeParts(bytes: number): {
+  value: number;
+  digits: number;
+  unit: (typeof SIZE_UNITS)[number];
+} {
   let value = bytes;
   let unit = 0;
-  while (value >= 1024 && unit < units.length - 1) {
+  while (value >= 1024 && unit < SIZE_UNITS.length - 1) {
     value /= 1024;
     unit += 1;
   }
   const digits = unit === 0 || value >= 100 ? 0 : 1;
-  return `${value.toFixed(digits)} ${units[unit]}`;
+  return { value, digits, unit: SIZE_UNITS[unit] };
 }
 
 // The trailing slash keeps "users/abc" from matching "users/abcd/...".

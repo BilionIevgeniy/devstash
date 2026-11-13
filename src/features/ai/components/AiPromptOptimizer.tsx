@@ -1,13 +1,14 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useId, type ReactNode } from "react";
 
 import { AiAnswerView } from "@/features/ai/_internal/components/AiAnswerView";
+import { AiStreamControls } from "@/features/ai/_internal/components/AiStreamControls";
 import { AiDataNote } from "@/features/ai/_internal/components/AiDataNote";
-import { AiStreamButton } from "@/features/ai/_internal/components/AiStreamButton";
-import { AiViewToggle } from "@/features/ai/_internal/components/AiViewToggle";
 import { PromptAcceptBar } from "@/features/ai/_internal/components/PromptAcceptBar";
 import { useAiTextStream } from "@/features/ai/_internal/components/hooks/use-ai-text-stream";
+import { useAiStreamLabels } from "@/features/ai/_internal/components/hooks/use-ai-stream-labels";
 import {
   usePromptAccept,
   type AcceptPrompt,
@@ -16,12 +17,6 @@ import {
   isCutForModel,
   PROMPT_OPTIMIZE_CONTENT_MAX,
 } from "@/features/ai/domain/input";
-import {
-  AI_OPTIMIZE_CUT_SHORT_MESSAGE,
-  AI_OPTIMIZE_IMAGE_MESSAGE,
-  AI_OPTIMIZE_PROMPT_CUT_MESSAGE,
-  AI_OPTIMIZE_UNCHANGED_MESSAGE,
-} from "@/features/ai/domain/messages";
 import {
   acceptBlocker,
   type AcceptBlocker,
@@ -51,25 +46,15 @@ interface AiPromptOptimizerProps {
   children: (slots: PromptOptimizerSlots) => ReactNode;
 }
 
-const STREAM = {
-  url: "/api/ai/optimize-prompt",
-  doneAnnouncement: "Optimized prompt ready",
-  cutShortAnnouncement: "Optimized prompt cut short",
-};
-const BUTTON_LABELS = {
-  idle: "Optimize",
-  pending: "Optimizing…",
-  again: "Regenerate",
-};
-const VIEW_LABELS = { source: "Original", answer: "Optimized" };
+const STREAM_URL = "/api/ai/optimize-prompt";
 // Every blocker has a note, so none of them can fall through to Accept.
-const BLOCKER_NOTES: Record<AcceptBlocker, string> = {
-  incomplete: AI_OPTIMIZE_CUT_SHORT_MESSAGE,
-  empty: AI_OPTIMIZE_CUT_SHORT_MESSAGE,
-  "prompt-cut": AI_OPTIMIZE_PROMPT_CUT_MESSAGE,
-  unchanged: AI_OPTIMIZE_UNCHANGED_MESSAGE,
-  image: AI_OPTIMIZE_IMAGE_MESSAGE,
-};
+const BLOCKER_NOTES = {
+  incomplete: "cutMessage",
+  empty: "cutMessage",
+  "prompt-cut": "promptCut",
+  unchanged: "unchanged",
+  image: "image",
+} as const satisfies Record<AcceptBlocker, string>;
 
 // Prompt optimization for a read-only prompt. Like AiCodeExplanation it hands
 // its controls and view to the caller; the question whether to use the
@@ -82,8 +67,13 @@ export function AiPromptOptimizer({
   onAccept,
   children,
 }: AiPromptOptimizerProps) {
+  const t = useTranslations("ai.optimize");
+  const { stream, buttonLabels, viewLabels } = useAiStreamLabels(
+    "ai.optimize",
+    STREAM_URL,
+  );
   const { status, view, text, announcement, run, setView, reset } =
-    useAiTextStream(STREAM);
+    useAiTextStream(stream);
   const { isSaving, buttonRef, accept, backToOriginal } = usePromptAccept(
     onAccept,
     reset,
@@ -101,26 +91,19 @@ export function AiPromptOptimizer({
   });
 
   const headerActions = (
-    <>
-      {(hasAnswer || isPending) && (
-        <AiViewToggle
-          view={view}
-          onChange={setView}
-          labels={VIEW_LABELS}
-          disabled={isSaving}
-        />
-      )}
-      <AiStreamButton
-        ref={buttonRef}
-        labels={BUTTON_LABELS}
-        canUseAi={canUseAi}
-        describedBy={noteId}
-        hasAnswer={hasAnswer}
-        isPending={isPending}
-        isBlocked={isSaving}
-        onClick={() => void run({ title, prompt })}
-      />
-    </>
+    <AiStreamControls
+      view={view}
+      onViewChange={setView}
+      viewLabels={viewLabels}
+      buttonLabels={buttonLabels}
+      canUseAi={canUseAi}
+      noteId={noteId}
+      hasAnswer={hasAnswer}
+      isPending={isPending}
+      isBlocked={isSaving}
+      buttonRef={buttonRef}
+      onRun={() => void run({ title, prompt })}
+    />
   );
 
   return (
@@ -130,20 +113,19 @@ export function AiPromptOptimizer({
         view: showsAnswer ? (
           <AiAnswerView
             text={text}
-            pendingLabel={BUTTON_LABELS.pending}
+            pendingLabel={buttonLabels.pending}
             isCutShort={status === "cut-short"}
-            cutShortMessage={AI_OPTIMIZE_CUT_SHORT_MESSAGE}
+            cutShortMessage={t("cutMessage")}
             inputCutMessage={null}
           />
         ) : undefined,
         copyValue: showsAnswer && hasAnswer ? text.trim() : undefined,
-        copyLabel:
-          showsAnswer && hasAnswer ? "Copy optimized prompt" : undefined,
+        copyLabel: showsAnswer && hasAnswer ? t("copy") : undefined,
       })}
       {canUseAi && <AiDataNote id={noteId} className="mt-2" />}
       {showsAnswer && status === "done" && (
         <PromptAcceptBar
-          note={blocker ? BLOCKER_NOTES[blocker] : null}
+          note={blocker ? t(BLOCKER_NOTES[blocker]) : null}
           isSaving={isSaving}
           onAccept={() => accept(text.trim())}
           onDiscard={backToOriginal}

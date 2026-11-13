@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { Code } from "lucide-react";
 
@@ -70,6 +71,7 @@ function PreferenceSelect({
 // Controls stay enabled during a save: the value changes at once, and disabling
 // a focused control would drop the keyboard focus.
 export function EditorPreferencesSection() {
+  const t = useTranslations("editor");
   const { preferences, update } = useEditorPreferences();
 
   function change(fields: Partial<EditorPreferences>) {
@@ -80,28 +82,28 @@ export function EditorPreferencesSection() {
     <section className="space-y-4">
       <h2 className="flex items-center gap-2 text-lg font-semibold">
         <Code className="size-4 text-muted-foreground" />
-        Editor
+        {t("title")}
       </h2>
       <div className="grid gap-6 rounded-lg border bg-card p-6 sm:grid-cols-2">
         <PreferenceSelect
-          label="Font size"
+          label={t("fontSize")}
           value={String(preferences.fontSize)}
           options={FONT_SIZE_OPTIONS}
           onChange={(value) => change({ fontSize: Number(value) })}
         />
         <PreferenceSelect
-          label="Tab size"
+          label={t("tabSize")}
           value={String(preferences.tabSize)}
           options={TAB_SIZE_OPTIONS}
           onChange={(value) => change({ tabSize: Number(value) })}
         />
         <PreferenceSelect
-          label="Theme"
+          label={t("theme")}
           value={preferences.theme}
           options={THEME_OPTIONS}
           onChange={(value) => change({ theme: value as EditorThemeName })}
         />
-        <Field label="Word wrap">
+        <Field label={t("wordWrap")}>
           {(id) => (
             <Switch
               id={id}
@@ -110,7 +112,7 @@ export function EditorPreferencesSection() {
             />
           )}
         </Field>
-        <Field label="Minimap">
+        <Field label={t("minimap")}>
           {(id) => (
             <Switch
               id={id}

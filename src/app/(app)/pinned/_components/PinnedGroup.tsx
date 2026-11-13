@@ -1,10 +1,11 @@
 import { ChevronDown } from "lucide-react";
+import { typeLabel } from "@/features/item-types/domain/item-type";
+import { useTranslations } from "next-intl";
 
 import { LIST_ROW_WRAPPER, ListRow } from "@/app/(app)/_components/ListRow";
 import { ListRowFrame } from "@/app/(app)/_components/ListRowFrame";
 import { PINNED_GROUP_HEADER } from "@/app/(app)/pinned/_components/PinnedGroupSkeleton";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
-import { typeSlug } from "@/features/item-types/domain/item-type";
 import type { ItemTypeInfo } from "@/features/item-types/types";
 import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
 import { ItemRowActions } from "@/features/items/components/ItemRowActions";
@@ -25,7 +26,8 @@ export function PinnedGroup({
   isOpen,
   onToggle,
 }: PinnedGroupProps) {
-  const label = typeSlug(type.name);
+  const typeName = useTranslations("itemTypes");
+  const label = typeLabel(typeName, type.name, "other");
   const panelId = `pinned-group-${type.id}`;
 
   return (
@@ -40,7 +42,7 @@ export function PinnedGroup({
             className="flex h-8 items-center gap-1 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span>
-              <span className="capitalize">{label}</span>{" "}
+              <span>{label}</span>{" "}
               <span className="text-muted-foreground">({items.length})</span>
             </span>
             <ChevronDown

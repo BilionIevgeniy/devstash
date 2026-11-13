@@ -72,7 +72,7 @@ export async function importUserCollections(
   const idMap: Record<string, string> = {};
 
   for (const [index, record] of parsed.entries()) {
-    const title = recordLabel(records[index], "Untitled collection");
+    const title = recordLabel(records[index]);
     if (record.kind === "invalid") {
       summary.failed.push({ title, reason: record.reason });
       continue;
@@ -115,7 +115,7 @@ export async function importUserItems(
   const summary = emptyImportSummary();
 
   for (const [index, record] of parsed.entries()) {
-    const title = recordLabel(records[index], "Untitled item");
+    const title = recordLabel(records[index]);
     if (record.kind === "file") {
       summary.files += 1;
       continue;

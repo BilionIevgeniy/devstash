@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 
 import {
   CommandGroup,
@@ -7,7 +8,6 @@ import {
 } from "@/components/ui/command";
 import type { SearchableCollection } from "@/features/collections/types";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
-import { LOCKED_LABEL } from "@/features/items/domain/item-fields";
 import type { PaletteItem, PaletteResults } from "@/features/search/types";
 import { cn } from "@/lib/utils";
 
@@ -31,10 +31,11 @@ export function PaletteMatches({
   onSelectItem,
   onSelectCollection,
 }: PaletteMatchesProps) {
+  const t = useTranslations("search");
   return (
     <>
       {items.length > 0 && (
-        <CommandGroup heading="Items">
+        <CommandGroup heading={t("items")}>
           {items.map((item) => (
             <CommandItem
               key={item.id}
@@ -51,9 +52,7 @@ export function PaletteMatches({
                 <p className="truncate">
                   {item.title}
                   {item.isLocked && (
-                    <span className="sr-only">
-                      : {LOCKED_LABEL.toLowerCase()}
-                    </span>
+                    <span className="sr-only">: {t("locked")}</span>
                   )}
                 </p>
                 {item.preview && (
@@ -68,7 +67,7 @@ export function PaletteMatches({
         </CommandGroup>
       )}
       {collections.length > 0 && (
-        <CommandGroup heading="Collections">
+        <CommandGroup heading={t("collections")}>
           {collections.map((collection) => (
             <CommandItem
               key={collection.id}

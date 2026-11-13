@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { Check, Loader2 } from "lucide-react";
 
@@ -20,10 +21,11 @@ export function PromptAcceptBar({
   onAccept,
   onDiscard,
 }: PromptAcceptBarProps) {
+  const t = useTranslations("ai.optimize");
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2">
       <p className="mr-auto text-xs text-muted-foreground">
-        {note ?? "Use this prompt?"}
+        {note ?? t("question")}
       </p>
       <Button
         type="button"
@@ -32,7 +34,7 @@ export function PromptAcceptBar({
         disabled={isSaving}
         onClick={onDiscard}
       >
-        Discard
+        {t("discard")}
       </Button>
       {note === null && (
         <Button type="button" size="sm" disabled={isSaving} onClick={onAccept}>
@@ -41,7 +43,7 @@ export function PromptAcceptBar({
           ) : (
             <Check aria-hidden />
           )}
-          {isSaving ? "Saving…" : "Use this prompt"}
+          {isSaving ? t("saving") : t("accept")}
         </Button>
       )}
     </div>

@@ -1,4 +1,7 @@
 import { BarChart3, FolderOpen, Package } from "lucide-react";
+import { typeLabel } from "@/features/item-types/domain/item-type";
+import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import type { LucideIcon } from "lucide-react";
 
 import { getSessionUser } from "@/features/auth/nextauth/session";
@@ -27,6 +30,7 @@ function TotalCard({ label, value, icon: Icon }: TotalCardProps) {
 }
 
 function TypeCount({ type }: { type: SidebarItemType }) {
+  const typeName = useTranslations("itemTypes");
   return (
     <li className="flex items-center gap-3 rounded-lg border bg-card p-3">
       <TypeIcon
@@ -34,7 +38,7 @@ function TypeCount({ type }: { type: SidebarItemType }) {
         className="size-4 shrink-0"
         style={{ color: type.color }}
       />
-      <span className="capitalize">{type.name}s</span>
+      <span>{typeLabel(typeName, type.name, "other")}</span>
       <span className="ml-auto text-sm font-medium tabular-nums">
         {type.itemCount}
       </span>
@@ -43,6 +47,7 @@ function TypeCount({ type }: { type: SidebarItemType }) {
 }
 
 export async function UsageStats() {
+  const t = await getTranslations("pages.profile");
   const { id: userId } = await getSessionUser();
   const [itemStats, collectionStats, itemTypes] = await Promise.all([
     getItemStats(userId),
@@ -54,12 +59,12 @@ export async function UsageStats() {
     <section className="space-y-4">
       <h2 className="flex items-center gap-2 text-lg font-semibold">
         <BarChart3 className="size-4 text-muted-foreground" />
-        Usage
+        {t("usage")}
       </h2>
       <div className="grid grid-cols-2 gap-4">
-        <TotalCard label="Items" value={itemStats.total} icon={Package} />
+        <TotalCard label={t("items")} value={itemStats.total} icon={Package} />
         <TotalCard
-          label="Collections"
+          label={t("collections")}
           value={collectionStats.total}
           icon={FolderOpen}
         />

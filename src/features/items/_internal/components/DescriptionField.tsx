@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 
 import { Field } from "@/components/common/Field";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,8 +27,9 @@ export function DescriptionField({
   title,
   content,
 }: DescriptionFieldProps) {
+  const t = useTranslations("items.fields");
   const field = (action?: ReactNode) => (
-    <Field label="Description" action={action}>
+    <Field label={t("description")} action={action}>
       {(id) => (
         <Textarea
           id={id}

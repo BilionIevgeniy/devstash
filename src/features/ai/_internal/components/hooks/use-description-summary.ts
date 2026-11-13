@@ -1,16 +1,16 @@
 import { unstable_rethrow } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { useMountedRef } from "@/features/ai/_internal/components/hooks/use-mounted-ref";
 import { generateSummary } from "@/features/ai/actions/summary";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 
-const SUMMARY_READY_MESSAGE = "Summary ready";
-
 // The summary of one form. It only changes the form when accepted, so nothing
 // here is saved and nothing is optimistic. A new answer replaces the last one.
 export function useDescriptionSummary() {
+  const t = useTranslations("ai.summary");
   const [summary, setSummary] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
   // Counts the answers, so the preview takes the focus once per answer.
@@ -30,7 +30,7 @@ export function useDescriptionSummary() {
           return;
         }
         setSummary(result.data);
-        setAnnouncement(SUMMARY_READY_MESSAGE);
+        setAnnouncement(t("ready"));
         setAnswerId((current) => current + 1);
       } catch (error) {
         // A signed-out caller's redirect arrives here too, and must go on.

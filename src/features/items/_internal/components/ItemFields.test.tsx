@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "../../../../../test/intl";
 import userEvent from "@testing-library/user-event";
 import { createRef, useImperativeHandle, type Ref } from "react";
 import { describe, expect, it, vi } from "vitest";

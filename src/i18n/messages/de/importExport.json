@@ -1,0 +1,20 @@
+{
+  "title": "Daten",
+  "description": "Lade alle Einträge und Sammlungen als JSON herunter oder importiere einen DevStash-Export. Dateien und Bilder kommen als Download-Links, die nach etwa einer Stunde ablaufen. Ein Import überspringt, was schon da ist, und stellt keine Favoriten, angehefteten Einträge oder Daten wieder her.",
+  "proOnly": "Export und Import gehören zu Pro.",
+  "upgrade": "Auf Pro upgraden",
+  "export": "JSON exportieren",
+  "exporting": "Wird exportiert …",
+  "import": "JSON importieren",
+  "importFile": "Datei importieren",
+  "reading": "Datei wird gelesen …",
+  "importing": "Wird importiert … {done} von {total}",
+  "finishing": "Wird abgeschlossen …",
+  "stopped": "Der Import wurde vorzeitig gestoppt.",
+  "finished": "Import abgeschlossen.",
+  "counts": "{created} erstellt, {duplicates} bereits vorhanden.",
+  "countsWithFiles": "{created} erstellt, {duplicates} bereits vorhanden, {files} Dateien nicht importiert.",
+  "filesNote": "Dateien und Bilder gehören nicht zum Export. Lade sie über die Links in der Datei herunter und lade sie erneut hoch.",
+  "failed": "{count} konnten nicht importiert werden",
+  "untitled": "Ohne Titel"
+}

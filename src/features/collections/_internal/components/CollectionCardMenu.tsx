@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useRef } from "react";
 import { MoreHorizontal, Pencil, Star, Trash2 } from "lucide-react";
@@ -26,6 +27,7 @@ export function CollectionCardMenu({
   collection,
   favorite,
 }: CollectionCardMenuProps) {
+  const t = useTranslations();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const { isAnyOpen, openDialog, editDialog, deleteDialog } =
     useCollectionDialogs();
@@ -45,7 +47,9 @@ export function CollectionCardMenu({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label={`Actions for ${collection.name}`}
+            aria-label={t("collections.actions.menuNamed", {
+              name: collection.name,
+            })}
           >
             <MoreHorizontal />
           </Button>
@@ -58,7 +62,7 @@ export function CollectionCardMenu({
             onSelect={() => openDialog("edit", triggerRef.current)}
           >
             <Pencil />
-            Edit
+            {t("common.actions.edit")}
           </DropdownMenuItem>
           <DropdownMenuItem
             disabled={favorite.isPending}
@@ -69,14 +73,14 @@ export function CollectionCardMenu({
                 favorite.isFavorite && "fill-yellow-400 text-yellow-400",
               )}
             />
-            Favorite
+            {t("collections.actions.favorite")}
           </DropdownMenuItem>
           <DropdownMenuItem
             variant="destructive"
             onSelect={() => openDialog("delete", triggerRef.current)}
           >
             <Trash2 />
-            Delete
+            {t("common.actions.delete")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 
 import CollectionsLoading from "@/app/(app)/collections/(list)/loading";
 import { PaginationNav } from "@/components/common/PaginationNav";
@@ -8,6 +9,7 @@ import { getUserCollections } from "@/features/collections/queries";
 import { parsePage } from "@/lib/pagination";
 
 async function CollectionsContent({ page }: { page: number }) {
+  const t = await getTranslations("pages.collections");
   const { id: userId } = await getSessionUser();
   const {
     items: collections,
@@ -20,13 +22,13 @@ async function CollectionsContent({ page }: { page: number }) {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-bold">Collections</h1>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
         <p className="text-muted-foreground">
           {totalCount} {collectionLabel}
         </p>
       </header>
       {collections.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No collections yet.</p>
+        <p className="text-sm text-muted-foreground">{t("empty")}</p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {collections.map((collection) => (

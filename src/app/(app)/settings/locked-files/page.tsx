@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -34,6 +35,7 @@ async function LockedFilesContent({ page }: { page: number }) {
 export default async function LockedFilesPage({
   searchParams,
 }: PageProps<"/settings/locked-files">) {
+  const t = await getTranslations("pages.lockedFiles");
   const { id: userId } = await getSessionUser();
   const { isPro } = await getEntitlements(userId);
   if (isPro) redirect("/settings");
@@ -44,17 +46,15 @@ export default async function LockedFilesPage({
     <div className="space-y-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Locked files</h1>
-          <p className="text-muted-foreground">
-            Download or delete them, or renew your subscription to open them
-          </p>
+          <h1 className="text-3xl font-bold">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("lead")}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline">
-            <Link href="/settings">Back to settings</Link>
+            <Link href="/settings">{t("back")}</Link>
           </Button>
           <Button asChild>
-            <Link href={UPGRADE_PATH}>Renew</Link>
+            <Link href={UPGRADE_PATH}>{t("renew")}</Link>
           </Button>
         </div>
       </header>

@@ -70,7 +70,7 @@ async function sendAll<T>(
 ): Promise<ImportRun | null> {
   const { batches, oversized } = toBatches(records, LIMITS, sizeOf);
   const failed = oversized.map((record) => ({
-    title: recordLabel(record, "Untitled record"),
+    title: recordLabel(record),
     reason: TOO_LARGE,
   }));
   let summary = { ...run.summary, failed: [...run.summary.failed, ...failed] };

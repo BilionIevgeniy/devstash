@@ -33,5 +33,22 @@
     "customTypes": "Eigene Eintragstypen (bald verfügbar)",
     "exportJson": "Export (JSON)"
   },
-  "testModeHint": "Demo-Modus: keine echten Zahlungen. Zahl mit der Karte 4242 4242 4242 4242, einem beliebigen künftigen Datum und beliebiger CVC."
+  "testModeHint": "Demo-Modus: keine echten Zahlungen. Zahl mit der Karte 4242 4242 4242 4242, einem beliebigen künftigen Datum und beliebiger CVC.",
+  "settings": {
+    "title": "Abrechnung",
+    "plan": "Plan",
+    "confirming": "Deine Zahlung wird bestätigt …",
+    "usage": "{items}/{itemLimit} Einträge, {collections}/{collectionLimit} Sammlungen",
+    "limitReached": "Du hast das Limit des Free-Plans erreicht. Lösch etwas, um mehr zu erstellen, oder <link>upgrade auf Pro</link>.",
+    "paymentIssue": "Deine letzte Zahlung ist nicht durchgegangen. Öffne „Abrechnung verwalten“, um das zu beheben.",
+    "manage": "Abrechnung verwalten",
+    "upgradeMonthly": "Upgrade für {price}/Monat",
+    "upgradeYearly": "Upgrade für {price}/Jahr ({percent} % sparen)",
+    "welcome": "Willkommen bei DevStash Pro!",
+    "notConfirmed": "Wir konnten deine Zahlung noch nicht bestätigen. Wenn du bezahlt hast, wird dein Plan in Kürze aktualisiert."
+  },
+  "upgradePage": {
+    "title": "Auf Pro upgraden",
+    "lead": "Alles an einem Ort, ohne Grenzen"
+  }
 }

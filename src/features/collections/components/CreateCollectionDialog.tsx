@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useState, type SubmitEvent } from "react";
 import { Plus } from "lucide-react";
@@ -21,9 +22,7 @@ import type { CollectionDialogState } from "@/features/collections/_internal/com
 import { createCollection } from "@/features/collections/actions/collection";
 import type { CollectionFormValues } from "@/features/collections/domain/collection-fields";
 
-const LABEL = "New collection";
 const EMPTY_VALUES: CollectionFormValues = { name: "", description: "" };
-const CREATED_MESSAGE = "Collection created";
 
 interface CreateCollectionDialogProps {
   /** Opened from elsewhere: no button, and the focus goes back through this. */
@@ -33,6 +32,7 @@ interface CreateCollectionDialogProps {
 export function CreateCollectionDialog({
   controlled,
 }: CreateCollectionDialogProps) {
+  const t = useTranslations("collections");
   const [isOpenState, setIsOpenState] = useState(false);
   const isOpen = controlled?.open ?? isOpenState;
   const setIsOpen = controlled?.onOpenChange ?? setIsOpenState;
@@ -53,7 +53,7 @@ export function CreateCollectionDialog({
       event.preventDefault();
       controlled.returnFocus();
     }
-    if (takeDone()) toast.success(CREATED_MESSAGE);
+    if (takeDone()) toast.success(t("toasts.created"));
   }
 
   return (
@@ -62,7 +62,7 @@ export function CreateCollectionDialog({
         <DialogTrigger asChild>
           <Button variant="outline">
             <Plus />
-            {LABEL}
+            {t("create.title")}
           </Button>
         </DialogTrigger>
       )}
@@ -71,10 +71,8 @@ export function CreateCollectionDialog({
         onCloseAutoFocus={handleCloseAutoFocus}
       >
         <DialogHeader>
-          <DialogTitle>{LABEL}</DialogTitle>
-          <DialogDescription>
-            Group related items in one place.
-          </DialogDescription>
+          <DialogTitle>{t("create.title")}</DialogTitle>
+          <DialogDescription>{t("create.description")}</DialogDescription>
         </DialogHeader>
         {/* Unmounted with the closed dialog, so every open starts empty. */}
         <CreateCollectionForm
@@ -100,6 +98,7 @@ function CreateCollectionForm({
   isCreating,
   onSubmit,
 }: CreateCollectionFormProps) {
+  const t = useTranslations("common.actions");
   const [values, setValues] = useState(EMPTY_VALUES);
 
   function setField(name: keyof CollectionFormValues, value: string) {
@@ -117,14 +116,14 @@ function CreateCollectionForm({
       <DialogFooter>
         <DialogClose asChild>
           <Button type="button" variant="ghost" disabled={isCreating}>
-            Cancel
+            {t("cancel")}
           </Button>
         </DialogClose>
         <Button
           type="submit"
           disabled={isCreating || values.name.trim() === ""}
         >
-          {isCreating ? "Creating…" : "Create"}
+          {isCreating ? t("creating") : t("create")}
         </Button>
       </DialogFooter>
     </form>

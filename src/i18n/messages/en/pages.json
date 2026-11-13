@@ -1,0 +1,70 @@
+{
+  "sort": {
+    "newest": "Newest",
+    "oldest": "Oldest",
+    "a-z": "A-Z",
+    "z-a": "Z-A",
+    "type": "Item type"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "lead": "Your developer knowledge hub",
+    "recentItems": "Recent Items",
+    "noItems": "No items yet.",
+    "pinned": "Pinned",
+    "collections": "Collections",
+    "viewAll": "View all",
+    "noCollections": "No collections yet.",
+    "items": "Items",
+    "favoriteItems": "Favorite Items",
+    "favoriteCollections": "Favorite Collections"
+  },
+  "favorites": {
+    "title": "Favorites",
+    "lead": "Your starred items and collections",
+    "empty": "No favorites yet.",
+    "items": "Items",
+    "collections": "Collections",
+    "sortItems": "Sort items",
+    "sortCollections": "Sort collections",
+    "collectionBadge": "collection"
+  },
+  "pinned": {
+    "title": "Pinned",
+    "lead": "Your pinned items, by type",
+    "empty": "No pinned items yet.",
+    "sort": "Sort pins"
+  },
+  "collections": {
+    "title": "Collections",
+    "empty": "No collections yet.",
+    "emptyCollection": "No items in this collection yet."
+  },
+  "items": {
+    "count": "{count, plural, one {# item} other {# items}}",
+    "empty": "No {type} yet.",
+    "filteredEmpty": "No items match these filters.",
+    "clearFilters": "Clear filters",
+    "sort": "Sort items",
+    "allTags": "All tags",
+    "filterByTag": "Filter by tag"
+  },
+  "profile": {
+    "title": "Profile",
+    "lead": "Your account details and usage",
+    "memberSince": "Member since {date}",
+    "usage": "Usage",
+    "items": "Items",
+    "collections": "Collections"
+  },
+  "settings": {
+    "title": "Settings",
+    "lead": "Manage your editor, billing, data and account"
+  },
+  "lockedFiles": {
+    "title": "Locked files",
+    "lead": "Download or delete them, or renew your subscription to open them",
+    "back": "Back to settings",
+    "renew": "Renew"
+  }
+}

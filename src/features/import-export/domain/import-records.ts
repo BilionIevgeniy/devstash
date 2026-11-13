@@ -11,13 +11,12 @@ export function isImportRecord(value: unknown): value is ImportRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-// The name a summary shows for a record: its title or name, or a stand-in.
-export function recordLabel(record: unknown, fallback: string): string {
-  if (!isImportRecord(record)) return fallback;
+// The name a summary shows for a record: its title or name, or null for one
+// without, which the summary words as "Untitled".
+export function recordLabel(record: unknown): string | null {
+  if (!isImportRecord(record)) return null;
   const label = record.title ?? record.name;
-  return typeof label === "string" && label.trim() !== ""
-    ? label.trim()
-    : fallback;
+  return typeof label === "string" && label.trim() !== "" ? label.trim() : null;
 }
 
 // The type an item record names, if any.

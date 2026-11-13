@@ -1,0 +1,52 @@
+{
+  "dataNotice": "Der Inhalt wird beim Klick an OpenAI gesendet.",
+  "generate": {
+    "idle": "Mit KI erstellen",
+    "pending": "Wird erstellt …",
+    "forTags": "für die Tags",
+    "forDescription": "für die Beschreibung"
+  },
+  "explain": {
+    "idle": "Erklären",
+    "pending": "Wird erklärt …",
+    "again": "Neu erstellen",
+    "done": "Erklärung fertig",
+    "cutShort": "Erklärung abgebrochen",
+    "source": "Code",
+    "answer": "Erklärung",
+    "cutMessage": "Die Erklärung wurde abgebrochen. Versuch es noch einmal.",
+    "codeCut": "Nur die ersten {max, number} Zeichen wurden erklärt."
+  },
+  "optimize": {
+    "idle": "Optimieren",
+    "pending": "Wird optimiert …",
+    "again": "Neu erstellen",
+    "done": "Optimierter Prompt fertig",
+    "cutShort": "Optimierter Prompt abgebrochen",
+    "source": "Original",
+    "answer": "Optimiert",
+    "copy": "Optimierten Prompt kopieren",
+    "cutMessage": "Der optimierte Prompt wurde abgebrochen. Versuch es noch einmal.",
+    "image": "Der optimierte Prompt enthält ein Bild und kann so nicht übernommen werden. Kopier ihn stattdessen.",
+    "unchanged": "Der Prompt ist schon gut: Es gibt nichts zu ändern.",
+    "promptCut": "Von diesem langen Prompt wurde nur der Anfang gelesen, daher kann das Ergebnis ihn nicht ersetzen. Kopier, was du brauchst.",
+    "question": "Diesen Prompt übernehmen?",
+    "accept": "Prompt übernehmen",
+    "saving": "Wird gespeichert …",
+    "discard": "Verwerfen"
+  },
+  "summary": {
+    "ready": "Zusammenfassung fertig",
+    "suggested": "Vorgeschlagene Beschreibung",
+    "hint": "Übernehmen ersetzt die aktuelle Beschreibung",
+    "accept": "Übernehmen",
+    "dismiss": "Verwerfen"
+  },
+  "tags": {
+    "none": "Keine neuen Tags vorzuschlagen",
+    "suggested": "Vorgeschlagene Tags",
+    "announce": "{count, plural, one {# Tag vorgeschlagen} other {# Tags vorgeschlagen}}",
+    "add": "Tag {tag} hinzufügen",
+    "dismiss": "Tag {tag} verwerfen"
+  }
+}

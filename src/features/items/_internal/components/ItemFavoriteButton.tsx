@@ -1,6 +1,7 @@
 "use client";
 
 import { Star } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { useItemFavorite } from "@/features/items/components/hooks/use-item-drawer";
@@ -24,6 +25,7 @@ export function ItemFavoriteButton({
   className,
   undoable,
 }: ItemFavoriteButtonProps) {
+  const t = useTranslations("items.actions");
   const favorite = useItemFavorite(itemId, isFavorite, { undoable });
 
   return (
@@ -31,7 +33,7 @@ export function ItemFavoriteButton({
       type="button"
       variant="ghost"
       size="icon-lg"
-      aria-label={`Favorite ${title}`}
+      aria-label={t("favoriteNamed", { title })}
       aria-pressed={favorite.isFavorite}
       aria-disabled={favorite.isPending}
       onClick={favorite.toggle}

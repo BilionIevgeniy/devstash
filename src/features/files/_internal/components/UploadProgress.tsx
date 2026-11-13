@@ -1,14 +1,16 @@
 import { FileUp, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { formatFileSize } from "@/features/files/domain/file-rules";
+import { useFileSize } from "@/features/files/components/hooks/use-file-size";
+import type { FileKind } from "@/features/files/domain/file-rules";
 
 interface UploadProgressProps {
   file: File;
   /** The percent sent, or null once the upload is done. */
   progress: number | null;
-  label: string;
+  kind: FileKind;
   disabled?: boolean;
   /** Cancels a running upload or removes the finished one. */
   onRemove: () => void;
@@ -17,10 +19,12 @@ interface UploadProgressProps {
 export function UploadProgress({
   file,
   progress,
-  label,
+  kind,
   disabled,
   onRemove,
 }: UploadProgressProps) {
+  const t = useTranslations("files");
+  const fileSize = useFileSize();
   const isUploading = progress !== null;
 
   return (
@@ -30,9 +34,7 @@ export function UploadProgress({
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm">{file.name}</p>
           <p className="text-xs text-muted-foreground">
-            {isUploading
-              ? `Uploading… ${progress}%`
-              : formatFileSize(file.size)}
+            {isUploading ? t("uploading", { progress }) : fileSize(file.size)}
           </p>
         </div>
         <Button
@@ -41,7 +43,7 @@ export function UploadProgress({
           size="icon"
           onClick={onRemove}
           disabled={disabled}
-          aria-label={isUploading ? "Cancel upload" : `Remove ${label}`}
+          aria-label={isUploading ? t("cancelUpload") : t("remove", { kind })}
         >
           <X />
         </Button>

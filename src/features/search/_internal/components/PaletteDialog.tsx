@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useTranslations } from "next-intl";
 
 import {
   Dialog,
@@ -26,6 +27,7 @@ export function PaletteDialog({
   onClose,
   onReturnFocus,
 }: PaletteDialogProps) {
+  const t = useTranslations("search");
   const drawerHasFocusRef = useRef(false);
 
   function handlePaletteCloseAutoFocus(event: Event) {
@@ -51,10 +53,8 @@ export function PaletteDialog({
           onCloseAutoFocus={handlePaletteCloseAutoFocus}
         >
           <DialogHeader className="sr-only">
-            <DialogTitle>Search</DialogTitle>
-            <DialogDescription>
-              Search your items and collections
-            </DialogDescription>
+            <DialogTitle>{t("title")}</DialogTitle>
+            <DialogDescription>{t("description")}</DialogDescription>
           </DialogHeader>
           <PaletteResults
             onClose={onClose}

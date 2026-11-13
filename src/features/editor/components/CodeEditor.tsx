@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { Suspense, useState, type ReactNode, type Ref } from "react";
 
@@ -38,11 +39,12 @@ export function CodeEditor({
   language,
   readOnly = false,
   onChange,
-  ariaLabel = "Code",
+  ariaLabel,
   headerActions,
   view,
   ref,
 }: CodeEditorProps) {
+  const t = useTranslations("editor");
   const minHeight = readOnly ? MIN_READ_HEIGHT : MIN_EDIT_HEIGHT;
   const fallbackHeight = readOnly ? READ_FALLBACK_HEIGHT : EDIT_FALLBACK_HEIGHT;
   const [height, setHeight] = useState(minHeight);
@@ -53,7 +55,7 @@ export function CodeEditor({
 
   return (
     <div className="overflow-hidden rounded-md border bg-card">
-      <EditorHeader value={value} copyLabel="Copy code">
+      <EditorHeader value={value} copyLabel={t("copyCode")}>
         <span className="ml-auto font-mono text-xs text-muted-foreground">
           {languageLabel(language)}
         </span>
@@ -75,7 +77,7 @@ export function CodeEditor({
               language={editorLanguage(language)}
               height={height}
               readOnly={readOnly}
-              ariaLabel={ariaLabel}
+              ariaLabel={ariaLabel ?? t("code")}
               onChange={onChange}
               onContentHeight={fit}
               ref={ref}

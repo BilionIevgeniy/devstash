@@ -1,6 +1,7 @@
 "use client";
 
 import { Field } from "@/components/common/Field";
+import { useTranslations } from "next-intl";
 import {
   Select,
   SelectContent,
@@ -29,28 +30,25 @@ export function ItemTypeSelect({
   isPro,
   disabled,
 }: ItemTypeSelectProps) {
+  const typeName = useTranslations("itemTypes");
+  const t = useTranslations("items.fields");
   return (
-    <Field label="Type">
+    <Field label={t("type")}>
       {(id) => (
         <Select
           value={value}
           onValueChange={(next) => onChange(next as CreatableTypeName)}
           disabled={disabled}
         >
-          <SelectTrigger id={id} className="w-full capitalize">
+          <SelectTrigger id={id} className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {CREATABLE_TYPES.map((type) => {
               const isAllowed = canCreateType(type, isPro);
               return (
-                <SelectItem
-                  key={type}
-                  value={type}
-                  disabled={!isAllowed}
-                  className="capitalize"
-                >
-                  {type}
+                <SelectItem key={type} value={type} disabled={!isAllowed}>
+                  {typeName(`${type}.one`)}
                   {!isAllowed && <ProBadge />}
                 </SelectItem>
               );

@@ -1,0 +1,16 @@
+{
+  "title": "Search",
+  "description": "Search your items and collections",
+  "placeholder": "Search items and collections...",
+  "trigger": "Search items and collections",
+  "items": "Items",
+  "collections": "Collections",
+  "noResults": "No results found.",
+  "tryAgain": "Try again",
+  "loading": "Loading…",
+  "loadMoreFailed": "Couldn't load more. Try again",
+  "showMore": "Show more results",
+  "showMoreKind": "show more",
+  "locked": "renew your subscription to open",
+  "loadingSearch": "Loading search"
+}

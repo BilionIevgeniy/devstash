@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { CollectionFavoriteButton } from "@/features/collections/_internal/components/CollectionFavoriteButton";
 import { useCollectionFavorite } from "@/features/collections/_internal/components/hooks/use-collection-favorite";
@@ -14,6 +15,7 @@ export function CollectionRowFavorite({
   collectionId,
   name,
 }: CollectionRowFavoriteProps) {
+  const t = useTranslations("collections.actions");
   const favorite = useCollectionFavorite(collectionId, true, {
     undoable: true,
   });
@@ -21,7 +23,7 @@ export function CollectionRowFavorite({
   return (
     <CollectionFavoriteButton
       favorite={favorite}
-      label={`Favorite ${name}`}
+      label={t("favoriteNamed", { name })}
       size="icon"
     />
   );

@@ -1,0 +1,66 @@
+{
+  "fields": {
+    "title": "Title",
+    "url": "URL",
+    "language": "Language",
+    "content": "Content",
+    "description": "Description",
+    "tags": "Tags",
+    "tagsHint": "Separate tags with commas",
+    "type": "Type",
+    "collections": "Collections",
+    "file": "File",
+    "image": "Image"
+  },
+  "collectionSelect": {
+    "loading": "Loading…",
+    "loadFailed": "Couldn't load your collections",
+    "empty": "No collections yet",
+    "choose": "Choose collections",
+    "selected": "{count} selected"
+  },
+  "drawer": {
+    "loadFailed": "Couldn't load this item.",
+    "missing": "This item no longer exists",
+    "loading": "Loading item",
+    "details": "Details",
+    "created": "Created",
+    "updated": "Updated"
+  },
+  "actions": {
+    "favorite": "Favorite",
+    "pin": "Pin",
+    "favoriteNamed": "Favorite {title}",
+    "pinNamed": "Pin {title}",
+    "copyNamed": "Copy {title}",
+    "deleteNamed": "Delete {title}"
+  },
+  "delete": {
+    "title": "Delete this item?",
+    "description": "“{title}” will be permanently deleted. This cannot be undone."
+  },
+  "discard": {
+    "title": "Discard changes?",
+    "description": "Your unsaved edits to this item will be lost."
+  },
+  "create": {
+    "newItem": "New item",
+    "newType": "New {type}",
+    "description": "Save a snippet, prompt, command, note, link, file or image."
+  },
+  "toasts": {
+    "created": "Item created",
+    "saved": "Item saved",
+    "deleted": "Item deleted",
+    "pinned": "Item pinned",
+    "unpinned": "Item unpinned",
+    "promptUpdated": "Prompt updated"
+  },
+  "locked": {
+    "none": "You have no locked files.",
+    "count": "You have {count, plural, one {# locked file} other {# locked files}}",
+    "manage": "Download or delete",
+    "label": "Renew your subscription to open",
+    "named": "{title}: renew your subscription to open"
+  }
+}

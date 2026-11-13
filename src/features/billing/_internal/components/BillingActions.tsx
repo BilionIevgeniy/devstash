@@ -1,10 +1,8 @@
 import { BillingButton } from "@/features/billing/_internal/components/BillingButton";
+import { useTranslations } from "next-intl";
 import { CheckoutButtons } from "@/features/billing/_internal/components/CheckoutButtons";
 import { useBillingRedirect } from "@/features/billing/_internal/components/hooks/use-billing-redirect";
 import { openBillingPortal } from "@/features/billing/actions/checkout";
-
-const PAYMENT_ISSUE =
-  "Your last payment didn't go through. Open Manage Billing to fix it.";
 
 interface BillingActionsProps {
   isPro: boolean;
@@ -19,6 +17,7 @@ export function BillingActions({
   paymentIssue,
   testMode,
 }: BillingActionsProps) {
+  const t = useTranslations("billing.settings");
   const { isPending, run } = useBillingRedirect();
 
   if (!isPro) return <CheckoutButtons testMode={testMode} />;
@@ -26,9 +25,9 @@ export function BillingActions({
 
   return (
     <div className="space-y-4">
-      {paymentIssue && <p className="text-sm">{PAYMENT_ISSUE}</p>}
+      {paymentIssue && <p className="text-sm">{t("paymentIssue")}</p>}
       <BillingButton
-        label="Manage Billing"
+        label={t("manage")}
         variant="outline"
         isPending={isPending}
         isActive

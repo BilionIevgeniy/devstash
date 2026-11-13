@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type MouseEvent } from "react";
+import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -8,7 +9,6 @@ import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
 import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { DeleteItemConfirm } from "@/features/items/_internal/components/DeleteItemConfirm";
-import { DELETED_MESSAGE } from "@/features/items/_internal/components/hooks/use-item-removal";
 import { deleteItem } from "@/features/items/actions/item";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +29,7 @@ export function DeleteLockedItemButton({
   returnFocus,
   className,
 }: DeleteLockedItemButtonProps) {
+  const t = useTranslations("items");
   const [isOpen, setIsOpen] = useState(false);
   const { isPending: isDeleting, run, takeDone } = useSubmitDialog();
 
@@ -47,7 +48,7 @@ export function DeleteLockedItemButton({
     if (!takeDone()) return;
     event.preventDefault();
     returnFocus();
-    toast.success(DELETED_MESSAGE);
+    toast.success(t("toasts.deleted"));
   }
 
   return (
@@ -63,7 +64,7 @@ export function DeleteLockedItemButton({
           variant="ghost"
           size="icon"
           className={cn("text-destructive hover:text-destructive", className)}
-          aria-label={`Delete ${title}`}
+          aria-label={t("actions.deleteNamed", { title })}
         >
           <Trash2 />
         </Button>

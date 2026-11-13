@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useRouter } from "next/navigation";
 import { useOptimistic, useTransition } from "react";
@@ -28,6 +29,7 @@ export function ItemListFilters({
   params,
   tags,
 }: ItemListFiltersProps) {
+  const t = useTranslations("pages.items");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [shown, setShown] = useOptimistic(params);
@@ -48,7 +50,7 @@ export function ItemListFilters({
         sorts={ITEM_LIST_SORTS}
         value={shown.sort}
         onChange={(sort) => change({ sort })}
-        ariaLabel="Sort items"
+        ariaLabel={t("sort")}
       />
       {(tags.length > 0 || shown.tag !== null) && (
         <TagFilter

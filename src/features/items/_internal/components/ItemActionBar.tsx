@@ -1,4 +1,5 @@
 import { Pencil, Pin, Star } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { CopyButton } from "@/components/common/CopyButton";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ export function ItemActionBar({
   onEdit,
   onDelete,
 }: ItemActionBarProps) {
+  const t = useTranslations();
   const { id: itemId, title } = item;
   const typeColor = item.type.color;
   const favorite = useItemFavorite(itemId, item.isFavorite);
@@ -52,7 +54,7 @@ export function ItemActionBar({
         )}
       >
         <Star className={cn(favorite.isFavorite && "fill-yellow-400")} />
-        <span className={ACTION_LABEL}>Favorite</span>
+        <span className={ACTION_LABEL}>{t("items.actions.favorite")}</span>
       </Button>
       <Button
         type="button"
@@ -64,11 +66,14 @@ export function ItemActionBar({
         style={pin.isPinned && typeColor ? { color: typeColor } : undefined}
       >
         <Pin className={cn(pin.isPinned && "fill-current")} />
-        <span className={ACTION_LABEL}>Pin</span>
+        <span className={ACTION_LABEL}>{t("items.actions.pin")}</span>
       </Button>
       {copyValue !== null && (
-        <CopyButton value={copyValue} label={`Copy ${title}`}>
-          <span className={ACTION_LABEL}>Copy</span>
+        <CopyButton
+          value={copyValue}
+          label={t("items.actions.copyNamed", { title })}
+        >
+          <span className={ACTION_LABEL}>{t("common.actions.copy")}</span>
         </CopyButton>
       )}
       <Button
@@ -79,7 +84,7 @@ export function ItemActionBar({
         onClick={onEdit}
       >
         <Pencil />
-        <span className={ACTION_LABEL}>Edit</span>
+        <span className={ACTION_LABEL}>{t("common.actions.edit")}</span>
       </Button>
       <DeleteItemDialog
         itemId={itemId}

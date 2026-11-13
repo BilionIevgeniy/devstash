@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
+import { useFormatter } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
-import { cn, formatShortDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 // Shared with the loading.tsx files, so the skeleton rows are as tall as the
 // real ones.
@@ -19,6 +20,7 @@ interface ListRowProps {
 }
 
 export function ListRow({ icon, title, badge, date }: ListRowProps) {
+  const format = useFormatter();
   return (
     <div
       className={cn(
@@ -40,7 +42,7 @@ export function ListRow({ icon, title, badge, date }: ListRowProps) {
         dateTime={date.toISOString()}
         className="w-14 shrink-0 text-right text-xs text-muted-foreground"
       >
-        {formatShortDate(date)}
+        {format.dateTime(date, "short")}
       </time>
     </div>
   );

@@ -1,0 +1,22 @@
+{
+  "title": "Editor",
+  "fontSize": "Schriftgröße",
+  "tabSize": "Tab-Breite",
+  "theme": "Design",
+  "wordWrap": "Zeilenumbruch",
+  "minimap": "Minimap",
+  "saved": "Editor-Einstellungen gespeichert",
+  "languages": "Sprachen",
+  "searchLanguages": "Sprachen durchsuchen",
+  "searchPlaceholder": "Sprachen durchsuchen …",
+  "noLanguage": "Keine Sprache gefunden",
+  "plainText": "Nur Text",
+  "write": "Schreiben",
+  "preview": "Vorschau",
+  "nothingToPreview": "Nichts zur Vorschau",
+  "content": "Inhalt",
+  "code": "Code",
+  "copyContent": "Inhalt kopieren",
+  "copyCode": "Code kopieren",
+  "loadFailed": "Der Code-Editor konnte nicht geladen werden. Lade die Seite neu, um es noch einmal zu versuchen."
+}

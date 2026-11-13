@@ -1,4 +1,5 @@
 import type { MouseEvent } from "react";
+import { useTranslations } from "next-intl";
 import { Loader2Icon } from "lucide-react";
 
 import {
@@ -26,17 +27,19 @@ export function DeleteItemConfirm({
   onConfirm,
   onCloseAutoFocus,
 }: DeleteItemConfirmProps) {
+  const t = useTranslations();
   return (
     <AlertDialogContent onCloseAutoFocus={onCloseAutoFocus}>
       <AlertDialogHeader>
-        <AlertDialogTitle>Delete this item?</AlertDialogTitle>
+        <AlertDialogTitle>{t("items.delete.title")}</AlertDialogTitle>
         <AlertDialogDescription>
-          &ldquo;{title}&rdquo; will be permanently deleted. This cannot be
-          undone.
+          {t("items.delete.description", { title })}
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
-        <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+        <AlertDialogCancel disabled={isDeleting}>
+          {t("common.actions.cancel")}
+        </AlertDialogCancel>
         <AlertDialogAction
           variant="destructive"
           disabled={isDeleting}
@@ -45,10 +48,10 @@ export function DeleteItemConfirm({
           {isDeleting ? (
             <>
               <Loader2Icon className="size-4 animate-spin" />
-              Deleting…
+              {t("common.actions.deleting")}
             </>
           ) : (
-            "Delete"
+            t("common.actions.delete")
           )}
         </AlertDialogAction>
       </AlertDialogFooter>

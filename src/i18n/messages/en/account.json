@@ -1,0 +1,10 @@
+{
+  "title": "Account",
+  "deleteTitle": "Delete account",
+  "deleteDescription": "Permanently delete your account and all of your data.",
+  "dialogTitle": "Delete your account?",
+  "dialogDescription": "This permanently deletes your account and all of your items, collections, tags, files and images. This cannot be undone.",
+  "reauthNote": "For your security, sign in with GitHub again to confirm, then come back here to finish.",
+  "continueGithub": "Continue with GitHub",
+  "confirmPassword": "Enter your password to confirm"
+}

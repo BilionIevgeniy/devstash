@@ -33,5 +33,22 @@
     "customTypes": "Custom item types (coming soon)",
     "exportJson": "Export (JSON)"
   },
-  "testModeHint": "Demo mode: no real charges. Pay with card 4242 4242 4242 4242, any future date and any CVC."
+  "testModeHint": "Demo mode: no real charges. Pay with card 4242 4242 4242 4242, any future date and any CVC.",
+  "settings": {
+    "title": "Billing",
+    "plan": "Plan",
+    "confirming": "Confirming your payment…",
+    "usage": "{items}/{itemLimit} items, {collections}/{collectionLimit} collections",
+    "limitReached": "You've reached the Free plan's limit. Delete something to create more, or <link>upgrade to Pro</link>.",
+    "paymentIssue": "Your last payment didn't go through. Open Manage Billing to fix it.",
+    "manage": "Manage Billing",
+    "upgradeMonthly": "Upgrade {price}/mo",
+    "upgradeYearly": "Upgrade {price}/yr (save {percent}%)",
+    "welcome": "Welcome to DevStash Pro!",
+    "notConfirmed": "We couldn't confirm your payment yet. If you paid, your plan will update shortly."
+  },
+  "upgradePage": {
+    "title": "Upgrade to Pro",
+    "lead": "Keep everything in one place, with no limits"
+  }
 }
