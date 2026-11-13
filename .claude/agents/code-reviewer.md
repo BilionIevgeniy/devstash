@@ -27,11 +27,11 @@ Auth code (`src/features/auth`, the sign-in, register, password and verify-email
 
 ## Duplication
 
-Look for the same logic in more than one place: formatting, parsing and validation, data reshaping, error and toast handling, className construction, state and effects that could be one hook. Given a diff, also grep the rest of `src/` for code the new code repeats.
+Look for the same logic in more than one place: formatting, parsing and validation, data reshaping, error and toast handling, className construction, state and effects that could be one hook. Given a diff, also grep the rest of `src/` for code the new code repeats: every new local helper, constant or hook is searched for a twin, and checked against "Shared building blocks" in `coding-standards.md`. Given no diff, start from `npm run lint:dup` (jscpd) and judge each clone it lists.
 
 Not a finding:
 
-- Thin entry points (`actions/`, `route.ts`, pages) that all read the session, parse a schema and make one call: that shape is the rule
+- Thin entry points (`actions/`, `route.ts`, pages) that all read the session, parse a schema and make one call: that shape is the rule. A helper or a constant inside one that exists elsewhere is not part of the shape: a local `failure()`, a hand-built `{ success: false, … }`, a copy of a message, an `auth()` read of only the user id (the delete-account action keeps `auth()` on purpose: it also reads `authenticatedAt`). Those are findings, with the shared block to use ("Shared building blocks" in `coding-standards.md`)
 - Prisma reads or writes repeated across features: each feature touches only its own models, so a shared Prisma helper across features is forbidden
 - Two similar lines, or code that looks alike but serves different rules
 - A part that cannot be named by what it does: it stays where it is

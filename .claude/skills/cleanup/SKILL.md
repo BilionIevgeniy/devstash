@@ -23,6 +23,7 @@ Review the codebase for cleanup tasks. Start with `git status` and `npm run lint
    - `import "server-only"` missing from a `queries.ts` or a file in `services/`, `import "client-only"` missing from a browser helper, `"use client"` on a hook or a helper
    - An `index.ts` barrel in `src/`
    - An authenticated route in `app/(app)/` that the matcher in `src/proxy.ts` does not cover
+9. **Duplication:** run `npm run lint:dup` (jscpd, a report, never a gate) and judge each clone. Parallel shapes on purpose (thin entry points, the Radix dialog markup) are 🟢; a repeated helper, constant or block of logic is 🔴 with the shared home to use ("Shared building blocks" in `context/coding-standards.md`)
 
 ## Report
 

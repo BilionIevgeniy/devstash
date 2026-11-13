@@ -106,6 +106,25 @@ Check every UI change against these before writing it; the plan names which ones
 - Return `ActionResult<T>` (`{ success, data, error }`) from actions, built with `ok`/`fail` from `@/lib/action-result` (ADR 0021); the message of a refused input is `firstIssueMessage(parsed.error)` (`@/lib/validation`)
 - Display user-friendly error messages via toast
 
+## Shared building blocks
+
+A small helper that more than one file needs has one home ([ADR 0021](../docs/adr/0021-result-contract-and-shared-building-blocks.md)). Before writing a helper, a constant or a hook, check this list and the hooks of `components/common` (listed once, in the Layout of [architecture-rules.md](architecture-rules.md); a dialog that waits for its request uses `useSubmitDialog` there). A second copy of something is moved to its shared home in the same change, not left for later; where that home is follows rule 9 of "Where does this go".
+
+| Need | Use | Where |
+| ---- | --- | ----- |
+| Build a result of a service, an action or a route | `ok(data)` / `ok()`, `fail(error)`, the types `OperationResult<T>`, `ActionResult<T>`, `Failure` | `lib/action-result.ts` |
+| The text of an unexpected failure | `GENERIC_ERROR_MESSAGE` | `lib/action-result.ts` |
+| The message of input a schema refused | `firstIssueMessage(parsed.error, fallback?)` | `lib/validation.ts` |
+| A route's JSON answer, never cached | `jsonOk(data, init?)`, `jsonError(error, status, headers?)`; `NO_STORE` for its own `Response`, `SERVER_ERROR_MESSAGE` for a 500 | `lib/api-response.ts` |
+| The signed-in user of a route or of an action with its own refusal | `getSignedInUserId()` (null, no redirect); pages and other actions use `getSessionUser()`; `auth()` stays only where other fields of the session are read (`authenticatedAt` in delete-account) | `features/auth/nextauth/session.ts` |
+| The error a route answered, read in the browser | `routeErrorMessage(response, fallback)` | `lib/route-error.ts` |
+| A Server Action's redirect caught outside a `useTransition` transition | `isNavigationError(error)` ("React patterns" below) | `lib/navigation-error.ts` |
+| A save from a form's transition that needs the saved data back (items) | `callAction(action, failMessage)`: the data, or null with the toast shown | `items/_internal/components/call-action.ts` |
+| A flag of a list with an optimistic value (star, pin) | `useOptimisticToggle(action, { failMessage, onSaved, notify })` | `items/_internal/components/hooks/use-optimistic-toggle.ts` |
+| An error boundary in a `dom` test | `CatchBoundary` | `test/catch-boundary.tsx` |
+
+The lint bans `.issues[0]` and the literal generic text outside their homes ("What the lint enforces" in `architecture-rules.md`). `npm run lint:dup` (jscpd) reports copy-paste across `src/`; it is a report for `/cleanup`, not a CI gate, because thin entry points and dialog markup are parallel on purpose.
+
 ## Logging
 
 - Everything is logged through `@/lib/logger` (`logger.info`, `logger.warn`, `logger.error`); `console.*` is a lint error in `src/` outside the logger and the tests. Each call writes one JSON line

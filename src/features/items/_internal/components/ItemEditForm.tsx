@@ -8,11 +8,11 @@ import {
   type ReactNode,
 } from "react";
 import { Check, X } from "lucide-react";
-import { unstable_rethrow } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import type { EditorHandle } from "@/features/editor/types";
+import { callAction } from "@/features/items/_internal/components/call-action";
 import { CollectionSelect } from "@/features/items/_internal/components/CollectionSelect";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
 import { ItemFields } from "@/features/items/_internal/components/ItemFields";
@@ -34,24 +34,6 @@ import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
 const SAVED_MESSAGE = "Item saved";
 const SAVE_FAILED_MESSAGE = "Couldn't save the item";
-
-// null after a failure, with the toast already shown. A signed-out caller's
-// redirect rejects too, and must go on; any other rejection left in the
-// transition would replace the form, with the user's edits, by an error page.
-async function saveItem(
-  itemId: string,
-  payload: unknown,
-): Promise<ItemDetailJson | null> {
-  try {
-    const result = await updateItem(itemId, payload);
-    if (result.success) return result.data;
-    toast.error(result.error);
-  } catch (error) {
-    unstable_rethrow(error);
-    toast.error(SAVE_FAILED_MESSAGE);
-  }
-  return null;
-}
 
 interface ItemEditFormProps {
   item: DashboardItem;
@@ -132,7 +114,10 @@ export function ItemEditForm({
     if (!isChanged) return;
     if (rejectInvalidContent(fields, values.content, contentRef)) return;
     startSaving(async () => {
-      const saved = await saveItem(item.id, updatePayload(fields, values));
+      const saved = await callAction(
+        () => updateItem(item.id, updatePayload(fields, values)),
+        SAVE_FAILED_MESSAGE,
+      );
       if (!saved) return;
 
       toast.success(SAVED_MESSAGE);

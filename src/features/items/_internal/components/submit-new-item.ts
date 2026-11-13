@@ -2,7 +2,7 @@ import "client-only";
 
 import type { RefObject } from "react";
 
-import type { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
+import type { SubmitRun } from "@/components/common/hooks/use-submit-dialog";
 import type { EditorHandle } from "@/features/editor/types";
 import type { UploadedFile } from "@/features/files/types";
 import { rejectInvalidContent } from "@/features/items/_internal/components/reject-invalid-content";
@@ -25,7 +25,7 @@ export interface NewItemSubmission {
   values: ItemFormValues;
   upload: UploadedFile | null;
   contentRef: RefObject<EditorHandle | null>;
-  run: ReturnType<typeof useSubmitDialog>["run"];
+  run: SubmitRun;
   /** Called in the commit that brings the refreshed page with the new item. */
   onCreated: () => void;
 }

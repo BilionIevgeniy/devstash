@@ -13,7 +13,7 @@ const GENERIC_ERROR = "The upload could not start. Please try again.";
 // Signs the PUT; the browser then sends the file to R2 itself.
 export async function requestUpload(
   data: unknown,
-): Promise<ActionResult<PresignedUpload | null>> {
+): Promise<ActionResult<PresignedUpload>> {
   const parsed = requestUploadSchema.safeParse(data);
   if (!parsed.success) return fail(firstIssueMessage(parsed.error));
 

@@ -1,0 +1,14 @@
+{
+  "path": ["src"],
+  "format": ["typescript", "tsx"],
+  "ignore": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/src/generated/**",
+    "**/src/components/ui/**"
+  ],
+  "minTokens": 60,
+  "reporters": ["console"],
+  "absolute": false,
+  "gitignore": true
+}

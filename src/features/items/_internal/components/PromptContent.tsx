@@ -1,32 +1,15 @@
 "use client";
 
-import { unstable_rethrow } from "next/navigation";
 import { toast } from "sonner";
 
 import { AiPromptOptimizer } from "@/features/ai/components/AiPromptOptimizer";
 import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
+import { callAction } from "@/features/items/_internal/components/call-action";
 import { replaceItemContent } from "@/features/items/actions/item";
 import type { ItemDetailJson } from "@/features/items/types";
 
 const SAVED_MESSAGE = "Prompt updated";
 const SAVE_FAILED_MESSAGE = "Couldn't save the prompt";
-
-// null after a failure, with the toast already shown. A signed-out caller's
-// redirect rejects too, and must go on.
-async function savePrompt(
-  itemId: string,
-  prompt: string,
-): Promise<ItemDetailJson | null> {
-  try {
-    const result = await replaceItemContent(itemId, prompt);
-    if (result.success) return result.data;
-    toast.error(result.error);
-  } catch (error) {
-    unstable_rethrow(error);
-    toast.error(SAVE_FAILED_MESSAGE);
-  }
-  return null;
-}
 
 interface PromptContentProps {
   itemId: string;
@@ -49,7 +32,10 @@ export function PromptContent({
   onSaved,
 }: PromptContentProps) {
   async function handleAccept(optimized: string) {
-    const saved = await savePrompt(itemId, optimized);
+    const saved = await callAction(
+      () => replaceItemContent(itemId, optimized),
+      SAVE_FAILED_MESSAGE,
+    );
     if (!saved) return null;
     toast.success(SAVED_MESSAGE);
     return () => onSaved(saved);

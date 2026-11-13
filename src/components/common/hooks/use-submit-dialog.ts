@@ -4,12 +4,18 @@ import { toast } from "sonner";
 
 import type { OperationResult } from "@/lib/action-result";
 
-interface RunOptions {
+export interface RunOptions {
   /** Runs in the transition: the dialog closes in the commit of the fresh page. */
   onSuccess: () => void;
   /** Shown when the action throws; a refused result shows its own words. */
   failMessage: string;
 }
+
+/** The `run` of useSubmitDialog, for a helper that submits on its behalf. */
+export type SubmitRun = (
+  action: () => Promise<OperationResult<unknown>>,
+  options: RunOptions,
+) => void;
 
 // The request of a dialog that waits for the server (the create, edit and
 // delete dialogs). While it runs, `isPending` lets the dialog block Esc, the
@@ -21,10 +27,7 @@ export function useSubmitDialog() {
   const [isPending, startTransition] = useTransition();
   const doneRef = useRef(false);
 
-  function run(
-    action: () => Promise<OperationResult<unknown>>,
-    { onSuccess, failMessage }: RunOptions,
-  ) {
+  const run: SubmitRun = (action, { onSuccess, failMessage }) => {
     startTransition(async () => {
       try {
         const result = await action();
@@ -43,7 +46,7 @@ export function useSubmitDialog() {
         toast.error(failMessage);
       }
     });
-  }
+  };
 
   /** True once after a success, for the close handler's toast. */
   function takeDone(): boolean {

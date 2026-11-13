@@ -75,7 +75,7 @@ export async function openBillingPortal(): Promise<ActionResult> {
 
 export async function confirmCheckout(
   sessionId: unknown,
-): Promise<ActionResult<{ isPro: boolean } | null>> {
+): Promise<ActionResult<{ isPro: boolean }>> {
   const parsed = checkoutSessionIdSchema.safeParse(sessionId);
   if (!parsed.success) return fail(firstIssueMessage(parsed.error));
 

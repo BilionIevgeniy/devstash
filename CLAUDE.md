@@ -26,6 +26,7 @@ Work deferred on purpose is listed in `context/todo.md` (not auto-loaded: read i
 - `npm run db:migrate:deploy` — `prisma migrate deploy`; on Vercel migrations run in `npm run vercel-build` through a guard (ADR 0013)
 - `npm run start` — run the production build
 - `npm run lint` — ESLint via flat config
+- `npm run lint:dup` — jscpd copy-paste report over `src/` (for `/cleanup` and the code review; not a CI gate)
 - `npm run test` — Vitest, one run; must be green and run before every commit
 - `npm run test:watch` — Vitest in watch mode
 - `npm run test:integration` — the `*.int.test.ts` files against the test database (`TEST_DATABASE_URL` from `.env.test`, a local Docker Postgres on port 5433); run it when a query or service changed

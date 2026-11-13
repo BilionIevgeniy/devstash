@@ -30,7 +30,7 @@ const UNAVAILABLE = "Import is unavailable right now. Please try again later.";
 async function runBatch<T>(
   records: unknown,
   run: (userId: string, records: unknown[]) => Promise<ImportBatchResult<T>>,
-): Promise<ActionResult<T | null>> {
+): Promise<ActionResult<T>> {
   const parsed = importBatchSchema.safeParse(records);
   if (!parsed.success) return fail(firstIssueMessage(parsed.error));
 
@@ -51,12 +51,12 @@ async function runBatch<T>(
 
 export async function importCollections(
   records: unknown,
-): Promise<ActionResult<CollectionImportData | null>> {
+): Promise<ActionResult<CollectionImportData>> {
   return runBatch(records, importUserCollections);
 }
 
 export async function importItems(
   records: unknown,
-): Promise<ActionResult<ImportSummary | null>> {
+): Promise<ActionResult<ImportSummary>> {
   return runBatch(records, importUserItems);
 }

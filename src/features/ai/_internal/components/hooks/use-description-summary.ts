@@ -24,8 +24,8 @@ export function useDescriptionSummary() {
       try {
         const result = await generateSummary({ title, content });
         if (!mountedRef.current) return;
-        if (!result.success || !result.data) {
-          toast.error(result.error ?? AI_UNAVAILABLE_MESSAGE);
+        if (!result.success) {
+          toast.error(result.error);
           return;
         }
         setSummary(result.data);

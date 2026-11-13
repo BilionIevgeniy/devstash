@@ -117,7 +117,7 @@ export async function verifyAccountDeletion(
   proof: DeleteAccountProof,
 ): Promise<VerifyAccountDeletionResult> {
   const refusal = await getPasswordCheckRefusal(userId);
-  if (refusal) return { ...refusal, data: null };
+  if (refusal) return refusal;
 
   const user = await getDeletionCredentials(userId);
   if (!user) return ok();

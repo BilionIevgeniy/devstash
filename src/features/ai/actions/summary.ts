@@ -11,7 +11,7 @@ import { firstIssueMessage } from "@/lib/validation";
 // Nothing is written, so there is no refresh: the summary only changes the form.
 export async function generateSummary(
   data: unknown,
-): Promise<ActionResult<string | null>> {
+): Promise<ActionResult<string>> {
   const parsed = aiItemInputSchema.safeParse(data);
   if (!parsed.success) return fail(firstIssueMessage(parsed.error));
 

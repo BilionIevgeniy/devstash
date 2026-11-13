@@ -71,7 +71,7 @@ export function useFileUpload(
       size: file.size,
     });
     if (attempt !== attemptRef.current || signed === NAVIGATING) return;
-    if (!signed?.success || !signed.data) {
+    if (!signed?.success) {
       const error = signed?.error ?? UPLOAD_FAILED_MESSAGE;
       setState({ status: "failed", file, error });
       return;

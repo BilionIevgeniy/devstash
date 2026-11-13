@@ -4,7 +4,10 @@ import { useRef, useState, type SubmitEvent } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
-import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
+import {
+  useSubmitDialog,
+  type SubmitRun,
+} from "@/components/common/hooks/use-submit-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,10 +26,7 @@ import { CollectionSelect } from "@/features/items/_internal/components/Collecti
 import { ItemFileField } from "@/features/items/_internal/components/ItemFileField";
 import { ItemFields } from "@/features/items/_internal/components/ItemFields";
 import { ItemTypeSelect } from "@/features/items/_internal/components/ItemTypeSelect";
-import {
-  submitNewItem,
-  type NewItemSubmission,
-} from "@/features/items/_internal/components/submit-new-item";
+import { submitNewItem } from "@/features/items/_internal/components/submit-new-item";
 import type { ItemFormValues } from "@/features/items/domain/item-changes";
 import {
   canCreateType,
@@ -130,7 +130,7 @@ interface CreateItemFormProps {
   initialType: CreatableTypeName;
   isPro: boolean;
   isCreating: boolean;
-  run: NewItemSubmission["run"];
+  run: SubmitRun;
   onCreated: () => void;
 }
 
