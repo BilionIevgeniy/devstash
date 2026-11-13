@@ -12,5 +12,6 @@
   "showMore": "Weitere Ergebnisse anzeigen",
   "showMoreKind": "mehr anzeigen",
   "locked": "Verlängere dein Abo, um ihn zu öffnen",
-  "loadingSearch": "Suche wird geladen"
+  "loadingSearch": "Suche wird geladen",
+  "itemCount": "{count, plural, one {# Eintrag} other {# Einträge}}"
 }

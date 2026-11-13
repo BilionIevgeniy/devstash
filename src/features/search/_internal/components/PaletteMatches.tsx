@@ -77,8 +77,7 @@ export function PaletteMatches({
             >
               <span className="min-w-0 flex-1 truncate">{collection.name}</span>
               <CommandShortcut className="tracking-normal">
-                {collection.itemCount}{" "}
-                {collection.itemCount === 1 ? "item" : "items"}
+                {t("itemCount", { count: collection.itemCount })}
               </CommandShortcut>
             </CommandItem>
           ))}

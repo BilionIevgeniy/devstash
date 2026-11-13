@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useTranslations } from "next-intl";
 import type { AiStreamView } from "@/features/ai/_internal/components/hooks/use-ai-text-stream";
 
 interface AiViewToggleProps {
@@ -21,8 +22,13 @@ export function AiViewToggle({
   labels,
   disabled = false,
 }: AiViewToggleProps) {
+  const t = useTranslations("ai");
   return (
-    <div role="group" aria-label="View" className="flex rounded-md bg-muted">
+    <div
+      role="group"
+      aria-label={t("view")}
+      className="flex rounded-md bg-muted"
+    >
       {VIEWS.map((value) => (
         <Button
           key={value}

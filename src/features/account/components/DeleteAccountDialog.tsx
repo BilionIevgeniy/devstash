@@ -36,7 +36,7 @@ export function DeleteAccountDialog({
   requiresReauth,
   returnError,
 }: DeleteAccountDialogProps) {
-  const actions = useTranslations("common.actions");
+  const tActions = useTranslations("common.actions");
   const t = useTranslations("account");
   const [isPending, startTransition] = useTransition();
   const [password, setPassword] = useState("");
@@ -99,7 +99,7 @@ export function DeleteAccountDialog({
         {error && <DeleteError error={error} />}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>
-            {actions("cancel")}
+            {tActions("cancel")}
           </AlertDialogCancel>
           <AlertDialogAction
             variant={reauthNeeded ? "default" : "destructive"}
@@ -109,7 +109,7 @@ export function DeleteAccountDialog({
             {reauthNeeded
               ? t("continueGithub")
               : isPending
-                ? actions("deleting")
+                ? tActions("deleting")
                 : t("deleteTitle")}
           </AlertDialogAction>
         </AlertDialogFooter>

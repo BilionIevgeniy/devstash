@@ -16,6 +16,8 @@ How DevStash is organized, where each kind of code lives, and what to create whe
 src/
   app/            routes: page.tsx, layout.tsx, route.ts. Composes features, no business logic
     (app)/        authenticated pages (dashboard, items/[type], items/[type]/[id], profile, settings) under one shared layout
+    (auth)/       sign-in, registration and the email-link pages, in the locale of the request
+    (marketing)/  the homepage at / ((en)) and /de, both static, and the bilingual legal pages
     api/          route handlers: NextAuth, registration, item detail, later webhooks and streaming
   features/       the product, one folder per feature
     auth/         sign-in, registration, email verification, password reset, change password
@@ -312,6 +314,7 @@ Each feature keeps its business rules in `features/[feature]/domain/` as pure Ty
 
 - the layer order and the `_internal/` boundary (`import/no-restricted-paths`); `src/i18n/` imports no other layer
 - the direction of the roles inside a feature: queries and schemas do not import services, actions or components; services do not import actions or components; actions do not import components; components do not import services; hooks in `components/hooks/` do not import any `.tsx`
+- no literal user-facing text in JSX or a toast (`i18next/no-literal-string` in mode `jsx-only` with the attributes a user reads, and a `no-restricted-syntax` ban on a literal toast text); the bilingual legal and root error pages are left out ([ADR 0024](adr/0024-locale-decision.md))
 - the domain core: no package import (colocated `*.test.ts` files are excepted), only `domain/`, `types.ts` and `lib/utils`
 - no Prisma in actions, components (including `components/common`) and `app/`; no `next/headers`, `next/cache` or `next/navigation` in services; vendor SDKs only in `lib`
 - the split between reads and writes (`no-restricted-syntax`, [ADR 0009](adr/0009-read-write-split-enforced-by-lint.md)): no read through `prisma` in services and `nextauth/`, while a read through `tx` is allowed; no write, `$transaction` or raw SQL in `queries.ts`, except `prisma.$queryRaw` in the two search rankings, named one by one (`items` and `collections` `_internal/queries/search-ranking.ts`, [ADR 0018](adr/0018-search-in-postgres.md))

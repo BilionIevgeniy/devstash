@@ -48,5 +48,6 @@
     "announce": "{count, plural, one {# Tag vorgeschlagen} other {# Tags vorgeschlagen}}",
     "add": "Tag {tag} hinzufügen",
     "dismiss": "Tag {tag} verwerfen"
-  }
+  },
+  "view": "Ansicht"
 }

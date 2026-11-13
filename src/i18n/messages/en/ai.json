@@ -48,5 +48,6 @@
     "announce": "{count, plural, one {# tag suggested} other {# tags suggested}}",
     "add": "Add tag {tag}",
     "dismiss": "Dismiss tag {tag}"
-  }
+  },
+  "view": "View"
 }

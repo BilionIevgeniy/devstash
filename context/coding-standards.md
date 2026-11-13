@@ -64,6 +64,17 @@ The architecture rules (layout, ranks, roles inside a feature, where new code go
 - Constants: SCREAMING_SNAKE_CASE
 - Types/Interfaces: PascalCase (no prefix)
 
+## Text and languages
+
+The interface is English and German ([ADR 0024](../docs/adr/0024-locale-decision.md)).
+
+- No user-facing literal in JSX: text, `aria-label`, `placeholder`, `title`, `alt` and the label props of our components come from `src/i18n/messages/<locale>/<namespace>.json` through `useTranslations` (client and sync server components) or `await getTranslations` (async server components). A toast's text too. The lint enforces both (`i18next/no-literal-string`, the toast ban); constant tables outside JSX and metadata are on the review
+- A new key goes into `en/` and `de/` in the same change: `tsc` refuses a key English lacks, and `messages.test.ts` fails on a German file that differs or a message that does not format. German says "du"; legal texts say "Sie"
+- `domain/` returns keys, codes and shapes, never words (`collectionSummary`, `fileSizeParts`, `FREE_PLAN_FEATURES`); the component words them. A pure helper that needs words takes the translator as a parameter (`typeLabel`)
+- Plurals and numbers belong in the message (`{count, plural, one {# item} other {# items}}`), never in a template string. Dates, numbers and prices go through `useFormatter` / `getFormatter` with the named formats of `src/i18n/config.ts` (`short`, `long`, `numeric`, `price`); the time zone is `Europe/Berlin` on the server and in the browser
+- The static pages (`/`, `/de`, the legal pages) and everything a root boundary renders read no locale from the request: a marketing component gets `locale` and calls `getTranslations({ locale })`, a shared component used there is a client component under `MarketingFrame`'s provider (`Logo`, `TestModeHint`). The build output shows `○` for them; a `ƒ` there is a bug
+- A component test renders through `test/intl.tsx` (`render`, `renderHook`, `locale: "de"` for German), which puts the messages around it like the layouts do
+
 ## Styling
 
 - Tailwind CSS for all styling

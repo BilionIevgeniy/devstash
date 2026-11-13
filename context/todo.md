@@ -92,6 +92,10 @@ Decide these before Stripe goes to live mode. Researched only briefly on 2026-11
 - **End-to-end tests share the app's Upstash database.** They use `devstash-ratelimit` (the free plan allows one database), and its token sits in the GitHub secrets, under Actions and under Dependabot. Move them to a dedicated database (new values for the two `E2E_UPSTASH_*` secrets and `.env.test`, no code), or to a local Redis with a REST proxy in Docker and in the `e2e` job (no secret, and it would also run on fork PRs; not checked against the Lua scripts of `@upstash/ratelimit`).
 - **No end-to-end journey for changing the password.** `ChangePasswordForm` signs the user out through a Server Action that redirects; feature 9 moved that call into the action of `useActionState` and checked it once in the production build with a throwaway spec. A permanent journey needs a second seeded user (a password change revokes every session of its user, the shared e2e user's included), an environment variable for its email next to `E2E_USER_EMAIL_VAR`, and a line in the README section on end-to-end tests. The reset and confirm-email forms need a token from an email, so they have no journey either; their navigation is covered by the component tests.
 
+## Languages
+
+- **The root `Toaster` speaks English to a screen reader.** Sonner's region label ("Notifications") is set in the root layout, which reads no locale so the public pages stay static. The toasts themselves are translated. Fix idea: a `Toaster` in each provider layout with `containerAriaLabel` from the messages, and none in the root (feature 11, 2026-11-13).
+
 ## UI review
 
 Left from the live review of the homepage and dashboard (2026-11-05); the three worst findings are fixed. Sizes were measured in Chromium at 375, 768 and 1280px. Not reviewed: the sign-in page, the drawer at 768px, the collapsed sidebar, light mode, other browsers, `/collections`, `/items` and the settings.
