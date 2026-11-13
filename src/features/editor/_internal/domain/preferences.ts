@@ -1,8 +1,6 @@
 export const FONT_SIZES: readonly number[] = [12, 13, 14, 16, 18, 20];
 export const TAB_SIZES: readonly number[] = [2, 4, 8];
 export const EDITOR_THEMES = ["vs-dark", "monokai", "github-dark"] as const;
-export const SAVE_FAILED_MESSAGE =
-  "Your preferences could not be saved. Please try again.";
 
 export type EditorThemeName = (typeof EDITOR_THEMES)[number];
 

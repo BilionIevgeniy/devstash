@@ -21,7 +21,9 @@ import { RegisterForm } from "@/features/auth/components/RegisterForm";
 const ACCEPTED: RegisterResult = { success: true };
 const TOO_MANY: RegisterResult = {
   success: false,
-  error: "Too many attempts. Try again in 5 minutes.",
+  data: null,
+  error: "tooManyAttempts",
+  params: { minutes: 5 },
 };
 
 async function fillAndSubmit(
@@ -44,7 +46,7 @@ describe("RegisterForm", () => {
     await fillAndSubmit(user);
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Too many attempts. Try again in 5 minutes.",
+      "Too many attempts. Please try again in 5 minutes.",
     );
     expect(screen.getByLabelText("Name")).toHaveValue("Ada");
     expect(screen.getByLabelText("Email")).toHaveValue("ada@example.com");

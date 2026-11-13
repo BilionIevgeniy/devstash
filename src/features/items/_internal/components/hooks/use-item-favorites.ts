@@ -4,7 +4,6 @@ import { useOptimisticToggle } from "@/features/items/_internal/components/hooks
 import { setItemFavorite } from "@/features/items/actions/item";
 import { UNDO_TOAST_DURATION } from "@/features/items/domain/list-rows";
 
-const FAVORITE_FAILED_MESSAGE = "Couldn't update the favorite.";
 const UNFAVORITED_MESSAGE = "Removed from favorites";
 
 // The stars of a provider's cards and drawer (useOptimisticToggle). Only an
@@ -13,7 +12,7 @@ export function useItemFavorites(
   onSaved: (id: string, isFavorite: boolean) => void,
 ) {
   const { overrides, toggle } = useOptimisticToggle(setItemFavorite, {
-    failMessage: FAVORITE_FAILED_MESSAGE,
+    failCode: "favoriteFailed",
     onSaved,
     notify: (_id, isFavorite, options, undo) => {
       if (!options?.undoable || isFavorite) return;

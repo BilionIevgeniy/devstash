@@ -37,7 +37,8 @@ describe("createUserItem across users", () => {
     );
     expect(result).toMatchObject({
       success: false,
-      error: "One of the collections no longer exists",
+      data: null,
+      error: "collectionGone",
     });
     expect(await prisma.item.count({ where: { userId: t.a.userId } })).toBe(
       count,
@@ -122,7 +123,7 @@ describe("the Free item limit under a race", () => {
     const refused = results.filter((r) => !r.success);
     expect(refused).toHaveLength(RACERS - 1);
     for (const result of refused) {
-      expect(result.error).toMatch(/reached the Free plan's limit/);
+      expect(result.error).toBe("itemLimitReached");
     }
     await expect(
       prisma.item.count({ where: { userId: t.a.userId } }),

@@ -3,12 +3,11 @@ import * as rateLimits from "@/features/auth/domain/rate-limits";
 import {
   getBlockingReset,
   getRetryAfterSeconds,
-  getTooManyAttemptsMessage,
   LOGIN_BY_EMAIL_GLOBAL,
   LOGIN_BY_EMAIL_IP,
   loginEmailKey,
   RESET_EMAIL_BY_ADDRESS,
-  TOO_MANY_ATTEMPTS_MESSAGE,
+  tooManyAttemptsParams,
   VERIFICATION_EMAIL_BY_ADDRESS,
 } from "@/features/auth/domain/rate-limits";
 
@@ -63,10 +62,6 @@ describe("rate limit policies", () => {
     },
   );
 
-  it("keeps the generic message free of any time", () => {
-    expect(TOO_MANY_ATTEMPTS_MESSAGE).toBe("Too many attempts. Try again later.");
-  });
-
   it("puts the per-email ceiling above the lockout a user meets", () => {
     expect(LOGIN_BY_EMAIL_GLOBAL.limit).toBeGreaterThan(LOGIN_BY_EMAIL_IP.limit);
   });
@@ -100,29 +95,24 @@ describe("getRetryAfterSeconds", () => {
   });
 });
 
-describe("getTooManyAttemptsMessage", () => {
-  it("says 1 minute, singular, for anything up to a minute", () => {
-    const message = "Too many attempts. Please try again in 1 minute.";
-    expect(getTooManyAttemptsMessage(NOW + 1 * SECOND, NOW)).toBe(message);
-    expect(getTooManyAttemptsMessage(NOW + MINUTE, NOW)).toBe(message);
+// The words, singular and plural, are the message's: error-text.test.ts.
+describe("tooManyAttemptsParams", () => {
+  it("says 1 minute for anything up to a minute", () => {
+    expect(tooManyAttemptsParams(NOW + 1 * SECOND, NOW)).toEqual({ minutes: 1 });
+    expect(tooManyAttemptsParams(NOW + MINUTE, NOW)).toEqual({ minutes: 1 });
   });
 
   it("says 1 minute for a window that has already ended", () => {
-    expect(getTooManyAttemptsMessage(NOW - MINUTE, NOW)).toBe(
-      "Too many attempts. Please try again in 1 minute.",
-    );
+    expect(tooManyAttemptsParams(NOW - MINUTE, NOW)).toEqual({ minutes: 1 });
   });
 
   it("rounds up to whole minutes so the client never retries early", () => {
-    expect(getTooManyAttemptsMessage(NOW + MINUTE + SECOND, NOW)).toBe(
-      "Too many attempts. Please try again in 2 minutes.",
-    );
-  });
-
-  it("uses the plural for a full window", () => {
-    expect(getTooManyAttemptsMessage(NOW + 15 * MINUTE, NOW)).toBe(
-      "Too many attempts. Please try again in 15 minutes.",
-    );
+    expect(tooManyAttemptsParams(NOW + MINUTE + SECOND, NOW)).toEqual({
+      minutes: 2,
+    });
+    expect(tooManyAttemptsParams(NOW + 15 * MINUTE, NOW)).toEqual({
+      minutes: 15,
+    });
   });
 });
 

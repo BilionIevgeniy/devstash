@@ -3,11 +3,11 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import {
-  INVALID_RESET_LINK_MESSAGE,
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
 import type { AuthActionState } from "@/features/auth/types";
+import type { ErrorCode } from "@/i18n/error-codes";
 
 const { resetPassword, replace, toastSuccess } = vi.hoisted(() => ({
   resetPassword: vi.fn(),
@@ -24,7 +24,7 @@ import { ResetPasswordForm } from "@/features/auth/components/ResetPasswordForm"
 
 const SUCCESS: AuthActionState = { success: true, data: null, error: null };
 
-function failure(error: string): AuthActionState {
+function failure(error: ErrorCode): AuthActionState {
   return { success: false, data: null, error };
 }
 
@@ -43,14 +43,14 @@ function renderForm() {
 
 describe("ResetPasswordForm", () => {
   it("shows the error from the action and keeps both fields", async () => {
-    resetPassword.mockResolvedValue(failure("Password is too common"));
+    resetPassword.mockResolvedValue(failure("emailSendFailed"));
     const user = userEvent.setup();
     renderForm();
 
     await fillAndSubmit(user);
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Password is too common",
+      "We couldn't send the email. Please try again later.",
     );
     expect(screen.getByLabelText("New password")).toHaveValue("new-password-1");
     expect(screen.getByLabelText("Confirm new password")).toHaveValue(
@@ -59,7 +59,7 @@ describe("ResetPasswordForm", () => {
   });
 
   it("sends the link's email and token with the passwords", async () => {
-    resetPassword.mockResolvedValue(failure("nope"));
+    resetPassword.mockResolvedValue(failure("generic"));
     const user = userEvent.setup();
     renderForm();
 
@@ -129,7 +129,7 @@ describe("ResetPasswordForm", () => {
   });
 
   it("offers a new link when the old one is no longer valid", async () => {
-    resetPassword.mockResolvedValue(failure(INVALID_RESET_LINK_MESSAGE));
+    resetPassword.mockResolvedValue(failure("invalidResetLink"));
     const user = userEvent.setup();
     renderForm();
 
@@ -164,7 +164,7 @@ describe("ResetPasswordForm", () => {
     expect(
       await screen.findByRole("button", { name: "Updating password…" }),
     ).toBeDisabled();
-    pending.resolve(failure("nope"));
+    pending.resolve(failure("generic"));
     expect(await screen.findByRole("alert")).toBeInTheDocument();
   });
 });

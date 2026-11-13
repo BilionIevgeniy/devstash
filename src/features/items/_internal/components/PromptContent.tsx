@@ -2,6 +2,7 @@
 
 import { toast } from "sonner";
 
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { AiPromptOptimizer } from "@/features/ai/components/AiPromptOptimizer";
 import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
 import { callAction } from "@/features/items/_internal/components/call-action";
@@ -9,7 +10,6 @@ import { replaceItemContent } from "@/features/items/actions/item";
 import type { ItemDetailJson } from "@/features/items/types";
 
 const SAVED_MESSAGE = "Prompt updated";
-const SAVE_FAILED_MESSAGE = "Couldn't save the prompt";
 
 interface PromptContentProps {
   itemId: string;
@@ -31,10 +31,12 @@ export function PromptContent({
   canUseAi,
   onSaved,
 }: PromptContentProps) {
+  const errorText = useErrorText();
   async function handleAccept(optimized: string) {
     const saved = await callAction(
       () => replaceItemContent(itemId, optimized),
-      SAVE_FAILED_MESSAGE,
+      "promptSaveFailed",
+      errorText,
     );
     if (!saved) return null;
     toast.success(SAVED_MESSAGE);

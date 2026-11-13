@@ -8,6 +8,7 @@ import {
   useSubmitDialog,
   type SubmitRun,
 } from "@/components/common/hooks/use-submit-dialog";
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -145,6 +146,7 @@ function CreateItemForm({
   const [values, setValues] = useState<ItemFormValues>(EMPTY_VALUES);
   const [upload, setUpload] = useState<UploadedFile | null>(null);
   const contentRef = useRef<EditorHandle>(null);
+  const errorText = useErrorText();
   const fields = editableFields(typeName);
   const isMissingRequired =
     values.title.trim() === "" ||
@@ -174,6 +176,7 @@ function CreateItemForm({
       upload,
       contentRef,
       run,
+      errorText,
       onCreated,
     });
   }

@@ -46,8 +46,8 @@ describe("deleteAccount", () => {
     const result = await deleteAccount(t.a.userId, { password: PASSWORD_OF_B });
     expect(result).toMatchObject({
       success: false,
-      error: "Password is incorrect",
       data: null,
+      error: "incorrectPassword",
     });
     expect(await snapshotTenant(t.a.userId)).toEqual(before);
   });

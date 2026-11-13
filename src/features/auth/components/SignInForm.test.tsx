@@ -15,7 +15,7 @@ import { SignInForm } from "@/features/auth/components/SignInForm";
 const REJECTED: AuthActionState = {
   success: false,
   data: null,
-  error: "Invalid email or password.",
+  error: "invalidCredentials",
 };
 
 async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>) {
@@ -33,7 +33,7 @@ describe("SignInForm", () => {
     await fillAndSubmit(user);
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Invalid email or password.",
+      "Invalid email or password",
     );
     expect(screen.getByLabelText("Email")).toHaveValue("ada@example.com");
     expect(screen.getByRole("button", { name: "Sign in" })).toBeEnabled();
@@ -70,9 +70,14 @@ describe("SignInForm", () => {
 
   it("shows the error it was given before anything is submitted", () => {
     render(
-      <SignInForm callbackUrl="/dashboard" initialError="Link expired." />,
+      <SignInForm
+        callbackUrl="/dashboard"
+        initialError="oauthAccountNotLinked"
+      />,
     );
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Link expired.");
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "This email is already registered with a different sign-in method",
+    );
   });
 });

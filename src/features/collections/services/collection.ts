@@ -13,9 +13,6 @@ import { fail, ok, type OperationResult } from "@/lib/action-result";
 import { LOCKED_TRANSACTION, lockForTransaction } from "@/lib/advisory-lock";
 import { prisma } from "@/lib/prisma";
 
-const NOT_FOUND_ERROR = "This collection no longer exists.";
-const COLLECTION_LIMIT_REACHED = `You have reached the Free plan's limit of ${FREE_COLLECTION_LIMIT} collections. Upgrade to Pro for unlimited collections.`;
-
 // Pro skips the lock and the count. Two parallel creates of a Free user wait
 // here, so they cannot both pass the limit.
 async function insertCollection(
@@ -48,7 +45,7 @@ export async function createUserCollection(
   });
 
   if (!collection) {
-    return fail(COLLECTION_LIMIT_REACHED);
+    return fail("collectionLimitReached", { limit: FREE_COLLECTION_LIMIT });
   }
   return ok(collection);
 }
@@ -63,7 +60,7 @@ export async function updateUserCollection(
     data: { name, description },
   });
 
-  if (count === 0) return fail(NOT_FOUND_ERROR);
+  if (count === 0) return fail("collectionNotFound");
   return ok();
 }
 
@@ -81,7 +78,7 @@ export async function setUserCollectionFavorite(
     WHERE "id" = ${collectionId} AND "userId" = ${userId}
   `;
 
-  if (count === 0) return fail(NOT_FOUND_ERROR);
+  if (count === 0) return fail("collectionNotFound");
   return ok();
 }
 
@@ -95,6 +92,6 @@ export async function deleteUserCollection(
     where: { id: collectionId, userId },
   });
 
-  if (count === 0) return fail(NOT_FOUND_ERROR);
+  if (count === 0) return fail("collectionNotFound");
   return ok();
 }

@@ -18,10 +18,7 @@ import {
   SUMMARY_CONTENT_MAX,
   SUMMARY_TITLE_MAX,
 } from "@/features/ai/domain/input";
-import {
-  AI_FAILURE_MESSAGES,
-  AI_PRO_ONLY_MESSAGE,
-} from "@/features/ai/domain/messages";
+import { AI_FAILURE_CODES } from "@/features/ai/domain/messages";
 import { summarizeItem } from "@/features/ai/services/summary";
 import { AiOutputError } from "@/lib/openai";
 
@@ -59,7 +56,8 @@ describe("summarizeItem", () => {
 
     await expect(summarizeItem("user-1", input)).resolves.toMatchObject({
       success: false,
-      error: AI_PRO_ONLY_MESSAGE,
+      data: null,
+      error: "aiProOnly",
     });
     expect(generateStructured).not.toHaveBeenCalled();
   });
@@ -91,8 +89,8 @@ describe("summarizeItem", () => {
 
     await expect(summarizeItem("user-1", input)).resolves.toEqual({
       success: false,
-      error: AI_FAILURE_MESSAGES.failed,
       data: null,
+      error: AI_FAILURE_CODES.failed,
     });
   });
 
@@ -101,7 +99,8 @@ describe("summarizeItem", () => {
 
     await expect(summarizeItem("user-1", input)).resolves.toMatchObject({
       success: false,
-      error: AI_FAILURE_MESSAGES.refused,
+      data: null,
+      error: AI_FAILURE_CODES.refused,
     });
   });
 

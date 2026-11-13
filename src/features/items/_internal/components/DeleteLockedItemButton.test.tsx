@@ -85,7 +85,7 @@ describe("DeleteLockedItemButton", () => {
     // React holds later transitions behind one that never ends: settle it,
     // with a failure, so no close and no toast run into the next test.
     await act(async () =>
-      answer.resolve({ success: false, data: null, error: "stop" }),
+      answer.resolve({ success: false, data: null, error: "generic" }),
     );
   });
 
@@ -93,7 +93,7 @@ describe("DeleteLockedItemButton", () => {
     deleteItem.mockResolvedValue({
       success: false,
       data: null,
-      error: "Item not found",
+      error: "itemNotFound",
     });
     const user = userEvent.setup();
     renderButton();

@@ -6,25 +6,17 @@ import {
 } from "@/features/auth/domain/password-reset";
 import { EMAIL_MAX, NAME_MAX } from "@/features/auth/domain/registration";
 
-const PASSWORDS_DO_NOT_MATCH = "Passwords do not match";
-
 export const emailSchema = z
   .string()
   .trim()
   .toLowerCase()
-  .max(EMAIL_MAX, "Invalid email address")
-  .pipe(z.email("Invalid email address"));
+  .max(EMAIL_MAX, "invalidEmail")
+  .pipe(z.email("invalidEmail"));
 
 const newPasswordSchema = z
   .string()
-  .min(
-    MIN_PASSWORD_LENGTH,
-    `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
-  )
-  .max(
-    MAX_PASSWORD_LENGTH,
-    `Password must be at most ${MAX_PASSWORD_LENGTH} characters`,
-  );
+  .min(MIN_PASSWORD_LENGTH, "passwordTooShort")
+  .max(MAX_PASSWORD_LENGTH, "passwordTooLong");
 
 export const credentialsSchema = z.object({
   email: emailSchema,
@@ -33,7 +25,7 @@ export const credentialsSchema = z.object({
 
 export const signInSchema = z.object({
   email: emailSchema,
-  password: z.string().min(1, "Password is required"),
+  password: z.string().min(1, "passwordRequired"),
 });
 
 // Never fails: a bad value becomes the default path, not a sign-in error.
@@ -44,21 +36,24 @@ export const registerSchema = z
     name: z
       .string()
       .trim()
-      .min(1, "Name is required")
-      .max(NAME_MAX, `Name can be up to ${NAME_MAX} characters`),
+      .min(1, "nameRequired")
+      .max(NAME_MAX, "profileNameTooLong"),
     email: emailSchema,
     password: newPasswordSchema,
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: PASSWORDS_DO_NOT_MATCH,
+    message: "passwordsDoNotMatch",
     path: ["confirmPassword"],
   });
 
 export const confirmEmailSchema = z.object({
   email: emailSchema,
   token: z.string().min(1),
-  password: z.string().min(1, "Password is required").max(MAX_PASSWORD_LENGTH),
+  password: z
+    .string()
+    .min(1, "passwordRequired")
+    .max(MAX_PASSWORD_LENGTH, "passwordTooLong"),
 });
 
 export const resetPasswordSchema = z
@@ -69,18 +64,18 @@ export const resetPasswordSchema = z
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: PASSWORDS_DO_NOT_MATCH,
+    message: "passwordsDoNotMatch",
     path: ["confirmPassword"],
   });
 
 export const changePasswordSchema = z
   .object({
-    currentPassword: z.string().min(1, "Current password is required"),
+    currentPassword: z.string().min(1, "currentPasswordRequired"),
     newPassword: newPasswordSchema,
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: PASSWORDS_DO_NOT_MATCH,
+    message: "passwordsDoNotMatch",
     path: ["confirmPassword"],
   });
 

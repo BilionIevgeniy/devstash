@@ -18,10 +18,7 @@ import {
   AUTO_TAG_CONTENT_MAX,
   AUTO_TAG_TITLE_MAX,
 } from "@/features/ai/domain/input";
-import {
-  AI_FAILURE_MESSAGES,
-  AI_PRO_ONLY_MESSAGE,
-} from "@/features/ai/domain/messages";
+import { AI_FAILURE_CODES } from "@/features/ai/domain/messages";
 import { suggestTags } from "@/features/ai/services/auto-tags";
 import { AiOutputError } from "@/lib/openai";
 
@@ -57,7 +54,8 @@ describe("suggestTags", () => {
 
     await expect(suggestTags("user-1", input)).resolves.toMatchObject({
       success: false,
-      error: AI_PRO_ONLY_MESSAGE,
+      data: null,
+      error: "aiProOnly",
     });
     expect(generateStructured).not.toHaveBeenCalled();
   });
@@ -100,7 +98,8 @@ describe("suggestTags", () => {
 
     await expect(suggestTags("user-1", input)).resolves.toMatchObject({
       success: false,
-      error: AI_FAILURE_MESSAGES.failed,
+      data: null,
+      error: AI_FAILURE_CODES.failed,
     });
   });
 
@@ -108,7 +107,7 @@ describe("suggestTags", () => {
     generateStructured.mockRejectedValue(new AiOutputError("refusal"));
 
     await expect(suggestTags("user-1", input)).resolves.toMatchObject({
-      error: AI_FAILURE_MESSAGES.refused,
+      error: AI_FAILURE_CODES.refused,
     });
   });
 

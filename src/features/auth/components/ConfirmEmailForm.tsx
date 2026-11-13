@@ -11,14 +11,10 @@ import {
   emptyFormValues,
   formValues,
 } from "@/features/auth/_internal/domain/form-values";
-import {
-  INVALID_LINK_ERROR,
-  WRONG_CONFIRM_PASSWORD_MESSAGE,
-} from "@/features/auth/domain/verification-token";
 import type { FormActionState } from "@/features/auth/types";
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { GENERIC_ERROR_MESSAGE } from "@/lib/action-result";
 
 const SUCCESS_MESSAGE = "Email verified. You can now sign in.";
 const SIGN_IN_URL = "/sign-in";
@@ -47,7 +43,7 @@ async function submit(
   try {
     const result = await confirmEmail({ ...values, email, token });
     if (!result.success) {
-      return { error: result.error, values };
+      return { error: result, values };
     }
     toast.success(SUCCESS_MESSAGE);
     // replace: Back must not lead to the link that was just used.
@@ -55,7 +51,7 @@ async function submit(
     return INITIAL_STATE;
   } catch {
     // A rejection left in an action would show the error page.
-    return { error: GENERIC_ERROR_MESSAGE, values };
+    return { error: { error: "generic" }, values };
   }
 }
 
@@ -73,6 +69,7 @@ export function ConfirmEmailForm({ email, token }: ConfirmEmailFormProps) {
   );
   // Gone while a new attempt runs, so a repeated error is announced again.
   const error = isPending ? null : state.error;
+  const errorText = useErrorText();
 
   return (
     <form action={formAction} className="space-y-4">
@@ -91,13 +88,13 @@ export function ConfirmEmailForm({ email, token }: ConfirmEmailFormProps) {
       </div>
       {error && (
         <p role="alert" className="text-sm text-destructive">
-          {error}
+          {errorText(error)}
         </p>
       )}
       <Button type="submit" size="lg" className="w-full" disabled={isPending}>
         {isPending ? "Verifying…" : "Verify email"}
       </Button>
-      {error === WRONG_CONFIRM_PASSWORD_MESSAGE && (
+      {error?.error === "wrongConfirmPassword" && (
         <Link
           href="/forgot-password"
           className="block text-center text-sm text-foreground underline-offset-4 hover:underline"
@@ -105,7 +102,7 @@ export function ConfirmEmailForm({ email, token }: ConfirmEmailFormProps) {
           Forgot password?
         </Link>
       )}
-      {error === INVALID_LINK_ERROR && (
+      {error?.error === "invalidVerificationLink" && (
         <ResendVerificationButton email={email} />
       )}
     </form>

@@ -29,14 +29,24 @@ describe("postRegistration", () => {
     });
   });
 
-  it("returns the route's error text", async () => {
+  it("returns the code and params the route answered", async () => {
     vi.stubGlobal("fetch", () =>
-      answer({ success: false, data: null, error: "Too many attempts" }, 429),
+      answer(
+        {
+          success: false,
+          data: null,
+          error: "tooManyAttempts",
+          params: { minutes: 3 },
+        },
+        429,
+      ),
     );
 
     expect(await postRegistration(VALUES)).toEqual({
       success: false,
-      error: "Too many attempts",
+      data: null,
+      error: "tooManyAttempts",
+      params: { minutes: 3 },
     });
   });
 
@@ -47,7 +57,8 @@ describe("postRegistration", () => {
 
     expect(await postRegistration(VALUES)).toEqual({
       success: false,
-      error: "Something went wrong. Please try again.",
+      data: null,
+      error: "generic",
     });
   });
 
@@ -56,7 +67,8 @@ describe("postRegistration", () => {
 
     expect(await postRegistration(VALUES)).toEqual({
       success: false,
-      error: "Something went wrong. Please try again.",
+      data: null,
+      error: "generic",
     });
   });
 
@@ -69,7 +81,8 @@ describe("postRegistration", () => {
 
     expect(await postRegistration(VALUES)).toEqual({
       success: false,
-      error: "Something went wrong. Please try again.",
+      data: null,
+      error: "generic",
     });
   });
 });

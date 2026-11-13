@@ -20,6 +20,7 @@ import type {
 import { getItemIdentities } from "@/features/items/queries/import";
 import { createUserItem } from "@/features/items/services/create-item";
 import type { OperationResult } from "@/lib/action-result";
+import { toErrorRef, type ErrorRef } from "@/i18n/error-codes";
 import { logger } from "@/lib/logger";
 import { consumeRateLimit } from "@/lib/rate-limit";
 
@@ -29,8 +30,6 @@ export type ImportBatchResult<T> =
   | { status: "rate-limited"; reset: number };
 
 type Refusal = Exclude<ImportBatchResult<never>, { status: "ok" }>;
-
-const GENERIC_FAILURE = "Something went wrong with this record";
 
 // Pro only; every batch counts against the per-user limit. A
 // RateLimitUnavailableError propagates to the action.
@@ -46,14 +45,14 @@ async function refuseImport(userId: string): Promise<Refusal | null> {
 async function createRecord(
   userId: string,
   create: () => Promise<OperationResult<{ id: string }>>,
-): Promise<{ id: string } | { error: string }> {
+): Promise<{ id: string } | { error: ErrorRef }> {
   try {
     const result = await create();
     if (result.success) return { id: result.data.id };
-    return { error: result.error };
+    return { error: toErrorRef(result) };
   } catch (error) {
     await logger.error("Importing a record failed", { error, userId });
-    return { error: GENERIC_FAILURE };
+    return { error: { error: "importRecordFailed" } };
   }
 }
 
@@ -75,7 +74,7 @@ export async function importUserCollections(
   for (const [index, record] of parsed.entries()) {
     const title = recordLabel(records[index], "Untitled collection");
     if (record.kind === "invalid") {
-      summary.failed.push({ title, reason: record.error });
+      summary.failed.push({ title, reason: record.reason });
       continue;
     }
     const { id, name, description } = record.data;
@@ -122,7 +121,7 @@ export async function importUserItems(
       continue;
     }
     if (record.kind === "invalid") {
-      summary.failed.push({ title, reason: record.error });
+      summary.failed.push({ title, reason: record.reason });
       continue;
     }
     const key = itemDuplicateKey({

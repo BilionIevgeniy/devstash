@@ -10,6 +10,7 @@ import {
 import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import type { EditorHandle } from "@/features/editor/types";
 import { callAction } from "@/features/items/_internal/components/call-action";
@@ -33,7 +34,6 @@ import {
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
 const SAVED_MESSAGE = "Item saved";
-const SAVE_FAILED_MESSAGE = "Couldn't save the item";
 
 interface ItemEditFormProps {
   item: DashboardItem;
@@ -91,6 +91,7 @@ export function ItemEditForm({
   const [values, setValues] = useState(initial);
   const [isSaving, startSaving] = useTransition();
   const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
+  const errorText = useErrorText();
   const contentRef = useRef<EditorHandle>(null);
   const isChanged = hasItemChanges(fields, initial, values);
   const isMissingRequired =
@@ -112,11 +113,14 @@ export function ItemEditForm({
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!isChanged) return;
-    if (rejectInvalidContent(fields, values.content, contentRef)) return;
+    if (rejectInvalidContent(fields, values.content, contentRef, errorText)) {
+      return;
+    }
     startSaving(async () => {
       const saved = await callAction(
         () => updateItem(item.id, updatePayload(fields, values)),
-        SAVE_FAILED_MESSAGE,
+        "itemSaveFailed",
+        errorText,
       );
       if (!saved) return;
 

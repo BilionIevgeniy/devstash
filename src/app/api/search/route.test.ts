@@ -98,7 +98,7 @@ describe("GET /api/search", () => {
     expect(await response.json()).toEqual({
       success: false,
       data: null,
-      error: "Something went wrong",
+      error: "serverError",
     });
   });
 

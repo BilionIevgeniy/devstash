@@ -1,3 +1,4 @@
+import type { ErrorRef } from "@/i18n/error-codes";
 import type { ActionResult } from "@/lib/action-result";
 
 export type AuthActionState = ActionResult;
@@ -7,7 +8,7 @@ export type AuthActionState = ActionResult;
  * the values to put back, since React clears a form after its action.
  */
 export interface FormActionState<Field extends string> {
-  error: string | null;
+  error: ErrorRef | null;
   values: Readonly<Record<Field, string>>;
 }
 

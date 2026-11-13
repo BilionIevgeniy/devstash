@@ -7,32 +7,27 @@ import {
   EMAIL_NOT_VERIFIED_CODE,
   TOO_MANY_ATTEMPTS_CODE,
 } from "@/features/auth/_internal/errors";
-import { EMAIL_NOT_VERIFIED_MESSAGE } from "@/features/auth/_internal/messages";
 import {
   getBlockingReset,
-  getTooManyAttemptsMessage,
   LOGIN_BY_EMAIL_GLOBAL,
   LOGIN_BY_EMAIL_IP,
   LOGIN_BY_IP,
   loginEmailKey,
-  TOO_MANY_ATTEMPTS_MESSAGE,
+  tooManyAttemptsParams,
 } from "@/features/auth/domain/rate-limits";
 import { callbackPathSchema, signInSchema } from "@/features/auth/schemas";
 import type { AuthActionState } from "@/features/auth/types";
 import { getClientIp } from "@/lib/client-ip";
 import { getIpRateLimitStatus, getRateLimitStatus } from "@/lib/rate-limit";
-import { fail, ok } from "@/lib/action-result";
-import { firstIssueMessage } from "@/lib/validation";
+import { fail, ok, type Failure } from "@/lib/action-result";
+import { firstIssue } from "@/lib/validation";
 
 const HOME_URL = "/";
 const SETTINGS_URL = "/settings";
-const CREDENTIALS_ERROR_MESSAGES = new Map([
-  [EMAIL_NOT_VERIFIED_CODE, EMAIL_NOT_VERIFIED_MESSAGE],
-]);
 
 // The sign-in error only carries a code, so the time to wait is read from the
 // counters; when none can be read the message simply has no time in it.
-async function getLockoutMessage(email: string): Promise<string> {
+async function lockoutFailure(email: string): Promise<Failure> {
   const ip = getClientIp(await headers());
   const reset = getBlockingReset(
     await Promise.all([
@@ -42,8 +37,8 @@ async function getLockoutMessage(email: string): Promise<string> {
     ]),
   );
   return reset === null
-    ? TOO_MANY_ATTEMPTS_MESSAGE
-    : getTooManyAttemptsMessage(reset, Date.now());
+    ? fail("tooManyAttemptsNoTime")
+    : fail("tooManyAttempts", tooManyAttemptsParams(reset, Date.now()));
 }
 
 export async function signInWithCredentials(
@@ -54,7 +49,7 @@ export async function signInWithCredentials(
     email: formData.get("email"),
     password: formData.get("password"),
   });
-  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
+  if (!parsed.success) return firstIssue(parsed.error);
   const redirectTo = callbackPathSchema.parse(formData.get("callbackUrl"));
 
   try {
@@ -62,14 +57,15 @@ export async function signInWithCredentials(
   } catch (error) {
     if (error instanceof CredentialsSignin) {
       if (error.code === TOO_MANY_ATTEMPTS_CODE) {
-        return fail(await getLockoutMessage(parsed.data.email));
+        return lockoutFailure(parsed.data.email);
       }
       return fail(
-        CREDENTIALS_ERROR_MESSAGES.get(error.code) ??
-          "Invalid email or password",
+        error.code === EMAIL_NOT_VERIFIED_CODE
+          ? "emailNotVerified"
+          : "invalidCredentials",
       );
     }
-    if (error instanceof AuthError) return fail("Something went wrong");
+    if (error instanceof AuthError) return fail("serverError");
     throw error;
   }
   return ok();

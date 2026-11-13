@@ -12,20 +12,22 @@ import {
   type ParsedImportFile,
 } from "@/features/import-export/schemas";
 import type { ImportSummary } from "@/features/import-export/types";
+import { errorRef, type ErrorRef } from "@/i18n/error-codes";
+import { fail } from "@/lib/action-result";
 
 export type ImportState =
   | { status: "idle" }
   | { status: "reading" }
   | { status: "running"; done: number; total: number }
-  | { status: "invalid"; error: string }
-  | { status: "done"; summary: ImportSummary; error: string | null };
+  | { status: "invalid"; error: ErrorRef }
+  | { status: "done"; summary: ImportSummary; error: ErrorRef | null };
 
 // The file can vanish or lose its permission after it was chosen.
 async function readImportFile(file: File): Promise<ParsedImportFile> {
   try {
     return parseImportFile(await file.text());
   } catch {
-    return { success: false, error: "The file could not be read" };
+    return fail("fileUnreadable");
   }
 }
 
@@ -54,14 +56,16 @@ export function useImport() {
   async function start(file: File) {
     if (isBusy) return;
     if (file.size > IMPORT_FILE_MAX_BYTES) {
-      const error = `The file is larger than ${IMPORT_FILE_MAX_MB} MB`;
+      const error = errorRef("importFileTooLarge", {
+        max: IMPORT_FILE_MAX_MB,
+      });
       setState({ status: "invalid", error });
       return;
     }
     setState({ status: "reading" });
     const parsed = await readImportFile(file);
     if (!parsed.success) {
-      setState({ status: "invalid", error: parsed.error });
+      setState({ status: "invalid", error: parsed });
       return;
     }
 

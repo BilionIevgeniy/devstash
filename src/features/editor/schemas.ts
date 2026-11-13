@@ -9,10 +9,10 @@ import {
 export const editorPreferencesSchema = z.object({
   fontSize: z
     .number()
-    .refine((size) => FONT_SIZES.includes(size), "Invalid font size"),
+    .refine((size) => FONT_SIZES.includes(size), "invalidFontSize"),
   tabSize: z
     .number()
-    .refine((size) => TAB_SIZES.includes(size), "Invalid tab size"),
+    .refine((size) => TAB_SIZES.includes(size), "invalidTabSize"),
   wordWrap: z.boolean(),
   minimap: z.boolean(),
   theme: z.enum(EDITOR_THEMES),

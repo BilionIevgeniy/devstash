@@ -4,7 +4,6 @@ import { useOptimisticToggle } from "@/features/items/_internal/components/hooks
 import { setItemPin } from "@/features/items/actions/item";
 import { UNDO_TOAST_DURATION } from "@/features/items/domain/list-rows";
 
-const PIN_FAILED_MESSAGE = "Couldn't update the pin.";
 const PINNED_MESSAGE = "Item pinned";
 const UNPINNED_MESSAGE = "Item unpinned";
 
@@ -14,7 +13,7 @@ const UNPINNED_MESSAGE = "Item unpinned";
 // unpin offers Undo.
 export function useItemPins(onSaved: (id: string, isPinned: boolean) => void) {
   const { overrides, toggle } = useOptimisticToggle(setItemPin, {
-    failMessage: PIN_FAILED_MESSAGE,
+    failCode: "pinFailed",
     onSaved,
     notify: (_id, isPinned, options, undo) => {
       toast.success(

@@ -8,14 +8,14 @@ import {
   SUMMARY_TITLE_MAX,
   truncateForModel,
 } from "@/features/ai/domain/input";
-import { AI_FAILURE_MESSAGES } from "@/features/ai/domain/messages";
+import { AI_FAILURE_CODES } from "@/features/ai/domain/messages";
 import { AI_MODEL, SUMMARY_SETTINGS } from "@/features/ai/domain/model";
 import {
   normalizeSummary,
   SUMMARY_INSTRUCTIONS,
 } from "@/features/ai/domain/summary";
 import { summarySchema, type AiItemInput } from "@/features/ai/schemas";
-import { fail, ok, type OperationResult } from "@/lib/action-result";
+import { fail, failFrom, ok, type OperationResult } from "@/lib/action-result";
 import { generateStructured } from "@/lib/openai";
 
 export type SummarizeItemResult = OperationResult<string>;
@@ -27,7 +27,7 @@ export async function summarizeItem(
   { title, content }: AiItemInput,
 ): Promise<SummarizeItemResult> {
   const access = await checkAiAccess(userId);
-  if (!access.success) return { ...access, data: null };
+  if (!access.success) return failFrom(access);
 
   try {
     const output = await generateStructured({
@@ -45,7 +45,7 @@ export async function summarizeItem(
     });
     const summary = normalizeSummary(output.summary);
     if (summary === "") {
-      return fail(AI_FAILURE_MESSAGES.failed);
+      return fail(AI_FAILURE_CODES.failed);
     }
     return ok(summary);
   } catch (error) {

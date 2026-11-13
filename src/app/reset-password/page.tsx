@@ -3,9 +3,9 @@ import Link from "next/link";
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { ResetPasswordForm } from "@/features/auth/components/ResetPasswordForm";
 import { Button } from "@/components/ui/button";
-import { INVALID_RESET_LINK_MESSAGE } from "@/features/auth/domain/password-reset";
 import { isPasswordResetTokenValid } from "@/features/auth/queries";
 import { emailLinkParamsSchema } from "@/features/auth/schemas";
+import { getErrorText } from "@/lib/error-text";
 
 export default async function ResetPasswordPage({
   searchParams,
@@ -16,8 +16,12 @@ export default async function ResetPasswordPage({
     !parsed.success ||
     !(await isPasswordResetTokenValid(parsed.data.email, parsed.data.token))
   ) {
+    const errorText = await getErrorText();
     return (
-      <AuthCard title="Reset link expired" description={INVALID_RESET_LINK_MESSAGE}>
+      <AuthCard
+        title="Reset link expired"
+        description={errorText("invalidResetLink")}
+      >
         <Button asChild size="lg" className="w-full">
           <Link href="/forgot-password">Request a new link</Link>
         </Button>

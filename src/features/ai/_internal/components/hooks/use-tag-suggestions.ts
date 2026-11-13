@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import { useMountedRef } from "@/features/ai/_internal/components/hooks/use-mounted-ref";
 import { generateAutoTags } from "@/features/ai/actions/auto-tags";
-import { AI_UNAVAILABLE_MESSAGE } from "@/features/ai/domain/messages";
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 
 const NO_NEW_TAGS_MESSAGE = "No new tags to suggest";
 
@@ -20,6 +20,7 @@ export function useTagSuggestions(hasTag: (tag: string) => boolean) {
   const [isPending, startTransition] = useTransition();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const mountedRef = useMountedRef();
+  const errorText = useErrorText();
 
   function showAnswer(fresh: string[]) {
     if (fresh.length === 0) toast.info(NO_NEW_TAGS_MESSAGE);
@@ -36,14 +37,14 @@ export function useTagSuggestions(hasTag: (tag: string) => boolean) {
         const result = await generateAutoTags({ title, content });
         if (!mountedRef.current) return;
         if (!result.success) {
-          toast.error(result.error);
+          toast.error(errorText(result));
           return;
         }
         showAnswer(result.data.filter((tag) => !hasTag(tag)));
       } catch (error) {
         // A signed-out caller's redirect arrives here too, and must go on.
         unstable_rethrow(error);
-        if (mountedRef.current) toast.error(AI_UNAVAILABLE_MESSAGE);
+        if (mountedRef.current) toast.error(errorText("aiUnavailable"));
       }
     });
   }

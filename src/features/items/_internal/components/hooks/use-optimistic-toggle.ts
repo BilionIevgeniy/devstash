@@ -1,7 +1,9 @@
 import { startTransition, useOptimistic } from "react";
 import { toast } from "sonner";
 
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import type { ToggleOptions } from "@/features/items/components/hooks/use-item-drawer";
+import type { PlainErrorCode } from "@/i18n/error-codes";
 import type { ActionResult } from "@/lib/action-result";
 import { isNavigationError } from "@/lib/navigation-error";
 
@@ -13,8 +15,8 @@ interface Override {
 }
 
 interface ToggleConfig {
-  /** Shown when the action throws; a refused result shows its own words. */
-  failMessage: string;
+  /** Shown when the action throws; a refused result shows its own code. */
+  failCode: PlainErrorCode;
   /** The provider's own state, updated in a transition of its own. */
   onSaved: (id: string, value: boolean) => void;
   /** The toast of a saved value; `undo` sets it back. */
@@ -33,8 +35,9 @@ interface ToggleConfig {
 // is outside the first one and would land after the override has gone.
 export function useOptimisticToggle(
   action: (id: string, value: boolean) => Promise<ActionResult>,
-  { failMessage, onSaved, notify }: ToggleConfig,
+  { failCode, onSaved, notify }: ToggleConfig,
 ) {
+  const errorText = useErrorText();
   const [overrides, addOverride] = useOptimistic(
     NO_OVERRIDES,
     (current, { id, value }: Override) => new Map(current).set(id, value),
@@ -46,14 +49,14 @@ export function useOptimisticToggle(
       try {
         const result = await action(id, value);
         if (!result.success) {
-          toast.error(result.error);
+          toast.error(errorText(result));
           return;
         }
         startTransition(() => onSaved(id, value));
         notify(id, value, options, () => toggle(id, !value));
       } catch (error) {
         if (isNavigationError(error)) return;
-        toast.error(failMessage);
+        toast.error(errorText(failCode));
       }
     });
   }

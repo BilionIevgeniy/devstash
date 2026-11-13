@@ -5,7 +5,6 @@ import {
   canCreateType,
   canUseType,
   CONTENT_MAX,
-  CONTENT_TOO_LONG_MESSAGE,
   contentError,
   contentTypeFor,
   copyValueOf,
@@ -246,7 +245,7 @@ describe("editableUpdate", () => {
 
   it("refuses to clear the URL of a link", () => {
     expect(editableUpdate("link", { ...base, url: null })).toEqual({
-      error: "URL is required",
+      error: "urlRequired",
     });
   });
 
@@ -300,13 +299,11 @@ describe("contentError", () => {
     expect(contentError(snippet, "x".repeat(CONTENT_MAX))).toBeNull();
   });
 
-  it("refuses content one character over the limit, in the words the server uses", () => {
-    expect(contentError(snippet, "x".repeat(CONTENT_MAX + 1))).toBe(
-      CONTENT_TOO_LONG_MESSAGE,
-    );
-    expect(CONTENT_TOO_LONG_MESSAGE).toBe(
-      `Content can be up to ${CONTENT_MAX} characters`,
-    );
+  it("refuses content one character over the limit, with the code the server uses", () => {
+    expect(contentError(snippet, "x".repeat(CONTENT_MAX + 1))).toEqual({
+      error: "contentTooLong",
+      params: { max: CONTENT_MAX },
+    });
   });
 
   it("does not judge the content of a type that has no content field", () => {

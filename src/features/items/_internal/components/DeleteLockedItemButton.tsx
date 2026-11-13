@@ -8,10 +8,7 @@ import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
 import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { DeleteItemConfirm } from "@/features/items/_internal/components/DeleteItemConfirm";
-import {
-  DELETED_MESSAGE,
-  DELETE_FAILED_MESSAGE,
-} from "@/features/items/_internal/components/DeleteItemDialog";
+import { DELETED_MESSAGE } from "@/features/items/_internal/components/hooks/use-item-removal";
 import { deleteItem } from "@/features/items/actions/item";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +36,7 @@ export function DeleteLockedItemButton({
     event.preventDefault();
     run(() => deleteItem(itemId), {
       onSuccess: () => setIsOpen(false),
-      failMessage: DELETE_FAILED_MESSAGE,
+      failCode: "itemDeleteFailed",
     });
   }
 

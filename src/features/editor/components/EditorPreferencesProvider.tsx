@@ -10,17 +10,18 @@ import {
 } from "react";
 import { toast } from "sonner";
 
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { updateEditorPreferences } from "@/features/editor/_internal/actions/preferences";
 import {
   NEW_SAVE_TRACKER,
   settleSave,
   startSave,
 } from "@/features/editor/_internal/domain/preference-save";
-import {
-  SAVE_FAILED_MESSAGE,
-  type EditorPreferences,
-} from "@/features/editor/_internal/domain/preferences";
+import type { EditorPreferences } from "@/features/editor/_internal/domain/preferences";
+import type { ErrorRef } from "@/i18n/error-codes";
 import { isNavigationError } from "@/lib/navigation-error";
+
+const SAVE_FAILED: ErrorRef = { error: "preferencesSaveFailed" };
 
 const SAVED_MESSAGE = "Editor preferences saved";
 // One toast for all saves, so quick changes replace it instead of stacking.
@@ -63,20 +64,21 @@ export function EditorPreferencesProvider({
 }: EditorPreferencesProviderProps) {
   const [current, setCurrent] = useState<EditorPreferences | null>(null);
   const tracker = useRef(NEW_SAVE_TRACKER);
+  const errorText = useErrorText();
 
   async function update(next: EditorPreferences) {
     tracker.current = startSave(tracker.current);
     const request = tracker.current.latestRequest;
     setCurrent(next);
 
-    let error: string | null;
+    let error: ErrorRef | null;
     try {
       const result = await updateEditorPreferences(next);
-      error = result.success ? null : result.error;
+      error = result.success ? null : result;
     } catch (thrown) {
       // A session that ended: the router is leaving, nothing to roll back.
       if (isNavigationError(thrown)) return;
-      error = SAVE_FAILED_MESSAGE;
+      error = SAVE_FAILED;
     }
 
     const settled = settleSave(tracker.current, {
@@ -90,7 +92,7 @@ export function EditorPreferencesProvider({
       toast.success(SAVED_MESSAGE, { id: TOAST_ID });
     } else if (settled.outcome.show === "failed") {
       setCurrent(settled.outcome.rollbackTo);
-      toast.error(error ?? SAVE_FAILED_MESSAGE, { id: TOAST_ID });
+      toast.error(errorText(error ?? SAVE_FAILED), { id: TOAST_ID });
     }
   }
 

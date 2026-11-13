@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { toast } from "sonner";
 
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Field } from "@/components/common/Field";
 import { Input } from "@/components/ui/input";
 import { AiTagSuggestions } from "@/features/ai/components/AiTagSuggestions";
@@ -11,8 +12,7 @@ import {
   hasTag,
   TAGS_MAX,
 } from "@/features/items/domain/item-fields";
-
-const TAGS_FULL_MESSAGE = `Up to ${TAGS_MAX} tags`;
+import { errorRef } from "@/i18n/error-codes";
 
 interface TagsFieldProps {
   value: string;
@@ -33,10 +33,11 @@ export function TagsField({
   title,
   content,
 }: TagsFieldProps) {
+  const errorText = useErrorText();
   function handleAccept(tag: string): boolean {
     const next = appendTag(value, tag);
     if (next === null) {
-      toast.error(TAGS_FULL_MESSAGE);
+      toast.error(errorText(errorRef("tooManyTags", { max: TAGS_MAX })));
       return false;
     }
     onChange(next);

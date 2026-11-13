@@ -2,11 +2,11 @@ import { useOptimistic, useTransition } from "react";
 import { unstable_rethrow } from "next/navigation";
 import { toast } from "sonner";
 
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { setCollectionFavorite } from "@/features/collections/actions/collection";
 import { UNDO_TOAST_DURATION } from "@/features/items/domain/list-rows";
+import type { ErrorText } from "@/i18n/error-text";
 import { isNavigationError } from "@/lib/navigation-error";
-
-const FAVORITE_FAILED_MESSAGE = "Couldn't update the favorite.";
 const UNFAVORITED_MESSAGE = "Removed from favorites";
 
 export interface CollectionFavorite {
@@ -21,15 +21,15 @@ interface FavoriteOptions {
 }
 
 // Calls the action directly: the row that offered Undo is gone by then.
-async function restoreFavorite(collectionId: string) {
+async function restoreFavorite(collectionId: string, errorText: ErrorText) {
   try {
     const result = await setCollectionFavorite(collectionId, true);
     if (!result.success) {
-      toast.error(result.error);
+      toast.error(errorText(result));
     }
   } catch (error) {
     if (isNavigationError(error)) return;
-    toast.error(FAVORITE_FAILED_MESSAGE);
+    toast.error(errorText("favoriteFailed"));
   }
 }
 
@@ -44,6 +44,7 @@ export function useCollectionFavorite(
 ): CollectionFavorite {
   const [current, setCurrent] = useOptimistic(isFavorite);
   const [isPending, startTransition] = useTransition();
+  const errorText = useErrorText();
 
   function toggle() {
     if (isPending) return;
@@ -53,20 +54,20 @@ export function useCollectionFavorite(
       try {
         const result = await setCollectionFavorite(collectionId, !current);
         if (!result.success) {
-          toast.error(result.error);
+          toast.error(errorText(result));
         } else if (options?.undoable && current) {
           toast(UNFAVORITED_MESSAGE, {
             duration: UNDO_TOAST_DURATION,
             action: {
               label: "Undo",
-              onClick: () => restoreFavorite(collectionId),
+              onClick: () => restoreFavorite(collectionId, errorText),
             },
           });
         }
       } catch (error) {
         // Inside useTransition: the redirect goes on, as in the dialogs.
         unstable_rethrow(error);
-        toast.error(FAVORITE_FAILED_MESSAGE);
+        toast.error(errorText("favoriteFailed"));
       }
     });
   }

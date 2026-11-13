@@ -74,7 +74,7 @@ describe("setUserItemFavorite", () => {
 
     await expect(
       setUserItemFavorite("user-1", "item-1", true),
-    ).resolves.toEqual({ success: false, error: "Item not found", data: null });
+    ).resolves.toEqual({ success: false, data: null, error: "itemNotFound" });
   });
 });
 
@@ -110,8 +110,8 @@ describe("setUserItemPin", () => {
 
     await expect(setUserItemPin("user-1", "item-1", true)).resolves.toEqual({
       success: false,
-      error: "Item not found",
       data: null,
+      error: "itemNotFound",
     });
   });
 });
@@ -175,8 +175,8 @@ describe("setUserItemContent", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "This item has no text content",
       data: null,
+      error: "noTextContent",
     });
     expect(update).not.toHaveBeenCalled();
   });
@@ -188,8 +188,8 @@ describe("setUserItemContent", () => {
       setUserItemContent("user-1", "item-1", "Better"),
     ).resolves.toMatchObject({
       success: false,
-      error: "Item not found",
       data: null,
+      error: "itemNotFound",
     });
     expect(update).not.toHaveBeenCalled();
   });
@@ -201,8 +201,8 @@ describe("setUserItemContent", () => {
       setUserItemContent("user-1", "item-1", "Better"),
     ).resolves.toMatchObject({
       success: false,
-      error: "Item not found",
       data: null,
+      error: "itemNotFound",
     });
   });
 });
@@ -225,8 +225,8 @@ describe("updateUserItem", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "Files and images are a Pro feature",
       data: null,
+      error: "filesProOnly",
     });
     expect(update).not.toHaveBeenCalled();
     expect(signFileUrls).not.toHaveBeenCalled();
@@ -255,8 +255,8 @@ describe("updateUserItem", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "Item not found",
       data: null,
+      error: "itemNotFound",
     });
     expect(update).not.toHaveBeenCalled();
   });
@@ -268,8 +268,8 @@ describe("updateUserItem", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "This item or one of its collections no longer exists",
       data: null,
+      error: "itemOrCollectionNotFound",
     });
   });
 
@@ -303,8 +303,8 @@ describe("updateUserItem", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "URL is required",
       data: null,
+      error: "urlRequired",
     });
     expect(update).not.toHaveBeenCalled();
   });
@@ -405,8 +405,8 @@ describe("updateUserItem", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "Item not found",
       data: null,
+      error: "itemNotFound",
     });
   });
 
@@ -436,8 +436,8 @@ describe("deleteUserItem", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "Item not found",
       data: null,
+      error: "itemNotFound",
     });
     expect(remove).not.toHaveBeenCalled();
   });
@@ -473,8 +473,8 @@ describe("deleteUserItem", () => {
     findFirst.mockResolvedValue({ fileKey: "users/someone-else/abc.pdf" });
     deleteUserObject.mockResolvedValue({
       success: false,
-      error: "not found",
       data: null,
+      error: "not found",
     });
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
 
@@ -482,8 +482,8 @@ describe("deleteUserItem", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "Couldn't delete the file. Please try again.",
       data: null,
+      error: "fileDeleteFailed",
     });
     expect(remove).not.toHaveBeenCalled();
     expect(log).toHaveBeenCalled();
@@ -498,8 +498,8 @@ describe("deleteUserItem", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "Couldn't delete the file. Please try again.",
       data: null,
+      error: "fileDeleteFailed",
     });
     expect(remove).not.toHaveBeenCalled();
   });
@@ -523,8 +523,8 @@ describe("deleteUserItem", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "Item not found",
       data: null,
+      error: "itemNotFound",
     });
   });
 

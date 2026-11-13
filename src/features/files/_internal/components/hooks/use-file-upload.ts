@@ -7,18 +7,18 @@ import {
   type FileKind,
 } from "@/features/files/domain/file-rules";
 import type { UploadedFile } from "@/features/files/types";
+import type { ErrorRef } from "@/i18n/error-codes";
 import { isNavigationError } from "@/lib/navigation-error";
 
 // The router is already leaving the page (a session that ended).
 const NAVIGATING = "navigating";
 
-const UPLOAD_FAILED_MESSAGE =
-  "The upload failed. Check your connection and try again.";
+const UPLOAD_FAILED: ErrorRef = { error: "uploadFailed" };
 
 export type UploadState =
   | { status: "idle" }
   | { status: "uploading"; file: File; progress: number }
-  | { status: "failed"; file: File | null; error: string }
+  | { status: "failed"; file: File | null; error: ErrorRef }
   | { status: "done"; file: File };
 
 // null when the request itself failed (the connection, a server error), so the
@@ -60,7 +60,7 @@ export function useFileUpload(
 
     const check = checkDeclaredFile(kind, file.name, file.size);
     if ("error" in check) {
-      setState({ status: "failed", file: null, error: check.error });
+      setState({ status: "failed", file: null, error: check });
       return;
     }
 
@@ -72,8 +72,7 @@ export function useFileUpload(
     });
     if (attempt !== attemptRef.current || signed === NAVIGATING) return;
     if (!signed?.success) {
-      const error = signed?.error ?? UPLOAD_FAILED_MESSAGE;
-      setState({ status: "failed", file, error });
+      setState({ status: "failed", file, error: signed ?? UPLOAD_FAILED });
       return;
     }
 
@@ -87,7 +86,7 @@ export function useFileUpload(
       onDone: (isOk) => {
         requestRef.current = null;
         if (!isOk) {
-          setState({ status: "failed", file, error: UPLOAD_FAILED_MESSAGE });
+          setState({ status: "failed", file, error: UPLOAD_FAILED });
           return;
         }
         setState({ status: "done", file });

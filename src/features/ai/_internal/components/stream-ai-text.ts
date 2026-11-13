@@ -1,15 +1,15 @@
 import "client-only";
 
-import { AI_UNAVAILABLE_MESSAGE } from "@/features/ai/domain/messages";
-import { routeErrorMessage } from "@/lib/route-error";
+import type { Failure } from "@/lib/action-result";
+import { routeError } from "@/lib/route-error";
 
-// A refusal or failure the route answered before any text, in its own words.
-export class AiStreamRequestError extends Error {}
-
+// A refusal or failure the route answered before any text, with its code.
 // The route answers refusals as JSON; anything else (the platform's own error
-// page, an empty body) is shown as unavailable.
-function errorMessage(response: Response): Promise<string> {
-  return routeErrorMessage(response, AI_UNAVAILABLE_MESSAGE);
+// page, an empty body) is unavailable.
+export class AiStreamRequestError extends Error {
+  constructor(readonly failure: Failure) {
+    super(failure.error);
+  }
 }
 
 // The browser side of a streaming AI route: calls onText with each piece of
@@ -29,7 +29,7 @@ export async function streamAiText(
     signal,
   });
   if (!response.ok || !response.body) {
-    throw new AiStreamRequestError(await errorMessage(response));
+    throw new AiStreamRequestError(await routeError(response, "aiUnavailable"));
   }
 
   const reader = response.body.getReader();

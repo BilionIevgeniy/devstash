@@ -27,8 +27,8 @@ describe("ExportButton", () => {
     expect(toastError).not.toHaveBeenCalled();
   });
 
-  it("says why the export failed", async () => {
-    downloadExport.mockResolvedValue({ error: "You can export once a minute" });
+  it("says why the export failed, in the words of its code", async () => {
+    downloadExport.mockResolvedValue({ error: { error: "exportRateLimited" } });
     render(<ExportButton />);
 
     await userEvent.click(screen.getByRole("button", { name: "Export JSON" }));

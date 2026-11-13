@@ -3,13 +3,11 @@
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Skeleton } from "@/components/ui/skeleton";
 import { parseTypeSlug } from "@/features/item-types/domain/item-type";
 import { ItemDrawerSkeleton } from "@/features/items/_internal/components/ItemDrawerSkeleton";
-import {
-  DELETED_MESSAGE,
-  DELETE_FAILED_MESSAGE,
-} from "@/features/items/_internal/components/DeleteItemDialog";
+import { DELETED_MESSAGE } from "@/features/items/_internal/components/hooks/use-item-removal";
 import { ItemDetailView } from "@/features/items/_internal/components/ItemDetailView";
 import { deleteItem } from "@/features/items/actions/item";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
@@ -34,19 +32,20 @@ export function ItemDetailPage({
   listHref,
 }: ItemDetailPageProps) {
   const router = useRouter();
+  const errorText = useErrorText();
 
   async function handleDelete(id: string): Promise<boolean> {
     try {
       const result = await deleteItem(id, { refresh: false });
       if (!result.success) {
-        toast.error(result.error);
+        toast.error(errorText(result));
         return false;
       }
     } catch (error) {
       // The router is taking the user to sign-in: the dialog stays locked on
       // "Deleting…" until that page replaces this one.
       if (isNavigationError(error)) return true;
-      toast.error(DELETE_FAILED_MESSAGE);
+      toast.error(errorText("itemDeleteFailed"));
       return false;
     }
 

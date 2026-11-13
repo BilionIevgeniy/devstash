@@ -9,11 +9,6 @@ vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
 
 import { checkAiAccess } from "@/features/ai/_internal/services/access";
 import {
-  AI_APP_LIMIT_MESSAGE,
-  AI_DAILY_LIMIT_MESSAGE,
-  AI_PRO_ONLY_MESSAGE,
-} from "@/features/ai/domain/messages";
-import {
   AI_APP_LIMIT_KEY,
   AI_BY_APP_DAY,
   AI_BY_USER_DAY,
@@ -35,7 +30,8 @@ describe("checkAiAccess", () => {
 
     await expect(checkAiAccess("user-1")).resolves.toEqual({
       success: false,
-      error: AI_PRO_ONLY_MESSAGE,
+      data: null,
+      error: "aiProOnly",
       reason: "not-pro",
     });
     expect(consumeRateLimit).not.toHaveBeenCalled();
@@ -62,7 +58,8 @@ describe("checkAiAccess", () => {
 
     await expect(checkAiAccess("user-1")).resolves.toEqual({
       success: false,
-      error: AI_APP_LIMIT_MESSAGE,
+      data: null,
+      error: "aiAppLimit",
       reason: "limited",
     });
   });
@@ -74,7 +71,8 @@ describe("checkAiAccess", () => {
 
     expect(result.success).toBe(false);
     expect(result).toMatchObject({ reason: "limited" });
-    expect(result.error).toMatch(/minute/);
+    expect(result.error).toBe("tooManyAttempts");
+    expect(result).toHaveProperty("params.minutes", 1);
     expect(consumeRateLimit).toHaveBeenCalledTimes(1);
   });
 
@@ -85,7 +83,8 @@ describe("checkAiAccess", () => {
 
     await expect(checkAiAccess("user-1")).resolves.toEqual({
       success: false,
-      error: AI_DAILY_LIMIT_MESSAGE,
+      data: null,
+      error: "aiDailyLimit",
       reason: "limited",
     });
   });

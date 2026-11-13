@@ -6,7 +6,6 @@ import { unstable_rethrow } from "next/navigation";
 import { deleteAccount } from "@/features/account/_internal/actions/delete-account";
 import { useClearReauthParam } from "@/features/account/_internal/components/hooks/use-clear-reauth-param";
 import { reauthenticateWithGitHub } from "@/features/auth/actions/sign-in";
-import { REAUTH_REQUIRED_MESSAGE } from "@/features/auth/domain/reauth";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,16 +17,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { GENERIC_ERROR_MESSAGE } from "@/lib/action-result";
+import type { ErrorCode, ErrorRef } from "@/i18n/error-codes";
 
 interface DeleteAccountDialogProps {
   hasPassword: boolean;
   /** True when the account has no password and its sign-in is not recent. */
   requiresReauth: boolean;
   /** An error from the GitHub sign-in that brought the user back here. */
-  returnError: string | null;
+  returnError: ErrorCode | null;
 }
 
 export function DeleteAccountDialog({
@@ -38,7 +38,10 @@ export function DeleteAccountDialog({
   const [isPending, startTransition] = useTransition();
   const [password, setPassword] = useState("");
   const [reauthNeeded, setReauthNeeded] = useState(requiresReauth);
-  const [error, setError] = useState(returnError);
+  const [error, setError] = useState<ErrorRef | null>(
+    returnError && { error: returnError },
+  );
+  const errorText = useErrorText();
   useClearReauthParam(returnError !== null);
 
   function handleConfirm(event: MouseEvent<HTMLButtonElement>) {
@@ -55,15 +58,15 @@ export function DeleteAccountDialog({
         const result = await deleteAccount({ password });
         if (result.success) return;
         // The dialog text already asks for a fresh GitHub sign-in.
-        if (result.error === REAUTH_REQUIRED_MESSAGE) {
+        if (result.error === "reauthRequired") {
           setReauthNeeded(true);
           return;
         }
-        setError(result.error);
+        setError(result);
       } catch (error) {
         // Both actions end in a redirect on success, which must go on.
         unstable_rethrow(error);
-        setError(GENERIC_ERROR_MESSAGE);
+        setError({ error: "generic" });
       }
     });
   }
@@ -87,17 +90,13 @@ export function DeleteAccountDialog({
             This permanently deletes your account and all of your items,
             collections, tags, files and images. This cannot be undone.
             {reauthNeeded &&
-              ` ${REAUTH_REQUIRED_MESSAGE}, then come back here to finish.`}
+              ` ${errorText("reauthRequired")}, then come back here to finish.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {hasPassword && (
           <ConfirmPasswordField value={password} onChange={setPassword} />
         )}
-        {error && (
-          <p role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        )}
+        {error && <DeleteError error={error} />}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
@@ -114,6 +113,15 @@ export function DeleteAccountDialog({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+  );
+}
+
+function DeleteError({ error }: { error: ErrorRef }) {
+  const errorText = useErrorText();
+  return (
+    <p role="alert" className="text-sm text-destructive">
+      {errorText(error)}
+    </p>
   );
 }
 

@@ -3,6 +3,7 @@
 import { Upload } from "lucide-react";
 import { useRef, type ChangeEvent } from "react";
 
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import {
   useImport,
@@ -21,6 +22,7 @@ function buttonLabel(state: ImportState, isRefreshing: boolean): string {
 
 export function ImportButton() {
   const { state, isBusy, isRefreshing, start } = useImport();
+  const errorText = useErrorText();
   const inputRef = useRef<HTMLInputElement>(null);
 
   function chooseFile(event: ChangeEvent<HTMLInputElement>) {
@@ -53,7 +55,7 @@ export function ImportButton() {
       </Button>
       {state.status === "invalid" && (
         <p role="alert" className="text-sm text-destructive">
-          {state.error}
+          {errorText(state.error)}
         </p>
       )}
       {state.status === "done" && (

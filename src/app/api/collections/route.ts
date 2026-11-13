@@ -1,6 +1,7 @@
 import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { getCollectionOptions } from "@/features/collections/queries";
-import { jsonError, jsonOk, SERVER_ERROR_MESSAGE } from "@/lib/api-response";
+import { fail } from "@/lib/action-result";
+import { jsonError, jsonOk } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 
 // The options of the item forms' Collections input, which read this JSON as
@@ -8,13 +9,13 @@ import { logger } from "@/lib/logger";
 // the forms call this with fetch and expect JSON back.
 export async function GET() {
   const userId = await getSignedInUserId();
-  if (!userId) return jsonError("Unauthorized", 401);
+  if (!userId) return jsonError(fail("unauthorized"), 401);
 
   try {
     const collections = await getCollectionOptions(userId);
     return jsonOk(collections);
   } catch (error) {
     await logger.error("Collection options failed", { error, userId });
-    return jsonError(SERVER_ERROR_MESSAGE, 500);
+    return jsonError(fail("serverError"), 500);
   }
 }

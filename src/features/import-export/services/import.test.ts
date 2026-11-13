@@ -111,8 +111,9 @@ describe("importUserItems", () => {
     createUserItem
       .mockResolvedValueOnce({
         success: false,
-        error: "Limit reached",
         data: null,
+        error: "itemLimitReached",
+        params: { limit: 50 },
       })
       .mockRejectedValueOnce(new Error("db"))
       .mockResolvedValueOnce({
@@ -136,9 +137,12 @@ describe("importUserItems", () => {
         duplicates: 0,
         files: 1,
         failed: [
-          { title: "Untitled item", reason: "Title is required" },
-          { title: "a", reason: "Limit reached" },
-          { title: "b", reason: "Something went wrong with this record" },
+          { title: "Untitled item", reason: { error: "titleRequired" } },
+          {
+            title: "a",
+            reason: { error: "itemLimitReached", params: { limit: 50 } },
+          },
+          { title: "b", reason: { error: "importRecordFailed" } },
         ],
       },
     });
@@ -166,7 +170,7 @@ describe("importUserCollections", () => {
           created: 1,
           duplicates: 2,
           files: 0,
-          failed: [{ title: "No id", reason: expect.any(String) }],
+          failed: [{ title: "No id", reason: { error: expect.any(String) } }],
         },
         idMap: { "old-1": "existing-1", "old-2": "new-1", "old-3": "new-1" },
       },

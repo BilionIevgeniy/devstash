@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { fail } from "@/lib/action-result";
 import { jsonError, jsonOk } from "@/lib/api-response";
 
 // The envelope the browser reads, and a header no shared cache may ignore.
@@ -29,8 +30,8 @@ describe("jsonOk", () => {
 });
 
 describe("jsonError", () => {
-  it("answers the message in the envelope, with the status and headers", async () => {
-    const response = jsonError("Too many searches", 429, {
+  it("answers the failure in the envelope, with the status and headers", async () => {
+    const response = jsonError(fail("tooManySearches"), 429, {
       "Retry-After": "30",
     });
 
@@ -40,7 +41,7 @@ describe("jsonError", () => {
     expect(await response.json()).toEqual({
       success: false,
       data: null,
-      error: "Too many searches",
+      error: "tooManySearches",
     });
   });
 });

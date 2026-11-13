@@ -19,7 +19,6 @@ import { deleteCollection } from "@/features/collections/actions/collection";
 import type { CollectionSummary } from "@/features/collections/types";
 
 const DELETED_MESSAGE = "Collection deleted";
-const DELETE_FAILED_MESSAGE = "Couldn't delete the collection";
 
 interface DeleteCollectionDialogProps extends CollectionDialogState {
   collection: CollectionSummary;
@@ -56,7 +55,7 @@ export function DeleteCollectionDialog({
     event.preventDefault();
     run(
       () => deleteCollection(collection.id, { refresh: leaveTo === undefined }),
-      { onSuccess: finishDelete, failMessage: DELETE_FAILED_MESSAGE },
+      { onSuccess: finishDelete, failCode: "collectionDeleteFailed" },
     );
   }
 

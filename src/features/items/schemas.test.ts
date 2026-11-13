@@ -261,8 +261,8 @@ describe("createItemSchema", () => {
     const file = { key: "users/u1/abc.pdf", name: "Report.PDF" };
 
     it("requires the upload for a file or image", () => {
-      expect(firstError({ typeName: "file" })).toBe("Upload the file first");
-      expect(firstError({ typeName: "image" })).toBe("Upload the image first");
+      expect(firstError({ typeName: "file" })).toBe("uploadFileFirst");
+      expect(firstError({ typeName: "image" })).toBe("uploadImageFirst");
     });
 
     it("accepts a file whose name has the extension of its key", () => {
@@ -270,13 +270,13 @@ describe("createItemSchema", () => {
     });
 
     it("rejects an upload on a type without one", () => {
-      expect(firstError({ file })).toBe("This item type has no file");
+      expect(firstError({ file })).toBe("typeHasNoFile");
     });
 
     it("rejects a name whose extension differs from the key", () => {
       expect(
         firstError({ typeName: "file", file: { ...file, name: "notes.txt" } }),
-      ).toBe("The file name does not match the upload");
+      ).toBe("fileNameMismatch");
     });
 
     it("rejects a name over 255 characters", () => {
@@ -288,8 +288,8 @@ describe("createItemSchema", () => {
   });
 
   it("requires a URL for a link", () => {
-    expect(firstError({ typeName: "link" })).toBe("URL is required");
-    expect(firstError({ typeName: "link", url: "  " })).toBe("URL is required");
+    expect(firstError({ typeName: "link" })).toBe("urlRequired");
+    expect(firstError({ typeName: "link", url: "  " })).toBe("urlRequired");
   });
 
   it("rejects a link URL that is not http(s)", () => {
@@ -309,7 +309,7 @@ describe("createItemSchema", () => {
   });
 
   it("requires a title", () => {
-    expect(firstError({ title: "  " })).toBe("Title is required");
+    expect(firstError({ title: "  " })).toBe("titleRequired");
   });
 
   it("turns blank optional fields into null", () => {

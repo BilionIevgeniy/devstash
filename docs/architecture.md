@@ -30,6 +30,7 @@ src/
   components/ui/  shadcn/ui primitives only
   components/common/  hand-written UI with no feature knowledge, used by several features (CopyButton, PaginationNav)
   lib/            feature-neutral infrastructure and vendor clients (prisma, email, rate-limit, hash, logger, sentry, ...)
+  i18n/           config and messages only, the lowest layer: messages/<locale>/*.json, the error codes and their words (ADR 0023)
   proxy.ts        guards /dashboard, /profile, /settings, /items, /collections, /favorites, /pinned and /upgrade; must stay at the src root
   instrumentation*.ts  start Sentry on the server and in the browser; Next.js reads them from the src root
 prisma/           schema, migrations, seed
@@ -110,7 +111,7 @@ features/auth/
     services/                github-grant: revokes the app's authorization on GitHub
     emails/                  the emails: pure builders of subject, html and text
     token.ts, password.ts    generate and hash tokens; hash passwords with one bcrypt cost
-    errors.ts, messages.ts   sign-in error classes and messages
+    errors.ts                sign-in error classes
 ```
 
 The other features are smaller versions of the same thing: `items` has `components/`, `queries.ts` and `types.ts`; `collections` adds a `domain/` file. A feature starts small and grows the folders it needs.
@@ -204,7 +205,7 @@ Create only the files a feature actually needs. `nextauth/` is not a role of the
 | `components/` | UI, including hooks in `components/hooks/use-*.ts` and browser-only helpers (`fetch-item-detail`, `put-file`, starting with `import "client-only"`), with the same import rules ([ADR 0007](adr/0007-client-hooks-in-the-components-role.md)). Data comes through props, or from queries called by a server component; changes go through actions | own `actions/`, `types.ts`, `schemas.ts`, `domain/`, `queries.ts` (server components only), lower features, `components/ui` | Prisma, services (lint); in a hook, any `.tsx` (lint) |
 | `_internal/emails/` | Pure builders that return `{ subject, html, text }`; the service sends them through `lib/email.ts` | — | I/O |
 
-Expected failures (wrong password, expired link) are returned as a result; unexpected ones throw and are caught by the entry point.
+Expected failures (wrong password, expired link) are returned as a result; unexpected ones throw and are caught by the entry point. A failure carries an error code and its params, never a sentence: `fail("invalidResetLink")`, `fail("tooManyAttempts", { minutes })`. The code is a key of `src/i18n/messages/en/errors.json`; the component that shows it turns it into words with `useErrorText()`, a server component with `getErrorText()` ([ADR 0022](adr/0022-error-codes-in-the-result-contract.md)). An action passes a service's failure on as it is, so its params survive.
 
 ### Which file does a new function go in
 
@@ -309,7 +310,7 @@ Each feature keeps its business rules in `features/[feature]/domain/` as pure Ty
 
 `eslint.config.mjs` builds its zones from one rank table (`FEATURE_RANKS`) and checks:
 
-- the layer order and the `_internal/` boundary (`import/no-restricted-paths`)
+- the layer order and the `_internal/` boundary (`import/no-restricted-paths`); `src/i18n/` imports no other layer
 - the direction of the roles inside a feature: queries and schemas do not import services, actions or components; services do not import actions or components; actions do not import components; components do not import services; hooks in `components/hooks/` do not import any `.tsx`
 - the domain core: no package import (colocated `*.test.ts` files are excepted), only `domain/`, `types.ts` and `lib/utils`
 - no Prisma in actions, components (including `components/common`) and `app/`; no `next/headers`, `next/cache` or `next/navigation` in services; vendor SDKs only in `lib`

@@ -12,14 +12,14 @@ vi.mock("next/navigation", () => ({ unstable_rethrow: rethrow }));
 
 import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
 
-const FAIL_MESSAGE = "Couldn't save";
+const FAIL_CODE = "collectionSaveFailed";
 
 function setup() {
   const onSuccess = vi.fn();
   const view = renderHook(() => useSubmitDialog());
   const start = (action: () => Promise<OperationResult<unknown>>) =>
     act(async () =>
-      view.result.current.run(action, { onSuccess, failMessage: FAIL_MESSAGE }),
+      view.result.current.run(action, { onSuccess, failCode: FAIL_CODE }),
     );
   return { onSuccess, start, ...view };
 }
@@ -44,16 +44,18 @@ describe("useSubmitDialog", () => {
     expect(toast.error).not.toHaveBeenCalled();
   });
 
-  it("shows the server's words for a refused result, and is not done", async () => {
+  it("shows the words of the server's code for a refused result, and is not done", async () => {
     const { result, start, onSuccess } = setup();
 
     await start(async () => ({
       success: false,
       data: null,
-      error: "Collection not found",
+      error: "collectionNotFound",
     }));
 
-    expect(toast.error).toHaveBeenCalledExactlyOnceWith("Collection not found");
+    expect(toast.error).toHaveBeenCalledExactlyOnceWith(
+      "This collection no longer exists.",
+    );
     expect(onSuccess).not.toHaveBeenCalled();
     expect(result.current.takeDone()).toBe(false);
     expect(result.current.isPending).toBe(false);
@@ -68,7 +70,9 @@ describe("useSubmitDialog", () => {
     });
 
     expect(rethrow).toHaveBeenCalledExactlyOnceWith(failure);
-    expect(toast.error).toHaveBeenCalledExactlyOnceWith(FAIL_MESSAGE);
+    expect(toast.error).toHaveBeenCalledExactlyOnceWith(
+      "Couldn't update the collection",
+    );
     expect(onSuccess).not.toHaveBeenCalled();
     expect(result.current.takeDone()).toBe(false);
   });

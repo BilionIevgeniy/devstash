@@ -63,7 +63,7 @@ describe("CreateCollectionDialog", () => {
     // React holds later transitions behind one that never ends: settle it,
     // with a failure, so no close and no toast run into the next test.
     await act(async () =>
-      answer.resolve({ success: false, data: null, error: "stop" }),
+      answer.resolve({ success: false, data: null, error: "generic" }),
     );
   });
 
@@ -71,7 +71,8 @@ describe("CreateCollectionDialog", () => {
     createCollection.mockResolvedValue({
       success: false,
       data: null,
-      error: "Upgrade to create more collections",
+      error: "collectionLimitReached",
+      params: { limit: 3 },
     });
     const user = userEvent.setup();
     render(<CreateCollectionDialog />);
@@ -79,7 +80,7 @@ describe("CreateCollectionDialog", () => {
     await openAndSubmit(user);
 
     expect(toast.error).toHaveBeenCalledExactlyOnceWith(
-      "Upgrade to create more collections",
+      "You have reached the Free plan's limit of 3 collections. Upgrade to Pro for unlimited collections.",
     );
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByLabelText("Name")).toHaveValue("React");

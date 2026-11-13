@@ -17,6 +17,7 @@ import {
   CONTENT_MAX,
   editableFields,
 } from "@/features/items/domain/item-fields";
+import { createErrorText } from "@/i18n/error-text";
 
 const VALUES: ItemFormValues = {
   title: "Debounce",
@@ -42,6 +43,7 @@ function submission(
     upload: null,
     contentRef: { current: { focus } },
     run,
+    errorText: createErrorText(),
     onCreated,
     ...overrides,
   };
@@ -124,7 +126,7 @@ describe("submitNewItem", () => {
 
     expect(run).toHaveBeenCalledExactlyOnceWith(expect.any(Function), {
       onSuccess: onCreated,
-      failMessage: "Couldn't create the item",
+      failCode: "itemCreateFailed",
     });
   });
 });

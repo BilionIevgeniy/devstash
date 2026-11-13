@@ -7,11 +7,10 @@ import {
   buildPasswordResetUrl,
   getPasswordResetExpiry,
   getPasswordResetIdentifier,
-  INVALID_RESET_LINK_MESSAGE,
   PASSWORD_RESET_TOKEN_TTL_HOURS,
 } from "@/features/auth/domain/password-reset";
 import {
-  getTooManyAttemptsMessage,
+  tooManyAttemptsParams,
   RESET_EMAIL_BY_ADDRESS,
 } from "@/features/auth/domain/rate-limits";
 import { isTokenExpired } from "@/features/auth/domain/verification-token";
@@ -20,12 +19,7 @@ import {
   isPasswordResetTokenValid,
 } from "@/features/auth/queries";
 import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
-import {
-  fail,
-  GENERIC_ERROR_MESSAGE,
-  ok,
-  type OperationResult,
-} from "@/lib/action-result";
+import { fail, ok, type OperationResult } from "@/lib/action-result";
 import { sendEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
@@ -53,7 +47,7 @@ export async function sendPasswordResetLink(
     token = await createPasswordResetToken(email);
   } catch (error) {
     await logger.error("Failed to create password reset token", { error });
-    return fail("Failed to create password reset token");
+    return fail("generic");
   }
 
   return sendEmail({
@@ -75,7 +69,10 @@ export async function requestPasswordResetLink(
 ): Promise<OperationResult> {
   const check = await checkEmailSend(RESET_EMAIL_BY_ADDRESS, email, ip);
   if (check.status === "ip-limited") {
-    return fail(getTooManyAttemptsMessage(check.reset, Date.now()));
+    return fail(
+      "tooManyAttempts",
+      tooManyAttemptsParams(check.reset, Date.now()),
+    );
   }
   if (check.status === "address-limited") return ok();
 
@@ -98,7 +95,7 @@ export async function resetPasswordWithToken(
     // Cheap gate so requests with a bad token never pay for a bcrypt hash;
     // the transaction below stays the authoritative check.
     if (!(await isPasswordResetTokenValid(email, token))) {
-      return fail(INVALID_RESET_LINK_MESSAGE);
+      return fail("invalidResetLink");
     }
 
     const password = await hashPassword(newPassword);
@@ -111,7 +108,7 @@ export async function resetPasswordWithToken(
         record.identifier !== identifier ||
         isTokenExpired(record.expires, new Date())
       ) {
-        return fail(INVALID_RESET_LINK_MESSAGE);
+        return fail("invalidResetLink");
       }
 
       // Only the request that actually deletes the token may set the password,
@@ -120,7 +117,7 @@ export async function resetPasswordWithToken(
         where: { token: hashedToken },
       });
       if (count !== 1) {
-        return fail(INVALID_RESET_LINK_MESSAGE);
+        return fail("invalidResetLink");
       }
 
       await tx.user.update({
@@ -131,6 +128,6 @@ export async function resetPasswordWithToken(
     });
   } catch (error) {
     await logger.error("Failed to reset password", { error });
-    return fail(GENERIC_ERROR_MESSAGE);
+    return fail("generic");
   }
 }

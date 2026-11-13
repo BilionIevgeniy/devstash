@@ -10,11 +10,6 @@ import { purgeUserObjects } from "@/features/files/services/objects";
 import { fail, ok, type OperationResult } from "@/lib/action-result";
 import { logger } from "@/lib/logger";
 
-const CANCEL_FAILED =
-  "Your subscription could not be cancelled, so nothing was removed. Please try again.";
-const PURGE_FAILED =
-  "Your files could not be deleted, so your account was not removed. Any active subscription has been cancelled. Please try again.";
-
 // Verify, stop the billing, purge the files, then delete the rows (ADR 0004).
 // The billing goes first, so nobody pays for a deleted account. The files go
 // before the rows and a failed purge aborts, so no file outlives the rows that
@@ -36,7 +31,7 @@ export async function deleteAccount(
       error,
       userId,
     });
-    return fail(CANCEL_FAILED);
+    return fail("subscriptionCancelFailed");
   }
 
   try {
@@ -46,7 +41,7 @@ export async function deleteAccount(
       error,
       userId,
     });
-    return fail(PURGE_FAILED);
+    return fail("filesPurgeFailed");
   }
 
   await deleteVerifiedUserRows(verification.data);

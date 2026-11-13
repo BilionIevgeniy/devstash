@@ -58,14 +58,12 @@ describe("useItemFavorites", () => {
       pending.resolve({
         success: false,
         data: null,
-        error: "Favorites need a Pro plan.",
+        error: "itemNotFound",
       }),
     );
 
     expect(result.current.favoriteOverrides.has("item-1")).toBe(false);
-    expect(toast.error).toHaveBeenCalledExactlyOnceWith(
-      "Favorites need a Pro plan.",
-    );
+    expect(toast.error).toHaveBeenCalledExactlyOnceWith("Item not found");
     expect(onSaved).not.toHaveBeenCalled();
   });
 

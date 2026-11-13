@@ -7,7 +7,7 @@ import betterTailwindcss from "eslint-plugin-better-tailwindcss";
 const APP = "./src/app";
 
 // Layer order, lowest to highest (see context/architecture-rules.md):
-// lib and components/ui < features by rank < app.
+// i18n < lib and components/ui < features by rank < app.
 // A feature may import only features of a lower rank; features of the same rank
 // must not import each other. Only folders that exist are listed: a planned
 // feature keeps its planned rank in architecture-rules.md and gets a row here in
@@ -57,6 +57,13 @@ const roleFolders = (name, ...roles) =>
   ]);
 
 const layerZones = [
+  {
+    // Config and messages only: every layer reads it, it reads none of them
+    // (ADR 0023).
+    target: "./src/i18n",
+    from: ["./src/lib", "./src/components", ...features(...FEATURE_NAMES), APP],
+    message: "src/i18n holds config and messages only and imports no other layer.",
+  },
   {
     target: ["./src/lib", "./src/components"],
     from: [...features(...FEATURE_NAMES), APP],
@@ -198,11 +205,12 @@ const SHARED_SYNTAX_BANS = [
     selector:
       "MemberExpression[computed=true][property.value=0][object.type='MemberExpression'][object.property.name='issues']",
     message:
-      "Read the message of a refused input with firstIssueMessage from @/lib/validation.",
+      "Read the failure of a refused input with firstIssue from @/lib/validation.",
   },
   {
     selector: "Literal[value='Something went wrong. Please try again.']",
-    message: "Use GENERIC_ERROR_MESSAGE from @/lib/action-result.",
+    message:
+      'Error text lives in src/i18n/messages: return fail("generic") and show it through useErrorText or getErrorText (ADR 0022).',
   },
 ];
 const restrictSyntax = (selectors = [], message = "") => [
@@ -319,7 +327,6 @@ const eslintConfig = defineConfig([
     files: ["src/**/*.{ts,tsx}"],
     ignores: [
       "src/**/*.test.{ts,tsx}",
-      "src/lib/action-result.ts",
       "src/lib/validation.ts",
     ],
     rules: {

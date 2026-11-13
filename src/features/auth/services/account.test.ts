@@ -41,7 +41,6 @@ vi.mock("@/features/auth/_internal/services/github-grant", () => ({
 
 import { DUMMY_PASSWORD_HASH } from "@/features/auth/_internal/password";
 import { getPasswordResetIdentifier } from "@/features/auth/domain/password-reset";
-import { REAUTH_REQUIRED_MESSAGE } from "@/features/auth/domain/reauth";
 import {
   changeUserPassword,
   deleteVerifiedUserRows,
@@ -216,8 +215,8 @@ describe("verifyAccountDeletion", () => {
 
     expect(result).toEqual({
       success: false,
-      error: REAUTH_REQUIRED_MESSAGE,
       data: null,
+      error: "reauthRequired",
     });
   });
 

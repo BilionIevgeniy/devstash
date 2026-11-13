@@ -44,8 +44,8 @@ import {
 
 const GONE = {
   success: false,
-  error: "This collection no longer exists.",
   data: null,
+  error: "collectionNotFound",
 };
 
 describe("createUserCollection", () => {
@@ -86,9 +86,9 @@ describe("createUserCollection", () => {
 
     await expect(createUserCollection("user-1", input)).resolves.toEqual({
       success: false,
-      error:
-        "You have reached the Free plan's limit of 3 collections. Upgrade to Pro for unlimited collections.",
       data: null,
+      error: "collectionLimitReached",
+      params: { limit: 3 },
     });
     expect(create).not.toHaveBeenCalled();
   });

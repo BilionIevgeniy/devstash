@@ -22,21 +22,19 @@ import {
 import { toSearchTags } from "@/features/items/domain/search-text";
 import type { CreateItemInput } from "@/features/items/schemas";
 import type { Prisma } from "@/generated/prisma/client";
-import { fail, ok, type OperationResult } from "@/lib/action-result";
+import {
+  fail,
+  ok,
+  type Failure,
+  type OperationResult,
+} from "@/lib/action-result";
 import { LOCKED_TRANSACTION, lockForTransaction } from "@/lib/advisory-lock";
 import { prisma } from "@/lib/prisma";
-
-const INVALID_ITEM_TYPE = "Invalid item type";
-const PRO_ONLY = "Files and images are a Pro feature";
-const FILE_MISSING = "Upload the file first";
-const FILE_ALREADY_SAVED = "This file is already saved on another item";
-const COLLECTION_NOT_FOUND = "One of the collections no longer exists";
-const ITEM_LIMIT_REACHED = `You have reached the Free plan's limit of ${FREE_ITEM_LIMIT} items. Upgrade to Pro for unlimited items.`;
 
 export type CreateItemResult = OperationResult<{ id: string }>;
 
 type FileColumns =
-  | { error: string }
+  | Failure
   | { columns: { fileKey: string; fileName: string; fileSize: number } };
 
 // A file or image item needs Pro and an upload that really is in R2 under the
@@ -48,11 +46,13 @@ async function confirmFileColumns(
   kind: FileKind,
   file: CreateItemInput["file"],
 ): Promise<FileColumns> {
-  if (!isPro) return { error: PRO_ONLY };
-  if (!file) return { error: FILE_MISSING };
+  if (!isPro) return fail("filesProOnly");
+  if (!file) {
+    return fail(kind === "image" ? "uploadImageFirst" : "uploadFileFirst");
+  }
 
   const confirmed = await confirmUpload(userId, file.key, kind);
-  if (!confirmed.success) return { error: confirmed.error };
+  if (!confirmed.success) return confirmed;
   return {
     columns: {
       fileKey: file.key,
@@ -116,14 +116,14 @@ export async function createUserItem(
   input: CreateItemInput,
 ): Promise<CreateItemResult> {
   const type = await getItemTypeByName(input.typeName);
-  if (!type) return fail(INVALID_ITEM_TYPE);
+  if (!type) return fail("invalidItemType");
 
   const { isPro } = await getEntitlements(userId);
   const { file: fileKind } = editableFields(input.typeName);
   let fileColumns = {};
   if (fileKind) {
     const file = await confirmFileColumns(userId, isPro, fileKind, input.file);
-    if ("error" in file) return fail(file.error);
+    if ("error" in file) return file;
     fileColumns = file.columns;
   }
 
@@ -131,17 +131,17 @@ export async function createUserItem(
     const data = itemData(userId, type.id, input, fileColumns);
     const item = await insertItem(userId, isPro, data);
     if (!item) {
-      return fail(ITEM_LIMIT_REACHED);
+      return fail("itemLimitReached", { limit: FREE_ITEM_LIMIT });
     }
     return ok(item);
   } catch (error) {
     if (isRecordNotFound(error)) {
-      return fail(COLLECTION_NOT_FOUND);
+      return fail("collectionGone");
     }
     // fileKey is the only unique column a file item can collide on: the same
     // upload sent twice, after a lost response.
     if (fileKind && hasPrismaCode(error, UNIQUE_VIOLATION_CODE)) {
-      return fail(FILE_ALREADY_SAVED);
+      return fail("fileAlreadySaved");
     }
     throw error;
   }

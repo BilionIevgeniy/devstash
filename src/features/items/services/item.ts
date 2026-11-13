@@ -21,13 +21,6 @@ import { fail, ok, type OperationResult } from "@/lib/action-result";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 
-const ITEM_NOT_FOUND = "Item not found";
-const PRO_ONLY = "Files and images are a Pro feature";
-const NO_CONTENT = "This item has no text content";
-const FILE_DELETE_FAILED = "Couldn't delete the file. Please try again.";
-const ITEM_OR_COLLECTION_NOT_FOUND =
-  "This item or one of its collections no longer exists";
-
 export type UpdateItemResult = OperationResult<ItemDetail>;
 
 // Removes the caller's tags no item uses any more, after an update or delete
@@ -56,10 +49,10 @@ export async function updateUserItem(
   input: UpdateItemInput,
 ): Promise<UpdateItemResult> {
   const current = await getItemEditState(userId, itemId);
-  if (!current) return fail(ITEM_NOT_FOUND);
+  if (!current) return fail("itemNotFound");
   // The answer carries signed URLs, so a locked item cannot be saved either.
   if (!(await userCanUseType(userId, current.typeName))) {
-    return fail(PRO_ONLY);
+    return fail("filesProOnly");
   }
 
   const update = editableUpdate(current.typeName, input);
@@ -88,14 +81,14 @@ export async function updateUserItem(
     });
   } catch (error) {
     if (isRecordNotFound(error)) {
-      return fail(ITEM_OR_COLLECTION_NOT_FOUND);
+      return fail("itemOrCollectionNotFound");
     }
     throw error;
   }
   await deleteOrphanTags(userId);
 
   const item = await getUserItemDetail(userId, itemId);
-  if (!item) return fail(ITEM_NOT_FOUND);
+  if (!item) return fail("itemNotFound");
   return ok(item);
 }
 
@@ -108,9 +101,9 @@ export async function setUserItemContent(
   content: string,
 ): Promise<UpdateItemResult> {
   const current = await getItemEditState(userId, itemId);
-  if (!current) return fail(ITEM_NOT_FOUND);
+  if (!current) return fail("itemNotFound");
   if (!editableFields(current.typeName).content) {
-    return fail(NO_CONTENT);
+    return fail("noTextContent");
   }
 
   try {
@@ -121,13 +114,13 @@ export async function setUserItemContent(
     });
   } catch (error) {
     if (isRecordNotFound(error)) {
-      return fail(ITEM_NOT_FOUND);
+      return fail("itemNotFound");
     }
     throw error;
   }
 
   const item = await getUserItemDetail(userId, itemId);
-  if (!item) return fail(ITEM_NOT_FOUND);
+  if (!item) return fail("itemNotFound");
   return ok(item);
 }
 
@@ -147,7 +140,7 @@ export async function setUserItemFavorite(
     WHERE "id" = ${itemId} AND "userId" = ${userId}
   `;
 
-  if (count === 0) return fail(ITEM_NOT_FOUND);
+  if (count === 0) return fail("itemNotFound");
   return ok();
 }
 
@@ -163,7 +156,7 @@ export async function setUserItemPin(
     WHERE "id" = ${itemId} AND "userId" = ${userId}
   `;
 
-  if (count === 0) return fail(ITEM_NOT_FOUND);
+  if (count === 0) return fail("itemNotFound");
   return ok();
 }
 
@@ -182,7 +175,7 @@ async function deleteItemFile(
         itemId,
         userId,
       });
-      return fail(FILE_DELETE_FAILED);
+      return fail("fileDeleteFailed");
     }
     return result;
   } catch (error) {
@@ -191,7 +184,7 @@ async function deleteItemFile(
       itemId,
       userId,
     });
-    return fail(FILE_DELETE_FAILED);
+    return fail("fileDeleteFailed");
   }
 }
 
@@ -202,7 +195,7 @@ export async function deleteUserItem(
   itemId: string,
 ): Promise<OperationResult> {
   const item = await getItemFileKey(userId, itemId);
-  if (!item) return fail(ITEM_NOT_FOUND);
+  if (!item) return fail("itemNotFound");
 
   if (item.fileKey) {
     const file = await deleteItemFile(userId, itemId, item.fileKey);
@@ -217,7 +210,7 @@ export async function deleteUserItem(
     });
   } catch (error) {
     if (isRecordNotFound(error)) {
-      return fail(ITEM_NOT_FOUND);
+      return fail("itemNotFound");
     }
     throw error;
   }

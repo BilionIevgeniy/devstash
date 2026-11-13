@@ -4,11 +4,11 @@ import { useState, type ReactNode } from "react";
 import { Check, Copy, Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 
 const COPIED_RESET_MS = 2000;
 const COPIED_MESSAGE = "Copied to clipboard";
-const COPY_FAILED_MESSAGE = "Couldn't copy to the clipboard";
 
 type CopySource =
   /** The text the button puts on the clipboard. */
@@ -56,6 +56,7 @@ export function CopyButton({
 }: CopyButtonProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
+  const errorText = useErrorText();
 
   async function handleCopy() {
     setIsCopying(true);
@@ -66,7 +67,7 @@ export function CopyButton({
       toast.success(COPIED_MESSAGE);
       setTimeout(() => setIsCopied(false), COPIED_RESET_MS);
     } catch {
-      toast.error(COPY_FAILED_MESSAGE);
+      toast.error(errorText("copyFailed"));
     } finally {
       setIsCopying(false);
     }

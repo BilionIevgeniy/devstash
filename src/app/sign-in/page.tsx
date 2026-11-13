@@ -6,22 +6,20 @@ import { AuthCard } from "@/features/auth/components/AuthCard";
 import { GitHubAuthSection } from "@/features/auth/components/GitHubAuthSection";
 import { SignInForm } from "@/features/auth/components/SignInForm";
 import { safeCallbackPath } from "@/features/auth/domain/callback-url";
-import { GENERIC_ERROR_MESSAGE } from "@/lib/action-result";
+import type { ErrorCode } from "@/i18n/error-codes";
 
-const AUTH_ERROR_MESSAGES = new Map([
-  ["CredentialsSignin", "Invalid email or password"],
-  [
-    "OAuthAccountNotLinked",
-    "This email is already registered with a different sign-in method",
-  ],
+// The `error` of Auth.js in the URL, as one of our codes.
+const AUTH_ERROR_CODES = new Map<string, ErrorCode>([
+  ["CredentialsSignin", "invalidCredentials"],
+  ["OAuthAccountNotLinked", "oauthAccountNotLinked"],
 ]);
 
-function getErrorMessage(
+function getErrorCode(
   error: string | string[] | undefined,
-): string | undefined {
+): ErrorCode | undefined {
   if (!error) return undefined;
   const code = Array.isArray(error) ? error[0] : error;
-  return AUTH_ERROR_MESSAGES.get(code) ?? GENERIC_ERROR_MESSAGE;
+  return AUTH_ERROR_CODES.get(code) ?? "generic";
 }
 
 // A signed-in user goes to the callback path, by default the dashboard. Checked
@@ -41,7 +39,7 @@ export default async function SignInPage({
     <AuthCard title="Sign in" description="Welcome back to DevStash">
       <SignInForm
         callbackUrl={callbackPath}
-        initialError={getErrorMessage(error)}
+        initialError={getErrorCode(error)}
       />
 
       <GitHubAuthSection

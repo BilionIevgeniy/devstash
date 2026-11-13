@@ -2,7 +2,8 @@ import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { getRetryAfterSeconds } from "@/features/auth/domain/rate-limits";
 import { parseSearchParams } from "@/features/search/schemas";
 import { searchPalette } from "@/features/search/services/search";
-import { jsonError, jsonOk, SERVER_ERROR_MESSAGE } from "@/lib/api-response";
+import { fail } from "@/lib/action-result";
+import { jsonError, jsonOk } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import { RateLimitUnavailableError } from "@/lib/rate-limit";
 
@@ -16,27 +17,27 @@ const CLIENT_CLOSED_REQUEST = 499;
 // palette abandoned stops reading.
 export async function GET(request: Request) {
   const userId = await getSignedInUserId();
-  if (!userId) return jsonError("Unauthorized", 401);
+  if (!userId) return jsonError(fail("unauthorized"), 401);
 
   const params = parseSearchParams(new URL(request.url).searchParams);
-  if (!params.success) return jsonError("Invalid search", 400);
+  if (!params.success) return jsonError(fail("invalidSearch"), 400);
 
   try {
     const result = await searchPalette(userId, params.data, request.signal);
     if (result.status === "rate-limited") {
       const retryAfter = getRetryAfterSeconds(result.reset, Date.now());
-      return jsonError("Too many searches", 429, {
+      return jsonError(fail("tooManySearches"), 429, {
         "Retry-After": String(retryAfter),
       });
     }
     return jsonOk(result.results);
   } catch (error) {
     if (request.signal.aborted)
-      return jsonError("Cancelled", CLIENT_CLOSED_REQUEST);
+      return jsonError(fail("cancelled"), CLIENT_CLOSED_REQUEST);
     if (error instanceof RateLimitUnavailableError) {
-      return jsonError("Search is unavailable right now", 503);
+      return jsonError(fail("searchUnavailable"), 503);
     }
     await logger.error("Search failed", { error, userId });
-    return jsonError(SERVER_ERROR_MESSAGE, 500);
+    return jsonError(fail("serverError"), 500);
   }
 }

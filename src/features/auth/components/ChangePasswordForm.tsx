@@ -17,16 +17,13 @@ import {
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
 import type { FormActionState } from "@/features/auth/types";
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { GENERIC_ERROR_MESSAGE } from "@/lib/action-result";
 
 const SUCCESS_MESSAGE = "Password updated. Please sign in again.";
 // The password is changed and every session is revoked, so a retry would only
 // be refused: the user is told to start over from the sign-in page.
-const SIGN_OUT_FAILED_MESSAGE =
-  "Password updated. Reload the page to sign in again.";
-
 const FIELDS = [
   {
     name: "currentPassword",
@@ -62,17 +59,17 @@ const INITIAL_STATE: State = {
 async function submit(_previous: State, formData: FormData): Promise<State> {
   const values = formValues(formData, FIELD_NAMES);
   if (values.newPassword !== values.confirmPassword) {
-    return { error: "Passwords do not match", values };
+    return { error: { error: "passwordsDoNotMatch" }, values };
   }
 
   try {
     const result = await changePassword(values);
     if (!result.success) {
-      return { error: result.error, values };
+      return { error: result, values };
     }
   } catch (error) {
     unstable_rethrow(error);
-    return { error: GENERIC_ERROR_MESSAGE, values };
+    return { error: { error: "generic" }, values };
   }
 
   // The change revoked every session, this one included; signing out clears
@@ -83,7 +80,10 @@ async function submit(_previous: State, formData: FormData): Promise<State> {
   } catch (error) {
     // The sign-out's redirect arrives here too, and must go on.
     unstable_rethrow(error);
-    return { error: SIGN_OUT_FAILED_MESSAGE, values: INITIAL_STATE.values };
+    return {
+      error: { error: "passwordUpdatedReload" },
+      values: INITIAL_STATE.values,
+    };
   }
   return INITIAL_STATE;
 }
@@ -92,6 +92,7 @@ export function ChangePasswordForm() {
   const [state, formAction, isPending] = useActionState(submit, INITIAL_STATE);
   // Gone while a new attempt runs, so a repeated error is announced again.
   const error = isPending ? null : state.error;
+  const errorText = useErrorText();
 
   return (
     <div className="rounded-lg border bg-card p-6">
@@ -119,7 +120,7 @@ export function ChangePasswordForm() {
         ))}
         {error && (
           <p role="alert" className="text-sm text-destructive">
-            {error}
+            {errorText(error)}
           </p>
         )}
         <Button type="submit" disabled={isPending}>
