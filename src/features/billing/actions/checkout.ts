@@ -14,19 +14,19 @@ import {
   createCheckoutSession,
   createPortalSession,
 } from "@/features/billing/services/checkout";
-import type { ActionResult } from "@/lib/action-result";
+import {
+  fail,
+  GENERIC_ERROR_MESSAGE,
+  ok,
+  type ActionResult,
+} from "@/lib/action-result";
 import { getAppOrigin } from "@/lib/app-url";
 import { logger } from "@/lib/logger";
-
-const GENERIC_ERROR = "Something went wrong. Please try again.";
-
-function failure(error: string): ActionResult {
-  return { success: false, data: null, error };
-}
+import { firstIssueMessage } from "@/lib/validation";
 
 export async function startCheckout(plan: unknown): Promise<ActionResult> {
   const parsed = planSchema.safeParse(plan);
-  if (!parsed.success) return failure(parsed.error.issues[0].message);
+  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const user = await getSessionUser();
@@ -38,16 +38,14 @@ export async function startCheckout(plan: unknown): Promise<ActionResult> {
       parsed.data,
       getAppOrigin(),
     );
-    if (!result.success || !result.data) {
-      return failure(result.error ?? GENERIC_ERROR);
-    }
+    if (!result.success) return fail(result.error);
     url = result.data.url;
   } catch (error) {
     await logger.error("Starting the checkout failed", {
       error,
       userId: user.id,
     });
-    return failure(GENERIC_ERROR);
+    return fail(GENERIC_ERROR_MESSAGE);
   }
 
   // Outside the try: redirect() throws.
@@ -61,16 +59,14 @@ export async function openBillingPortal(): Promise<ActionResult> {
   let url: string;
   try {
     const result = await createPortalSession(user.id, getAppOrigin());
-    if (!result.success || !result.data) {
-      return failure(result.error ?? GENERIC_ERROR);
-    }
+    if (!result.success) return fail(result.error);
     url = result.data.url;
   } catch (error) {
     await logger.error("Opening the billing portal failed", {
       error,
       userId: user.id,
     });
-    return failure(GENERIC_ERROR);
+    return fail(GENERIC_ERROR_MESSAGE);
   }
 
   // Outside the try: redirect() throws.
@@ -81,20 +77,20 @@ export async function confirmCheckout(
   sessionId: unknown,
 ): Promise<ActionResult<{ isPro: boolean } | null>> {
   const parsed = checkoutSessionIdSchema.safeParse(sessionId);
-  if (!parsed.success) return failure(parsed.error.issues[0].message);
+  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
 
   try {
     const result = await confirmCheckoutSession(userId, parsed.data);
-    if (!result.success) return failure(result.error ?? GENERIC_ERROR);
+    if (!result.success) return fail(result.error);
     // After the sync: this read is cached for the request.
     const { isPro } = await getBillingOverview(userId);
     refresh();
-    return { success: true, error: null, data: { isPro } };
+    return ok({ isPro });
   } catch (error) {
     await logger.error("Confirming the checkout failed", { error, userId });
-    return failure(GENERIC_ERROR);
+    return fail(GENERIC_ERROR_MESSAGE);
   }
 }

@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { EditorPreferencesInput } from "@/features/editor/schemas";
-import type { OperationResult } from "@/lib/action-result";
+import { ok, type OperationResult } from "@/lib/action-result";
 import { prisma } from "@/lib/prisma";
 
 export async function saveEditorPreferences(
@@ -13,5 +13,5 @@ export async function saveEditorPreferences(
     create: { userId, ...input },
     update: input,
   });
-  return { success: true, error: null };
+  return ok();
 }

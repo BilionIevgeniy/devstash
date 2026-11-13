@@ -23,6 +23,7 @@ beforeEach(async () => {
 const NOT_FOUND = {
   success: false,
   error: "This collection no longer exists.",
+  data: null,
 };
 
 describe.each([

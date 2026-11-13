@@ -56,6 +56,7 @@ describe("deleteAccount", () => {
       success: false,
       error:
         "Your subscription could not be cancelled, so nothing was removed. Please try again.",
+      data: null,
     });
     expect(purgeUserObjects).not.toHaveBeenCalled();
     expect(deleteVerifiedUserRows).not.toHaveBeenCalled();
@@ -64,7 +65,7 @@ describe("deleteAccount", () => {
   it("purges the files before it deletes the rows", async () => {
     const result = await deleteAccount("user-1", { password: "pw" });
 
-    expect(result).toEqual({ success: true, error: null });
+    expect(result).toEqual({ success: true, error: null, data: null });
     expect(purgeUserObjects).toHaveBeenCalledWith("user-1");
     expect(purgeUserObjects.mock.invocationCallOrder[0]).toBeLessThan(
       deleteVerifiedUserRows.mock.invocationCallOrder[0],
@@ -96,6 +97,7 @@ describe("deleteAccount", () => {
     expect(result).toMatchObject({
       success: false,
       error: "Password is incorrect",
+      data: null,
     });
     expect(deleteBillingCustomer).not.toHaveBeenCalled();
     expect(purgeUserObjects).not.toHaveBeenCalled();

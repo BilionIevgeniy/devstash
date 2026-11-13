@@ -15,12 +15,10 @@ import {
   SUMMARY_INSTRUCTIONS,
 } from "@/features/ai/domain/summary";
 import { summarySchema, type AiItemInput } from "@/features/ai/schemas";
-import type { OperationResult } from "@/lib/action-result";
+import { fail, ok, type OperationResult } from "@/lib/action-result";
 import { generateStructured } from "@/lib/openai";
 
-export interface SummarizeItemResult extends OperationResult {
-  data: string | null;
-}
+export type SummarizeItemResult = OperationResult<string>;
 
 // A description of one or two sentences for the title and the content. The
 // caller passes the text; this feature never reads items. Nothing is written.
@@ -47,9 +45,9 @@ export async function summarizeItem(
     });
     const summary = normalizeSummary(output.summary);
     if (summary === "") {
-      return { success: false, error: AI_FAILURE_MESSAGES.failed, data: null };
+      return fail(AI_FAILURE_MESSAGES.failed);
     }
-    return { success: true, error: null, data: summary };
+    return ok(summary);
   } catch (error) {
     return failedCall(error, "Summarizing an item");
   }

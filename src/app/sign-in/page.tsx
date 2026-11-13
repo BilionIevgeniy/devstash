@@ -6,6 +6,7 @@ import { AuthCard } from "@/features/auth/components/AuthCard";
 import { GitHubAuthSection } from "@/features/auth/components/GitHubAuthSection";
 import { SignInForm } from "@/features/auth/components/SignInForm";
 import { safeCallbackPath } from "@/features/auth/domain/callback-url";
+import { GENERIC_ERROR_MESSAGE } from "@/lib/action-result";
 
 const AUTH_ERROR_MESSAGES = new Map([
   ["CredentialsSignin", "Invalid email or password"],
@@ -14,14 +15,13 @@ const AUTH_ERROR_MESSAGES = new Map([
     "This email is already registered with a different sign-in method",
   ],
 ]);
-const DEFAULT_ERROR_MESSAGE = "Something went wrong. Please try again.";
 
 function getErrorMessage(
   error: string | string[] | undefined,
 ): string | undefined {
   if (!error) return undefined;
   const code = Array.isArray(error) ? error[0] : error;
-  return AUTH_ERROR_MESSAGES.get(code) ?? DEFAULT_ERROR_MESSAGE;
+  return AUTH_ERROR_MESSAGES.get(code) ?? GENERIC_ERROR_MESSAGE;
 }
 
 // A signed-in user goes to the callback path, by default the dashboard. Checked

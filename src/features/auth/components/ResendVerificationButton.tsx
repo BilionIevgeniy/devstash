@@ -5,10 +5,10 @@ import { toast } from "sonner";
 
 import { resendVerificationEmail } from "@/features/auth/_internal/actions/email-verification";
 import { Button } from "@/components/ui/button";
+import { GENERIC_ERROR_MESSAGE } from "@/lib/action-result";
 
 const SENT_MESSAGE =
   "If this account needs verification, we sent a new link to your email.";
-const GENERIC_ERROR = "Something went wrong. Please try again.";
 
 interface ResendVerificationButtonProps {
   email: string;
@@ -26,11 +26,11 @@ export function ResendVerificationButton({
         if (result.success) {
           toast.success(SENT_MESSAGE);
         } else {
-          toast.error(result.error ?? GENERIC_ERROR);
+          toast.error(result.error);
         }
       } catch {
         // A rejection left in the transition would show the error page.
-        toast.error(GENERIC_ERROR);
+        toast.error(GENERIC_ERROR_MESSAGE);
       }
     });
   }

@@ -14,12 +14,10 @@ import {
   normalizeTags,
 } from "@/features/ai/domain/tags";
 import { tagSuggestionsSchema, type AiItemInput } from "@/features/ai/schemas";
-import type { OperationResult } from "@/lib/action-result";
+import { ok, type OperationResult } from "@/lib/action-result";
 import { generateStructured } from "@/lib/openai";
 
-export interface SuggestTagsResult extends OperationResult {
-  data: string[] | null;
-}
+export type SuggestTagsResult = OperationResult<string[]>;
 
 // Up to five tags for the title and the start of the content. The caller
 // passes the text; this feature never reads items. Nothing is written.
@@ -44,7 +42,7 @@ export async function suggestTags(
       schemaName: "tag_suggestions",
       userId,
     });
-    return { success: true, error: null, data: normalizeTags(output.tags) };
+    return ok(normalizeTags(output.tags));
   } catch (error) {
     return failedCall(error, "Suggesting tags");
   }

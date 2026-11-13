@@ -10,7 +10,6 @@ import {
   emptyFormValues,
   formValues,
 } from "@/features/auth/_internal/domain/form-values";
-import { GENERIC_ERROR_MESSAGE } from "@/features/auth/_internal/messages";
 import {
   INVALID_RESET_LINK_MESSAGE,
   MAX_PASSWORD_LENGTH,
@@ -19,6 +18,7 @@ import {
 import type { FormActionState } from "@/features/auth/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { GENERIC_ERROR_MESSAGE } from "@/lib/action-result";
 
 const SUCCESS_MESSAGE = "Password updated. You can now sign in.";
 const SIGN_IN_URL = "/sign-in";
@@ -54,7 +54,7 @@ async function submit(
   try {
     const result = await resetPassword({ ...values, email, token });
     if (!result.success) {
-      return { error: result.error ?? GENERIC_ERROR_MESSAGE, values };
+      return { error: result.error, values };
     }
     toast.success(SUCCESS_MESSAGE);
     // replace: Back must not lead to the link that was just used.

@@ -103,7 +103,7 @@ Check every UI change against these before writing it; the plan names which ones
 ## Error Handling
 
 - Use try/catch in Server Actions
-- Return the `ActionResult<T>` pattern `{ success, data, error }` from actions
+- Return `ActionResult<T>` (`{ success, data, error }`) from actions, built with `ok`/`fail` from `@/lib/action-result` (ADR 0021); the message of a refused input is `firstIssueMessage(parsed.error)` (`@/lib/validation`)
 - Display user-friendly error messages via toast
 
 ## Logging

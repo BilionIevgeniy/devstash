@@ -7,7 +7,7 @@ import {
 } from "@/features/auth/services/account";
 import { deleteBillingCustomer } from "@/features/billing/services/customer";
 import { purgeUserObjects } from "@/features/files/services/objects";
-import type { OperationResult } from "@/lib/action-result";
+import { fail, ok, type OperationResult } from "@/lib/action-result";
 import { logger } from "@/lib/logger";
 
 const CANCEL_FAILED =
@@ -27,7 +27,7 @@ export async function deleteAccount(
 ): Promise<OperationResult> {
   const verification = await verifyAccountDeletion(userId, proof);
   if (!verification.success) return verification;
-  if (!verification.data) return { success: true, error: null };
+  if (!verification.data) return ok();
 
   try {
     await deleteBillingCustomer(userId);
@@ -36,7 +36,7 @@ export async function deleteAccount(
       error,
       userId,
     });
-    return { success: false, error: CANCEL_FAILED };
+    return fail(CANCEL_FAILED);
   }
 
   try {
@@ -46,7 +46,7 @@ export async function deleteAccount(
       error,
       userId,
     });
-    return { success: false, error: PURGE_FAILED };
+    return fail(PURGE_FAILED);
   }
 
   await deleteVerifiedUserRows(verification.data);
@@ -59,5 +59,5 @@ export async function deleteAccount(
       userId,
     });
   }
-  return { success: true, error: null };
+  return ok();
 }

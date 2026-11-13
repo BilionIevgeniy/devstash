@@ -144,7 +144,7 @@ ItemForm / ItemActions / DeleteItemDialog          client components
 
 Rules that follow from the standard:
 
-- Services take `userId` as a parameter and return `OperationResult`; create returns `ActionResult<{ id: string }>`, which extends it. Expected failures (not found, class mismatch, limit) are results; anything else throws and is caught in the action, which logs it and returns a generic message, as `auth/_internal/actions/account.ts` does.
+- Services take `userId` as a parameter and return `OperationResult<T>`, built with `ok`/`fail` ([ADR 0021](adr/0021-result-contract-and-shared-building-blocks.md)); create returns `OperationResult<{ id: string }>`, and `ActionResult<T>` is the same union under the name the actions use. Expected failures (not found, class mismatch, limit) are results; anything else throws and is caught in the action, which logs it and returns a generic message, as `auth/_internal/actions/account.ts` does.
 - Actions and components never import Prisma. Services never import `next/cache`, which is why `revalidatePath` is in the action.
 - The action file stays thin. If it passes about 300 lines, split by topic, not by type.
 

@@ -121,7 +121,7 @@ function EditCollectionForm({
           // refreshed page, not before it.
           startSaving(onSaved);
         } else {
-          toast.error(result.error ?? SAVE_FAILED_MESSAGE);
+          toast.error(result.error);
         }
       } catch (error) {
         // A signed-out caller's redirect arrives here too, and must go on.

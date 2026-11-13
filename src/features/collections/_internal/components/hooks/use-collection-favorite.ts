@@ -25,7 +25,7 @@ async function restoreFavorite(collectionId: string) {
   try {
     const result = await setCollectionFavorite(collectionId, true);
     if (!result.success) {
-      toast.error(result.error ?? FAVORITE_FAILED_MESSAGE);
+      toast.error(result.error);
     }
   } catch (error) {
     if (isNavigationError(error)) return;
@@ -53,7 +53,7 @@ export function useCollectionFavorite(
       try {
         const result = await setCollectionFavorite(collectionId, !current);
         if (!result.success) {
-          toast.error(result.error ?? FAVORITE_FAILED_MESSAGE);
+          toast.error(result.error);
         } else if (options?.undoable && current) {
           toast(UNFAVORITED_MESSAGE, {
             duration: UNDO_TOAST_DURATION,

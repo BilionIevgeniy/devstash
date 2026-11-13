@@ -69,33 +69,18 @@ describe("useItemFavorites", () => {
     expect(onSaved).not.toHaveBeenCalled();
   });
 
-  it.each([
-    [
-      "a failed result with no message",
-      () =>
-        setItemFavorite.mockResolvedValue({
-          success: false,
-          data: null,
-          error: null,
-        }),
-    ],
-    [
-      "a rejected action",
-      () => setItemFavorite.mockRejectedValue(new Error("offline")),
-    ],
-  ])(
-    "takes the star back with a plain message after %s",
-    async (_name, arrange) => {
-      arrange();
-      const { result, onSaved } = setup();
+  // A failed result always carries its message (ActionResult, ADR 0021), so
+  // the plain message is only for an action that threw.
+  it("takes the star back with a plain message after a rejected action", async () => {
+    setItemFavorite.mockRejectedValue(new Error("offline"));
+    const { result, onSaved } = setup();
 
-      await act(async () => result.current.toggleFavorite("item-1", true));
+    await act(async () => result.current.toggleFavorite("item-1", true));
 
-      expect(result.current.favoriteOverrides.has("item-1")).toBe(false);
-      expect(toast.error).toHaveBeenCalledExactlyOnceWith(GENERIC_ERROR);
-      expect(onSaved).not.toHaveBeenCalled();
-    },
-  );
+    expect(result.current.favoriteOverrides.has("item-1")).toBe(false);
+    expect(toast.error).toHaveBeenCalledExactlyOnceWith(GENERIC_ERROR);
+    expect(onSaved).not.toHaveBeenCalled();
+  });
 
   // A session that ended: the action rejects with Next's redirect error while
   // the router goes to sign-in on its own. No error toast on the way out.

@@ -5,11 +5,12 @@ import { changePasswordSchema } from "@/features/auth/schemas";
 import { changeUserPassword } from "@/features/auth/services/account";
 import type { AuthActionState } from "@/features/auth/types";
 import { logger } from "@/lib/logger";
+import { fail, GENERIC_ERROR_MESSAGE, ok } from "@/lib/action-result";
+import { firstIssueMessage } from "@/lib/validation";
 
 const SIGN_IN_URL = "/sign-in";
-const GENERIC_ERROR = "Something went wrong. Please try again.";
 const SIGNED_OUT_ERROR = "You need to be signed in";
-const SUCCESS: AuthActionState = { success: true, data: null, error: null };
+const SUCCESS: AuthActionState = ok();
 
 interface ChangePasswordInput {
   currentPassword: string;
@@ -17,19 +18,15 @@ interface ChangePasswordInput {
   confirmPassword: string;
 }
 
-function failure(error: string): AuthActionState {
-  return { success: false, data: null, error };
-}
-
 export async function changePassword(
   input: ChangePasswordInput,
 ): Promise<AuthActionState> {
   const parsed = changePasswordSchema.safeParse(input);
-  if (!parsed.success) return failure(parsed.error.issues[0].message);
+  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
 
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return failure(SIGNED_OUT_ERROR);
+  if (!userId) return fail(SIGNED_OUT_ERROR);
 
   try {
     const result = await changeUserPassword(
@@ -37,10 +34,10 @@ export async function changePassword(
       parsed.data.currentPassword,
       parsed.data.newPassword,
     );
-    return result.success ? SUCCESS : failure(result.error ?? GENERIC_ERROR);
+    return result.success ? SUCCESS : fail(result.error);
   } catch (error) {
     await logger.error("Changing the password failed", { error, userId });
-    return failure(GENERIC_ERROR);
+    return fail(GENERIC_ERROR_MESSAGE);
   }
 }
 

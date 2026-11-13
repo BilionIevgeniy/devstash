@@ -54,6 +54,7 @@ describe("confirmCheckoutSession", () => {
     expect(result).toEqual({
       success: false,
       error: "This payment could not be confirmed.",
+      data: null,
     });
     expect(subscriptions.retrieve).not.toHaveBeenCalled();
     expect(await snapshotTenant(t.a.userId)).toEqual(before.a);

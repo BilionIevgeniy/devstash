@@ -47,7 +47,7 @@ export function DeleteLockedItemButton({
           // that brings the page without this item.
           startDeleting(() => setIsOpen(false));
         } else {
-          toast.error(result.error ?? DELETE_FAILED_MESSAGE);
+          toast.error(result.error);
         }
       } catch (error) {
         // A signed-out caller's redirect arrives here too, and must go on.

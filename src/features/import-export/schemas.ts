@@ -19,6 +19,7 @@ import {
   createItemSchema,
   type CreateItemInput,
 } from "@/features/items/schemas";
+import { firstIssueMessage } from "@/lib/validation";
 
 const UNSUPPORTED_VERSION =
   "This file is from a version of DevStash this app cannot read";
@@ -63,7 +64,7 @@ export function parseImportFile(text: string): ParsedImportFile {
   const parsed = importFileSchema.safeParse(json);
   return parsed.success
     ? { success: true, data: parsed.data }
-    : { success: false, error: parsed.error.issues[0].message };
+    : { success: false, error: firstIssueMessage(parsed.error) };
 }
 
 // What one Server Action takes: a batch of records, each still unchecked.
@@ -87,7 +88,7 @@ export function parseImportedCollection(
   const parsed = importedCollectionSchema.safeParse(record);
   return parsed.success
     ? { kind: "ok", data: parsed.data }
-    : { kind: "invalid", error: parsed.error.issues[0].message };
+    : { kind: "invalid", error: firstIssueMessage(parsed.error) };
 }
 
 // An item record through the same schema as the create dialog. A file or image
@@ -107,5 +108,5 @@ export function parseImportedItem(
   const parsed = createItemSchema.safeParse(toCreateItemCandidate(record));
   return parsed.success
     ? { kind: "ok", data: parsed.data }
-    : { kind: "invalid", error: parsed.error.issues[0].message };
+    : { kind: "invalid", error: firstIssueMessage(parsed.error) };
 }

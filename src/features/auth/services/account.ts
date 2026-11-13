@@ -22,7 +22,12 @@ import {
   REAUTH_REQUIRED_MESSAGE,
   requiresReauthentication,
 } from "@/features/auth/domain/reauth";
-import type { OperationResult } from "@/lib/action-result";
+import {
+  fail,
+  ok,
+  type Failure,
+  type OperationResult,
+} from "@/lib/action-result";
 import { prisma } from "@/lib/prisma";
 import { consumeRateLimit, resetRateLimit } from "@/lib/rate-limit";
 
@@ -47,23 +52,19 @@ export interface VerifiedDeletion {
   readonly [verified]: true;
 }
 
-export interface VerifyAccountDeletionResult extends OperationResult {
-  /** null with success: the user is already gone, so there is nothing to do. */
-  data: VerifiedDeletion | null;
-}
+/** data is null with success: the user is already gone, nothing to do. */
+export type VerifyAccountDeletionResult =
+  OperationResult<VerifiedDeletion | null>;
 
 // Changing and deleting share one counter per user, so guessing the password
 // through either one uses up the same attempts.
 async function getPasswordCheckRefusal(
   userId: string,
-): Promise<OperationResult | null> {
+): Promise<Failure | null> {
   const limit = await consumeRateLimit(PASSWORD_CHECK_BY_USER, userId);
   if (limit.success) return null;
 
-  return {
-    success: false,
-    error: getTooManyAttemptsMessage(limit.reset, Date.now()),
-  };
+  return fail(getTooManyAttemptsMessage(limit.reset, Date.now()));
 }
 
 export async function changeUserPassword(
@@ -75,10 +76,10 @@ export async function changeUserPassword(
   if (refusal) return refusal;
 
   const hash = await getPasswordHash(userId);
-  if (!hash) return { success: false, error: NO_PASSWORD_MESSAGE };
+  if (!hash) return fail(NO_PASSWORD_MESSAGE);
 
   if (!(await bcrypt.compare(currentPassword, hash))) {
-    return { success: false, error: INCORRECT_PASSWORD_MESSAGE };
+    return fail(INCORRECT_PASSWORD_MESSAGE);
   }
 
   const password = await hashPassword(newPassword);
@@ -87,7 +88,7 @@ export async function changeUserPassword(
     data: { password, sessionVersion: { increment: 1 } },
   });
   await resetRateLimit(PASSWORD_CHECK_BY_USER, userId);
-  return { success: true, error: null };
+  return ok();
 }
 
 // For callers that hold no user id yet, such as the emailed confirmation link.
@@ -119,29 +120,21 @@ export async function verifyAccountDeletion(
   if (refusal) return { ...refusal, data: null };
 
   const user = await getDeletionCredentials(userId);
-  if (!user) return { success: true, error: null, data: null };
+  if (!user) return ok();
 
   if (user.password) {
     if (
       !proof.password ||
       !(await bcrypt.compare(proof.password, user.password))
     ) {
-      return {
-        success: false,
-        error: INCORRECT_DELETE_PASSWORD_MESSAGE,
-        data: null,
-      };
+      return fail(INCORRECT_DELETE_PASSWORD_MESSAGE);
     }
   } else if (!isRecentlyAuthenticated(proof.authenticatedAt, Date.now())) {
-    return { success: false, error: REAUTH_REQUIRED_MESSAGE, data: null };
+    return fail(REAUTH_REQUIRED_MESSAGE);
   }
 
   await resetRateLimit(PASSWORD_CHECK_BY_USER, userId);
-  return {
-    success: true,
-    error: null,
-    data: { userId, email: user.email } as VerifiedDeletion,
-  };
+  return ok({ userId, email: user.email } as VerifiedDeletion);
 }
 
 // Called only by account's delete flow, after it has purged the user's files.

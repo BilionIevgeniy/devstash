@@ -13,16 +13,14 @@ import {
   type FileKind,
 } from "@/features/files/domain/file-rules";
 import type { FileUrls } from "@/features/files/types";
-import type { OperationResult } from "@/lib/action-result";
+import { fail, ok, type OperationResult } from "@/lib/action-result";
 import { deleteObject, deletePrefix, headObject, signGetUrl } from "@/lib/r2";
 
 const UPLOAD_NOT_FOUND =
   "The upload was not found. Please upload the file again";
 const WRONG_FILE_TYPE = "The uploaded file does not match its type";
 
-export interface ConfirmUploadResult extends OperationResult {
-  data: { size: number } | null;
-}
+export type ConfirmUploadResult = OperationResult<{ size: number }>;
 
 // Run after the browser's PUT and before the item row is saved. The signature
 // binds the type and the length, and the real object is read here as a second
@@ -35,22 +33,22 @@ export async function confirmUpload(
 ): Promise<ConfirmUploadResult> {
   const expectedType = contentTypeFor(kind, key);
   if (!isUserKey(userId, key) || !expectedType) {
-    return { success: false, error: UPLOAD_NOT_FOUND, data: null };
+    return fail(UPLOAD_NOT_FOUND);
   }
 
   const object = await headObject(key);
-  if (!object) return { success: false, error: UPLOAD_NOT_FOUND, data: null };
+  if (!object) return fail(UPLOAD_NOT_FOUND);
 
   if (object.size > maxFileSize(kind)) {
     await deleteObject(key);
-    return { success: false, error: tooLargeMessage(kind), data: null };
+    return fail(tooLargeMessage(kind));
   }
   if (object.contentType !== expectedType) {
     await deleteObject(key);
-    return { success: false, error: WRONG_FILE_TYPE, data: null };
+    return fail(WRONG_FILE_TYPE);
   }
 
-  return { success: true, error: null, data: { size: object.size } };
+  return ok({ size: object.size });
 }
 
 // A key outside the user's prefix is refused, never deleted. R2 errors are
@@ -60,10 +58,10 @@ export async function deleteUserObject(
   key: string,
 ): Promise<OperationResult> {
   if (!isUserKey(userId, key)) {
-    return { success: false, error: UPLOAD_NOT_FOUND };
+    return fail(UPLOAD_NOT_FOUND);
   }
   await deleteObject(key);
-  return { success: true, error: null };
+  return ok();
 }
 
 // Throws when an object survives, so the account delete aborts before the rows.

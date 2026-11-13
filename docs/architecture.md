@@ -196,7 +196,7 @@ Create only the files a feature actually needs. `nextauth/` is not a role of the
 | Role | Responsibility | May import | Never |
 | ---- | -------------- | ---------- | ----- |
 | `domain/` | Pure functions and constants. Plain values in, plain values out; `now` is passed in | other `domain/` files, `types.ts`, `lib/utils` | any package (react, zod, node:*, SDKs), Prisma, I/O, clock, env (lint) |
-| `schemas.ts` | Zod shapes of every input: form, action, route, searchParams, AI output. It composes the constants of `domain/` (lengths, limits) instead of repeating them | `domain/`, `zod` | queries, services, actions, components (lint); server-only code |
+| `schemas.ts` | Zod shapes of every input: form, action, route, searchParams, AI output. It composes the constants of `domain/` (lengths, limits) instead of repeating them | `domain/`, `zod`, `lib/validation` | queries, services, actions, components (lint); server-only code |
 | `types.ts` | View types, DTOs and result types, JSON-safe | `lib/action-result` | Prisma types |
 | `queries.ts` | A read of the feature's own models for a page, a GET route or a service. `userId` first, a DTO out, no writes; a mapper from a Prisma row sits next to its `select` | `domain/`, `types.ts`, `lib/prisma` | services, actions, components (lint) |
 | `services/` | The operation itself: every write, a vendor, Redis, email, NextAuth or `fetch` call, another feature's data, a limit or permission check, a flow of several steps. `verbNoun(userId, input)`; `ip`, `origin` and `userId` come in as parameters | queries, domain, types, schemas, `lib`, features of a lower rank, sibling services (no cycles) | actions, components (lint); `next/headers`, `next/cache`, `next/navigation` (lint) |

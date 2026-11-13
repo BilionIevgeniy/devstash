@@ -48,7 +48,7 @@ export function useItemPins(onSaved: (id: string, isPinned: boolean) => void) {
               : undefined,
           );
         } else {
-          toast.error(result.error ?? PIN_FAILED_MESSAGE);
+          toast.error(result.error);
         }
       } catch (error) {
         if (isNavigationError(error)) return;

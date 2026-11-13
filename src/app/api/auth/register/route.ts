@@ -9,6 +9,7 @@ import { getAppOrigin } from "@/lib/app-url";
 import { getClientIp } from "@/lib/client-ip";
 import { logger } from "@/lib/logger";
 import { consumeIpRateLimit } from "@/lib/rate-limit";
+import { firstIssueMessage } from "@/lib/validation";
 
 // New and already registered addresses get this same response, so the route
 // cannot be used to find out who has an account.
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
 
   const parsed = registerSchema.safeParse(body);
   if (!parsed.success) {
-    return failure(parsed.error.issues[0].message, 400);
+    return failure(firstIssueMessage(parsed.error), 400);
   }
   const { name, email, password } = parsed.data;
 

@@ -17,7 +17,7 @@ import {
 } from "@/features/import-export/domain/limits";
 import type { ImportFile } from "@/features/import-export/schemas";
 import type { ImportSummary } from "@/features/import-export/types";
-import type { ActionResult } from "@/lib/action-result";
+import { fail, type ActionResult } from "@/lib/action-result";
 import { isNavigationError } from "@/lib/navigation-error";
 
 const LIMITS = {
@@ -56,7 +56,7 @@ async function send<T>(
     return await action(batch);
   } catch (error) {
     if (isNavigationError(error)) return null;
-    return { success: false, data: null, error: CONNECTION_LOST };
+    return fail(CONNECTION_LOST);
   }
 }
 

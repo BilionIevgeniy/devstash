@@ -26,7 +26,7 @@ describe("deleteAccount", () => {
       password: PASSWORD_OF_A,
     });
 
-    expect(result).toEqual({ success: true, error: null });
+    expect(result).toEqual({ success: true, error: null, data: null });
     await expect(
       prisma.item.count({ where: { userId: t.a.userId } }),
     ).resolves.toBe(0);
@@ -47,6 +47,7 @@ describe("deleteAccount", () => {
     expect(result).toMatchObject({
       success: false,
       error: "Password is incorrect",
+      data: null,
     });
     expect(await snapshotTenant(t.a.userId)).toEqual(before);
   });

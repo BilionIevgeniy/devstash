@@ -39,7 +39,7 @@ export function ItemDetailPage({
     try {
       const result = await deleteItem(id, { refresh: false });
       if (!result.success) {
-        toast.error(result.error ?? DELETE_FAILED_MESSAGE);
+        toast.error(result.error);
         return false;
       }
     } catch (error) {

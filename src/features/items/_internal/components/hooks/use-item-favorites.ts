@@ -50,7 +50,7 @@ export function useItemFavorites(
             });
           }
         } else {
-          toast.error(result.error ?? FAVORITE_FAILED_MESSAGE);
+          toast.error(result.error);
         }
       } catch (error) {
         if (isNavigationError(error)) return;

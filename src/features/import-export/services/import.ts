@@ -19,6 +19,7 @@ import type {
 } from "@/features/import-export/types";
 import { getItemIdentities } from "@/features/items/queries/import";
 import { createUserItem } from "@/features/items/services/create-item";
+import type { OperationResult } from "@/lib/action-result";
 import { logger } from "@/lib/logger";
 import { consumeRateLimit } from "@/lib/rate-limit";
 
@@ -44,16 +45,12 @@ async function refuseImport(userId: string): Promise<Refusal | null> {
 // an unexpected error is logged and fails this record only, the batch goes on.
 async function createRecord(
   userId: string,
-  create: () => Promise<{
-    success: boolean;
-    error: string | null;
-    data: { id: string } | null;
-  }>,
+  create: () => Promise<OperationResult<{ id: string }>>,
 ): Promise<{ id: string } | { error: string }> {
   try {
     const result = await create();
-    if (result.success && result.data) return { id: result.data.id };
-    return { error: result.error ?? GENERIC_FAILURE };
+    if (result.success) return { id: result.data.id };
+    return { error: result.error };
   } catch (error) {
     await logger.error("Importing a record failed", { error, userId });
     return { error: GENERIC_FAILURE };

@@ -19,8 +19,8 @@ async function savePrompt(
 ): Promise<ItemDetailJson | null> {
   try {
     const result = await replaceItemContent(itemId, prompt);
-    if (result.success && result.data) return result.data;
-    toast.error(result.error ?? SAVE_FAILED_MESSAGE);
+    if (result.success) return result.data;
+    toast.error(result.error);
   } catch (error) {
     unstable_rethrow(error);
     toast.error(SAVE_FAILED_MESSAGE);

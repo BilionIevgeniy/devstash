@@ -22,7 +22,7 @@ import {
 import { toSearchTags } from "@/features/items/domain/search-text";
 import type { CreateItemInput } from "@/features/items/schemas";
 import type { Prisma } from "@/generated/prisma/client";
-import type { OperationResult } from "@/lib/action-result";
+import { fail, ok, type OperationResult } from "@/lib/action-result";
 import { LOCKED_TRANSACTION, lockForTransaction } from "@/lib/advisory-lock";
 import { prisma } from "@/lib/prisma";
 
@@ -33,9 +33,7 @@ const FILE_ALREADY_SAVED = "This file is already saved on another item";
 const COLLECTION_NOT_FOUND = "One of the collections no longer exists";
 const ITEM_LIMIT_REACHED = `You have reached the Free plan's limit of ${FREE_ITEM_LIMIT} items. Upgrade to Pro for unlimited items.`;
 
-export interface CreateItemResult extends OperationResult {
-  data: { id: string } | null;
-}
+export type CreateItemResult = OperationResult<{ id: string }>;
 
 type FileColumns =
   | { error: string }
@@ -54,9 +52,7 @@ async function confirmFileColumns(
   if (!file) return { error: FILE_MISSING };
 
   const confirmed = await confirmUpload(userId, file.key, kind);
-  if (!confirmed.success || !confirmed.data) {
-    return { error: confirmed.error ?? FILE_MISSING };
-  }
+  if (!confirmed.success) return { error: confirmed.error };
   return {
     columns: {
       fileKey: file.key,
@@ -120,15 +116,14 @@ export async function createUserItem(
   input: CreateItemInput,
 ): Promise<CreateItemResult> {
   const type = await getItemTypeByName(input.typeName);
-  if (!type) return { success: false, error: INVALID_ITEM_TYPE, data: null };
+  if (!type) return fail(INVALID_ITEM_TYPE);
 
   const { isPro } = await getEntitlements(userId);
   const { file: fileKind } = editableFields(input.typeName);
   let fileColumns = {};
   if (fileKind) {
     const file = await confirmFileColumns(userId, isPro, fileKind, input.file);
-    if ("error" in file)
-      return { success: false, error: file.error, data: null };
+    if ("error" in file) return fail(file.error);
     fileColumns = file.columns;
   }
 
@@ -136,17 +131,17 @@ export async function createUserItem(
     const data = itemData(userId, type.id, input, fileColumns);
     const item = await insertItem(userId, isPro, data);
     if (!item) {
-      return { success: false, error: ITEM_LIMIT_REACHED, data: null };
+      return fail(ITEM_LIMIT_REACHED);
     }
-    return { success: true, error: null, data: item };
+    return ok(item);
   } catch (error) {
     if (isRecordNotFound(error)) {
-      return { success: false, error: COLLECTION_NOT_FOUND, data: null };
+      return fail(COLLECTION_NOT_FOUND);
     }
     // fileKey is the only unique column a file item can collide on: the same
     // upload sent twice, after a lost response.
     if (fileKind && hasPrismaCode(error, UNIQUE_VIOLATION_CODE)) {
-      return { success: false, error: FILE_ALREADY_SAVED, data: null };
+      return fail(FILE_ALREADY_SAVED);
     }
     throw error;
   }

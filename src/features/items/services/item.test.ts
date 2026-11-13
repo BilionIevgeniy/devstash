@@ -50,7 +50,7 @@ describe("setUserItemFavorite", () => {
 
     await expect(
       setUserItemFavorite("user-1", "item-1", true),
-    ).resolves.toEqual({ success: true, error: null });
+    ).resolves.toEqual({ success: true, error: null, data: null });
 
     const [strings, isFavorite, favoritedAt, id, userId] =
       executeRaw.mock.calls[0];
@@ -74,7 +74,7 @@ describe("setUserItemFavorite", () => {
 
     await expect(
       setUserItemFavorite("user-1", "item-1", true),
-    ).resolves.toEqual({ success: false, error: "Item not found" });
+    ).resolves.toEqual({ success: false, error: "Item not found", data: null });
   });
 });
 
@@ -91,6 +91,7 @@ describe("setUserItemPin", () => {
       await expect(setUserItemPin("user-1", "item-1", value)).resolves.toEqual({
         success: true,
         error: null,
+        data: null,
       });
 
       const [strings, isPinned, id, userId] = executeRaw.mock.calls[0];
@@ -110,6 +111,7 @@ describe("setUserItemPin", () => {
     await expect(setUserItemPin("user-1", "item-1", true)).resolves.toEqual({
       success: false,
       error: "Item not found",
+      data: null,
     });
   });
 });
@@ -184,7 +186,11 @@ describe("setUserItemContent", () => {
 
     await expect(
       setUserItemContent("user-1", "item-1", "Better"),
-    ).resolves.toMatchObject({ success: false, error: "Item not found" });
+    ).resolves.toMatchObject({
+      success: false,
+      error: "Item not found",
+      data: null,
+    });
     expect(update).not.toHaveBeenCalled();
   });
 
@@ -193,7 +199,11 @@ describe("setUserItemContent", () => {
 
     await expect(
       setUserItemContent("user-1", "item-1", "Better"),
-    ).resolves.toMatchObject({ success: false, error: "Item not found" });
+    ).resolves.toMatchObject({
+      success: false,
+      error: "Item not found",
+      data: null,
+    });
   });
 });
 
@@ -416,7 +426,7 @@ describe("deleteUserItem", () => {
     deleteTags.mockReset().mockResolvedValue({ count: 0 });
     deleteUserObject
       .mockReset()
-      .mockResolvedValue({ success: true, error: null });
+      .mockResolvedValue({ success: true, error: null, data: null });
   });
 
   it("answers not found without deleting when the read finds nothing", async () => {
@@ -424,7 +434,11 @@ describe("deleteUserItem", () => {
 
     const result = await deleteUserItem("user-1", "item-1");
 
-    expect(result).toEqual({ success: false, error: "Item not found" });
+    expect(result).toEqual({
+      success: false,
+      error: "Item not found",
+      data: null,
+    });
     expect(remove).not.toHaveBeenCalled();
   });
 
@@ -457,7 +471,11 @@ describe("deleteUserItem", () => {
 
   it("keeps the row when the key is outside the owner's prefix", async () => {
     findFirst.mockResolvedValue({ fileKey: "users/someone-else/abc.pdf" });
-    deleteUserObject.mockResolvedValue({ success: false, error: "not found" });
+    deleteUserObject.mockResolvedValue({
+      success: false,
+      error: "not found",
+      data: null,
+    });
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
 
     const result = await deleteUserItem("user-1", "item-1");
@@ -465,6 +483,7 @@ describe("deleteUserItem", () => {
     expect(result).toEqual({
       success: false,
       error: "Couldn't delete the file. Please try again.",
+      data: null,
     });
     expect(remove).not.toHaveBeenCalled();
     expect(log).toHaveBeenCalled();
@@ -480,6 +499,7 @@ describe("deleteUserItem", () => {
     expect(result).toEqual({
       success: false,
       error: "Couldn't delete the file. Please try again.",
+      data: null,
     });
     expect(remove).not.toHaveBeenCalled();
   });
@@ -490,7 +510,7 @@ describe("deleteUserItem", () => {
     expect(remove).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: "item-1", userId: "user-1" } }),
     );
-    expect(result).toEqual({ success: true, error: null });
+    expect(result).toEqual({ success: true, error: null, data: null });
     expect(deleteTags).toHaveBeenCalledWith({
       where: { userId: "user-1", items: { none: {} } },
     });
@@ -501,7 +521,11 @@ describe("deleteUserItem", () => {
 
     const result = await deleteUserItem("user-1", "item-1");
 
-    expect(result).toEqual({ success: false, error: "Item not found" });
+    expect(result).toEqual({
+      success: false,
+      error: "Item not found",
+      data: null,
+    });
   });
 
   it("throws errors other than not found", async () => {

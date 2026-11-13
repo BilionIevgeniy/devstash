@@ -10,9 +10,10 @@ import type { AuthActionState } from "@/features/auth/types";
 import { getAppOrigin } from "@/lib/app-url";
 import { getClientIp } from "@/lib/client-ip";
 import { logger } from "@/lib/logger";
+import { fail, GENERIC_ERROR_MESSAGE, ok } from "@/lib/action-result";
+import { firstIssueMessage } from "@/lib/validation";
 
-const GENERIC_ERROR = "Something went wrong. Please try again.";
-const SUCCESS: AuthActionState = { success: true, data: null, error: null };
+const SUCCESS: AuthActionState = ok();
 
 interface ResetPasswordInput {
   email: string;
@@ -21,16 +22,12 @@ interface ResetPasswordInput {
   confirmPassword: string;
 }
 
-function failure(error: string): AuthActionState {
-  return { success: false, data: null, error };
-}
-
 export async function requestPasswordReset(
-  _prevState: AuthActionState,
+  _prevState: AuthActionState | null,
   formData: FormData,
 ): Promise<AuthActionState> {
   const parsed = emailSchema.safeParse(formData.get("email"));
-  if (!parsed.success) return failure(parsed.error.issues[0].message);
+  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
 
   try {
     const origin = getAppOrigin();
@@ -40,10 +37,10 @@ export async function requestPasswordReset(
       origin,
       getClientIp(await headers()),
     );
-    return result.success ? SUCCESS : failure(result.error ?? GENERIC_ERROR);
+    return result.success ? SUCCESS : fail(result.error);
   } catch (error) {
     await logger.error("Requesting a password reset failed", { error });
-    return failure(GENERIC_ERROR);
+    return fail(GENERIC_ERROR_MESSAGE);
   }
 }
 
@@ -51,11 +48,11 @@ export async function resetPassword(
   input: ResetPasswordInput,
 ): Promise<AuthActionState> {
   const parsed = resetPasswordSchema.safeParse(input);
-  if (!parsed.success) return failure(parsed.error.issues[0].message);
+  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
 
   const { email, token, password } = parsed.data;
   const result = await resetPasswordWithToken(email, token, password);
-  if (!result.success) return failure(result.error ?? GENERIC_ERROR);
+  if (!result.success) return fail(result.error);
 
   return SUCCESS;
 }

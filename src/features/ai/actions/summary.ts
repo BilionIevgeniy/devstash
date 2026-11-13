@@ -4,29 +4,26 @@ import { AI_UNAVAILABLE_MESSAGE } from "@/features/ai/domain/messages";
 import { aiItemInputSchema } from "@/features/ai/schemas";
 import { summarizeItem } from "@/features/ai/services/summary";
 import { getSessionUser } from "@/features/auth/nextauth/session";
-import type { ActionResult } from "@/lib/action-result";
+import { fail, ok, type ActionResult } from "@/lib/action-result";
 import { logger } from "@/lib/logger";
-
-function failure(error: string): ActionResult<null> {
-  return { success: false, data: null, error };
-}
+import { firstIssueMessage } from "@/lib/validation";
 
 // Nothing is written, so there is no refresh: the summary only changes the form.
 export async function generateSummary(
   data: unknown,
 ): Promise<ActionResult<string | null>> {
   const parsed = aiItemInputSchema.safeParse(data);
-  if (!parsed.success) return failure(parsed.error.issues[0].message);
+  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
 
   try {
     const result = await summarizeItem(userId, parsed.data);
-    if (!result.success) return failure(result.error ?? AI_UNAVAILABLE_MESSAGE);
-    return { success: true, error: null, data: result.data };
+    if (!result.success) return fail(result.error);
+    return ok(result.data);
   } catch (error) {
     await logger.error("Summarizing an item failed", { error, userId });
-    return failure(AI_UNAVAILABLE_MESSAGE);
+    return fail(AI_UNAVAILABLE_MESSAGE);
   }
 }

@@ -20,7 +20,12 @@ import {
   isPasswordResetTokenValid,
 } from "@/features/auth/queries";
 import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
-import type { OperationResult } from "@/lib/action-result";
+import {
+  fail,
+  GENERIC_ERROR_MESSAGE,
+  ok,
+  type OperationResult,
+} from "@/lib/action-result";
 import { sendEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
@@ -48,7 +53,7 @@ export async function sendPasswordResetLink(
     token = await createPasswordResetToken(email);
   } catch (error) {
     await logger.error("Failed to create password reset token", { error });
-    return { success: false, error: "Failed to create password reset token" };
+    return fail("Failed to create password reset token");
   }
 
   return sendEmail({
@@ -70,18 +75,15 @@ export async function requestPasswordResetLink(
 ): Promise<OperationResult> {
   const check = await checkEmailSend(RESET_EMAIL_BY_ADDRESS, email, ip);
   if (check.status === "ip-limited") {
-    return {
-      success: false,
-      error: getTooManyAttemptsMessage(check.reset, Date.now()),
-    };
+    return fail(getTooManyAttemptsMessage(check.reset, Date.now()));
   }
-  if (check.status === "address-limited") return { success: true, error: null };
+  if (check.status === "address-limited") return ok();
 
   const account = await getAccountState(email);
-  if (!account?.hasPassword) return { success: true, error: null };
+  if (!account?.hasPassword) return ok();
 
   await sendPasswordResetLink(email, origin);
-  return { success: true, error: null };
+  return ok();
 }
 
 export async function resetPasswordWithToken(
@@ -96,7 +98,7 @@ export async function resetPasswordWithToken(
     // Cheap gate so requests with a bad token never pay for a bcrypt hash;
     // the transaction below stays the authoritative check.
     if (!(await isPasswordResetTokenValid(email, token))) {
-      return { success: false, error: INVALID_RESET_LINK_MESSAGE };
+      return fail(INVALID_RESET_LINK_MESSAGE);
     }
 
     const password = await hashPassword(newPassword);
@@ -109,7 +111,7 @@ export async function resetPasswordWithToken(
         record.identifier !== identifier ||
         isTokenExpired(record.expires, new Date())
       ) {
-        return { success: false, error: INVALID_RESET_LINK_MESSAGE };
+        return fail(INVALID_RESET_LINK_MESSAGE);
       }
 
       // Only the request that actually deletes the token may set the password,
@@ -118,17 +120,17 @@ export async function resetPasswordWithToken(
         where: { token: hashedToken },
       });
       if (count !== 1) {
-        return { success: false, error: INVALID_RESET_LINK_MESSAGE };
+        return fail(INVALID_RESET_LINK_MESSAGE);
       }
 
       await tx.user.update({
         where: { email },
         data: { password, sessionVersion: { increment: 1 } },
       });
-      return { success: true, error: null };
+      return ok();
     });
   } catch (error) {
     await logger.error("Failed to reset password", { error });
-    return { success: false, error: "Something went wrong. Please try again." };
+    return fail(GENERIC_ERROR_MESSAGE);
   }
 }

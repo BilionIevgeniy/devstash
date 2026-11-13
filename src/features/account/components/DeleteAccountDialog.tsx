@@ -20,8 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-const DEFAULT_ERROR = "Something went wrong. Please try again.";
+import { GENERIC_ERROR_MESSAGE } from "@/lib/action-result";
 
 interface DeleteAccountDialogProps {
   hasPassword: boolean;
@@ -60,11 +59,11 @@ export function DeleteAccountDialog({
           setReauthNeeded(true);
           return;
         }
-        setError(result.error ?? DEFAULT_ERROR);
+        setError(result.error);
       } catch (error) {
         // Both actions end in a redirect on success, which must go on.
         unstable_rethrow(error);
-        setError(DEFAULT_ERROR);
+        setError(GENERIC_ERROR_MESSAGE);
       }
     });
   }

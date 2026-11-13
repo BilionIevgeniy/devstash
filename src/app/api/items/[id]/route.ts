@@ -2,6 +2,7 @@ import { auth } from "@/features/auth/nextauth/auth";
 import { openUserItem } from "@/features/items/services/item-detail";
 import { itemIdSchema } from "@/features/items/schemas";
 import { logger } from "@/lib/logger";
+import { firstIssueMessage } from "@/lib/validation";
 
 // A user's own content and signed URLs: never kept by a shared cache.
 const NO_STORE = { "Cache-Control": "private, no-store" };
@@ -24,7 +25,7 @@ export async function GET(
   if (!userId) return failure("Unauthorized", 401);
 
   const parsed = itemIdSchema.safeParse((await ctx.params).id);
-  if (!parsed.success) return failure(parsed.error.issues[0].message, 400);
+  if (!parsed.success) return failure(firstIssueMessage(parsed.error), 400);
 
   try {
     const result = await openUserItem(userId, parsed.data);

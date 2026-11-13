@@ -72,7 +72,7 @@ export function EditorPreferencesProvider({
     let error: string | null;
     try {
       const result = await updateEditorPreferences(next);
-      error = result.success ? null : (result.error ?? SAVE_FAILED_MESSAGE);
+      error = result.success ? null : result.error;
     } catch (thrown) {
       // A session that ended: the router is leaving, nothing to roll back.
       if (isNavigationError(thrown)) return;

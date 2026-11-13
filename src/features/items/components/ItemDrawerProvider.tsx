@@ -32,7 +32,7 @@ async function deleteWithToast(id: string) {
   try {
     const result = await deleteItem(id);
     if (result.success) toast.success(DELETED_MESSAGE);
-    else toast.error(result.error ?? DELETE_FAILED_MESSAGE);
+    else toast.error(result.error);
   } catch (error) {
     if (isNavigationError(error)) return;
     toast.error(DELETE_FAILED_MESSAGE);

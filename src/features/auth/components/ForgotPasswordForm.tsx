@@ -5,22 +5,15 @@ import { useActionState, useState } from "react";
 import { requestPasswordReset } from "@/features/auth/_internal/actions/password-reset";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { AuthActionState } from "@/features/auth/types";
-
-const INITIAL_STATE: AuthActionState = {
-  success: false,
-  data: null,
-  error: null,
-};
 
 export function ForgotPasswordForm() {
   const [state, formAction, isPending] = useActionState(
     requestPasswordReset,
-    INITIAL_STATE,
+    null,
   );
   const [email, setEmail] = useState("");
 
-  if (state.success) {
+  if (state?.success) {
     return (
       <div className="space-y-2 text-center">
         <h2 className="text-lg font-semibold">Check your email</h2>
@@ -49,7 +42,7 @@ export function ForgotPasswordForm() {
           onChange={(event) => setEmail(event.target.value)}
         />
       </div>
-      {state.error && (
+      {state?.error && (
         <p role="alert" className="text-sm text-destructive">
           {state.error}
         </p>

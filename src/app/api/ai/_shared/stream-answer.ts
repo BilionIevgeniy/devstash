@@ -4,6 +4,7 @@ import { AI_SIGNED_OUT_MESSAGE } from "@/features/ai/domain/messages";
 import type { TextStreamStart } from "@/features/ai/services/text-stream";
 import { auth } from "@/features/auth/nextauth/auth";
 import { logger } from "@/lib/logger";
+import { firstIssueMessage } from "@/lib/validation";
 
 // A user's own item and its answer: never kept by a shared cache.
 const NO_STORE = { "Cache-Control": "private, no-store" };
@@ -61,10 +62,7 @@ export async function streamAiAnswer<T>(
 
   const parsed = schema.safeParse(await readBody(request));
   if (!parsed.success) {
-    return failure(
-      parsed.error.issues[0]?.message ?? INVALID_BODY_MESSAGE,
-      400,
-    );
+    return failure(firstIssueMessage(parsed.error, INVALID_BODY_MESSAGE), 400);
   }
 
   try {

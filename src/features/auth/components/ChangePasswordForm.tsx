@@ -12,7 +12,6 @@ import {
   emptyFormValues,
   formValues,
 } from "@/features/auth/_internal/domain/form-values";
-import { GENERIC_ERROR_MESSAGE } from "@/features/auth/_internal/messages";
 import {
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
@@ -20,6 +19,7 @@ import {
 import type { FormActionState } from "@/features/auth/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { GENERIC_ERROR_MESSAGE } from "@/lib/action-result";
 
 const SUCCESS_MESSAGE = "Password updated. Please sign in again.";
 // The password is changed and every session is revoked, so a retry would only
@@ -68,7 +68,7 @@ async function submit(_previous: State, formData: FormData): Promise<State> {
   try {
     const result = await changePassword(values);
     if (!result.success) {
-      return { error: result.error ?? GENERIC_ERROR_MESSAGE, values };
+      return { error: result.error, values };
     }
   } catch (error) {
     unstable_rethrow(error);

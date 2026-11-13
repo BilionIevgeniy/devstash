@@ -68,7 +68,7 @@ describe("changeUserPassword", () => {
   it("stores the new hash, revokes other sessions and resets the counter", async () => {
     const result = await changeUserPassword("user-1", "old", "new");
 
-    expect(result).toEqual({ success: true, error: null });
+    expect(result).toEqual({ success: true, error: null, data: null });
     expect(updateUser).toHaveBeenCalledWith({
       where: { id: "user-1" },
       data: { password: "new-hash", sessionVersion: { increment: 1 } },

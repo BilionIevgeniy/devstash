@@ -130,7 +130,7 @@ function CreateCollectionForm({
           // refreshed page with the new collection, not before it.
           startCreating(onCreated);
         } else {
-          toast.error(result.error ?? CREATE_FAILED_MESSAGE);
+          toast.error(result.error);
         }
       } catch (error) {
         // A signed-out caller's redirect arrives here too, and must go on. A

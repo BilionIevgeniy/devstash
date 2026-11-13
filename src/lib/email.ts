@@ -1,7 +1,7 @@
 import "server-only";
 
 import { Resend } from "resend";
-import type { OperationResult } from "@/lib/action-result";
+import { fail, ok, type OperationResult } from "@/lib/action-result";
 import { logger } from "@/lib/logger";
 
 interface Email {
@@ -21,7 +21,7 @@ export async function sendEmail({
   const from = process.env.EMAIL_FROM;
   if (!apiKey || !from) {
     await logger.error("RESEND_API_KEY or EMAIL_FROM is not set");
-    return { success: false, error: "Email is not configured" };
+    return fail("Email is not configured");
   }
 
   try {
@@ -34,11 +34,11 @@ export async function sendEmail({
     });
     if (error) {
       await logger.error("Resend rejected an email", { error });
-      return { success: false, error: error.message };
+      return fail(error.message);
     }
-    return { success: true, error: null };
+    return ok();
   } catch (error) {
     await logger.error("Sending an email failed", { error });
-    return { success: false, error: "Failed to send email" };
+    return fail("Failed to send email");
   }
 }

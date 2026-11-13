@@ -8,13 +8,6 @@ import { ResendVerificationButton } from "@/features/auth/components/ResendVerif
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EMAIL_NOT_VERIFIED_MESSAGE } from "@/features/auth/_internal/messages";
-import type { AuthActionState } from "@/features/auth/types";
-
-const INITIAL_STATE: AuthActionState = {
-  success: false,
-  data: null,
-  error: null,
-};
 
 interface SignInFormProps {
   callbackUrl: string;
@@ -24,10 +17,10 @@ interface SignInFormProps {
 export function SignInForm({ callbackUrl, initialError }: SignInFormProps) {
   const [state, formAction, isPending] = useActionState(
     signInWithCredentials,
-    INITIAL_STATE,
+    null,
   );
   const [email, setEmail] = useState("");
-  const error = state.error ?? initialError;
+  const error = state?.error ?? initialError;
 
   return (
     <form action={formAction} className="space-y-4">

@@ -65,7 +65,7 @@ export function DeleteCollectionDialog({
           // that brings the page without this collection.
           startDeleting(finishDelete);
         } else {
-          toast.error(result.error ?? DELETE_FAILED_MESSAGE);
+          toast.error(result.error);
         }
       } catch (error) {
         // A signed-out caller's redirect arrives here too, and must go on.
