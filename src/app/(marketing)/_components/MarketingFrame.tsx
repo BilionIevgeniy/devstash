@@ -5,6 +5,7 @@ import type { Locale } from "@/i18n/config";
 import { pickMessages } from "@/i18n/messages";
 
 import { Footer } from "./Footer";
+import { MARKETING_NAMESPACES } from "./marketing-namespaces";
 import { Navbar } from "./Navbar";
 
 interface MarketingFrameProps {
@@ -20,7 +21,7 @@ export function MarketingFrame({ locale, children }: MarketingFrameProps) {
   return (
     <I18nProvider
       locale={locale}
-      messages={pickMessages(locale, ["marketing", "billing"])}
+      messages={pickMessages(locale, MARKETING_NAMESPACES)}
     >
       <div lang={locale} className="text-[15px] leading-[1.6]">
         <Navbar />

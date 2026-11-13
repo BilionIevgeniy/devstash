@@ -14,7 +14,7 @@ interface ItemsHeaderProps {
 // Outside the list's Suspense, so it stays put while the rows change.
 export function ItemsHeader({ type, totalCount, isPro }: ItemsHeaderProps) {
   const typeName = useTranslations("itemTypes");
-  const t = useTranslations("pages.items");
+  const t = useTranslations("common");
 
   return (
     <header className="flex items-start justify-between gap-4">
@@ -28,7 +28,7 @@ export function ItemsHeader({ type, totalCount, isPro }: ItemsHeaderProps) {
           {typeLabel(typeName, type.name, "other")}
         </h1>
         <p className="text-muted-foreground">
-          {t("count", { count: totalCount })}
+          {t("itemCount", { count: totalCount })}
         </p>
       </div>
       {isCreatableType(type.name) && (

@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { TestModeHint } from "@/features/billing/components/TestModeHint";
 import { homePath, LOCALES, type Locale } from "@/i18n/config";
+import { getAppOrigin } from "@/lib/app-url";
 import { isStripeTestMode } from "@/lib/stripe";
 
 import { AISection } from "./AISection";
@@ -26,10 +27,13 @@ export function HomeContent({ locale }: { locale: Locale }) {
 }
 
 // The title and description of a homepage, and the other language's URL for
-// search engines (hreflang), with English as the default.
+// search engines (hreflang), with English as the default. The links are
+// absolute on the configured origin: without a metadataBase Next would write
+// them on localhost. APP_URL is read at build time, so the page stays static.
 export async function homeMetadata(locale: Locale): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "marketing.meta" });
   return {
+    metadataBase: new URL(getAppOrigin()),
     title: t("title"),
     description: t("description"),
     alternates: {

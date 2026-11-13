@@ -17,14 +17,13 @@ async function CollectionsContent({ page }: { page: number }) {
     page: currentPage,
     totalPages,
   } = await getUserCollections(userId, page);
-  const collectionLabel = totalCount === 1 ? "collection" : "collections";
 
   return (
     <div className="space-y-8">
       <header>
         <h1 className="text-3xl font-bold">{t("title")}</h1>
         <p className="text-muted-foreground">
-          {totalCount} {collectionLabel}
+          {t("count", { count: totalCount })}
         </p>
       </header>
       {collections.length === 0 ? (

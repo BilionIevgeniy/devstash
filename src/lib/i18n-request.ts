@@ -29,12 +29,14 @@ export default getRequestConfig(async (params) => {
         (await headers()).get("accept-language"),
       );
 
+  const messages = messagesFor(locale);
+
   return {
     locale,
-    messages: messagesFor(locale),
+    messages,
     timeZone: DEFAULT_TIME_ZONE,
     formats: FORMATS,
-    getMessageFallback: messageFallback(locale),
+    getMessageFallback: messageFallback(messages),
     onError: (error) => {
       logger.warn("A message could not be shown", { error });
     },

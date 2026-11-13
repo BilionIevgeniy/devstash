@@ -1,12 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { ERROR_PARAM_NAMES, type ErrorCode } from "@/i18n/error-codes";
-import { createErrorText } from "@/i18n/error-text";
+import { createErrorText } from "../../test/error-text";
 import errors from "@/i18n/messages/en/errors.json";
 
 const GENERIC = errors.generic;
 
-describe("createErrorText", () => {
+// The error messages as the app shows them: formatted with their params, and
+// the generic text where a code or a param is missing (fallback.ts).
+describe("the error texts", () => {
   it.each(Object.keys(errors) as ErrorCode[])(
     "formats %s with its params and reports nothing",
     (code) => {
@@ -57,7 +59,7 @@ describe("createErrorText", () => {
   });
 });
 
-describe("createErrorText in German", () => {
+describe("the error texts in German", () => {
   it("says Minute and Minuten for the rate limit", () => {
     const errorText = createErrorText(undefined, "de");
 

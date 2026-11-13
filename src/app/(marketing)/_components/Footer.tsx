@@ -2,8 +2,10 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { Logo } from "@/components/common/Logo";
-import { homePath, otherLocale, type Locale } from "@/i18n/config";
+import { homePath, type Locale } from "@/i18n/config";
 import { IMPRINT_PATH, PRIVACY_PATH } from "@/lib/legal-paths";
+
+import { LanguageLink } from "./LanguageLink";
 
 interface FooterEntry {
   label: string;
@@ -17,7 +19,6 @@ const FOOTER_LINK = "transition-colors hover:text-foreground";
 export async function Footer({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "marketing" });
   const home = homePath(locale);
-  const other = otherLocale(locale);
   const columns: { heading: string; entries: FooterEntry[] }[] = [
     {
       heading: t("footer.product"),
@@ -64,14 +65,7 @@ export async function Footer({ locale }: { locale: Locale }) {
               {t("language.label")}
             </h3>
             <p className="mt-3 text-sm text-muted-foreground">
-              <Link
-                href={homePath(other)}
-                hrefLang={other}
-                lang={other}
-                className={FOOTER_LINK}
-              >
-                {t("language.other")}
-              </Link>
+              <LanguageLink variant="name" className={FOOTER_LINK} />
             </p>
           </nav>
         </div>

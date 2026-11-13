@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -9,8 +11,9 @@ interface LanguageLinkProps {
   className?: string;
 }
 
-// The homepage in the other language, written in that language. A client
-// component of the navbar: the locale comes from its provider.
+// The homepage in the other language, written in that language, for the
+// navbar and the footer. A client component: the locale comes from the
+// provider of MarketingFrame, so the static footer reads no request.
 export function LanguageLink({ variant, className }: LanguageLinkProps) {
   const t = useTranslations("marketing.language");
   const other = otherLocale(useLocale());

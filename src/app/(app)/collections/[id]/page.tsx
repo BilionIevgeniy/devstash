@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 import { CollectionSections } from "@/app/(app)/collections/[id]/_components/CollectionSections";
 import CollectionLoading from "@/app/(app)/collections/[id]/loading";
@@ -20,7 +21,8 @@ interface CollectionContentProps {
 
 async function CollectionContent({ id, page }: CollectionContentProps) {
   const { id: userId } = await getSessionUser();
-  const [collection, listing, { isPro }] = await Promise.all([
+  const [t, collection, listing, { isPro }] = await Promise.all([
+    getTranslations("common"),
     getCollectionById(userId, id),
     getUserCollectionListing(userId, id, page),
     getEntitlements(userId),
@@ -28,7 +30,6 @@ async function CollectionContent({ id, page }: CollectionContentProps) {
   if (!collection) notFound();
 
   const { itemCount, sections } = listing;
-  const itemLabel = itemCount === 1 ? "item" : "items";
 
   return (
     <div className="space-y-8">
@@ -38,7 +39,7 @@ async function CollectionContent({ id, page }: CollectionContentProps) {
             {collection.name}
           </h1>
           <p className="text-muted-foreground">
-            {itemCount} {itemLabel}
+            {t("itemCount", { count: itemCount })}
           </p>
           <p className="mt-1 min-h-5 text-sm wrap-break-word text-muted-foreground">
             {collection.description}

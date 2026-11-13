@@ -32,6 +32,7 @@ export function PaletteMatches({
   onSelectCollection,
 }: PaletteMatchesProps) {
   const t = useTranslations("search");
+  const tCommon = useTranslations("common");
   return (
     <>
       {items.length > 0 && (
@@ -77,7 +78,7 @@ export function PaletteMatches({
             >
               <span className="min-w-0 flex-1 truncate">{collection.name}</span>
               <CommandShortcut className="tracking-normal">
-                {t("itemCount", { count: collection.itemCount })}
+                {tCommon("itemCount", { count: collection.itemCount })}
               </CommandShortcut>
             </CommandItem>
           ))}

@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { CollectionCardActions } from "@/features/collections/_internal/components/CollectionCardActions";
 import { collectionAccent } from "@/features/collections/domain/collection-accent";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
+import { typeLabel } from "@/features/item-types/domain/item-type";
 import type { DashboardCollection } from "@/features/collections/types";
 
 interface CollectionCardProps {
@@ -15,7 +17,8 @@ interface CollectionCardProps {
 export function CollectionCard({ collection }: CollectionCardProps) {
   const { types } = collection;
   const accentColor = collectionAccent(types);
-  const itemLabel = collection.itemCount === 1 ? "item" : "items";
+  const t = useTranslations("common");
+  const typeName = useTranslations("itemTypes");
 
   return (
     <div
@@ -33,7 +36,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
         </h3>
       </div>
       <p className="text-sm text-muted-foreground">
-        {collection.itemCount} {itemLabel}
+        {t("itemCount", { count: collection.itemCount })}
       </p>
       <p className="mt-3 min-h-5 truncate text-sm text-muted-foreground">
         {collection.description}
@@ -45,7 +48,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
             name={type.icon}
             className="size-4"
             style={{ color: type.color }}
-            aria-label={type.name}
+            aria-label={typeLabel(typeName, type.name, "one")}
           />
         ))}
       </div>

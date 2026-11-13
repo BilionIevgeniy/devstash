@@ -38,10 +38,10 @@
   "collections": {
     "title": "Collections",
     "empty": "No collections yet.",
-    "emptyCollection": "No items in this collection yet."
+    "emptyCollection": "No items in this collection yet.",
+    "count": "{count, plural, one {# collection} other {# collections}}"
   },
   "items": {
-    "count": "{count, plural, one {# item} other {# items}}",
     "empty": "No {type} yet.",
     "filteredEmpty": "No items match these filters.",
     "clearFilters": "Clear filters",

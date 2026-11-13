@@ -40,5 +40,6 @@
   },
   "removedFromFavorites": "Aus den Favoriten entfernt",
   "copied": "In die Zwischenablage kopiert",
-  "logoHome": "DevStash-Startseite"
+  "logoHome": "DevStash-Startseite",
+  "itemCount": "{count, plural, one {# Eintrag} other {# Einträge}}"
 }

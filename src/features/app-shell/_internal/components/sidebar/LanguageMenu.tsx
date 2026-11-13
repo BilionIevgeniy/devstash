@@ -8,6 +8,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { setLocale } from "@/features/app-shell/actions/locale";
 import { LOCALES, type Locale } from "@/i18n/config";
 
@@ -17,13 +18,14 @@ import { LOCALES, type Locale } from "@/i18n/config";
 export function LanguageMenu() {
   const t = useTranslations("common.language");
   const locale = useLocale();
+  const errorText = useErrorText();
   const [isPending, startTransition] = useTransition();
 
   function choose(next: Locale) {
     startTransition(async () => {
       try {
         const result = await setLocale(next);
-        if (!result.success) toast.error(t("failed"));
+        if (!result.success) toast.error(errorText(result));
       } catch (error) {
         // A session that ended redirects to sign-in, which must go on.
         unstable_rethrow(error);

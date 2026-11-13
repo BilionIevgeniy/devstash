@@ -30,7 +30,7 @@ export function I18nProvider({
       timeZone={DEFAULT_TIME_ZONE}
       formats={FORMATS}
       onError={ignore}
-      getMessageFallback={messageFallback(locale)}
+      getMessageFallback={messageFallback(messages)}
     >
       {children}
     </NextIntlClientProvider>

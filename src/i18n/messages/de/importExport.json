@@ -13,8 +13,8 @@
   "stopped": "Der Import wurde vorzeitig gestoppt.",
   "finished": "Import abgeschlossen.",
   "counts": "{created} erstellt, {duplicates} bereits vorhanden.",
-  "countsWithFiles": "{created} erstellt, {duplicates} bereits vorhanden, {files} Dateien nicht importiert.",
+  "countsWithFiles": "{created} erstellt, {duplicates} bereits vorhanden, {files, plural, one {# Datei} other {# Dateien}} nicht importiert.",
   "filesNote": "Dateien und Bilder gehören nicht zum Export. Lade sie über die Links in der Datei herunter und lade sie erneut hoch.",
-  "failed": "{count} konnten nicht importiert werden",
+  "failed": "{count, plural, one {# konnte} other {# konnten}} nicht importiert werden",
   "untitled": "Ohne Titel"
 }

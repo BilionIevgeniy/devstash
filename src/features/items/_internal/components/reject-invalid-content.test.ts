@@ -10,7 +10,7 @@ import {
   CONTENT_MAX,
   editableFields,
 } from "@/features/items/domain/item-fields";
-import { createErrorText } from "@/i18n/error-text";
+import { createErrorText } from "../../../../../test/error-text";
 
 const errorText = createErrorText();
 

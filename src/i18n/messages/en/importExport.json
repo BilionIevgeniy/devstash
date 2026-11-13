@@ -13,7 +13,7 @@
   "stopped": "The import stopped early.",
   "finished": "Import finished.",
   "counts": "{created} created, {duplicates} already there.",
-  "countsWithFiles": "{created} created, {duplicates} already there, {files} files not imported.",
+  "countsWithFiles": "{created} created, {duplicates} already there, {files, plural, one {# file} other {# files}} not imported.",
   "filesNote": "Files and images are not part of an export. Download them from the links in the file and upload them again.",
   "failed": "{count} could not be imported",
   "untitled": "Untitled"
