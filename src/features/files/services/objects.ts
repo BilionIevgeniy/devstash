@@ -7,7 +7,7 @@ import {
   isUserKey,
   maxFileSize,
   signingWindowFor,
-  tooLargeMessage,
+  tooLargeError,
   userPrefix,
   viewDisposition,
   type FileKind,
@@ -15,10 +15,6 @@ import {
 import type { FileUrls } from "@/features/files/types";
 import { fail, ok, type OperationResult } from "@/lib/action-result";
 import { deleteObject, deletePrefix, headObject, signGetUrl } from "@/lib/r2";
-
-const UPLOAD_NOT_FOUND =
-  "The upload was not found. Please upload the file again";
-const WRONG_FILE_TYPE = "The uploaded file does not match its type";
 
 export type ConfirmUploadResult = OperationResult<{ size: number }>;
 
@@ -33,19 +29,19 @@ export async function confirmUpload(
 ): Promise<ConfirmUploadResult> {
   const expectedType = contentTypeFor(kind, key);
   if (!isUserKey(userId, key) || !expectedType) {
-    return fail(UPLOAD_NOT_FOUND);
+    return fail("uploadNotFound");
   }
 
   const object = await headObject(key);
-  if (!object) return fail(UPLOAD_NOT_FOUND);
+  if (!object) return fail("uploadNotFound");
 
   if (object.size > maxFileSize(kind)) {
     await deleteObject(key);
-    return fail(tooLargeMessage(kind));
+    return fail(tooLargeError(kind));
   }
   if (object.contentType !== expectedType) {
     await deleteObject(key);
-    return fail(WRONG_FILE_TYPE);
+    return fail("wrongFileType");
   }
 
   return ok({ size: object.size });
@@ -58,7 +54,7 @@ export async function deleteUserObject(
   key: string,
 ): Promise<OperationResult> {
   if (!isUserKey(userId, key)) {
-    return fail(UPLOAD_NOT_FOUND);
+    return fail("uploadNotFound");
   }
   await deleteObject(key);
   return ok();

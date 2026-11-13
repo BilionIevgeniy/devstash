@@ -107,7 +107,7 @@ describe("DeleteCollectionDialog", () => {
     // React holds later transitions behind one that never ends: settle it,
     // with a failure, so no close and no toast run into the next test.
     await act(async () =>
-      answer.resolve({ success: false, data: null, error: "stop" }),
+      answer.resolve({ success: false, data: null, error: "generic" }),
     );
   });
 
@@ -115,14 +115,16 @@ describe("DeleteCollectionDialog", () => {
     deleteCollection.mockResolvedValue({
       success: false,
       data: null,
-      error: "Collection not found",
+      error: "collectionNotFound",
     });
     const user = userEvent.setup();
     render(<Harness />);
 
     await confirm(user);
 
-    expect(toast.error).toHaveBeenCalledExactlyOnceWith("Collection not found");
+    expect(toast.error).toHaveBeenCalledExactlyOnceWith(
+      "This collection no longer exists.",
+    );
     expect(screen.getByRole("alertdialog")).toBeInTheDocument();
     expect(toast.success).not.toHaveBeenCalled();
   });

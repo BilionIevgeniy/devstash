@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import { useMountedRef } from "@/features/ai/_internal/components/hooks/use-mounted-ref";
 import { generateSummary } from "@/features/ai/actions/summary";
-import { AI_UNAVAILABLE_MESSAGE } from "@/features/ai/domain/messages";
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 
 const SUMMARY_READY_MESSAGE = "Summary ready";
 
@@ -18,6 +18,7 @@ export function useDescriptionSummary() {
   const [isPending, startTransition] = useTransition();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const mountedRef = useMountedRef();
+  const errorText = useErrorText();
 
   function generate(title: string, content: string) {
     startTransition(async () => {
@@ -25,7 +26,7 @@ export function useDescriptionSummary() {
         const result = await generateSummary({ title, content });
         if (!mountedRef.current) return;
         if (!result.success) {
-          toast.error(result.error);
+          toast.error(errorText(result));
           return;
         }
         setSummary(result.data);
@@ -34,7 +35,7 @@ export function useDescriptionSummary() {
       } catch (error) {
         // A signed-out caller's redirect arrives here too, and must go on.
         unstable_rethrow(error);
-        if (mountedRef.current) toast.error(AI_UNAVAILABLE_MESSAGE);
+        if (mountedRef.current) toast.error(errorText("aiUnavailable"));
       }
     });
   }

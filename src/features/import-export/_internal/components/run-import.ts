@@ -17,6 +17,7 @@ import {
 } from "@/features/import-export/domain/limits";
 import type { ImportFile } from "@/features/import-export/schemas";
 import type { ImportSummary } from "@/features/import-export/types";
+import type { ErrorRef } from "@/i18n/error-codes";
 import { fail, type ActionResult } from "@/lib/action-result";
 import { isNavigationError } from "@/lib/navigation-error";
 
@@ -24,9 +25,7 @@ const LIMITS = {
   maxRecords: IMPORT_BATCH_MAX_RECORDS,
   maxBytes: IMPORT_BATCH_MAX_BYTES,
 };
-const TOO_LARGE = "This record is too large to import";
-const CONNECTION_LOST =
-  "The import stopped: the server could not be reached. Check your connection and run it again; what is already imported is skipped";
+const TOO_LARGE: ErrorRef = { error: "importRecordTooLarge" };
 
 export interface ImportRunOptions {
   onProgress: (done: number, total: number) => void;
@@ -37,7 +36,7 @@ export interface ImportRunOptions {
 /** What a run did, and why it stopped early, if it did. */
 export interface ImportRun {
   summary: ImportSummary;
-  error: string | null;
+  error: ErrorRef | null;
 }
 
 const encoder = new TextEncoder();
@@ -56,7 +55,7 @@ async function send<T>(
     return await action(batch);
   } catch (error) {
     if (isNavigationError(error)) return null;
-    return fail(CONNECTION_LOST);
+    return fail("importConnectionLost");
   }
 }
 
@@ -85,7 +84,7 @@ async function sendAll<T>(
     const result = await send(action, batch);
     if (!result) return null;
     if (!result.success) {
-      return { summary, error: result.error };
+      return { summary, error: result };
     }
     summary = addImportSummaries(summary, toSummary(result.data));
     options.progress.done += batch.length;

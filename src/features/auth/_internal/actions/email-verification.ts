@@ -10,8 +10,8 @@ import type { AuthActionState } from "@/features/auth/types";
 import { getAppOrigin } from "@/lib/app-url";
 import { getClientIp } from "@/lib/client-ip";
 import { logger } from "@/lib/logger";
-import { fail, GENERIC_ERROR_MESSAGE, ok } from "@/lib/action-result";
-import { firstIssueMessage } from "@/lib/validation";
+import { fail, ok } from "@/lib/action-result";
+import { firstIssue } from "@/lib/validation";
 
 const SUCCESS: AuthActionState = ok();
 
@@ -25,7 +25,7 @@ export async function resendVerificationEmail(
   email: string,
 ): Promise<AuthActionState> {
   const parsed = emailSchema.safeParse(email);
-  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
+  if (!parsed.success) return firstIssue(parsed.error);
 
   try {
     // Read before any lookup so a missing APP_URL fails the same way for every
@@ -37,10 +37,10 @@ export async function resendVerificationEmail(
       origin,
       getClientIp(await headers()),
     );
-    return result.success ? SUCCESS : fail(result.error);
+    return result.success ? SUCCESS : result;
   } catch (error) {
     await logger.error("Resending the verification email failed", { error });
-    return fail(GENERIC_ERROR_MESSAGE);
+    return fail("generic");
   }
 }
 
@@ -48,14 +48,14 @@ export async function confirmEmail(
   input: ConfirmEmailInput,
 ): Promise<AuthActionState> {
   const parsed = confirmEmailSchema.safeParse(input);
-  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
+  if (!parsed.success) return firstIssue(parsed.error);
   const { email, token, password } = parsed.data;
 
   try {
     const result = await confirmEmailAddress(email, token, password);
-    return result.success ? SUCCESS : fail(result.error);
+    return result.success ? SUCCESS : result;
   } catch (error) {
     await logger.error("Confirming the email failed", { error });
-    return fail(GENERIC_ERROR_MESSAGE);
+    return fail("generic");
   }
 }

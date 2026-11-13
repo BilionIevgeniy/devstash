@@ -1,6 +1,6 @@
 # 0021. One result contract, and shared building blocks with one home each
 
-- Status: accepted
+- Status: accepted; its error text (`fail(error: string)`, `GENERIC_ERROR_MESSAGE`, `firstIssueMessage`) superseded by [0022](0022-error-codes-in-the-result-contract.md)
 - Date: 2026-11-13
 
 ## Context

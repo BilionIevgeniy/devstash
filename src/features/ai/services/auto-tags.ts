@@ -14,7 +14,7 @@ import {
   normalizeTags,
 } from "@/features/ai/domain/tags";
 import { tagSuggestionsSchema, type AiItemInput } from "@/features/ai/schemas";
-import { ok, type OperationResult } from "@/lib/action-result";
+import { failFrom, ok, type OperationResult } from "@/lib/action-result";
 import { generateStructured } from "@/lib/openai";
 
 export type SuggestTagsResult = OperationResult<string[]>;
@@ -26,7 +26,7 @@ export async function suggestTags(
   { title, content }: AiItemInput,
 ): Promise<SuggestTagsResult> {
   const access = await checkAiAccess(userId);
-  if (!access.success) return { ...access, data: null };
+  if (!access.success) return failFrom(access);
 
   try {
     const output = await generateStructured({

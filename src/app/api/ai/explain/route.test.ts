@@ -32,7 +32,7 @@ describe("POST /api/ai/explain", () => {
 
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toMatchObject({
-      error: "Your session ended. Sign in again.",
+      error: "aiSignedOut",
     });
     expect(startExplanation).not.toHaveBeenCalled();
   });
@@ -54,7 +54,7 @@ describe("POST /api/ai/explain", () => {
     startExplanation.mockResolvedValue({
       status: "refused",
       reason,
-      error: "No",
+      failure: { success: false, data: null, error: "aiProOnly" },
     });
 
     const response = await post(body);
@@ -64,12 +64,15 @@ describe("POST /api/ai/explain", () => {
   });
 
   it("answers 503 for an AI failure before any text", async () => {
-    startExplanation.mockResolvedValue({ status: "failed", error: "Busy" });
+    startExplanation.mockResolvedValue({
+      status: "failed",
+      failure: { success: false, data: null, error: "aiBusy" },
+    });
 
     const response = await post(body);
 
     expect(response.status).toBe(503);
-    await expect(response.json()).resolves.toMatchObject({ error: "Busy" });
+    await expect(response.json()).resolves.toMatchObject({ error: "aiBusy" });
   });
 
   it("answers an empty 204 when the client went away", async () => {

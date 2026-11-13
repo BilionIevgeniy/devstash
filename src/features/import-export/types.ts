@@ -1,7 +1,9 @@
-// A record the import could not create, and why, in the owner's words.
+import type { ErrorRef } from "@/i18n/error-codes";
+
+// A record the import could not create, and why, as the owner's error code.
 export interface ImportFailure {
   title: string;
-  reason: string;
+  reason: ErrorRef;
 }
 
 // What an import did, summed over its batches.

@@ -16,31 +16,26 @@ import {
   updateUserCollection,
 } from "@/features/collections/services/collection";
 import { favoriteValueSchema } from "@/features/items/schemas";
-import {
-  fail,
-  GENERIC_ERROR_MESSAGE,
-  ok,
-  type ActionResult,
-} from "@/lib/action-result";
+import { fail, ok, type ActionResult } from "@/lib/action-result";
 import { logger } from "@/lib/logger";
-import { firstIssueMessage } from "@/lib/validation";
+import { firstIssue } from "@/lib/validation";
 
 export async function createCollection(data: unknown): Promise<ActionResult> {
   const parsed = createCollectionSchema.safeParse(data);
-  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
+  if (!parsed.success) return firstIssue(parsed.error);
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
 
   try {
     const result = await createUserCollection(userId, parsed.data);
-    if (!result.success) return fail(result.error);
+    if (!result.success) return result;
     // The new collection comes back with this response's fresh page.
     refresh();
     return ok();
   } catch (error) {
     await logger.error("Creating the collection failed", { error, userId });
-    return fail(GENERIC_ERROR_MESSAGE);
+    return fail("generic");
   }
 }
 
@@ -49,10 +44,10 @@ export async function updateCollection(
   data: unknown,
 ): Promise<ActionResult> {
   const parsedId = collectionIdSchema.safeParse(collectionId);
-  if (!parsedId.success) return fail(firstIssueMessage(parsedId.error));
+  if (!parsedId.success) return firstIssue(parsedId.error);
 
   const parsed = updateCollectionSchema.safeParse(data);
-  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
+  if (!parsed.success) return firstIssue(parsed.error);
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
@@ -63,13 +58,13 @@ export async function updateCollection(
       parsedId.data,
       parsed.data,
     );
-    if (!result.success) return fail(result.error);
+    if (!result.success) return result;
     // The new name comes back with this response's fresh page and sidebar.
     refresh();
     return ok();
   } catch (error) {
     await logger.error("Updating the collection failed", { error, userId });
-    return fail(GENERIC_ERROR_MESSAGE);
+    return fail("generic");
   }
 }
 
@@ -79,10 +74,10 @@ export async function setCollectionFavorite(
   isFavorite: boolean,
 ): Promise<ActionResult> {
   const parsedId = collectionIdSchema.safeParse(collectionId);
-  if (!parsedId.success) return fail(firstIssueMessage(parsedId.error));
+  if (!parsedId.success) return firstIssue(parsedId.error);
 
   const parsedValue = favoriteValueSchema.safeParse(isFavorite);
-  if (!parsedValue.success) return fail(firstIssueMessage(parsedValue.error));
+  if (!parsedValue.success) return firstIssue(parsedValue.error);
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
@@ -93,7 +88,7 @@ export async function setCollectionFavorite(
       parsedId.data,
       parsedValue.data,
     );
-    if (!result.success) return fail(result.error);
+    if (!result.success) return result;
     // The star, the sidebar and the favorites come back with this response.
     refresh();
     return ok();
@@ -102,7 +97,7 @@ export async function setCollectionFavorite(
       error,
       userId,
     });
-    return fail(GENERIC_ERROR_MESSAGE);
+    return fail("generic");
   }
 }
 
@@ -113,11 +108,11 @@ export async function deleteCollection(
   options?: unknown,
 ): Promise<ActionResult> {
   const parsedId = collectionIdSchema.safeParse(collectionId);
-  if (!parsedId.success) return fail(firstIssueMessage(parsedId.error));
+  if (!parsedId.success) return firstIssue(parsedId.error);
 
   const parsedOptions = deleteCollectionOptionsSchema.safeParse(options);
   if (!parsedOptions.success) {
-    return fail(firstIssueMessage(parsedOptions.error));
+    return firstIssue(parsedOptions.error);
   }
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
@@ -125,11 +120,11 @@ export async function deleteCollection(
 
   try {
     const result = await deleteUserCollection(userId, parsedId.data);
-    if (!result.success) return fail(result.error);
+    if (!result.success) return result;
     if (parsedOptions.data.refresh) refresh();
     return ok();
   } catch (error) {
     await logger.error("Deleting the collection failed", { error, userId });
-    return fail(GENERIC_ERROR_MESSAGE);
+    return fail("generic");
   }
 }

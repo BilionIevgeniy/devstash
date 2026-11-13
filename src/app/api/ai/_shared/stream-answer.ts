@@ -1,13 +1,11 @@
 import type { ZodType } from "zod";
 
-import { AI_SIGNED_OUT_MESSAGE } from "@/features/ai/domain/messages";
 import type { TextStreamStart } from "@/features/ai/services/text-stream";
 import { getSignedInUserId } from "@/features/auth/nextauth/session";
-import { jsonError, NO_STORE, SERVER_ERROR_MESSAGE } from "@/lib/api-response";
+import { fail } from "@/lib/action-result";
+import { jsonError, NO_STORE } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
-import { firstIssueMessage } from "@/lib/validation";
-
-const INVALID_BODY_MESSAGE = "Invalid request";
+import { firstIssue } from "@/lib/validation";
 
 type StartStream<T> = (
   userId: string,
@@ -28,9 +26,9 @@ function toResponse(result: TextStreamStart): Response {
     return new Response(null, { status: 204, headers: NO_STORE });
   }
   if (result.status === "refused") {
-    return jsonError(result.error, result.reason === "not-pro" ? 403 : 429);
+    return jsonError(result.failure, result.reason === "not-pro" ? 403 : 429);
   }
-  if (result.status === "failed") return jsonError(result.error, 503);
+  if (result.status === "failed") return jsonError(result.failure, 503);
   return new Response(result.stream, {
     headers: { ...NO_STORE, "Content-Type": "text/plain; charset=utf-8" },
   });
@@ -48,20 +46,17 @@ export async function streamAiAnswer<T>(
   label: string,
 ): Promise<Response> {
   const userId = await getSignedInUserId();
-  if (!userId) return jsonError(AI_SIGNED_OUT_MESSAGE, 401);
+  if (!userId) return jsonError(fail("aiSignedOut"), 401);
 
   const parsed = schema.safeParse(await readBody(request));
   if (!parsed.success) {
-    return jsonError(
-      firstIssueMessage(parsed.error, INVALID_BODY_MESSAGE),
-      400,
-    );
+    return jsonError(firstIssue(parsed.error, "invalidRequest"), 400);
   }
 
   try {
     return toResponse(await start(userId, parsed.data, request.signal));
   } catch (error) {
     await logger.error(`${label} failed`, { error, userId });
-    return jsonError(SERVER_ERROR_MESSAGE, 500);
+    return jsonError(fail("serverError"), 500);
   }
 }

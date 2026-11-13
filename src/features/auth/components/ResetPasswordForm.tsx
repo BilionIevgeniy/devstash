@@ -11,14 +11,13 @@ import {
   formValues,
 } from "@/features/auth/_internal/domain/form-values";
 import {
-  INVALID_RESET_LINK_MESSAGE,
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
 import type { FormActionState } from "@/features/auth/types";
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { GENERIC_ERROR_MESSAGE } from "@/lib/action-result";
 
 const SUCCESS_MESSAGE = "Password updated. You can now sign in.";
 const SIGN_IN_URL = "/sign-in";
@@ -48,13 +47,13 @@ async function submit(
 ): Promise<State> {
   const values = formValues(formData, FIELD_NAMES);
   if (values.password !== values.confirmPassword) {
-    return { error: "Passwords do not match", values };
+    return { error: { error: "passwordsDoNotMatch" }, values };
   }
 
   try {
     const result = await resetPassword({ ...values, email, token });
     if (!result.success) {
-      return { error: result.error, values };
+      return { error: result, values };
     }
     toast.success(SUCCESS_MESSAGE);
     // replace: Back must not lead to the link that was just used.
@@ -62,7 +61,7 @@ async function submit(
     return INITIAL_STATE;
   } catch {
     // A rejection left in an action would show the error page.
-    return { error: GENERIC_ERROR_MESSAGE, values };
+    return { error: { error: "generic" }, values };
   }
 }
 
@@ -80,6 +79,7 @@ export function ResetPasswordForm({ email, token }: ResetPasswordFormProps) {
   );
   // Gone while a new attempt runs, so a repeated error is announced again.
   const error = isPending ? null : state.error;
+  const errorText = useErrorText();
 
   return (
     <form action={formAction} className="space-y-4">
@@ -102,13 +102,13 @@ export function ResetPasswordForm({ email, token }: ResetPasswordFormProps) {
       ))}
       {error && (
         <p role="alert" className="text-sm text-destructive">
-          {error}
+          {errorText(error)}
         </p>
       )}
       <Button type="submit" size="lg" className="w-full" disabled={isPending}>
         {isPending ? "Updating password…" : "Update password"}
       </Button>
-      {error === INVALID_RESET_LINK_MESSAGE && (
+      {error?.error === "invalidResetLink" && (
         <Link
           href="/forgot-password"
           className="block text-center text-sm text-foreground underline-offset-4 hover:underline"

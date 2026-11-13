@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Ref } from "react";
 import { Crown, Loader2, Sparkles } from "lucide-react";
 
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -11,7 +12,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { AI_PRO_ONLY_MESSAGE } from "@/features/ai/domain/messages";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 
 export interface AiStreamButtonLabels {
@@ -81,6 +81,7 @@ export function AiStreamButton({
 // A Free user's button leads to the upgrade page: a tooltip alone would say
 // nothing on a phone, where it never opens.
 function UpgradeLink({ label }: { label: string }) {
+  const errorText = useErrorText();
   return (
     <TooltipProvider>
       <Tooltip>
@@ -95,7 +96,7 @@ function UpgradeLink({ label }: { label: string }) {
             </Link>
           </Button>
         </TooltipTrigger>
-        <TooltipContent>{AI_PRO_ONLY_MESSAGE}</TooltipContent>
+        <TooltipContent>{errorText("aiProOnly")}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );

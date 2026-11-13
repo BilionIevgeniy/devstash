@@ -9,7 +9,8 @@ interface FileKindRule {
   maxSize: number;
   /** Extension (lower case, no dot) to the Content-Type it is stored with. */
   contentTypes: Record<string, string>;
-  tooLargeMessage: string;
+  /** The error code of a file over maxSize. */
+  tooLarge: "imageTooLarge" | "fileTooLarge";
 }
 
 // The type of a file is decided by its extension, never by the browser's
@@ -26,7 +27,7 @@ const FILE_KIND_RULES: Record<FileKind, FileKindRule> = {
       webp: "image/webp",
       svg: "image/svg+xml",
     },
-    tooLargeMessage: "Images can be up to 5 MB",
+    tooLarge: "imageTooLarge",
   },
   file: {
     maxSize: 10 * MB,
@@ -42,13 +43,11 @@ const FILE_KIND_RULES: Record<FileKind, FileKindRule> = {
       toml: "application/toml",
       ini: "text/plain",
     },
-    tooLargeMessage: "Files can be up to 10 MB",
+    tooLarge: "fileTooLarge",
   },
 };
 
 export const FILE_NAME_MAX = 255;
-export const UNSUPPORTED_FILE_MESSAGE = "This file type is not supported";
-export const EMPTY_FILE_MESSAGE = "The file is empty";
 
 // A signed download URL stays the same for a whole window, so the browser can
 // cache the image. It expires two windows after its signing moment, so it is
@@ -64,7 +63,9 @@ export const PRESIGN_BY_USER = {
   windowSeconds: HOUR_SECONDS,
 } as const;
 
-export type DeclaredFileCheck = { contentType: string } | { error: string };
+export type DeclaredFileCheck =
+  | { contentType: string }
+  | { error: "unsupportedFileType" | "emptyFile" | FileKindRule["tooLarge"] };
 
 export interface SigningWindow {
   signingDate: Date;
@@ -108,8 +109,8 @@ export function maxFileSize(kind: FileKind): number {
   return FILE_KIND_RULES[kind].maxSize;
 }
 
-export function tooLargeMessage(kind: FileKind): string {
-  return FILE_KIND_RULES[kind].tooLargeMessage;
+export function tooLargeError(kind: FileKind): FileKindRule["tooLarge"] {
+  return FILE_KIND_RULES[kind].tooLarge;
 }
 
 // The value for an <input type="file" accept>, as extensions: MIME types in
@@ -128,9 +129,9 @@ export function checkDeclaredFile(
   size: number,
 ): DeclaredFileCheck {
   const contentType = contentTypeFor(kind, fileName);
-  if (!contentType) return { error: UNSUPPORTED_FILE_MESSAGE };
-  if (size <= 0) return { error: EMPTY_FILE_MESSAGE };
-  if (size > maxFileSize(kind)) return { error: tooLargeMessage(kind) };
+  if (!contentType) return { error: "unsupportedFileType" };
+  if (size <= 0) return { error: "emptyFile" };
+  if (size > maxFileSize(kind)) return { error: tooLargeError(kind) };
   return { contentType };
 }
 

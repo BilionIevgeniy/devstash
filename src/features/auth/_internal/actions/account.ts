@@ -6,11 +6,10 @@ import { changePasswordSchema } from "@/features/auth/schemas";
 import { changeUserPassword } from "@/features/auth/services/account";
 import type { AuthActionState } from "@/features/auth/types";
 import { logger } from "@/lib/logger";
-import { fail, GENERIC_ERROR_MESSAGE, ok } from "@/lib/action-result";
-import { firstIssueMessage } from "@/lib/validation";
+import { fail, ok } from "@/lib/action-result";
+import { firstIssue } from "@/lib/validation";
 
 const SIGN_IN_URL = "/sign-in";
-const SIGNED_OUT_ERROR = "You need to be signed in";
 const SUCCESS: AuthActionState = ok();
 
 interface ChangePasswordInput {
@@ -23,10 +22,10 @@ export async function changePassword(
   input: ChangePasswordInput,
 ): Promise<AuthActionState> {
   const parsed = changePasswordSchema.safeParse(input);
-  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
+  if (!parsed.success) return firstIssue(parsed.error);
 
   const userId = await getSignedInUserId();
-  if (!userId) return fail(SIGNED_OUT_ERROR);
+  if (!userId) return fail("signedOut");
 
   try {
     const result = await changeUserPassword(
@@ -34,10 +33,10 @@ export async function changePassword(
       parsed.data.currentPassword,
       parsed.data.newPassword,
     );
-    return result.success ? SUCCESS : fail(result.error);
+    return result.success ? SUCCESS : result;
   } catch (error) {
     await logger.error("Changing the password failed", { error, userId });
-    return fail(GENERIC_ERROR_MESSAGE);
+    return fail("generic");
   }
 }
 

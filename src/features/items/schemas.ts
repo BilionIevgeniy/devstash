@@ -3,12 +3,12 @@ import { z } from "zod";
 import {
   fileExtension,
   FILE_NAME_MAX,
+  type FileKind,
 } from "@/features/files/domain/file-rules";
 import { FAVORITE_ITEM_SORTS } from "@/features/items/domain/favorite-sort";
 import {
   COLLECTIONS_MAX,
   CONTENT_MAX,
-  CONTENT_TOO_LONG_MESSAGE,
   CREATABLE_TYPES,
   DESCRIPTION_MAX,
   editableFields,
@@ -17,7 +17,6 @@ import {
   TAGS_MAX,
   TITLE_MAX,
   URL_MAX,
-  URL_REQUIRED_MESSAGE,
 } from "@/features/items/domain/item-fields";
 import {
   DEFAULT_ITEM_LIST_PARAMS,
@@ -25,16 +24,23 @@ import {
   type ItemListParams,
 } from "@/features/items/domain/list-params";
 import { PINNED_ITEM_SORTS } from "@/features/items/domain/pinned-items";
+import type { ErrorCode } from "@/i18n/error-codes";
 import { parsePage } from "@/lib/pagination";
 
+// One code per kind: the kind is a word inside the sentence.
+const UPLOAD_FIRST = {
+  file: "uploadFileFirst",
+  image: "uploadImageFirst",
+} as const satisfies Record<FileKind, ErrorCode>;
+
 // Prisma generates CUID v1 ids, which also match the cuid2 format.
-export const itemIdSchema = z.cuid2("Invalid item id");
+export const itemIdSchema = z.cuid2("invalidItemId");
 
 // The value a favorite toggle asks for, for items and collections alike.
-export const favoriteValueSchema = z.boolean("Invalid favorite value");
+export const favoriteValueSchema = z.boolean("invalidFavoriteValue");
 
 // The value a pin toggle asks for.
-export const pinValueSchema = z.boolean("Invalid pin value");
+export const pinValueSchema = z.boolean("invalidPinValue");
 
 // `refresh: false` is for a caller that leaves the page itself.
 export const deleteItemOptionsSchema = z
@@ -45,7 +51,7 @@ function emptyToNull(value: string): string | null {
   return value === "" ? null : value;
 }
 
-function optionalText(max: number, message: string) {
+function optionalText(max: number, message: ErrorCode) {
   return z
     .string()
     .trim()
@@ -58,7 +64,7 @@ function optionalText(max: number, message: string) {
 // Not trimmed: leading whitespace is part of code. Only a blank field is null.
 const optionalContent = z
   .string()
-  .max(CONTENT_MAX, CONTENT_TOO_LONG_MESSAGE)
+  .max(CONTENT_MAX, "contentTooLong")
   .transform((value) => (value.trim() === "" ? null : value))
   .nullable()
   .optional();
@@ -66,39 +72,29 @@ const optionalContent = z
 // A whole new content, such as an accepted AI rewrite: never blank, since it
 // replaces what the user wrote.
 export const itemContentSchema = z
-  .string("Invalid content")
-  .max(CONTENT_MAX, CONTENT_TOO_LONG_MESSAGE)
-  .refine((value) => value.trim() !== "", "Content cannot be empty");
+  .string("invalidContent")
+  .max(CONTENT_MAX, "contentTooLong")
+  .refine((value) => value.trim() !== "", "contentEmpty");
 
 const optionalUrl = z
   .string()
   .trim()
-  .max(URL_MAX, `The URL can be up to ${URL_MAX} characters`)
+  .max(URL_MAX, "urlTooLong")
   .transform(emptyToNull)
-  .pipe(z.url({ protocol: /^https?$/, error: "Enter a valid URL" }).nullable())
+  .pipe(z.url({ protocol: /^https?$/, error: "invalidUrl" }).nullable())
   .nullable()
   .optional();
 
 // Counted after duplicates are dropped, so a tag typed twice is not refused.
 const tagList = z
-  .array(
-    z
-      .string()
-      .trim()
-      .min(1, "Tags cannot be empty")
-      .max(TAG_MAX, `A tag can be up to ${TAG_MAX} characters`),
-  )
+  .array(z.string().trim().min(1, "tagEmpty").max(TAG_MAX, "tagTooLong"))
   .transform((tags) => [...new Set(tags)])
-  .pipe(z.array(z.string()).max(TAGS_MAX, `Up to ${TAGS_MAX} tags`));
+  .pipe(z.array(z.string()).max(TAGS_MAX, "tooManyTags"));
 
 const collectionIdList = z
-  .array(z.cuid2("Invalid collection id"))
+  .array(z.cuid2("invalidCollectionId"))
   .transform((ids) => [...new Set(ids)])
-  .pipe(
-    z
-      .array(z.string())
-      .max(COLLECTIONS_MAX, `Up to ${COLLECTIONS_MAX} collections`),
-  );
+  .pipe(z.array(z.string()).max(COLLECTIONS_MAX, "tooManyCollections"));
 
 // A field left out is not changed; null clears it. The tags and the collections
 // are always sent and replace the old ones as a whole.
@@ -106,18 +102,12 @@ export const updateItemSchema = z.object({
   title: z
     .string()
     .trim()
-    .min(1, "Title is required")
-    .max(TITLE_MAX, `The title can be up to ${TITLE_MAX} characters`),
-  description: optionalText(
-    DESCRIPTION_MAX,
-    `The description can be up to ${DESCRIPTION_MAX} characters`,
-  ),
+    .min(1, "titleRequired")
+    .max(TITLE_MAX, "titleTooLong"),
+  description: optionalText(DESCRIPTION_MAX, "descriptionTooLong"),
   content: optionalContent,
   url: optionalUrl,
-  language: optionalText(
-    LANGUAGE_MAX,
-    `The language can be up to ${LANGUAGE_MAX} characters`,
-  ),
+  language: optionalText(LANGUAGE_MAX, "languageTooLong"),
   tags: tagList,
   collectionIds: collectionIdList,
 });
@@ -132,8 +122,8 @@ const uploadedFile = z.object({
   name: z
     .string()
     .trim()
-    .min(1, "The file needs a name")
-    .max(FILE_NAME_MAX, "The file name is too long"),
+    .min(1, "fileNameRequired")
+    .max(FILE_NAME_MAX, "fileNameTooLong"),
 });
 
 // The same fields as an update plus the type. A type that has a URL field
@@ -141,7 +131,7 @@ const uploadedFile = z.object({
 // carry one; other fields its type does not have are dropped by the service.
 export const createItemSchema = updateItemSchema
   .extend({
-    typeName: z.enum(CREATABLE_TYPES, "Choose an item type"),
+    typeName: z.enum(CREATABLE_TYPES, "chooseItemType"),
     file: uploadedFile.optional(),
   })
   .superRefine((input, ctx) => {
@@ -150,21 +140,21 @@ export const createItemSchema = updateItemSchema
       ctx.addIssue({
         code: "custom",
         path: ["url"],
-        message: URL_REQUIRED_MESSAGE,
+        message: "urlRequired" satisfies ErrorCode,
       });
     }
     if (fields.file && !input.file) {
       ctx.addIssue({
         code: "custom",
         path: ["file"],
-        message: `Upload the ${fields.file} first`,
+        message: UPLOAD_FIRST[fields.file],
       });
     }
     if (!fields.file && input.file) {
       ctx.addIssue({
         code: "custom",
         path: ["file"],
-        message: "This item type has no file",
+        message: "typeHasNoFile" satisfies ErrorCode,
       });
     }
     if (
@@ -174,7 +164,7 @@ export const createItemSchema = updateItemSchema
       ctx.addIssue({
         code: "custom",
         path: ["file", "name"],
-        message: "The file name does not match the upload",
+        message: "fileNameMismatch" satisfies ErrorCode,
       });
     }
   });

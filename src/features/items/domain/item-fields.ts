@@ -33,9 +33,6 @@ export const TAGS_MAX = 20;
 export const TAG_MAX = 50;
 export const COLLECTIONS_MAX = 100;
 
-export const URL_REQUIRED_MESSAGE = "URL is required";
-export const CONTENT_TOO_LONG_MESSAGE = `Content can be up to ${CONTENT_MAX} characters`;
-
 // The types the create dialog offers. File and image need Pro (requiresPro).
 export const CREATABLE_TYPES = [
   "snippet",
@@ -70,13 +67,11 @@ export function editableFields(typeName: string): EditableFields {
 
 // What is wrong with the content of a form before it is sent, or null. The
 // editors have no maxLength to stop a long paste, and the server refuses the
-// same limit; a type without a content field has nothing to refuse.
-export function contentError(
-  fields: EditableFields,
-  content: string,
-): string | null {
+// same limit; a type without a content field has nothing to refuse. The
+// error code and its params, as a failure carries them.
+export function contentError(fields: EditableFields, content: string) {
   return fields.content && content.length > CONTENT_MAX
-    ? CONTENT_TOO_LONG_MESSAGE
+    ? ({ error: "contentTooLong", params: { max: CONTENT_MAX } } as const)
     : null;
 }
 
@@ -88,7 +83,7 @@ interface TypeSpecificUpdate {
 }
 
 export type EditableUpdate<T extends TypeSpecificUpdate> =
-  { data: T } | { error: string };
+  { data: T } | { error: "urlRequired" };
 
 // Keeps an update to the fields its type has, so a stray url on a note or
 // content on an image never lands in the row. A field left out stays as it
@@ -98,7 +93,7 @@ export function editableUpdate<T extends TypeSpecificUpdate>(
   input: T,
 ): EditableUpdate<T> {
   const fields = editableFields(typeName);
-  if (fields.url && input.url === null) return { error: URL_REQUIRED_MESSAGE };
+  if (fields.url && input.url === null) return { error: "urlRequired" };
 
   const { content, language, url, ...common } = input;
   return {

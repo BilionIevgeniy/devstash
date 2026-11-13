@@ -2,6 +2,7 @@
 
 import { RotateCcw } from "lucide-react";
 
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { DropZone } from "@/features/files/_internal/components/DropZone";
 import { UploadProgress } from "@/features/files/_internal/components/UploadProgress";
@@ -21,6 +22,7 @@ interface FileUploadProps {
 // closed dialog or a switched type never keeps sending.
 export function FileUpload({ kind, onChange, disabled }: FileUploadProps) {
   const { state, upload, reset } = useFileUpload(kind, onChange);
+  const errorText = useErrorText();
   const label = kind === "image" ? "image" : "file";
 
   if (state.status === "uploading" || state.status === "done") {
@@ -48,7 +50,7 @@ export function FileUpload({ kind, onChange, disabled }: FileUploadProps) {
       {state.status === "failed" && (
         <div className="flex items-center gap-2 text-sm text-destructive">
           <span role="alert" className="flex-1">
-            {state.error}
+            {errorText(state.error)}
           </span>
           {failedFile && (
             <Button

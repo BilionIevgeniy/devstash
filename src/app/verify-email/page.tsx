@@ -4,9 +4,9 @@ import { AuthCard } from "@/features/auth/components/AuthCard";
 import { ConfirmEmailForm } from "@/features/auth/components/ConfirmEmailForm";
 import { ResendVerificationButton } from "@/features/auth/components/ResendVerificationButton";
 import { Button } from "@/components/ui/button";
-import { INVALID_LINK_ERROR } from "@/features/auth/domain/verification-token";
 import { isVerificationTokenValid } from "@/features/auth/queries";
 import { emailLinkParamsSchema } from "@/features/auth/schemas";
+import { getErrorText } from "@/lib/error-text";
 
 export default async function VerifyEmailPage({
   searchParams,
@@ -30,8 +30,12 @@ export default async function VerifyEmailPage({
     );
   }
 
+  const errorText = await getErrorText();
   return (
-    <AuthCard title="Verification failed" description={INVALID_LINK_ERROR}>
+    <AuthCard
+      title="Verification failed"
+      description={errorText("invalidVerificationLink")}
+    >
       {parsed.success && <ResendVerificationButton email={parsed.data.email} />}
       <Button asChild variant="outline" size="lg" className="w-full">
         <Link href="/sign-in">Back to sign in</Link>

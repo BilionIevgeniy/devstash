@@ -6,7 +6,7 @@ import {
 } from "@/features/collections/domain/collection-fields";
 import { FAVORITE_COLLECTION_SORTS } from "@/features/collections/domain/favorite-sort";
 
-export const collectionIdSchema = z.cuid2("Invalid collection id");
+export const collectionIdSchema = z.cuid2("invalidCollectionId");
 
 // The sort of favorite collections in the URL; anything else is the default.
 export const favoriteCollectionSortSchema = z
@@ -19,18 +19,11 @@ export const deleteCollectionOptionsSchema = z
   .default({ refresh: true });
 
 const collectionFieldsSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, "Enter a name")
-    .max(NAME_MAX, `The name can be up to ${NAME_MAX} characters`),
+  name: z.string().trim().min(1, "enterName").max(NAME_MAX, "nameTooLong"),
   description: z
     .string()
     .trim()
-    .max(
-      DESCRIPTION_MAX,
-      `The description can be up to ${DESCRIPTION_MAX} characters`,
-    )
+    .max(DESCRIPTION_MAX, "descriptionTooLong")
     .transform((value) => (value === "" ? null : value))
     .nullable()
     .optional(),

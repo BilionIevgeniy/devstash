@@ -5,6 +5,7 @@ import type { RefObject } from "react";
 import type { SubmitRun } from "@/components/common/hooks/use-submit-dialog";
 import type { EditorHandle } from "@/features/editor/types";
 import type { UploadedFile } from "@/features/files/types";
+import type { ErrorText } from "@/i18n/error-text";
 import { rejectInvalidContent } from "@/features/items/_internal/components/reject-invalid-content";
 import { createItem } from "@/features/items/actions/item";
 import {
@@ -17,8 +18,6 @@ import {
   type EditableFields,
 } from "@/features/items/domain/item-fields";
 
-const CREATE_FAILED_MESSAGE = "Couldn't create the item";
-
 export interface NewItemSubmission {
   typeName: CreatableTypeName;
   fields: EditableFields;
@@ -26,6 +25,7 @@ export interface NewItemSubmission {
   upload: UploadedFile | null;
   contentRef: RefObject<EditorHandle | null>;
   run: SubmitRun;
+  errorText: ErrorText;
   /** Called in the commit that brings the refreshed page with the new item. */
   onCreated: () => void;
 }
@@ -59,12 +59,15 @@ export function submitNewItem({
   upload,
   contentRef,
   run,
+  errorText,
   onCreated,
 }: NewItemSubmission): void {
-  if (rejectInvalidContent(fields, values.content, contentRef)) return;
+  if (rejectInvalidContent(fields, values.content, contentRef, errorText)) {
+    return;
+  }
 
   run(() => createItem(createPayload(typeName, fields, values, upload)), {
     onSuccess: onCreated,
-    failMessage: CREATE_FAILED_MESSAGE,
+    failCode: "itemCreateFailed",
   });
 }

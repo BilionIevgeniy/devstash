@@ -1,3 +1,4 @@
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { CommandItem } from "@/components/ui/command";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PaletteSearch } from "@/features/search/_internal/components/hooks/use-palette-search";
@@ -8,10 +9,10 @@ import {
 
 const LOADING_ROWS = [0, 1, 2, 3, 4];
 
-const FAILURE_MESSAGES = {
-  error: "Couldn't search. Try again.",
-  "rate-limited": "Too many searches. Wait a moment and try again.",
-};
+const FAILURE_CODES = {
+  error: "searchFailed",
+  "rate-limited": "searchRateLimited",
+} as const;
 
 interface PaletteBodyProps extends MatchHandlers {
   search: PaletteSearch;
@@ -31,16 +32,17 @@ function PaletteFailure({
   status,
   onRetry,
 }: {
-  status: keyof typeof FAILURE_MESSAGES;
+  status: keyof typeof FAILURE_CODES;
   onRetry: () => void;
 }) {
+  const errorText = useErrorText();
   return (
     <>
       <p
         role="alert"
         className="px-2 py-4 text-center text-sm text-destructive"
       >
-        {FAILURE_MESSAGES[status]}
+        {errorText(FAILURE_CODES[status])}
       </p>
       <CommandItem value="retry" onSelect={onRetry} className="justify-center">
         Try again

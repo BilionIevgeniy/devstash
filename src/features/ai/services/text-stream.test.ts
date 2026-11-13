@@ -15,10 +15,7 @@ vi.mock("@/lib/openai", async (importOriginal) => ({
   streamText,
 }));
 
-import {
-  AI_FAILURE_MESSAGES,
-  AI_PRO_ONLY_MESSAGE,
-} from "@/features/ai/domain/messages";
+import { AI_FAILURE_CODES } from "@/features/ai/domain/messages";
 import { EXPLAIN_SETTINGS } from "@/features/ai/domain/model";
 import { STREAM_END_MARK } from "@/features/ai/domain/text-stream";
 import {
@@ -103,7 +100,7 @@ describe("startTextStream", () => {
     ).resolves.toEqual({
       status: "refused",
       reason: "not-pro",
-      error: AI_PRO_ONLY_MESSAGE,
+      failure: { success: false, data: null, error: "aiProOnly" },
     });
     expect(streamText).not.toHaveBeenCalled();
   });
@@ -127,7 +124,7 @@ describe("startTextStream", () => {
       startTextStream("user-1", request, client.signal),
     ).resolves.toEqual({
       status: "failed",
-      error: AI_FAILURE_MESSAGES.refused,
+      failure: { success: false, data: null, error: AI_FAILURE_CODES.refused },
     });
   });
 
@@ -177,7 +174,7 @@ describe("startTextStream", () => {
 
     await expect(result).resolves.toEqual({
       status: "failed",
-      error: AI_FAILURE_MESSAGES.timeout,
+      failure: { success: false, data: null, error: AI_FAILURE_CODES.timeout },
     });
   });
 

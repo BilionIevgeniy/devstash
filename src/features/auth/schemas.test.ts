@@ -27,9 +27,9 @@ function messagesAt(outcome: ParseOutcome, path: string): string[] {
   );
 }
 
-const TOO_SHORT = `Password must be at least ${MIN_PASSWORD_LENGTH} characters`;
-const TOO_LONG = `Password must be at most ${MAX_PASSWORD_LENGTH} characters`;
-const MISMATCH = "Passwords do not match";
+const TOO_SHORT = "passwordTooShort";
+const TOO_LONG = "passwordTooLong";
+const MISMATCH = "passwordsDoNotMatch";
 const PASSWORD = "correct-horse-1";
 
 describe("emailSchema", () => {
@@ -42,7 +42,7 @@ describe("emailSchema", () => {
     (value) => {
       const result = emailSchema.safeParse(value);
       expect(result.success).toBe(false);
-      expect(messagesAt(result, "")).toContain("Invalid email address");
+      expect(messagesAt(result, "")).toContain("invalidEmail");
     },
   );
 
@@ -87,7 +87,7 @@ describe("registerSchema", () => {
 
   it("requires a name that is not only spaces", () => {
     const result = registerSchema.safeParse({ ...valid, name: "   " });
-    expect(messagesAt(result, "name")).toContain("Name is required");
+    expect(messagesAt(result, "name")).toContain("nameRequired");
   });
 
   it("keeps spaces in the password exactly as typed", () => {
@@ -209,7 +209,7 @@ describe("changePasswordSchema", () => {
       currentPassword: "",
     });
     expect(messagesAt(result, "currentPassword")).toContain(
-      "Current password is required",
+      "currentPasswordRequired",
     );
   });
 
@@ -279,7 +279,7 @@ describe("signInSchema", () => {
       email: "ada@example.com",
       password: "",
     });
-    expect(messagesAt(result, "password")).toContain("Password is required");
+    expect(messagesAt(result, "password")).toContain("passwordRequired");
   });
 });
 

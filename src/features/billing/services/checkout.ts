@@ -14,10 +14,6 @@ import {
   isStripeNotFound,
 } from "@/lib/stripe";
 
-const ALREADY_PRO = "You are already on the Pro plan.";
-const NO_BILLING_ACCOUNT = "No billing account was found.";
-const NOT_CONFIRMED = "This payment could not be confirmed.";
-
 export type RedirectResult = OperationResult<{ url: string }>;
 
 interface CheckoutUser {
@@ -96,7 +92,7 @@ export async function createCheckoutSession(
   origin: string,
 ): Promise<RedirectResult> {
   const { isPro } = await getEntitlements(user.id);
-  if (isPro) return fail(ALREADY_PRO);
+  if (isPro) return fail("alreadyPro");
 
   // Before any customer write: a missing price must leave nothing behind.
   const input = { userId: user.id, priceId: priceIdFor(plan), origin };
@@ -118,7 +114,7 @@ export async function createPortalSession(
   origin: string,
 ): Promise<RedirectResult> {
   const customer = await getStripeCustomerId(userId);
-  if (!customer) return fail(NO_BILLING_ACCOUNT);
+  if (!customer) return fail("noBillingAccount");
 
   try {
     const session = await getStripe().billingPortal.sessions.create({
@@ -132,7 +128,7 @@ export async function createPortalSession(
     // The id stays: the webhook finds the row only by it, and clearing it could
     // leave a Pro row that no later event can end.
     logger.warn("The Stripe customer of a user is missing", { userId });
-    return fail(NO_BILLING_ACCOUNT);
+    return fail("noBillingAccount");
   }
 }
 
@@ -153,13 +149,13 @@ export async function confirmCheckoutSession(
 ): Promise<OperationResult> {
   const session = await retrieveCheckoutSession(sessionId);
   if (session?.metadata?.userId !== userId || session.status !== "complete") {
-    return fail(NOT_CONFIRMED);
+    return fail("paymentNotConfirmed");
   }
 
   const customerId = stripeIdOf(session.customer);
   const subscriptionId = stripeIdOf(session.subscription);
   if (!customerId || !subscriptionId) {
-    return fail(NOT_CONFIRMED);
+    return fail("paymentNotConfirmed");
   }
 
   await syncSubscription(customerId, subscriptionId);

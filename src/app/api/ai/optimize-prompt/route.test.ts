@@ -57,7 +57,7 @@ describe("POST /api/ai/optimize-prompt", () => {
     startPromptOptimization.mockResolvedValue({
       status: "refused",
       reason,
-      error: "No",
+      failure: { success: false, data: null, error: "aiProOnly" },
     });
 
     const response = await post(body);
@@ -69,13 +69,13 @@ describe("POST /api/ai/optimize-prompt", () => {
   it("answers 503 for an AI failure before any text", async () => {
     startPromptOptimization.mockResolvedValue({
       status: "failed",
-      error: "Busy",
+      failure: { success: false, data: null, error: "aiBusy" },
     });
 
     const response = await post(body);
 
     expect(response.status).toBe(503);
-    await expect(response.json()).resolves.toMatchObject({ error: "Busy" });
+    await expect(response.json()).resolves.toMatchObject({ error: "aiBusy" });
   });
 
   it("answers an empty 204 when the client went away", async () => {

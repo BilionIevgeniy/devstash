@@ -36,7 +36,7 @@ describe("GET /api/export", () => {
     const forbidden = await GET();
     expect(forbidden.status).toBe(403);
     expect(await forbidden.json()).toMatchObject({
-      error: "Export is a Pro feature",
+      error: "exportProOnly",
     });
 
     exportUserData.mockResolvedValueOnce({

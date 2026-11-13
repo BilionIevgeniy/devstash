@@ -2,13 +2,15 @@ import { useRef, useTransition } from "react";
 import { unstable_rethrow } from "next/navigation";
 import { toast } from "sonner";
 
+import { useErrorText } from "@/components/common/hooks/use-error-text";
+import type { PlainErrorCode } from "@/i18n/error-codes";
 import type { OperationResult } from "@/lib/action-result";
 
 export interface RunOptions {
   /** Runs in the transition: the dialog closes in the commit of the fresh page. */
   onSuccess: () => void;
-  /** Shown when the action throws; a refused result shows its own words. */
-  failMessage: string;
+  /** Shown when the action throws; a refused result shows its own code. */
+  failCode: PlainErrorCode;
 }
 
 /** The `run` of useSubmitDialog, for a helper that submits on its behalf. */
@@ -26,13 +28,14 @@ export type SubmitRun = (
 export function useSubmitDialog() {
   const [isPending, startTransition] = useTransition();
   const doneRef = useRef(false);
+  const errorText = useErrorText();
 
-  const run: SubmitRun = (action, { onSuccess, failMessage }) => {
+  const run: SubmitRun = (action, { onSuccess, failCode }) => {
     startTransition(async () => {
       try {
         const result = await action();
         if (!result.success) {
-          toast.error(result.error);
+          toast.error(errorText(result));
           return;
         }
         doneRef.current = true;
@@ -43,7 +46,7 @@ export function useSubmitDialog() {
         // A signed-out caller's redirect arrives here too, and must go on. A
         // rejection left in the transition would reach an error page instead.
         unstable_rethrow(error);
-        toast.error(failMessage);
+        toast.error(errorText(failCode));
       }
     });
   };

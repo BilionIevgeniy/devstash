@@ -4,6 +4,7 @@ import { useActionState } from "react";
 
 import { CheckEmailNotice } from "@/features/auth/_internal/components/CheckEmailNotice";
 import { postRegistration } from "@/features/auth/_internal/components/fetch-register";
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -51,19 +52,24 @@ const INITIAL_STATE: State = {
 async function submit(_previous: State, formData: FormData): Promise<State> {
   const values = formValues(formData, FIELD_NAMES);
   if (values.password !== values.confirmPassword) {
-    return { error: "Passwords do not match", values, registeredEmail: null };
+    return {
+      error: { error: "passwordsDoNotMatch" },
+      values,
+      registeredEmail: null,
+    };
   }
 
   const result = await postRegistration(values);
   return result.success
     ? { ...INITIAL_STATE, registeredEmail: values.email }
-    : { error: result.error, values, registeredEmail: null };
+    : { error: result, values, registeredEmail: null };
 }
 
 export function RegisterForm() {
   const [state, formAction, isPending] = useActionState(submit, INITIAL_STATE);
   // Gone while a new attempt runs, so a repeated error is announced again.
   const error = isPending ? null : state.error;
+  const errorText = useErrorText();
 
   if (state.registeredEmail) {
     return <CheckEmailNotice email={state.registeredEmail} />;
@@ -90,7 +96,7 @@ export function RegisterForm() {
       ))}
       {error && (
         <p role="alert" className="text-sm text-destructive">
-          {error}
+          {errorText(error)}
         </p>
       )}
       <Button type="submit" size="lg" className="w-full" disabled={isPending}>

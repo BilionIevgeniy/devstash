@@ -1,14 +1,11 @@
-import { fail, ok } from "@/lib/action-result";
+import { ok, type Failure } from "@/lib/action-result";
 
 // The JSON answers of the route handlers (ADR 0021), in the envelope of
-// ActionResult. Every route answers for one user or does not care, so both
+// ActionResult: a failure is its code and params (ADR 0022). Every route answers for one user or does not care, so both
 // always send `private, no-store`: a shared cache never keeps one.
 
 /** For a route's own Response (a stream, a 204): never kept by a shared cache. */
 export const NO_STORE = { "Cache-Control": "private, no-store" } as const;
-
-/** The 500 text of a route: the browser shows its own words for it. */
-export const SERVER_ERROR_MESSAGE = "Something went wrong";
 
 function withNoStore(headers?: HeadersInit): Headers {
   const merged = new Headers(headers);
@@ -24,9 +21,9 @@ export function jsonOk<T>(data: T, init: ResponseInit = {}): Response {
 }
 
 export function jsonError(
-  error: string,
+  failure: Failure,
   status: number,
   headers?: HeadersInit,
 ): Response {
-  return Response.json(fail(error), { status, headers: withNoStore(headers) });
+  return Response.json(failure, { status, headers: withNoStore(headers) });
 }

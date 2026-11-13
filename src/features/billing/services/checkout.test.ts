@@ -203,8 +203,8 @@ describe("confirmCheckoutSession", () => {
   };
   const NOT_CONFIRMED = {
     success: false,
-    error: "This payment could not be confirmed.",
     data: null,
+    error: "paymentNotConfirmed",
   };
 
   beforeEach(() => {

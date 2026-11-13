@@ -14,12 +14,11 @@ import {
 import { revokeGitHubGrant } from "@/features/auth/_internal/services/github-grant";
 import { getPasswordResetIdentifier } from "@/features/auth/domain/password-reset";
 import {
-  getTooManyAttemptsMessage,
+  tooManyAttemptsParams,
   PASSWORD_CHECK_BY_USER,
 } from "@/features/auth/domain/rate-limits";
 import {
   isRecentlyAuthenticated,
-  REAUTH_REQUIRED_MESSAGE,
   requiresReauthentication,
 } from "@/features/auth/domain/reauth";
 import {
@@ -30,10 +29,6 @@ import {
 } from "@/lib/action-result";
 import { prisma } from "@/lib/prisma";
 import { consumeRateLimit, resetRateLimit } from "@/lib/rate-limit";
-
-const NO_PASSWORD_MESSAGE = "This account has no password to change";
-const INCORRECT_PASSWORD_MESSAGE = "Current password is incorrect";
-const INCORRECT_DELETE_PASSWORD_MESSAGE = "Password is incorrect";
 
 export interface DeleteAccountProof {
   /** Required for accounts that have a password. */
@@ -64,7 +59,10 @@ async function getPasswordCheckRefusal(
   const limit = await consumeRateLimit(PASSWORD_CHECK_BY_USER, userId);
   if (limit.success) return null;
 
-  return fail(getTooManyAttemptsMessage(limit.reset, Date.now()));
+  return fail(
+    "tooManyAttempts",
+    tooManyAttemptsParams(limit.reset, Date.now()),
+  );
 }
 
 export async function changeUserPassword(
@@ -76,10 +74,10 @@ export async function changeUserPassword(
   if (refusal) return refusal;
 
   const hash = await getPasswordHash(userId);
-  if (!hash) return fail(NO_PASSWORD_MESSAGE);
+  if (!hash) return fail("noPasswordToChange");
 
   if (!(await bcrypt.compare(currentPassword, hash))) {
-    return fail(INCORRECT_PASSWORD_MESSAGE);
+    return fail("incorrectCurrentPassword");
   }
 
   const password = await hashPassword(newPassword);
@@ -127,10 +125,10 @@ export async function verifyAccountDeletion(
       !proof.password ||
       !(await bcrypt.compare(proof.password, user.password))
     ) {
-      return fail(INCORRECT_DELETE_PASSWORD_MESSAGE);
+      return fail("incorrectPassword");
     }
   } else if (!isRecentlyAuthenticated(proof.authenticatedAt, Date.now())) {
-    return fail(REAUTH_REQUIRED_MESSAGE);
+    return fail("reauthRequired");
   }
 
   await resetRateLimit(PASSWORD_CHECK_BY_USER, userId);

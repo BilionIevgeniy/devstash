@@ -22,33 +22,28 @@ import {
   updateUserItem,
 } from "@/features/items/services/item";
 import type { ItemDetailJson } from "@/features/items/types";
-import {
-  fail,
-  GENERIC_ERROR_MESSAGE,
-  ok,
-  type ActionResult,
-} from "@/lib/action-result";
+import { fail, ok, type ActionResult } from "@/lib/action-result";
 import { logger } from "@/lib/logger";
-import { firstIssueMessage } from "@/lib/validation";
+import { firstIssue } from "@/lib/validation";
 
 type UpdateItemActionResult = ActionResult<ItemDetailJson>;
 
 export async function createItem(data: unknown): Promise<ActionResult> {
   const parsed = createItemSchema.safeParse(data);
-  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
+  if (!parsed.success) return firstIssue(parsed.error);
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
 
   try {
     const result = await createUserItem(userId, parsed.data);
-    if (!result.success) return fail(result.error);
+    if (!result.success) return result;
     // The new item comes back with this response's fresh page.
     refresh();
     return ok();
   } catch (error) {
     await logger.error("Creating the item failed", { error, userId });
-    return fail(GENERIC_ERROR_MESSAGE);
+    return fail("generic");
   }
 }
 
@@ -58,17 +53,17 @@ export async function updateItem(
   data: unknown,
 ): Promise<UpdateItemActionResult> {
   const parsedId = itemIdSchema.safeParse(itemId);
-  if (!parsedId.success) return fail(firstIssueMessage(parsedId.error));
+  if (!parsedId.success) return firstIssue(parsedId.error);
 
   const parsed = updateItemSchema.safeParse(data);
-  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
+  if (!parsed.success) return firstIssue(parsed.error);
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
 
   try {
     const result = await updateUserItem(userId, parsedId.data, parsed.data);
-    if (!result.success) return fail(result.error);
+    if (!result.success) return result;
 
     // The fresh page comes back with this response, so the cards behind the
     // form update in the same commit that closes it.
@@ -76,7 +71,7 @@ export async function updateItem(
     return ok(toItemDetailJson(result.data));
   } catch (error) {
     await logger.error("Updating the item failed", { error, userId });
-    return fail(GENERIC_ERROR_MESSAGE);
+    return fail("generic");
   }
 }
 
@@ -87,17 +82,17 @@ export async function replaceItemContent(
   content: unknown,
 ): Promise<UpdateItemActionResult> {
   const parsedId = itemIdSchema.safeParse(itemId);
-  if (!parsedId.success) return fail(firstIssueMessage(parsedId.error));
+  if (!parsedId.success) return firstIssue(parsedId.error);
 
   const parsed = itemContentSchema.safeParse(content);
-  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
+  if (!parsed.success) return firstIssue(parsed.error);
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
 
   try {
     const result = await setUserItemContent(userId, parsedId.data, parsed.data);
-    if (!result.success) return fail(result.error);
+    if (!result.success) return result;
 
     refresh();
     return ok(toItemDetailJson(result.data));
@@ -106,7 +101,7 @@ export async function replaceItemContent(
       error,
       userId,
     });
-    return fail(GENERIC_ERROR_MESSAGE);
+    return fail("generic");
   }
 }
 
@@ -116,10 +111,10 @@ export async function setItemFavorite(
   isFavorite: boolean,
 ): Promise<ActionResult> {
   const parsedId = itemIdSchema.safeParse(itemId);
-  if (!parsedId.success) return fail(firstIssueMessage(parsedId.error));
+  if (!parsedId.success) return firstIssue(parsedId.error);
 
   const parsedValue = favoriteValueSchema.safeParse(isFavorite);
-  if (!parsedValue.success) return fail(firstIssueMessage(parsedValue.error));
+  if (!parsedValue.success) return firstIssue(parsedValue.error);
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
@@ -130,7 +125,7 @@ export async function setItemFavorite(
       parsedId.data,
       parsedValue.data,
     );
-    if (!result.success) return fail(result.error);
+    if (!result.success) return result;
     // The fresh page comes back with this response, so the optimistic star
     // hands over to it without a flicker.
     refresh();
@@ -140,7 +135,7 @@ export async function setItemFavorite(
       error,
       userId,
     });
-    return fail(GENERIC_ERROR_MESSAGE);
+    return fail("generic");
   }
 }
 
@@ -151,10 +146,10 @@ export async function setItemPin(
   isPinned: boolean,
 ): Promise<ActionResult> {
   const parsedId = itemIdSchema.safeParse(itemId);
-  if (!parsedId.success) return fail(firstIssueMessage(parsedId.error));
+  if (!parsedId.success) return firstIssue(parsedId.error);
 
   const parsedValue = pinValueSchema.safeParse(isPinned);
-  if (!parsedValue.success) return fail(firstIssueMessage(parsedValue.error));
+  if (!parsedValue.success) return firstIssue(parsedValue.error);
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
@@ -165,14 +160,14 @@ export async function setItemPin(
       parsedId.data,
       parsedValue.data,
     );
-    if (!result.success) return fail(result.error);
+    if (!result.success) return result;
     // The fresh page comes back with this response, so the optimistic pin
     // hands over to it without a flicker.
     refresh();
     return ok();
   } catch (error) {
     await logger.error("Updating the pin of an item failed", { error, userId });
-    return fail(GENERIC_ERROR_MESSAGE);
+    return fail("generic");
   }
 }
 
@@ -183,11 +178,11 @@ export async function deleteItem(
   options?: unknown,
 ): Promise<ActionResult> {
   const parsedId = itemIdSchema.safeParse(itemId);
-  if (!parsedId.success) return fail(firstIssueMessage(parsedId.error));
+  if (!parsedId.success) return firstIssue(parsedId.error);
 
   const parsedOptions = deleteItemOptionsSchema.safeParse(options);
   if (!parsedOptions.success) {
-    return fail(firstIssueMessage(parsedOptions.error));
+    return firstIssue(parsedOptions.error);
   }
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
@@ -195,13 +190,13 @@ export async function deleteItem(
 
   try {
     const result = await deleteUserItem(userId, parsedId.data);
-    if (!result.success) return fail(result.error);
+    if (!result.success) return result;
     // The fresh page comes back with this response, so the drawer's
     // optimistic removal hands over to it without a flicker.
     if (parsedOptions.data.refresh) refresh();
     return ok();
   } catch (error) {
     await logger.error("Deleting the item failed", { error, userId });
-    return fail(GENERIC_ERROR_MESSAGE);
+    return fail("generic");
   }
 }

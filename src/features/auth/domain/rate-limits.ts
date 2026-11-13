@@ -1,7 +1,3 @@
-const TOO_MANY_ATTEMPTS_PREFIX = "Too many attempts.";
-
-export const TOO_MANY_ATTEMPTS_MESSAGE = `${TOO_MANY_ATTEMPTS_PREFIX} Try again later.`;
-
 const MINUTE_SECONDS = 60;
 const HOUR_SECONDS = 60 * MINUTE_SECONDS;
 
@@ -83,14 +79,13 @@ export function getRetryAfterSeconds(reset: number, now: number): number {
 
 // Rounds up to whole minutes: telling a client to retry earlier than the
 // window ends would only earn it another refusal.
-function formatTooManyAttemptsMessage(retryAfterSeconds: number): string {
-  const minutes = Math.max(1, Math.ceil(retryAfterSeconds / MINUTE_SECONDS));
-  const unit = minutes === 1 ? "minute" : "minutes";
-  return `${TOO_MANY_ATTEMPTS_PREFIX} Please try again in ${minutes} ${unit}.`;
-}
-
-export function getTooManyAttemptsMessage(reset: number, now: number): string {
-  return formatTooManyAttemptsMessage(getRetryAfterSeconds(reset, now));
+// The params of the `tooManyAttempts` error code.
+export function tooManyAttemptsParams(
+  reset: number,
+  now: number,
+): { minutes: number } {
+  const seconds = getRetryAfterSeconds(reset, now);
+  return { minutes: Math.max(1, Math.ceil(seconds / MINUTE_SECONDS)) };
 }
 
 interface CounterStatus {

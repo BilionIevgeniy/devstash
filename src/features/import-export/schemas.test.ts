@@ -20,14 +20,16 @@ describe("parseImportFile", () => {
   it("refuses text that is not JSON", () => {
     expect(parseImportFile("{oops")).toEqual({
       success: false,
-      error: "This file is not valid JSON",
+      data: null,
+      error: "invalidJson",
     });
   });
 
   it("names a version it cannot read, even when the shape changed", () => {
     expect(parseImportFile(JSON.stringify({ version: 2, data: {} }))).toEqual({
       success: false,
-      error: "This file is from a version of DevStash this app cannot read",
+      data: null,
+      error: "unsupportedExportVersion",
     });
   });
 
@@ -35,7 +37,8 @@ describe("parseImportFile", () => {
     expect(parseImportFile("[1, 2]").success).toBe(false);
     expect(parseImportFile(file({ items: "none" }))).toEqual({
       success: false,
-      error: "This is not a DevStash export file",
+      data: null,
+      error: "notAnExport",
     });
   });
 
@@ -43,7 +46,9 @@ describe("parseImportFile", () => {
     const items = Array.from({ length: 10_001 }, () => ({}));
     expect(parseImportFile(file({ items }))).toEqual({
       success: false,
-      error: "A file can hold up to 10000 items",
+      data: null,
+      error: "importTooManyItems",
+      params: { max: 10_000 },
     });
   });
 });
@@ -70,11 +75,11 @@ describe("parseImportedItem", () => {
   it("fails one record on its own rule, in its words", () => {
     expect(parseImportedItem({ ...snippet, title: "" })).toEqual({
       kind: "invalid",
-      error: "Title is required",
+      reason: { error: "titleRequired" },
     });
     expect(parseImportedItem({ ...snippet, type: "custom" })).toEqual({
       kind: "invalid",
-      error: "Unknown item type",
+      reason: { error: "unknownItemType" },
     });
   });
 

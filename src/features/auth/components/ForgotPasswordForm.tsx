@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 
 import { requestPasswordReset } from "@/features/auth/_internal/actions/password-reset";
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -11,6 +12,7 @@ export function ForgotPasswordForm() {
     requestPasswordReset,
     null,
   );
+  const errorText = useErrorText();
   const [email, setEmail] = useState("");
 
   if (state?.success) {
@@ -42,9 +44,9 @@ export function ForgotPasswordForm() {
           onChange={(event) => setEmail(event.target.value)}
         />
       </div>
-      {state?.error && (
+      {state && !state.success && (
         <p role="alert" className="text-sm text-destructive">
-          {state.error}
+          {errorText(state)}
         </p>
       )}
       <Button type="submit" size="lg" className="w-full" disabled={isPending}>

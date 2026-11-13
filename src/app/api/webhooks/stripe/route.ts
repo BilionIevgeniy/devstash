@@ -1,5 +1,6 @@
 import { handleStripeEvent } from "@/features/billing/services/webhook";
-import { jsonError, SERVER_ERROR_MESSAGE } from "@/lib/api-response";
+import { fail } from "@/lib/action-result";
+import { jsonError } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import {
   constructStripeEvent,
@@ -7,20 +8,19 @@ import {
   type StripeEvent,
 } from "@/lib/stripe";
 
-const INVALID_SIGNATURE = "Invalid signature";
-
 export async function POST(request: Request) {
   const signature = request.headers.get("stripe-signature");
-  if (!signature) return jsonError(INVALID_SIGNATURE, 400);
+  if (!signature) return jsonError(fail("invalidSignature"), 400);
 
   let event: StripeEvent;
   try {
     event = constructStripeEvent(await request.text(), signature);
   } catch (error) {
-    if (isStripeSignatureError(error)) return jsonError(INVALID_SIGNATURE, 400);
+    if (isStripeSignatureError(error))
+      return jsonError(fail("invalidSignature"), 400);
     // 500 so Stripe retries: a missing secret is ours to fix.
     await logger.error("Verifying a Stripe event failed", { error });
-    return jsonError(SERVER_ERROR_MESSAGE, 500);
+    return jsonError(fail("serverError"), 500);
   }
 
   try {
@@ -32,6 +32,6 @@ export async function POST(request: Request) {
       error,
       stripeEventId: event.id,
     });
-    return jsonError(SERVER_ERROR_MESSAGE, 500);
+    return jsonError(fail("serverError"), 500);
   }
 }

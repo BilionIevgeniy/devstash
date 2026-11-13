@@ -6,7 +6,7 @@ import {
   AiStreamRequestError,
   streamAiText,
 } from "@/features/ai/_internal/components/stream-ai-text";
-import { AI_UNAVAILABLE_MESSAGE } from "@/features/ai/domain/messages";
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 
 export type AiStreamStatus =
   "idle" | "waiting" | "streaming" | "done" | "cut-short";
@@ -32,6 +32,7 @@ export function useAiTextStream(options: AiStreamOptions) {
   const [announcement, setAnnouncement] = useState("");
   const { text, start, append, finish, clear } = useFrameText();
   const controllerRef = useRef<AbortController | null>(null);
+  const errorText = useErrorText();
 
   useEffect(() => () => controllerRef.current?.abort(), []);
 
@@ -73,9 +74,11 @@ export function useAiTextStream(options: AiStreamOptions) {
         return;
       }
       toast.error(
-        error instanceof AiStreamRequestError
-          ? error.message
-          : AI_UNAVAILABLE_MESSAGE,
+        errorText(
+          error instanceof AiStreamRequestError
+            ? error.failure
+            : "aiUnavailable",
+        ),
       );
       setStatus(isFirst ? "idle" : before);
       if (isFirst) setView("source");

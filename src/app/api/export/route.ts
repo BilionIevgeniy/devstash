@@ -1,7 +1,8 @@
 import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { getRetryAfterSeconds } from "@/features/auth/domain/rate-limits";
 import { exportUserData } from "@/features/import-export/services/export";
-import { jsonError, NO_STORE, SERVER_ERROR_MESSAGE } from "@/lib/api-response";
+import { fail } from "@/lib/action-result";
+import { jsonError, NO_STORE } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
 import { RateLimitUnavailableError } from "@/lib/rate-limit";
 
@@ -9,16 +10,16 @@ import { RateLimitUnavailableError } from "@/lib/rate-limit";
 // 401 instead of redirecting: the settings page calls this with fetch.
 export async function GET() {
   const userId = await getSignedInUserId();
-  if (!userId) return jsonError("Unauthorized", 401);
+  if (!userId) return jsonError(fail("unauthorized"), 401);
 
   try {
     const result = await exportUserData(userId, new Date());
     if (result.status === "forbidden") {
-      return jsonError("Export is a Pro feature", 403);
+      return jsonError(fail("exportProOnly"), 403);
     }
     if (result.status === "rate-limited") {
       const retryAfter = getRetryAfterSeconds(result.reset, Date.now());
-      return jsonError("You can export once a minute", 429, {
+      return jsonError(fail("exportRateLimited"), 429, {
         "Retry-After": String(retryAfter),
       });
     }
@@ -31,9 +32,9 @@ export async function GET() {
     });
   } catch (error) {
     if (error instanceof RateLimitUnavailableError) {
-      return jsonError("Export is unavailable right now", 503);
+      return jsonError(fail("exportUnavailable"), 503);
     }
     await logger.error("Export failed", { error, userId });
-    return jsonError(SERVER_ERROR_MESSAGE, 500);
+    return jsonError(fail("serverError"), 500);
   }
 }

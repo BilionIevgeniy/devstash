@@ -22,7 +22,6 @@ import {
 import type { CollectionSummary } from "@/features/collections/types";
 
 const SAVED_MESSAGE = "Collection updated";
-const SAVE_FAILED_MESSAGE = "Couldn't update the collection";
 
 interface EditCollectionDialogProps extends CollectionDialogState {
   collection: CollectionSummary;
@@ -68,7 +67,7 @@ export function EditCollectionDialog({
           onSubmit={(values) =>
             run(() => updateCollection(collection.id, values), {
               onSuccess: () => onOpenChange(false),
-              failMessage: SAVE_FAILED_MESSAGE,
+              failCode: "collectionSaveFailed",
             })
           }
         />

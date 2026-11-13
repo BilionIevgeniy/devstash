@@ -1,9 +1,11 @@
+import { useErrorText } from "@/components/common/hooks/use-error-text";
 import type { ImportSummary } from "@/features/import-export/types";
+import type { ErrorRef } from "@/i18n/error-codes";
 
 interface ImportSummaryViewProps {
   summary: ImportSummary;
   /** Why the import stopped before the end, or null when it ran through. */
-  error: string | null;
+  error: ErrorRef | null;
 }
 
 function countsLine({ created, duplicates, files }: ImportSummary): string {
@@ -13,6 +15,7 @@ function countsLine({ created, duplicates, files }: ImportSummary): string {
 }
 
 export function ImportSummaryView({ summary, error }: ImportSummaryViewProps) {
+  const errorText = useErrorText();
   return (
     <div role="status" className="space-y-2 rounded-md border p-4 text-sm">
       <p>
@@ -21,7 +24,7 @@ export function ImportSummaryView({ summary, error }: ImportSummaryViewProps) {
         </span>{" "}
         {countsLine(summary)}
       </p>
-      {error && <p className="text-destructive">{error}</p>}
+      {error && <p className="text-destructive">{errorText(error)}</p>}
       {summary.files > 0 && (
         <p className="text-muted-foreground">
           Files and images are not part of an export. Download them from the
@@ -37,7 +40,7 @@ export function ImportSummaryView({ summary, error }: ImportSummaryViewProps) {
             {summary.failed.map((failure, index) => (
               // The same title can fail twice, so the position is the key.
               <li key={index}>
-                {failure.title}: {failure.reason}
+                {failure.title}: {errorText(failure.reason)}
               </li>
             ))}
           </ul>

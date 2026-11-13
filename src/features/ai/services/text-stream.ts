@@ -9,15 +9,16 @@ import {
   createStreamDeadlines,
   type StreamDeadlines,
 } from "@/features/ai/_internal/services/stream-deadlines";
-import { AI_FAILURE_MESSAGES } from "@/features/ai/domain/messages";
+import { AI_FAILURE_CODES } from "@/features/ai/domain/messages";
 import { AI_MODEL, type AiStreamSettings } from "@/features/ai/domain/model";
 import { STREAM_END_MARK } from "@/features/ai/domain/text-stream";
+import { fail, type Failure } from "@/lib/action-result";
 import { logger } from "@/lib/logger";
 import { AiOutputError, streamText } from "@/lib/openai";
 
 export type TextStreamStart =
-  | { status: "refused"; reason: AiRefusalReason; error: string }
-  | { status: "failed"; error: string }
+  | { status: "refused"; reason: AiRefusalReason; failure: Failure }
+  | { status: "failed"; failure: Failure }
   | { status: "aborted" }
   | { status: "ok"; stream: ReadableStream<Uint8Array> };
 
@@ -62,10 +63,9 @@ async function failedBeforeText(
   if (deadlines.clientGone()) return { status: "aborted" };
   if (deadlines.timedOut()) {
     await logger.error(`${label} timed out before any text`);
-    return { status: "failed", error: AI_FAILURE_MESSAGES.timeout };
+    return { status: "failed", failure: fail(AI_FAILURE_CODES.timeout) };
   }
-  const { error: message } = await failedCall(error, label);
-  return { status: "failed", error: message ?? AI_FAILURE_MESSAGES.failed };
+  return { status: "failed", failure: await failedCall(error, label) };
 }
 
 // The rest of the answer as bytes. A failure now can only end the stream:
@@ -118,7 +118,8 @@ export async function startTextStream(
 ): Promise<TextStreamStart> {
   const access = await checkAiAccess(userId);
   if (!access.success) {
-    return { status: "refused", reason: access.reason, error: access.error };
+    const { reason, ...failure } = access;
+    return { status: "refused", reason, failure };
   }
 
   const deadlines = createStreamDeadlines(clientSignal, request.settings);

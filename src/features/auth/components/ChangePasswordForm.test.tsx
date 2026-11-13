@@ -30,7 +30,7 @@ const SUCCESS: AuthActionState = { success: true, data: null, error: null };
 const WRONG_PASSWORD: AuthActionState = {
   success: false,
   data: null,
-  error: "Current password is incorrect",
+  error: "incorrectCurrentPassword",
 };
 
 afterEach(() => {

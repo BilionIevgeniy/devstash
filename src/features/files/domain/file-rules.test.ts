@@ -12,7 +12,6 @@ import {
   isUserKey,
   objectKey,
   signingWindowFor,
-  UNSUPPORTED_FILE_MESSAGE,
   viewDisposition,
 } from "@/features/files/domain/file-rules";
 
@@ -89,7 +88,7 @@ describe("checkDeclaredFile", () => {
 
   it("rejects an unsupported extension and an empty file", () => {
     expect(checkDeclaredFile("file", "run.exe", 10)).toEqual({
-      error: UNSUPPORTED_FILE_MESSAGE,
+      error: "unsupportedFileType",
     });
     expect(checkDeclaredFile("file", "a.txt", 0)).toHaveProperty("error");
   });

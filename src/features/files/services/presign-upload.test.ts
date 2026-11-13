@@ -9,10 +9,7 @@ vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
 vi.mock("@/lib/r2", () => ({ signPutUrl }));
 vi.mock("@/lib/rate-limit", () => ({ consumeRateLimit }));
 
-import {
-  presignUpload,
-  PRO_ONLY_MESSAGE,
-} from "@/features/files/services/presign-upload";
+import { presignUpload } from "@/features/files/services/presign-upload";
 
 const input = { kind: "file" as const, fileName: "Notes.MD", size: 2048 };
 
@@ -42,7 +39,7 @@ describe("presignUpload", () => {
       "user-1",
     );
     expect(result.success).toBe(false);
-    expect(result.error).toMatch(/^Too many attempts/);
+    expect(result.error).toBe("tooManyAttempts");
     expect(signPutUrl).not.toHaveBeenCalled();
   });
 
@@ -59,8 +56,8 @@ describe("presignUpload", () => {
 
     expect(result).toEqual({
       success: false,
-      error: PRO_ONLY_MESSAGE,
       data: null,
+      error: "uploadsProOnly",
     });
     expect(signPutUrl).not.toHaveBeenCalled();
   });

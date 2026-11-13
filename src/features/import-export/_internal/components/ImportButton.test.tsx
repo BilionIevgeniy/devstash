@@ -143,15 +143,15 @@ describe("ImportButton", () => {
       error: null,
       data: {
         summary: summary({
-          failed: [{ title: "Bad", reason: "Enter a name" }],
+          failed: [{ title: "Bad", reason: { error: "enterName" } }],
         }),
         idMap: {},
       },
     });
     importItems.mockResolvedValue({
       success: false,
-      error: "Import is a Pro feature",
       data: null,
+      error: "importProOnly",
     });
     render(<ImportButton />);
 

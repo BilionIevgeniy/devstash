@@ -1,12 +1,12 @@
 import "server-only";
 
-import { AI_FAILURE_MESSAGES } from "@/features/ai/domain/messages";
+import { AI_FAILURE_CODES } from "@/features/ai/domain/messages";
 import { fail, type Failure } from "@/lib/action-result";
 import { logger } from "@/lib/logger";
 import { aiErrorKind, isAiSpendError } from "@/lib/openai";
 
 // A failure of an OpenAI call that the user can act on, or wait out, is
-// answered in its own words. Anything else (an Upstash outage, a bug) throws
+// answered with its own code. Anything else (an Upstash outage, a bug) throws
 // to the action. `operation` names the call in the log, never its content.
 export async function failedCall(
   error: unknown,
@@ -23,5 +23,5 @@ export async function failedCall(
   } else {
     await logger.error(`${operation} failed`, { error });
   }
-  return fail(AI_FAILURE_MESSAGES[kind]);
+  return fail(AI_FAILURE_CODES[kind]);
 }

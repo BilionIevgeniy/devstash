@@ -7,9 +7,6 @@ import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { DeleteItemConfirm } from "@/features/items/_internal/components/DeleteItemConfirm";
 
-export const DELETED_MESSAGE = "Item deleted";
-export const DELETE_FAILED_MESSAGE = "Couldn't delete the item.";
-
 /**
  * Returns nothing to delete optimistically: the dialog closes at once. Returns
  * a promise to keep the dialog open until it settles: `true` means the caller

@@ -24,7 +24,6 @@ import type { CollectionFormValues } from "@/features/collections/domain/collect
 const LABEL = "New collection";
 const EMPTY_VALUES: CollectionFormValues = { name: "", description: "" };
 const CREATED_MESSAGE = "Collection created";
-const CREATE_FAILED_MESSAGE = "Couldn't create the collection";
 
 interface CreateCollectionDialogProps {
   /** Opened from elsewhere: no button, and the focus goes back through this. */
@@ -83,7 +82,7 @@ export function CreateCollectionDialog({
           onSubmit={(values) =>
             run(() => createCollection(values), {
               onSuccess: () => setIsOpen(false),
-              failMessage: CREATE_FAILED_MESSAGE,
+              failCode: "collectionCreateFailed",
             })
           }
         />

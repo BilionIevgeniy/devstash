@@ -21,7 +21,7 @@ export async function sendEmail({
   const from = process.env.EMAIL_FROM;
   if (!apiKey || !from) {
     await logger.error("RESEND_API_KEY or EMAIL_FROM is not set");
-    return fail("Email is not configured");
+    return fail("emailSendFailed");
   }
 
   try {
@@ -34,11 +34,12 @@ export async function sendEmail({
     });
     if (error) {
       await logger.error("Resend rejected an email", { error });
-      return fail(error.message);
+      // Resend's own words are never shown: they can carry the call's data.
+      return fail("emailSendFailed");
     }
     return ok();
   } catch (error) {
     await logger.error("Sending an email failed", { error });
-    return fail("Failed to send email");
+    return fail("emailSendFailed");
   }
 }

@@ -2,11 +2,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  INVALID_LINK_ERROR,
-  WRONG_CONFIRM_PASSWORD_MESSAGE,
-} from "@/features/auth/domain/verification-token";
 import type { AuthActionState } from "@/features/auth/types";
+import type { ErrorCode } from "@/i18n/error-codes";
 
 const { confirmEmail, replace, toastSuccess } = vi.hoisted(() => ({
   confirmEmail: vi.fn(),
@@ -24,7 +21,7 @@ import { ConfirmEmailForm } from "@/features/auth/components/ConfirmEmailForm";
 
 const SUCCESS: AuthActionState = { success: true, data: null, error: null };
 
-function failure(error: string): AuthActionState {
+function failure(error: ErrorCode): AuthActionState {
   return { success: false, data: null, error };
 }
 
@@ -39,20 +36,20 @@ function renderForm() {
 
 describe("ConfirmEmailForm", () => {
   it("shows the error from the action and keeps the typed password", async () => {
-    confirmEmail.mockResolvedValue(failure("Something is off"));
+    confirmEmail.mockResolvedValue(failure("emailSendFailed"));
     const user = userEvent.setup();
     renderForm();
 
     await fillAndSubmit(user);
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Something is off",
+      "We couldn't send the email. Please try again later.",
     );
     expect(screen.getByLabelText("Password")).toHaveValue("my-password-1");
   });
 
   it("sends the link's email and token with the password", async () => {
-    confirmEmail.mockResolvedValue(failure("nope"));
+    confirmEmail.mockResolvedValue(failure("generic"));
     const user = userEvent.setup();
     renderForm();
 
@@ -102,7 +99,7 @@ describe("ConfirmEmailForm", () => {
   });
 
   it("points a wrong password to the password reset", async () => {
-    confirmEmail.mockResolvedValue(failure(WRONG_CONFIRM_PASSWORD_MESSAGE));
+    confirmEmail.mockResolvedValue(failure("wrongConfirmPassword"));
     const user = userEvent.setup();
     renderForm();
 
@@ -114,7 +111,7 @@ describe("ConfirmEmailForm", () => {
   });
 
   it("offers to resend the email when the link is no longer valid", async () => {
-    confirmEmail.mockResolvedValue(failure(INVALID_LINK_ERROR));
+    confirmEmail.mockResolvedValue(failure("invalidVerificationLink"));
     const user = userEvent.setup();
     renderForm();
 
@@ -149,7 +146,7 @@ describe("ConfirmEmailForm", () => {
     expect(
       await screen.findByRole("button", { name: "Verifying…" }),
     ).toBeDisabled();
-    pending.resolve(failure("nope"));
+    pending.resolve(failure("generic"));
     expect(await screen.findByRole("alert")).toBeInTheDocument();
   });
 });

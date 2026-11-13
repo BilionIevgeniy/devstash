@@ -147,8 +147,8 @@ describe("createUserItem", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "One of the collections no longer exists",
       data: null,
+      error: "collectionGone",
     });
   });
 
@@ -159,8 +159,8 @@ describe("createUserItem", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "Invalid item type",
       data: null,
+      error: "invalidItemType",
     });
     expect(create).not.toHaveBeenCalled();
   });
@@ -189,9 +189,9 @@ describe("createUserItem", () => {
 
       expect(result).toEqual({
         success: false,
-        error:
-          "You have reached the Free plan's limit of 50 items. Upgrade to Pro for unlimited items.",
         data: null,
+        error: "itemLimitReached",
+        params: { limit: 50 },
       });
       expect(create).not.toHaveBeenCalled();
     });
@@ -214,7 +214,7 @@ describe("createUserItem", () => {
 
       const result = await createUserItem("user-1", snippet);
 
-      expect(result.error).toBe("One of the collections no longer exists");
+      expect(result.error).toBe("collectionGone");
     });
   });
 
@@ -256,13 +256,13 @@ describe("createUserItem", () => {
     it("writes no row when the upload is not confirmed", async () => {
       confirmUpload.mockResolvedValue({
         success: false,
-        error: "Images can be up to 5 MB",
         data: null,
+        error: "imageTooLarge",
       });
 
       const result = await createUserItem("user-1", image);
 
-      expect(result.error).toBe("Images can be up to 5 MB");
+      expect(result.error).toBe("imageTooLarge");
       expect(create).not.toHaveBeenCalled();
     });
 
@@ -273,8 +273,8 @@ describe("createUserItem", () => {
 
       expect(result).toEqual({
         success: false,
-        error: "This file is already saved on another item",
         data: null,
+        error: "fileAlreadySaved",
       });
     });
 

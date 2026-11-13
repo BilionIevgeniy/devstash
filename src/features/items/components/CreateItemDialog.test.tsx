@@ -87,7 +87,7 @@ describe("CreateItemDialog", () => {
     // React holds later transitions behind one that never ends: settle it,
     // with a failure, so no close and no toast run into the next test.
     await act(async () =>
-      answer.resolve({ success: false, data: null, error: "stop" }),
+      answer.resolve({ success: false, data: null, error: "generic" }),
     );
   });
 
@@ -95,7 +95,8 @@ describe("CreateItemDialog", () => {
     createItem.mockResolvedValue({
       success: false,
       data: null,
-      error: "You have reached the Free plan's 50 items",
+      error: "itemLimitReached",
+      params: { limit: 50 },
     });
     const user = userEvent.setup();
     renderDialog();
@@ -103,7 +104,7 @@ describe("CreateItemDialog", () => {
     await openAndSubmit(user);
 
     expect(toast.error).toHaveBeenCalledExactlyOnceWith(
-      "You have reached the Free plan's 50 items",
+      "You have reached the Free plan's limit of 50 items. Upgrade to Pro for unlimited items.",
     );
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByLabelText("Title")).toHaveValue("ls -la");

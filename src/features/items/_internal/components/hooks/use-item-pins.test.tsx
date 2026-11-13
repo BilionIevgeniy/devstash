@@ -73,7 +73,7 @@ describe("useItemPins", () => {
     setItemPin.mockResolvedValue({
       success: false,
       data: null,
-      error: "Item not found",
+      error: "itemNotFound",
     });
     const { result, onSaved } = setup();
 

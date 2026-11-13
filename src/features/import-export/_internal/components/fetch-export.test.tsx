@@ -40,18 +40,18 @@ describe("downloadExport", () => {
     answer('{"version":1,"items":[{"id":"i1"}');
 
     await expect(downloadExport()).resolves.toEqual({
-      error: "The export was interrupted. You can export again in a minute.",
+      error: { error: "exportInterrupted" },
     });
     expect(click).not.toHaveBeenCalled();
   });
 
-  it("passes on the route's refusal in its words", async () => {
-    answer(JSON.stringify({ error: "You can export once a minute" }), {
+  it("passes on the route's refusal with its code", async () => {
+    answer(JSON.stringify({ error: "exportRateLimited" }), {
       status: 429,
     });
 
     await expect(downloadExport()).resolves.toEqual({
-      error: "You can export once a minute",
+      error: { success: false, data: null, error: "exportRateLimited" },
     });
   });
 
@@ -60,6 +60,6 @@ describe("downloadExport", () => {
 
     const { error } = await downloadExport();
 
-    expect(error).toMatch(/Check your connection/);
+    expect(error).toEqual({ error: "exportDownloadFailed" });
   });
 });

@@ -1,8 +1,4 @@
 export const VERIFICATION_TOKEN_TTL_HOURS = 24;
-export const INVALID_LINK_ERROR =
-  "This verification link is invalid or has expired";
-export const WRONG_CONFIRM_PASSWORD_MESSAGE =
-  "Wrong password. If you did not create this account, use Forgot password instead.";
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 

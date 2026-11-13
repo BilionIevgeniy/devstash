@@ -1,7 +1,7 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
-import { getTooManyAttemptsMessage } from "@/features/auth/domain/rate-limits";
+import { tooManyAttemptsParams } from "@/features/auth/domain/rate-limits";
 import { getEntitlements } from "@/features/billing/queries";
 import {
   checkDeclaredFile,
@@ -15,7 +15,6 @@ import { ok, fail, type OperationResult } from "@/lib/action-result";
 import { signPutUrl } from "@/lib/r2";
 import { consumeRateLimit } from "@/lib/rate-limit";
 
-export const PRO_ONLY_MESSAGE = "File uploads are a Pro feature";
 const UPLOAD_URL_TTL_SECONDS = 10 * 60;
 
 export type PresignUploadResult = OperationResult<PresignedUpload>;
@@ -29,7 +28,7 @@ export async function presignUpload(
   { kind, fileName, size }: RequestUploadInput,
 ): Promise<PresignUploadResult> {
   const { isPro } = await getEntitlements(userId);
-  if (!isPro) return fail(PRO_ONLY_MESSAGE);
+  if (!isPro) return fail("uploadsProOnly");
 
   const check = checkDeclaredFile(kind, fileName, size);
   if ("error" in check) return fail(check.error);
@@ -39,7 +38,10 @@ export async function presignUpload(
   // answers with its generic error.
   const limit = await consumeRateLimit(PRESIGN_BY_USER, userId);
   if (!limit.success) {
-    return fail(getTooManyAttemptsMessage(limit.reset, Date.now()));
+    return fail(
+      "tooManyAttempts",
+      tooManyAttemptsParams(limit.reset, Date.now()),
+    );
   }
 
   const key = objectKey(userId, randomUUID(), fileExtension(fileName));

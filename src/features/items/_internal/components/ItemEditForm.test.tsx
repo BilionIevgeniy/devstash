@@ -61,10 +61,7 @@ vi.mock("@/features/items/_internal/components/ItemFields", () => ({
 }));
 
 import { ItemEditForm } from "@/features/items/_internal/components/ItemEditForm";
-import {
-  CONTENT_MAX,
-  CONTENT_TOO_LONG_MESSAGE,
-} from "@/features/items/domain/item-fields";
+import { CONTENT_MAX } from "@/features/items/domain/item-fields";
 
 const TYPE = { id: "type-1", name: "snippet", icon: "Code", color: "#3b82f6" };
 
@@ -117,7 +114,7 @@ describe("ItemEditForm submit", () => {
 
     expect(updateItem).not.toHaveBeenCalled();
     expect(toastError).toHaveBeenCalledExactlyOnceWith(
-      CONTENT_TOO_LONG_MESSAGE,
+      "Content can be up to 100000 characters",
     );
     expect(contentFocus).toHaveBeenCalledOnce();
   });
