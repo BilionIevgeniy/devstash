@@ -22,6 +22,15 @@ async function recordErrorToasts(page: Page) {
   });
 }
 
+// Every answer of a signed-in request sets the session cookie again, and a
+// page fires many (the prefetches of the sidebar links after a load). So the
+// session ends only once the network is quiet; then the toasts are recorded.
+async function endSession(page: Page) {
+  await page.waitForLoadState("networkidle");
+  await page.context().clearCookies();
+  await recordErrorToasts(page);
+}
+
 async function expectSentToSignIn(page: Page) {
   await expect(page).toHaveURL(SIGN_IN_URL);
   const seen = await page.evaluate(() => [
@@ -36,8 +45,7 @@ test("a star clicked after the session ended goes to sign-in", async ({
   const title = uniqueTitle("Signed-out star");
   await createSnippet(page, title);
 
-  await page.context().clearCookies();
-  await recordErrorToasts(page);
+  await endSession(page);
   await page
     .getByRole("button", { name: `Favorite ${title}`, exact: true })
     .click();
@@ -65,8 +73,7 @@ test("a delete confirmed after the session ended goes to sign-in", async ({
     await expect(confirm).toBeVisible({ timeout: 2_000 });
   }).toPass();
 
-  await page.context().clearCookies();
-  await recordErrorToasts(page);
+  await endSession(page);
   await confirm.getByRole("button", { name: "Delete", exact: true }).click();
 
   await expectSentToSignIn(page);
@@ -97,8 +104,7 @@ test("an editor preference changed after the session ended goes to sign-in", asy
   await restored;
   await expect(wordWrap).toHaveAttribute("aria-checked", before ?? "");
 
-  await page.context().clearCookies();
-  await recordErrorToasts(page);
+  await endSession(page);
   await wordWrap.click();
 
   await expectSentToSignIn(page);
