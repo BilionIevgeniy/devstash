@@ -1,5 +1,7 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
+
 import { useState, type MouseEvent, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
@@ -34,6 +36,8 @@ export function DashboardShell({
   defaultSidebarOpen,
   children,
 }: DashboardShellProps) {
+  const t = useTranslations("shell");
+  const locale = useLocale();
   const [isSidebarOpen, setIsSidebarOpen] = useState(defaultSidebarOpen);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const pathname = usePathname();
@@ -61,7 +65,7 @@ export function DashboardShell({
   }
 
   return (
-    <div className="flex h-screen">
+    <div lang={locale} className="flex h-screen">
       <aside
         className={cn(
           "hidden w-64 shrink-0 border-r",
@@ -78,9 +82,9 @@ export function DashboardShell({
           showCloseButton={false}
           onClickCapture={handleDrawerClick}
         >
-          <SheetTitle className="sr-only">Navigation</SheetTitle>
+          <SheetTitle className="sr-only">{t("navigation")}</SheetTitle>
           <SheetDescription className="sr-only">
-            Browse item types, collections and items
+            {t("navigationDescription")}
           </SheetDescription>
           {sidebar}
         </SheetContent>

@@ -145,6 +145,12 @@ export const GENERAL_EN: LegalSection[] = [
             <code>sidebar-open</code>: remembers whether the sidebar is open.
             Set only when you open or close it; 1 year.
           </li>
+          <li>
+            <code>devstash-locale</code>: the language you chose for the app
+            (English or German). Set only when you pick a language in the user
+            menu; 1 year. Without it, the app follows your browser&apos;s
+            language.
+          </li>
         </ul>
         <p>
           On the website the sign-in cookies also carry the prefix{" "}

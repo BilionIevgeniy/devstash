@@ -1,4 +1,5 @@
 import { Layers, Sparkles } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,8 @@ export async function Sidebar() {
     getSidebarItems(user.id),
     getEntitlements(user.id),
   ]);
+
+  const t = await getTranslations("shell");
 
   return (
     <div className="flex h-full flex-col">
@@ -52,7 +55,7 @@ export async function Sidebar() {
           >
             <Link href={UPGRADE_PATH}>
               <Sparkles />
-              <span>Upgrade to Pro</span>
+              <span>{t("upgradeToPro")}</span>
             </Link>
           </Button>
         </div>

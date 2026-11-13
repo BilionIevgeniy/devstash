@@ -150,6 +150,12 @@ export const GENERAL_DE: LegalSection[] = [
             <code>sidebar-open</code>: merkt sich, ob die Seitenleiste geöffnet
             ist. Wird nur gesetzt, wenn Sie sie ein- oder ausklappen; 1 Jahr.
           </li>
+          <li>
+            <code>devstash-locale</code>: die Sprache, die Sie für die App
+            gewählt haben (Deutsch oder Englisch). Wird nur gesetzt, wenn Sie im
+            Nutzermenü eine Sprache auswählen; 1 Jahr. Ohne dieses Cookie folgt
+            die App der Sprache Ihres Browsers.
+          </li>
         </ul>
         <p>
           Auf der Website tragen die Anmelde-Cookies zusätzlich das Präfix{" "}

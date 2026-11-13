@@ -1,0 +1,31 @@
+{
+  "navigation": "Navigation",
+  "navigationDescription": "Browse item types, collections and items",
+  "toggleSidebar": "Toggle sidebar",
+  "openSidebar": "Open sidebar",
+  "favorites": "Favorites",
+  "pinned": "Pinned",
+  "create": "Create",
+  "newItem": "New item",
+  "newCollection": "New collection",
+  "upgrade": "Upgrade",
+  "upgradeToPro": "Upgrade to Pro",
+  "types": "Types",
+  "items": "Items",
+  "collections": "Collections",
+  "recent": "Recent",
+  "viewAllFavorites": "View all favorites",
+  "viewAllCollections": "View all collections",
+  "viewAllPinned": "View all pinned",
+  "locked": "{title}: renew your subscription to open",
+  "profile": "Profile",
+  "settings": "Settings",
+  "privacy": "Privacy",
+  "imprint": "Imprint",
+  "signOut": "Sign out",
+  "proBadge": "Pro",
+  "plan": {
+    "pro": "Pro",
+    "free": "Free"
+  }
+}

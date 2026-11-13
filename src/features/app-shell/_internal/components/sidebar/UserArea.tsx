@@ -9,8 +9,10 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { signOutUser } from "@/features/auth/actions/sign-in";
+import { LanguageMenu } from "@/features/app-shell/_internal/components/sidebar/LanguageMenu";
 import { UserAvatar } from "@/features/auth/components/UserAvatar";
 import {
   DropdownMenu,
@@ -30,6 +32,8 @@ interface UserAreaProps {
 }
 
 export function UserArea({ user }: UserAreaProps) {
+  const t = useTranslations("shell");
+
   return (
     <div className="shrink-0 border-t p-2">
       <DropdownMenu>
@@ -60,32 +64,34 @@ export function UserArea({ user }: UserAreaProps) {
           <DropdownMenuItem asChild>
             <Link href="/profile">
               <User />
-              Profile
+              {t("profile")}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href="/settings">
               <Settings />
-              Settings
+              {t("settings")}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <Link href={PRIVACY_PATH}>
               <ShieldCheck />
-              Privacy
+              {t("privacy")}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href={IMPRINT_PATH}>
               <Scale />
-              Imprint
+              {t("imprint")}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          <LanguageMenu />
+          <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => signOutUser()}>
             <LogOut />
-            Sign out
+            {t("signOut")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

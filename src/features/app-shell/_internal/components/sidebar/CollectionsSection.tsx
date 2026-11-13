@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { CollapsibleSection } from "@/features/app-shell/_internal/components/CollapsibleSection";
 import { SidebarNavLink } from "@/features/app-shell/_internal/components/sidebar/SidebarNavLink";
@@ -61,17 +62,18 @@ export function CollectionsSection({
   hasMoreFavorites,
   hasMoreRecent,
 }: SidebarCollections) {
+  const t = useTranslations("shell");
   if (favorites.length === 0 && recent.length === 0) return null;
 
   return (
-    <CollapsibleSection title="Collections">
+    <CollapsibleSection title={t("collections")}>
       <div className="space-y-4">
         {favorites.length > 0 && (
           <SidebarGroup
-            label="Favorites"
+            label={t("favorites")}
             viewAll={
               hasMoreFavorites
-                ? { href: "/favorites", label: "View all favorites" }
+                ? { href: "/favorites", label: t("viewAllFavorites") }
                 : undefined
             }
           >
@@ -84,10 +86,10 @@ export function CollectionsSection({
         )}
         {recent.length > 0 && (
           <SidebarGroup
-            label="Recent"
+            label={t("recent")}
             viewAll={
               hasMoreRecent
-                ? { href: "/collections", label: "View all collections" }
+                ? { href: "/collections", label: t("viewAllCollections") }
                 : undefined
             }
           >

@@ -14,17 +14,17 @@ describe("ErrorState", () => {
     expect(alert).toHaveTextContent("Try again.");
   });
 
-  it("shows the digest of a server error as a reference to quote", () => {
+  it("shows the reference line its caller words", () => {
     render(
       <ErrorState
         title="Something went wrong"
         description="Try again."
-        reference="1234567890"
+        reference={<>Reference: 1234567890</>}
       />,
     );
 
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "Reference: 1234567890. Quote it if the problem continues.",
+      "Reference: 1234567890",
     );
   });
 

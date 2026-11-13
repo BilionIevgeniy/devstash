@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { CreateMenu } from "@/features/app-shell/components/CreateMenu";
@@ -26,13 +27,20 @@ export async function NewItemButton() {
 
 // The same controls, inert, while the plan is read.
 export function NewItemButtonFallback() {
+  const t = useTranslations("shell");
+
   return (
     <>
       <Button disabled className="hidden sm:inline-flex">
         <Plus />
-        <span>New item</span>
+        <span>{t("newItem")}</span>
       </Button>
-      <Button disabled size="icon" aria-label="Create" className="sm:hidden">
+      <Button
+        disabled
+        size="icon"
+        aria-label={t("create")}
+        className="sm:hidden"
+      >
         <Plus />
       </Button>
     </>

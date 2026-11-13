@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { ErrorState } from "@/components/common/ErrorState";
 import { useReportError } from "@/components/common/hooks/use-report-error";
 import { Button } from "@/components/ui/button";
@@ -18,13 +20,21 @@ export default function AppError({
     "A page of the app failed to render in the browser",
   );
 
+  const t = useTranslations("common.appError");
+
   return (
     <ErrorState
-      title="Something went wrong"
-      description="This page could not be loaded. Check your connection and try again."
-      reference={digest}
+      title={t("title")}
+      description={t("description")}
+      reference={
+        digest &&
+        t.rich("reference", {
+          reference: digest,
+          code: (chunks) => <span className="font-mono">{chunks}</span>,
+        })
+      }
     >
-      <Button onClick={retry}>Try again</Button>
+      <Button onClick={retry}>{t("retry")}</Button>
     </ErrorState>
   );
 }

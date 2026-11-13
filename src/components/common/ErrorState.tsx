@@ -1,10 +1,14 @@
 import type { ReactNode } from "react";
 
 interface ErrorStateProps {
-  title: string;
-  description: string;
-  /** The digest of a server error: what to quote, and what finds it in Sentry. */
-  reference?: string;
+  title: ReactNode;
+  description: ReactNode;
+  /**
+   * The line that names the digest of a server error (what to quote, and what
+   * finds it in Sentry), worded by the caller: the root error pages have no
+   * messages and say it in both languages.
+   */
+  reference?: ReactNode;
   /** Buttons or links that lead out: Try again, Go to the homepage. */
   children?: ReactNode;
 }
@@ -26,10 +30,7 @@ export function ErrorState({
         <h1 className="text-2xl font-bold">{title}</h1>
         <p className="text-muted-foreground">{description}</p>
         {reference && (
-          <p className="text-muted-foreground text-sm">
-            Reference: <span className="font-mono">{reference}</span>. Quote it
-            if the problem continues.
-          </p>
+          <p className="text-muted-foreground text-sm">{reference}</p>
         )}
       </div>
       {children && <div className="flex gap-2">{children}</div>}

@@ -1,0 +1,31 @@
+{
+  "navigation": "Navigation",
+  "navigationDescription": "Eintragstypen, Sammlungen und Einträge durchsuchen",
+  "toggleSidebar": "Seitenleiste ein- oder ausblenden",
+  "openSidebar": "Seitenleiste öffnen",
+  "favorites": "Favoriten",
+  "pinned": "Angeheftet",
+  "create": "Erstellen",
+  "newItem": "Neuer Eintrag",
+  "newCollection": "Neue Sammlung",
+  "upgrade": "Upgrade",
+  "upgradeToPro": "Auf Pro upgraden",
+  "types": "Typen",
+  "items": "Einträge",
+  "collections": "Sammlungen",
+  "recent": "Zuletzt",
+  "viewAllFavorites": "Alle Favoriten anzeigen",
+  "viewAllCollections": "Alle Sammlungen anzeigen",
+  "viewAllPinned": "Alle angehefteten anzeigen",
+  "locked": "{title}: Verlängere dein Abo, um ihn zu öffnen",
+  "profile": "Profil",
+  "settings": "Einstellungen",
+  "privacy": "Datenschutz",
+  "imprint": "Impressum",
+  "signOut": "Abmelden",
+  "proBadge": "Pro",
+  "plan": {
+    "pro": "Pro",
+    "free": "Free"
+  }
+}

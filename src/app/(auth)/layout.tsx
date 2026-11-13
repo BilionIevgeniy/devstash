@@ -1,7 +1,15 @@
-import { getLocale } from "next-intl/server";
+import type { Metadata } from "next";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { I18nProvider } from "@/components/common/I18nProvider";
 import { messagesFor } from "@/i18n/messages";
+
+// The description of every page under this layout, in its language; the
+// title stays the root layout's "DevStash".
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("common.meta");
+  return { description: t("description") };
+}
 
 // The sign-in, registration and email-link pages, in the locale of the request:
 // the cookie the user chose, else the browser's language (ADR 0024). Reading it

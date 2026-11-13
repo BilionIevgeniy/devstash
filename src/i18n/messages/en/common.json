@@ -1,0 +1,31 @@
+{
+  "meta": {
+    "description": "A developer knowledge hub for snippets, commands, prompts, notes, files, images, links and custom types."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This page does not exist or was deleted.",
+    "home": "Go to the homepage"
+  },
+  "appError": {
+    "title": "Something went wrong",
+    "description": "This page could not be loaded. Check your connection and try again.",
+    "retry": "Try again",
+    "reference": "Reference: <code>{reference}</code>. Quote it if the problem continues."
+  },
+  "pagination": {
+    "label": "Pagination",
+    "previous": "Previous",
+    "previousPage": "Previous page",
+    "next": "Next",
+    "nextPage": "Next page",
+    "page": "Page {page}"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "de": "Deutsch",
+    "switching": "Switching…",
+    "failed": "Couldn't change the language. Please try again."
+  }
+}

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen } from "../../../test/intl";
 import { describe, expect, it, vi } from "vitest";
 import AppError from "@/app/(app)/error";
 import { logger } from "@/lib/logger";
