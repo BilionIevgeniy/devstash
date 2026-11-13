@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 
-import { LegalPage } from "../_components/LegalPage";
-import { GENERAL_DE } from "../_legal/datenschutz/general.de";
-import { GENERAL_EN } from "../_legal/datenschutz/general.en";
-import { RIGHTS_DE } from "../_legal/datenschutz/rights.de";
-import { RIGHTS_EN } from "../_legal/datenschutz/rights.en";
-import { VENDORS_DE } from "../_legal/datenschutz/vendors.de";
-import { VENDORS_EN } from "../_legal/datenschutz/vendors.en";
+import { LegalPage } from "../../_components/LegalPage";
+import { GENERAL_DE } from "../../_legal/datenschutz/general.de";
+import { GENERAL_EN } from "../../_legal/datenschutz/general.en";
+import { RIGHTS_DE } from "../../_legal/datenschutz/rights.de";
+import { RIGHTS_EN } from "../../_legal/datenschutz/rights.en";
+import { VENDORS_DE } from "../../_legal/datenschutz/vendors.de";
+import { VENDORS_EN } from "../../_legal/datenschutz/vendors.en";
 
 export const metadata: Metadata = {
   title: "Datenschutzerklärung / Privacy notice - DevStash",

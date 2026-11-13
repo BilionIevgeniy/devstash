@@ -58,7 +58,12 @@ function CodeToken({ token }: { token: Token }) {
   return <span className={TOKEN_CLASSES[kind]}>{text}</span>;
 }
 
-export function CodeMockup() {
+interface CodeMockupProps {
+  codeLabel: string;
+  tagsLabel: string;
+}
+
+export function CodeMockup({ codeLabel, tagsLabel }: CodeMockupProps) {
   return (
     <div className="min-w-0 overflow-hidden rounded-[14px] border bg-card">
       <div className="flex h-10 items-center gap-3 border-b px-4">
@@ -72,7 +77,7 @@ export function CodeMockup() {
       <pre
         role="region"
         tabIndex={0}
-        aria-label="Example useDebounce hook"
+        aria-label={codeLabel}
         className="overflow-x-auto px-4 py-5 font-mono text-[13px] leading-[1.7]"
       >
         <code>
@@ -89,7 +94,7 @@ export function CodeMockup() {
       <div className="border-t bg-raised p-4">
         <span className="flex items-center gap-2 font-mono text-[13px] font-medium text-brand">
           <Sparkles className="size-3.5" />
-          AI Generated Tags
+          {tagsLabel}
         </span>
         <ul className="mt-3 flex flex-wrap gap-2">
           {TAGS.map((tag) => (

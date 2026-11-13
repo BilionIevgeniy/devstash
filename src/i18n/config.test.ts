@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { homePath, isLocale, resolveLocale } from "@/i18n/config";
+import { homePath, isLocale, otherLocale, resolveLocale } from "@/i18n/config";
 
 describe("resolveLocale", () => {
   it("takes the language the user chose over the browser's", () => {
@@ -46,5 +46,12 @@ describe("homePath", () => {
   it("keeps English at the root", () => {
     expect(homePath("en")).toBe("/");
     expect(homePath("de")).toBe("/de");
+  });
+});
+
+describe("otherLocale", () => {
+  it("names the other of the two languages", () => {
+    expect(otherLocale("en")).toBe("de");
+    expect(otherLocale("de")).toBe("en");
   });
 });

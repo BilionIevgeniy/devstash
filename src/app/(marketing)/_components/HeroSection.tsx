@@ -1,7 +1,9 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
+import type { Locale } from "@/i18n/config";
 
 import { ChaosAnimation } from "./ChaosAnimation";
 import { DashboardPreview } from "./DashboardPreview";
@@ -9,23 +11,21 @@ import { DashboardPreview } from "./DashboardPreview";
 const PANEL_LABEL =
   "mb-3 font-mono text-[13px] leading-[1.4] font-medium text-dim";
 
-export function HeroSection() {
+export async function HeroSection({ locale }: { locale: Locale }) {
+  const t = await getTranslations({ locale, namespace: "marketing.hero" });
+
   return (
     <section className="pt-32">
       <div className="marketing-container">
         <div className="mx-auto max-w-190 text-center">
           <h1 className="text-[clamp(2rem,1rem+4.5vw,4rem)] leading-[1.05] font-bold tracking-[-0.035em]">
-            Stop Losing Your
-            <span className="gradient-text block">Developer Knowledge</span>
+            {t("titleStart")}
+            <span className="gradient-text block">{t("titleHighlight")}</span>
           </h1>
-          <p className="marketing-lead mt-6">
-            Your snippets, prompts, commands, and notes are scattered across
-            Notion, GitHub, Slack, and a dozen browser tabs. DevStash brings
-            them all into one fast, searchable hub.
-          </p>
+          <p className="marketing-lead mt-6">{t("lead")}</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button asChild size="lg" className="h-11 px-5 text-[15px]">
-              <Link href="/register">Get Started Free</Link>
+              <Link href="/register">{t("getStarted")}</Link>
             </Button>
             <Button
               asChild
@@ -33,16 +33,14 @@ export function HeroSection() {
               size="lg"
               className="h-11 px-5 text-[15px]"
             >
-              <a href="#features">See Features</a>
+              <a href="#features">{t("seeFeatures")}</a>
             </Button>
           </div>
         </div>
 
         <div className="mt-12 grid grid-cols-1 md:mt-16 md:grid-cols-[minmax(0,5fr)_72px_minmax(0,7fr)]">
           <figure className="min-w-0">
-            <figcaption className={PANEL_LABEL}>
-              Your knowledge today...
-            </figcaption>
+            <figcaption className={PANEL_LABEL}>{t("today")}</figcaption>
             <ChaosAnimation />
           </figure>
 
@@ -56,8 +54,8 @@ export function HeroSection() {
           </div>
 
           <figure className="min-w-0">
-            <figcaption className={PANEL_LABEL}>...with DevStash</figcaption>
-            <DashboardPreview />
+            <figcaption className={PANEL_LABEL}>{t("withDevStash")}</figcaption>
+            <DashboardPreview locale={locale} />
           </figure>
         </div>
       </div>

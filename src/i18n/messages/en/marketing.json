@@ -1,0 +1,113 @@
+{
+  "meta": {
+    "title": "DevStash - Store Smarter. Build Faster.",
+    "description": "One fast, searchable hub for your code snippets, AI prompts, commands, notes, files, images and links."
+  },
+  "nav": {
+    "main": "Main",
+    "mobile": "Mobile",
+    "features": "Features",
+    "pricing": "Pricing",
+    "signIn": "Sign In",
+    "getStarted": "Get Started",
+    "dashboard": "Dashboard",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "language": {
+    "label": "Language",
+    "other": "Deutsch",
+    "otherLabel": "Diese Seite auf Deutsch"
+  },
+  "footer": {
+    "tagline": "Store Smarter. Build Faster.",
+    "product": "Product",
+    "legal": "Legal",
+    "privacy": "Privacy",
+    "imprint": "Imprint",
+    "rights": "© {year} DevStash. All rights reserved."
+  },
+  "hero": {
+    "titleStart": "Stop Losing Your",
+    "titleHighlight": "Developer Knowledge",
+    "lead": "Your snippets, prompts, commands, and notes are scattered across Notion, GitHub, Slack, and a dozen browser tabs. DevStash brings them all into one fast, searchable hub.",
+    "getStarted": "Get Started Free",
+    "seeFeatures": "See Features",
+    "today": "Your knowledge today...",
+    "withDevStash": "...with DevStash"
+  },
+  "preview": {
+    "label": "DevStash dashboard with a sidebar of item types and a grid of item cards",
+    "search": "Search items",
+    "types": {
+      "snippets": "Snippets",
+      "prompts": "Prompts",
+      "commands": "Commands",
+      "notes": "Notes",
+      "files": "Files",
+      "images": "Images",
+      "links": "Links"
+    },
+    "type": {
+      "snippet": "Snippet",
+      "prompt": "Prompt",
+      "command": "Command",
+      "note": "Note",
+      "file": "File",
+      "image": "Image"
+    },
+    "cards": {
+      "reviewPrompt": "Code Review Prompt",
+      "sprintNotes": "Sprint Notes"
+    }
+  },
+  "features": {
+    "title": "Everything You Need, One Place",
+    "lead": "Stop switching between tools. DevStash keeps your developer resources organized and searchable.",
+    "pro": "Pro",
+    "snippets": {
+      "title": "Code Snippets",
+      "text": "Save reusable code with syntax highlighting and copy it in one click."
+    },
+    "prompts": {
+      "title": "AI Prompts",
+      "text": "Keep your best prompts in one library, ready for any model."
+    },
+    "search": {
+      "title": "Instant Search",
+      "text": "Search content, tags, titles and types. Press ⌘K from anywhere."
+    },
+    "commands": {
+      "title": "Commands",
+      "text": "Your most-used terminal commands, out of bash history."
+    },
+    "files": {
+      "title": "Files & Docs",
+      "text": "Keep project files, images and docs beside your code."
+    },
+    "collections": {
+      "title": "Collections",
+      "text": "Group mixed items by project, topic or workflow."
+    }
+  },
+  "ai": {
+    "badge": "Pro Feature",
+    "title": "AI-Powered Productivity",
+    "lead": "Let AI handle the busywork so you can focus on building.",
+    "tags": "Auto-tag suggestions",
+    "summaries": "AI summaries",
+    "explain": "Explain Code",
+    "optimize": "Prompt optimization",
+    "codeLabel": "Example useDebounce hook",
+    "generatedTags": "AI Generated Tags"
+  },
+  "pricing": {
+    "title": "Simple, Transparent Pricing",
+    "lead": "Start free. Upgrade when you need more power."
+  },
+  "cta": {
+    "title": "Ready to Organize Your Knowledge?",
+    "lead": "Start free with {items} items and {collections} collections.",
+    "button": "Get Started Free"
+  }
+}

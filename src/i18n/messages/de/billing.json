@@ -1,0 +1,37 @@
+{
+  "plans": {
+    "free": "Free",
+    "pro": "Pro",
+    "freeForever": "Für immer kostenlos",
+    "perMonth": "/Monat",
+    "billedMonthly": "Monatliche Abrechnung",
+    "billedYearly": "{total} pro Jahr",
+    "mostPopular": "Am beliebtesten",
+    "getStarted": "Loslegen",
+    "goPro": "Pro holen",
+    "currentPlan": "Aktueller Plan",
+    "upgrade": "Auf Pro upgraden"
+  },
+  "toggle": {
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "label": "Jährliche Abrechnung",
+    "save": "{percent} % sparen"
+  },
+  "features": {
+    "items": "{count} Einträge",
+    "collections": "{count} Sammlungen",
+    "basicTypes": "Snippets, Prompts, Befehle, Notizen und Links",
+    "basicSearch": "Einfache Suche",
+    "unlimitedItems": "Unbegrenzte Einträge",
+    "unlimitedCollections": "Unbegrenzte Sammlungen",
+    "uploads": "Upload von Dateien und Bildern",
+    "aiTags": "KI-Tag-Vorschläge",
+    "aiSummaries": "KI-Zusammenfassungen",
+    "aiExplain": "KI-Code-Erklärungen",
+    "aiOptimize": "KI-Prompt-Optimierung",
+    "customTypes": "Eigene Eintragstypen (bald verfügbar)",
+    "exportJson": "Export (JSON)"
+  },
+  "testModeHint": "Demo-Modus: keine echten Zahlungen. Zahl mit der Karte 4242 4242 4242 4242, einem beliebigen künftigen Datum und beliebiger CVC."
+}

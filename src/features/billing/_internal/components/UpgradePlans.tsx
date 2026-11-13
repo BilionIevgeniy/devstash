@@ -9,10 +9,10 @@ import { BillingToggle } from "@/features/billing/components/BillingToggle";
 import { PricingCard } from "@/features/billing/components/PricingCard";
 import { PricingCardButton } from "@/features/billing/components/PricingCardButton";
 import { PricingGrid } from "@/features/billing/components/PricingGrid";
+import { usePlanText } from "@/features/billing/components/hooks/use-plan-text";
 import {
   FREE_PLAN_FEATURES,
   PRO_PLAN_FEATURES,
-  proPriceDisplay,
 } from "@/features/billing/domain/limits";
 
 // The homepage's pricing table for a signed-in Free user: the switch chooses the
@@ -21,6 +21,7 @@ import {
 export function UpgradePlans() {
   const [isYearly, setIsYearly] = useState(false);
   const { isPending, run } = useBillingRedirect();
+  const plan = usePlanText();
 
   return (
     <PricingGrid
@@ -33,22 +34,19 @@ export function UpgradePlans() {
       }
       free={
         <PricingCard
-          name="Free"
-          price="$0"
-          note="Free forever"
-          features={FREE_PLAN_FEATURES}
+          {...plan.free}
+          features={plan.features(FREE_PLAN_FEATURES)}
           action={
             <PricingCardButton variant="outline" disabled>
-              Current plan
+              {plan.t("plans.currentPlan")}
             </PricingCardButton>
           }
         />
       }
       pro={
         <PricingCard
-          name="Pro"
-          {...proPriceDisplay(isYearly)}
-          features={PRO_PLAN_FEATURES}
+          {...plan.pro(isYearly)}
+          features={plan.features(PRO_PLAN_FEATURES)}
           highlighted
           action={
             <PricingCardButton
@@ -60,7 +58,7 @@ export function UpgradePlans() {
               {isPending && (
                 <Loader2 className="animate-spin" aria-hidden="true" />
               )}
-              Upgrade to Pro
+              {plan.t("plans.upgrade")}
             </PricingCardButton>
           }
         />

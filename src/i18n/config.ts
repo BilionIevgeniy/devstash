@@ -20,6 +20,10 @@ export const FORMATS = {
     long: { year: "numeric", month: "long", day: "numeric" },
     numeric: { year: "numeric", month: "2-digit", day: "2-digit" },
   },
+  number: {
+    // Prices are in US dollars, whole amounts.
+    price: { style: "currency", currency: "USD", maximumFractionDigits: 0 },
+  },
 } as const;
 
 export function isLocale(value: unknown): value is Locale {
@@ -55,6 +59,11 @@ export function resolveLocale(
   if (isLocale(cookieValue)) return cookieValue;
   const accepted = acceptLanguage ? acceptedLanguages(acceptLanguage) : [];
   return accepted.find(isLocale) ?? DEFAULT_LOCALE;
+}
+
+/** The other of the two locales. */
+export function otherLocale(locale: Locale): Locale {
+  return locale === "en" ? "de" : "en";
 }
 
 /** The marketing home page of a locale. */

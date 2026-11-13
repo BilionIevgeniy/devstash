@@ -110,7 +110,7 @@ Course specs name the paths of the original layout. Put the code here instead:
 - `src/app/api/upload/route.ts`: `files/actions/upload.ts` and `files/services/presign-upload.ts`; the browser PUTs to R2, with no byte proxy and no download proxy
 - `src/app/settings/page.tsx`, `src/app/(dashboard)/settings/page.tsx`: `src/app/(app)/settings/page.tsx`
 - `src/components/settings/*`: a `*Section` or dialog in the owning feature's `components/` (`billing`, `import-export`, `editor`), composed by the settings page
-- `src/app/page.tsx` and `src/components/homepage/*`: `src/app/(marketing)/page.tsx` and `src/app/(marketing)/_components/`
+- `src/app/page.tsx` and `src/components/homepage/*`: `src/app/(marketing)/(en)/page.tsx` (English) and `de/page.tsx` (German), both rendering `HomeContent` of `src/app/(marketing)/_components/`
 - Stay where they are: `src/lib/stripe.ts`, `src/app/api/webhooks/stripe/route.ts` (thin, one call into `billing/services/`) and `src/app/api/export/route.ts` (sets the headers only)
 
 ## Rules
