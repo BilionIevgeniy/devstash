@@ -1,16 +1,13 @@
-import type { TransitionStartFunction } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ItemFormValues } from "@/features/items/domain/item-changes";
 
-const { createItem, toastError, rethrow } = vi.hoisted(() => ({
+const { createItem, toastError } = vi.hoisted(() => ({
   createItem: vi.fn(),
   toastError: vi.fn(),
-  rethrow: vi.fn(),
 }));
 vi.mock("@/features/items/actions/item", () => ({ createItem }));
 vi.mock("sonner", () => ({ toast: { error: toastError } }));
-vi.mock("next/navigation", () => ({ unstable_rethrow: rethrow }));
 
 import {
   submitNewItem,
@@ -32,7 +29,7 @@ const VALUES: ItemFormValues = {
 };
 
 const focus = vi.fn();
-const startCreating = vi.fn<TransitionStartFunction>();
+const run = vi.fn<NewItemSubmission["run"]>();
 const onCreated = vi.fn();
 
 function submission(
@@ -44,27 +41,23 @@ function submission(
     values: VALUES,
     upload: null,
     contentRef: { current: { focus } },
-    startCreating,
+    run,
     onCreated,
     ...overrides,
   };
 }
 
-async function submitAndSettle(overrides?: Partial<NewItemSubmission>) {
+// The dialog's run (useSubmitDialog, tested on its own) calls the action;
+// here it does so at once, so the payload can be read.
+async function submitAndSend(overrides?: Partial<NewItemSubmission>) {
   submitNewItem(submission(overrides));
-  await vi.waitFor(() =>
-    expect(createItem.mock.calls.length).toBeGreaterThan(0),
-  );
-  await Promise.resolve();
+  const [action] = run.mock.calls[0];
+  await action();
 }
 
 beforeEach(() => {
   vi.resetAllMocks();
-  // A transition that runs its callback at once; the async body is what the
-  // action's answer then drives.
-  startCreating.mockImplementation((callback) => {
-    void callback();
-  });
+  createItem.mockResolvedValue({ success: true, data: null, error: null });
 });
 
 describe("submitNewItem", () => {
@@ -76,15 +69,13 @@ describe("submitNewItem", () => {
     );
 
     expect(createItem).not.toHaveBeenCalled();
-    expect(startCreating).not.toHaveBeenCalled();
+    expect(run).not.toHaveBeenCalled();
     expect(toastError).toHaveBeenCalledOnce();
     expect(focus).toHaveBeenCalledOnce();
   });
 
   it("sends the fields of a snippet and leaves the URL out", async () => {
-    createItem.mockResolvedValue({ success: true, data: null, error: null });
-
-    await submitAndSettle();
+    await submitAndSend();
 
     expect(createItem).toHaveBeenCalledExactlyOnceWith({
       typeName: "snippet",
@@ -98,9 +89,7 @@ describe("submitNewItem", () => {
   });
 
   it("sends the URL of a link and no content", async () => {
-    createItem.mockResolvedValue({ success: true, data: null, error: null });
-
-    await submitAndSettle({ typeName: "link", fields: editableFields("link") });
+    await submitAndSend({ typeName: "link", fields: editableFields("link") });
 
     expect(createItem).toHaveBeenCalledExactlyOnceWith({
       typeName: "link",
@@ -113,9 +102,7 @@ describe("submitNewItem", () => {
   });
 
   it("sends the upload of an image under its key and name", async () => {
-    createItem.mockResolvedValue({ success: true, data: null, error: null });
-
-    await submitAndSettle({
+    await submitAndSend({
       typeName: "image",
       fields: editableFields("image"),
       upload: {
@@ -132,45 +119,12 @@ describe("submitNewItem", () => {
     );
   });
 
-  it("closes through a second transition once the item is created", async () => {
-    createItem.mockResolvedValue({ success: true, data: null, error: null });
+  it("closes with the dialog's onCreated, and names its own failure", () => {
+    submitNewItem(submission());
 
-    await submitAndSettle();
-
-    await vi.waitFor(() => expect(onCreated).toHaveBeenCalledOnce());
-    expect(startCreating).toHaveBeenCalledTimes(2);
-    expect(toastError).not.toHaveBeenCalled();
-  });
-
-  it("toasts the server's reason and keeps the dialog open", async () => {
-    createItem.mockResolvedValue({
-      success: false,
-      data: null,
-      error: "You reached the limit of 50 items",
+    expect(run).toHaveBeenCalledExactlyOnceWith(expect.any(Function), {
+      onSuccess: onCreated,
+      failMessage: "Couldn't create the item",
     });
-
-    await submitAndSettle();
-
-    await vi.waitFor(() =>
-      expect(toastError).toHaveBeenCalledExactlyOnceWith(
-        "You reached the limit of 50 items",
-      ),
-    );
-    expect(onCreated).not.toHaveBeenCalled();
-  });
-
-  it("toasts a generic failure when the action rejects, after Next had a look", async () => {
-    const failure = new Error("network");
-    createItem.mockRejectedValue(failure);
-
-    await submitAndSettle();
-
-    await vi.waitFor(() =>
-      expect(toastError).toHaveBeenCalledExactlyOnceWith(
-        "Couldn't create the item",
-      ),
-    );
-    expect(rethrow).toHaveBeenCalledWith(failure);
-    expect(onCreated).not.toHaveBeenCalled();
   });
 });

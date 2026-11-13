@@ -21,16 +21,14 @@ import { callbackPathSchema, signInSchema } from "@/features/auth/schemas";
 import type { AuthActionState } from "@/features/auth/types";
 import { getClientIp } from "@/lib/client-ip";
 import { getIpRateLimitStatus, getRateLimitStatus } from "@/lib/rate-limit";
+import { fail, ok } from "@/lib/action-result";
+import { firstIssueMessage } from "@/lib/validation";
 
 const HOME_URL = "/";
 const SETTINGS_URL = "/settings";
 const CREDENTIALS_ERROR_MESSAGES = new Map([
   [EMAIL_NOT_VERIFIED_CODE, EMAIL_NOT_VERIFIED_MESSAGE],
 ]);
-
-function failure(error: string): AuthActionState {
-  return { success: false, data: null, error };
-}
 
 // The sign-in error only carries a code, so the time to wait is read from the
 // counters; when none can be read the message simply has no time in it.
@@ -49,14 +47,14 @@ async function getLockoutMessage(email: string): Promise<string> {
 }
 
 export async function signInWithCredentials(
-  _prevState: AuthActionState,
+  _prevState: AuthActionState | null,
   formData: FormData,
 ): Promise<AuthActionState> {
   const parsed = signInSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
   });
-  if (!parsed.success) return failure(parsed.error.issues[0].message);
+  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
   const redirectTo = callbackPathSchema.parse(formData.get("callbackUrl"));
 
   try {
@@ -64,17 +62,17 @@ export async function signInWithCredentials(
   } catch (error) {
     if (error instanceof CredentialsSignin) {
       if (error.code === TOO_MANY_ATTEMPTS_CODE) {
-        return failure(await getLockoutMessage(parsed.data.email));
+        return fail(await getLockoutMessage(parsed.data.email));
       }
-      return failure(
+      return fail(
         CREDENTIALS_ERROR_MESSAGES.get(error.code) ??
           "Invalid email or password",
       );
     }
-    if (error instanceof AuthError) return failure("Something went wrong");
+    if (error instanceof AuthError) return fail("Something went wrong");
     throw error;
   }
-  return { success: true, data: null, error: null };
+  return ok();
 }
 
 export async function signInWithGitHub(formData: FormData): Promise<void> {

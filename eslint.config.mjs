@@ -190,8 +190,24 @@ const WRITE_IN_QUERIES_SELECTORS = [
   "MemberExpression[object.object.name=/^(prisma|tx)$/][property.name=/^(create|update|upsert|delete)/]",
   "MemberExpression[object.name='prisma'][property.name=/^\\$(transaction|executeRaw|queryRaw)/]",
 ];
-const restrictSyntax = (selectors, message) => [
+// Shared building blocks have one home each (ADR 0021). A later block that sets
+// no-restricted-syntax replaces the rule for its files, so every block builds
+// it through restrictSyntax, which always puts these bans first.
+const SHARED_SYNTAX_BANS = [
+  {
+    selector:
+      "MemberExpression[computed=true][property.value=0][object.type='MemberExpression'][object.property.name='issues']",
+    message:
+      "Read the message of a refused input with firstIssueMessage from @/lib/validation.",
+  },
+  {
+    selector: "Literal[value='Something went wrong. Please try again.']",
+    message: "Use GENERIC_ERROR_MESSAGE from @/lib/action-result.",
+  },
+];
+const restrictSyntax = (selectors = [], message = "") => [
   "error",
+  ...SHARED_SYNTAX_BANS,
   ...selectors.map((selector) => ({ selector, message })),
 ];
 
@@ -295,6 +311,19 @@ const eslintConfig = defineConfig([
             "Services take userId, ip and origin as parameters: read the request in the action, route or page.",
         })),
       }),
+    },
+  },
+  {
+    // The shared bans for all of src. Comes before the blocks below, which
+    // set the rule again for their files with their own selectors added.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: [
+      "src/**/*.test.{ts,tsx}",
+      "src/lib/action-result.ts",
+      "src/lib/validation.ts",
+    ],
+    rules: {
+      "no-restricted-syntax": restrictSyntax(),
     },
   },
   {

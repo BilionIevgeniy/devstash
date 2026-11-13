@@ -42,7 +42,11 @@ import {
   updateUserCollection,
 } from "@/features/collections/services/collection";
 
-const GONE = { success: false, error: "This collection no longer exists." };
+const GONE = {
+  success: false,
+  error: "This collection no longer exists.",
+  data: null,
+};
 
 describe("createUserCollection", () => {
   const input = { name: "React Patterns", description: null };
@@ -111,7 +115,7 @@ describe("setUserCollectionFavorite", () => {
 
     await expect(
       setUserCollectionFavorite("user-1", "collection-1", true),
-    ).resolves.toEqual({ success: true, error: null });
+    ).resolves.toEqual({ success: true, error: null, data: null });
 
     const [strings, isFavorite, favoritedAt, id, userId] =
       executeRaw.mock.calls[0];

@@ -17,7 +17,7 @@ import {
 } from "@/features/import-export/domain/limits";
 import type { ImportFile } from "@/features/import-export/schemas";
 import type { ImportSummary } from "@/features/import-export/types";
-import type { ActionResult } from "@/lib/action-result";
+import { fail, type ActionResult } from "@/lib/action-result";
 import { isNavigationError } from "@/lib/navigation-error";
 
 const LIMITS = {
@@ -49,14 +49,14 @@ const sizeOf = (record: unknown) =>
 // ended: the router is leaving for sign-in, so the run stops like a cancel and
 // reports nothing; running it again skips what went through.
 async function send<T>(
-  action: (batch: unknown[]) => Promise<ActionResult<T | null>>,
+  action: (batch: unknown[]) => Promise<ActionResult<T>>,
   batch: unknown[],
-): Promise<ActionResult<T | null> | null> {
+): Promise<ActionResult<T> | null> {
   try {
     return await action(batch);
   } catch (error) {
     if (isNavigationError(error)) return null;
-    return { success: false, data: null, error: CONNECTION_LOST };
+    return fail(CONNECTION_LOST);
   }
 }
 
@@ -64,7 +64,7 @@ async function send<T>(
 // batch and returns its summary. Null when cancelled or leaving for sign-in.
 async function sendAll<T>(
   records: readonly unknown[],
-  action: (batch: unknown[]) => Promise<ActionResult<T | null>>,
+  action: (batch: unknown[]) => Promise<ActionResult<T>>,
   toSummary: (data: T) => ImportSummary,
   run: ImportRun,
   options: ImportRunOptions & { progress: { done: number; total: number } },
@@ -84,8 +84,8 @@ async function sendAll<T>(
     if (options.isCancelled()) return null;
     const result = await send(action, batch);
     if (!result) return null;
-    if (!result.success || !result.data) {
-      return { summary, error: result.error ?? CONNECTION_LOST };
+    if (!result.success) {
+      return { summary, error: result.error };
     }
     summary = addImportSummaries(summary, toSummary(result.data));
     options.progress.done += batch.length;

@@ -54,7 +54,11 @@ describe("updateUserItem", () => {
   it("refuses B's item for A and leaves B unchanged", async () => {
     const before = await snapshotTenant(t.b.userId);
     const result = await updateUserItem(t.a.userId, t.b.items.note, edit());
-    expect(result).toMatchObject({ success: false, error: "Item not found" });
+    expect(result).toMatchObject({
+      success: false,
+      error: "Item not found",
+      data: null,
+    });
     expect(await snapshotTenant(t.b.userId)).toEqual(before);
 
     const own = await updateUserItem(t.b.userId, t.b.items.note, edit());
@@ -71,6 +75,7 @@ describe("updateUserItem", () => {
     expect(result).toMatchObject({
       success: false,
       error: "This item or one of its collections no longer exists",
+      data: null,
     });
     expect(await snapshotTenant(t.b.userId)).toEqual(before);
     const links = await prisma.itemCollection.count({
@@ -93,7 +98,11 @@ describe("setUserItemContent", () => {
   it("refuses B's item for A", async () => {
     const before = await snapshotTenant(t.b.userId);
     const result = await setUserItemContent(t.a.userId, t.b.items.note, "x");
-    expect(result).toMatchObject({ success: false, error: "Item not found" });
+    expect(result).toMatchObject({
+      success: false,
+      error: "Item not found",
+      data: null,
+    });
     expect(await snapshotTenant(t.b.userId)).toEqual(before);
 
     const own = await setUserItemContent(t.b.userId, t.b.items.note, "new");
@@ -110,7 +119,11 @@ describe.each([
   it("refuses B's item for A and leaves B unchanged", async () => {
     const before = await snapshotTenant(t.b.userId);
     const result = await toggle(t.a.userId, t.b.items.link, true);
-    expect(result).toEqual({ success: false, error: "Item not found" });
+    expect(result).toEqual({
+      success: false,
+      error: "Item not found",
+      data: null,
+    });
     expect(await snapshotTenant(t.b.userId)).toEqual(before);
   });
 
@@ -132,7 +145,11 @@ describe("deleteUserItem", () => {
   it("refuses B's item for A and leaves B unchanged", async () => {
     const before = await snapshotTenant(t.b.userId);
     const result = await deleteUserItem(t.a.userId, required(t.b.items.file));
-    expect(result).toEqual({ success: false, error: "Item not found" });
+    expect(result).toEqual({
+      success: false,
+      error: "Item not found",
+      data: null,
+    });
     expect(await snapshotTenant(t.b.userId)).toEqual(before);
     // R2 is outside the snapshot: B's object must not be touched either.
     expect(deleteObject).not.toHaveBeenCalled();

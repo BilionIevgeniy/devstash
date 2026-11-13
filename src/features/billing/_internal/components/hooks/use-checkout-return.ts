@@ -35,7 +35,7 @@ export function useCheckoutReturn(sessionId: string | null, isPro: boolean) {
         const result = await confirmCheckout(sessionId);
         // On success the action's refresh brings isPro, and this effect runs
         // again: the toast arrives with the screen it confirms.
-        if (!result.success || !result.data?.isPro) settle();
+        if (!result.success || !result.data.isPro) settle();
       } catch (error) {
         unstable_rethrow(error);
         settle();

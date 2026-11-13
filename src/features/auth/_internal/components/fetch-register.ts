@@ -1,6 +1,5 @@
 import "client-only";
-
-import { GENERIC_ERROR_MESSAGE } from "@/features/auth/_internal/messages";
+import { GENERIC_ERROR_MESSAGE } from "@/lib/action-result";
 
 export type RegisterResult =
   { success: true } | { success: false; error: string };

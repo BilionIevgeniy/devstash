@@ -1,6 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Component, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -8,6 +7,8 @@ import {
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
 import type { AuthActionState } from "@/features/auth/types";
+
+import { CatchBoundary } from "../../../../test/catch-boundary";
 
 const { changePassword, signOutAfterPasswordChange, toastSuccess, rethrow } =
   vi.hoisted(() => ({
@@ -31,26 +32,6 @@ const WRONG_PASSWORD: AuthActionState = {
   data: null,
   error: "Current password is incorrect",
 };
-
-// What Next's own boundary does with a redirect: the error leaves the form.
-class Boundary extends Component<
-  { children: ReactNode },
-  { caught: string | null }
-> {
-  state: { caught: string | null } = { caught: null };
-
-  static getDerivedStateFromError(error: Error) {
-    return { caught: error.message };
-  }
-
-  render() {
-    return this.state.caught ? (
-      <p>Caught: {this.state.caught}</p>
-    ) : (
-      this.props.children
-    );
-  }
-}
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -240,9 +221,9 @@ describe("ChangePasswordForm", () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     const user = userEvent.setup();
     render(
-      <Boundary>
+      <CatchBoundary>
         <ChangePasswordForm />
-      </Boundary>,
+      </CatchBoundary>,
     );
 
     await fillAndSubmit(user);

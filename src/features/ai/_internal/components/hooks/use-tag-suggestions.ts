@@ -35,8 +35,8 @@ export function useTagSuggestions(hasTag: (tag: string) => boolean) {
       try {
         const result = await generateAutoTags({ title, content });
         if (!mountedRef.current) return;
-        if (!result.success || !result.data) {
-          toast.error(result.error ?? AI_UNAVAILABLE_MESSAGE);
+        if (!result.success) {
+          toast.error(result.error);
           return;
         }
         showAnswer(result.data.filter((tag) => !hasTag(tag)));

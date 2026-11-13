@@ -15,7 +15,7 @@ export function useBillingRedirect() {
     startTransition(async () => {
       try {
         const result = await action();
-        if (!result.success) toast.error(result.error ?? START_FAILED);
+        if (!result.success) toast.error(result.error);
       } catch (error) {
         unstable_rethrow(error);
         toast.error(START_FAILED);

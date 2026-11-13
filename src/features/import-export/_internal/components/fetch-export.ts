@@ -2,6 +2,7 @@ import "client-only";
 
 import { EXPORT_CLOSING } from "@/features/import-export/domain/export-format";
 import { routeErrorMessage } from "@/lib/route-error";
+import { GENERIC_ERROR_MESSAGE } from "@/lib/action-result";
 
 const EXPORT_PATH = "/api/export";
 const FALLBACK_FILE_NAME = "devstash-export.json";
@@ -9,7 +10,6 @@ const NETWORK_ERROR =
   "The export could not be downloaded. Check your connection and try again.";
 const INTERRUPTED =
   "The export was interrupted. You can export again in a minute.";
-const GENERIC_ERROR = "Something went wrong. Please try again.";
 
 function fileNameOf(response: Response): string {
   const header = response.headers.get("Content-Disposition") ?? "";
@@ -40,7 +40,9 @@ export async function downloadExport(): Promise<{ error: string | null }> {
   try {
     const response = await fetch(EXPORT_PATH);
     if (!response.ok) {
-      return { error: await routeErrorMessage(response, GENERIC_ERROR) };
+      return {
+        error: await routeErrorMessage(response, GENERIC_ERROR_MESSAGE),
+      };
     }
     fileName = fileNameOf(response);
     blob = await response.blob();

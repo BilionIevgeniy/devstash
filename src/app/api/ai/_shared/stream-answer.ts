@@ -2,26 +2,18 @@ import type { ZodType } from "zod";
 
 import { AI_SIGNED_OUT_MESSAGE } from "@/features/ai/domain/messages";
 import type { TextStreamStart } from "@/features/ai/services/text-stream";
-import { auth } from "@/features/auth/nextauth/auth";
+import { getSignedInUserId } from "@/features/auth/nextauth/session";
+import { jsonError, NO_STORE, SERVER_ERROR_MESSAGE } from "@/lib/api-response";
 import { logger } from "@/lib/logger";
+import { firstIssueMessage } from "@/lib/validation";
 
-// A user's own item and its answer: never kept by a shared cache.
-const NO_STORE = { "Cache-Control": "private, no-store" };
 const INVALID_BODY_MESSAGE = "Invalid request";
-const UNEXPECTED_MESSAGE = "Something went wrong";
 
 type StartStream<T> = (
   userId: string,
   input: T,
   signal: AbortSignal,
 ) => Promise<TextStreamStart>;
-
-function failure(error: string, status: number) {
-  return Response.json(
-    { success: false, data: null, error },
-    { status, headers: NO_STORE },
-  );
-}
 
 async function readBody(request: Request): Promise<unknown> {
   try {
@@ -36,9 +28,9 @@ function toResponse(result: TextStreamStart): Response {
     return new Response(null, { status: 204, headers: NO_STORE });
   }
   if (result.status === "refused") {
-    return failure(result.error, result.reason === "not-pro" ? 403 : 429);
+    return jsonError(result.error, result.reason === "not-pro" ? 403 : 429);
   }
-  if (result.status === "failed") return failure(result.error, 503);
+  if (result.status === "failed") return jsonError(result.error, 503);
   return new Response(result.stream, {
     headers: { ...NO_STORE, "Content-Type": "text/plain; charset=utf-8" },
   });
@@ -55,14 +47,13 @@ export async function streamAiAnswer<T>(
   start: StartStream<T>,
   label: string,
 ): Promise<Response> {
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) return failure(AI_SIGNED_OUT_MESSAGE, 401);
+  const userId = await getSignedInUserId();
+  if (!userId) return jsonError(AI_SIGNED_OUT_MESSAGE, 401);
 
   const parsed = schema.safeParse(await readBody(request));
   if (!parsed.success) {
-    return failure(
-      parsed.error.issues[0]?.message ?? INVALID_BODY_MESSAGE,
+    return jsonError(
+      firstIssueMessage(parsed.error, INVALID_BODY_MESSAGE),
       400,
     );
   }
@@ -71,6 +62,6 @@ export async function streamAiAnswer<T>(
     return toResponse(await start(userId, parsed.data, request.signal));
   } catch (error) {
     await logger.error(`${label} failed`, { error, userId });
-    return failure(UNEXPECTED_MESSAGE, 500);
+    return jsonError(SERVER_ERROR_MESSAGE, 500);
   }
 }

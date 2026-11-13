@@ -24,6 +24,7 @@ One short file per decision that shapes the structure of the code, in the [MADR]
 | [0018](0018-search-in-postgres.md) | Search runs in Postgres, with one narrow raw-SQL exception | accepted |
 | [0019](0019-export-without-file-bytes.md) | The export carries no file bytes, and streams page by page | accepted |
 | [0020](0020-import-as-batched-data-input.md) | An import is data input in batches, not a file upload | accepted |
+| [0021](0021-result-contract-and-shared-building-blocks.md) | One result contract, and shared building blocks with one home each | accepted |
 
 ## How to add one
 

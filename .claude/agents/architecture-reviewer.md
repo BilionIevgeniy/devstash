@@ -24,7 +24,7 @@ Read these and judge the plan against them:
 1. **Correctness**: races between navigation, refresh and server actions; mount and unmount order; state that does not survive where the plan assumes it does; edge cases (missing, foreign or deleted data, signed-out user, double submit, Back and Forward, reload)
 2. **Architecture**: the rules of `architecture-rules.md` (module ownership, ranks, roles, `_internal/`, Prisma only in queries and services, thin entry points, `userId` in every `where`)
 3. **UI/UX**: every rule of the "UI/UX" section of `coding-standards.md` that the change touches
-4. **Simplicity**: a smaller change that reaches the same goals; anything the plan adds that the goals do not ask for
+4. **Simplicity**: a smaller change that reaches the same goals; anything the plan adds that the goals do not ask for. A plan that writes a helper, a constant or a hook that "Shared building blocks" in `coding-standards.md` or the `components/common` hooks already provide, or that adds a second copy without moving it to a shared home
 5. **Testing**: pure rules that need a colocated test, and what only the browser can check
 
 ## Output

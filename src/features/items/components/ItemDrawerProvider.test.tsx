@@ -17,7 +17,7 @@ vi.mock("@/features/items/_internal/components/fetch-item-detail", () => ({
 vi.mock("@/features/items/actions/item", () => ({
   deleteItem: vi.fn(),
   setItemFavorite: vi.fn(),
-  toggleItemPin: vi.fn(),
+  setItemPin: vi.fn(),
 }));
 // The real content pulls in the editors. The probe shows what the provider
 // hands it: the state it got, and a way to report unsaved edits.

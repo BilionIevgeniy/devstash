@@ -5,7 +5,7 @@ import { syncSubscription } from "@/features/billing/_internal/services/subscrip
 import { stripeIdOf } from "@/features/billing/domain/subscription";
 import { getEntitlements } from "@/features/billing/queries";
 import type { Plan } from "@/features/billing/schemas";
-import type { OperationResult } from "@/lib/action-result";
+import { fail, ok, type OperationResult } from "@/lib/action-result";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import {
@@ -18,9 +18,7 @@ const ALREADY_PRO = "You are already on the Pro plan.";
 const NO_BILLING_ACCOUNT = "No billing account was found.";
 const NOT_CONFIRMED = "This payment could not be confirmed.";
 
-export interface RedirectResult extends OperationResult {
-  data: { url: string } | null;
-}
+export type RedirectResult = OperationResult<{ url: string }>;
 
 interface CheckoutUser {
   id: string;
@@ -33,12 +31,8 @@ interface SessionInput {
   origin: string;
 }
 
-function failure(error: string): RedirectResult {
-  return { success: false, data: null, error };
-}
-
 function redirectTo(url: string): RedirectResult {
-  return { success: true, data: { url }, error: null };
+  return ok({ url });
 }
 
 function priceIdFor(plan: Plan): string {
@@ -102,7 +96,7 @@ export async function createCheckoutSession(
   origin: string,
 ): Promise<RedirectResult> {
   const { isPro } = await getEntitlements(user.id);
-  if (isPro) return failure(ALREADY_PRO);
+  if (isPro) return fail(ALREADY_PRO);
 
   // Before any customer write: a missing price must leave nothing behind.
   const input = { userId: user.id, priceId: priceIdFor(plan), origin };
@@ -124,7 +118,7 @@ export async function createPortalSession(
   origin: string,
 ): Promise<RedirectResult> {
   const customer = await getStripeCustomerId(userId);
-  if (!customer) return failure(NO_BILLING_ACCOUNT);
+  if (!customer) return fail(NO_BILLING_ACCOUNT);
 
   try {
     const session = await getStripe().billingPortal.sessions.create({
@@ -138,7 +132,7 @@ export async function createPortalSession(
     // The id stays: the webhook finds the row only by it, and clearing it could
     // leave a Pro row that no later event can end.
     logger.warn("The Stripe customer of a user is missing", { userId });
-    return failure(NO_BILLING_ACCOUNT);
+    return fail(NO_BILLING_ACCOUNT);
   }
 }
 
@@ -159,15 +153,15 @@ export async function confirmCheckoutSession(
 ): Promise<OperationResult> {
   const session = await retrieveCheckoutSession(sessionId);
   if (session?.metadata?.userId !== userId || session.status !== "complete") {
-    return { success: false, error: NOT_CONFIRMED };
+    return fail(NOT_CONFIRMED);
   }
 
   const customerId = stripeIdOf(session.customer);
   const subscriptionId = stripeIdOf(session.subscription);
   if (!customerId || !subscriptionId) {
-    return { success: false, error: NOT_CONFIRMED };
+    return fail(NOT_CONFIRMED);
   }
 
   await syncSubscription(customerId, subscriptionId);
-  return { success: true, error: null };
+  return ok();
 }

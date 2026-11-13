@@ -11,16 +11,14 @@ import {
 } from "@/features/files/domain/file-rules";
 import type { RequestUploadInput } from "@/features/files/schemas";
 import type { PresignedUpload } from "@/features/files/types";
-import type { OperationResult } from "@/lib/action-result";
+import { ok, fail, type OperationResult } from "@/lib/action-result";
 import { signPutUrl } from "@/lib/r2";
 import { consumeRateLimit } from "@/lib/rate-limit";
 
 export const PRO_ONLY_MESSAGE = "File uploads are a Pro feature";
 const UPLOAD_URL_TTL_SECONDS = 10 * 60;
 
-export interface PresignUploadResult extends OperationResult {
-  data: PresignedUpload | null;
-}
+export type PresignUploadResult = OperationResult<PresignedUpload>;
 
 // Checks what the browser declares and signs a PUT under the user's prefix.
 // The checked size is part of the signature, so R2 refuses any other length,
@@ -31,22 +29,17 @@ export async function presignUpload(
   { kind, fileName, size }: RequestUploadInput,
 ): Promise<PresignUploadResult> {
   const { isPro } = await getEntitlements(userId);
-  if (!isPro) return { success: false, error: PRO_ONLY_MESSAGE, data: null };
+  if (!isPro) return fail(PRO_ONLY_MESSAGE);
 
   const check = checkDeclaredFile(kind, fileName, size);
-  if ("error" in check)
-    return { success: false, error: check.error, data: null };
+  if ("error" in check) return fail(check.error);
 
   // Counted only for a file that would be signed, so a refused type does not
   // use up the quota. Fails closed: an Upstash outage throws and the action
   // answers with its generic error.
   const limit = await consumeRateLimit(PRESIGN_BY_USER, userId);
   if (!limit.success) {
-    return {
-      success: false,
-      error: getTooManyAttemptsMessage(limit.reset, Date.now()),
-      data: null,
-    };
+    return fail(getTooManyAttemptsMessage(limit.reset, Date.now()));
   }
 
   const key = objectKey(userId, randomUUID(), fileExtension(fileName));
@@ -56,9 +49,5 @@ export async function presignUpload(
     size,
     UPLOAD_URL_TTL_SECONDS,
   );
-  return {
-    success: true,
-    error: null,
-    data: { uploadUrl, key, contentType: check.contentType },
-  };
+  return ok({ uploadUrl, key, contentType: check.contentType });
 }

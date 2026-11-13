@@ -43,7 +43,7 @@ vi.mock("@/lib/r2", () => ({
 }));
 
 vi.mock("@/lib/email", () => ({
-  sendEmail: vi.fn(async () => ({ success: true, error: null })),
+  sendEmail: vi.fn(async () => ({ success: true, data: null, error: null })),
 }));
 
 // A test that reaches Stripe sets `getStripe` to the client it needs; the

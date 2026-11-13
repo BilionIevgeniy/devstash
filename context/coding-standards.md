@@ -103,8 +103,27 @@ Check every UI change against these before writing it; the plan names which ones
 ## Error Handling
 
 - Use try/catch in Server Actions
-- Return the `ActionResult<T>` pattern `{ success, data, error }` from actions
+- Return `ActionResult<T>` (`{ success, data, error }`) from actions, built with `ok`/`fail` from `@/lib/action-result` (ADR 0021); the message of a refused input is `firstIssueMessage(parsed.error)` (`@/lib/validation`)
 - Display user-friendly error messages via toast
+
+## Shared building blocks
+
+A small helper that more than one file needs has one home ([ADR 0021](../docs/adr/0021-result-contract-and-shared-building-blocks.md)). Before writing a helper, a constant or a hook, check this list and the hooks of `components/common` (listed once, in the Layout of [architecture-rules.md](architecture-rules.md); a dialog that waits for its request uses `useSubmitDialog` there). A second copy of something is moved to its shared home in the same change, not left for later; where that home is follows rule 9 of "Where does this go".
+
+| Need | Use | Where |
+| ---- | --- | ----- |
+| Build a result of a service, an action or a route | `ok(data)` / `ok()`, `fail(error)`, the types `OperationResult<T>`, `ActionResult<T>`, `Failure` | `lib/action-result.ts` |
+| The text of an unexpected failure | `GENERIC_ERROR_MESSAGE` | `lib/action-result.ts` |
+| The message of input a schema refused | `firstIssueMessage(parsed.error, fallback?)` | `lib/validation.ts` |
+| A route's JSON answer, never cached | `jsonOk(data, init?)`, `jsonError(error, status, headers?)`; `NO_STORE` for its own `Response`, `SERVER_ERROR_MESSAGE` for a 500 | `lib/api-response.ts` |
+| The signed-in user of a route or of an action with its own refusal | `getSignedInUserId()` (null, no redirect); pages and other actions use `getSessionUser()`; `auth()` stays only where other fields of the session are read (`authenticatedAt` in delete-account) | `features/auth/nextauth/session.ts` |
+| The error a route answered, read in the browser | `routeErrorMessage(response, fallback)` | `lib/route-error.ts` |
+| A Server Action's redirect caught outside a `useTransition` transition | `isNavigationError(error)` ("React patterns" below) | `lib/navigation-error.ts` |
+| A save from a form's transition that needs the saved data back (items) | `callAction(action, failMessage)`: the data, or null with the toast shown | `items/_internal/components/call-action.ts` |
+| A flag of a list with an optimistic value (star, pin) | `useOptimisticToggle(action, { failMessage, onSaved, notify })` | `items/_internal/components/hooks/use-optimistic-toggle.ts` |
+| An error boundary in a `dom` test | `CatchBoundary` | `test/catch-boundary.tsx` |
+
+The lint bans `.issues[0]` and the literal generic text outside their homes ("What the lint enforces" in `architecture-rules.md`). `npm run lint:dup` (jscpd) reports copy-paste across `src/`; it is a report for `/cleanup`, not a CI gate, because thin entry points and dialog markup are parallel on purpose.
 
 ## Logging
 
@@ -195,6 +214,7 @@ Playwright (`@playwright/test`, pinned), Chromium only, in `e2e/` as `[name].spe
 - A test creates its own data under a unique title (`uniqueTitle`) and depends on no other test: the database holds the items of the whole run, and `--repeat-each` repeats a test. The only order is the setup before the tests
 - The test server gets an environment built from scratch (`scripts/e2e-server-env.ts`): the test database, the test origin, dummies for Stripe, Resend, OpenAI, R2 and GitHub. Next also reads `.env`, `.env.local`, `.env.production` and `.env.production.local`, so a variable that map does not name would keep its live value; a unit test fails for any name in `.env.example` that the map leaves out. A new variable gets its line there in the same change
 - Sign-in is rate-limited in Upstash, which outlasts the database. The email is new for every run, and `signInThroughForm` sets a random test IP (203.0.113.x) on the context before each sign-in, so no run uses up the counters of another
+- A test that ends the session (`clearCookies`) waits for `networkidle` first: every answer of a signed-in request sets the session cookie again, and a loaded page fires many prefetches, so one arriving later would sign the browser back in (`endSession` in `e2e/signed-out.spec.ts`)
 - A click before React has hydrated a client component does nothing, so the first interaction on a page that needs one is repeated until it takes (`toPass`, see `createSnippet`)
 - Run it when a page, a route or the sign-in or item flows changed; CI runs it on every PR after `ci`. A failing journey is fixed, never skipped: open its trace (`npx playwright show-trace`, or the HTML report uploaded by the CI job). It empties the same database as the integration tests, so never run both at once. `npx playwright test --repeat-each=8` is the flake check (stay under 9: each repeat creates six items, and the Free plan allows 50). Setup: README, "End-to-end tests"
 - Not asserted on purpose: focus returning after the route drawer closes (a known bug, `context/todo.md`, "Items")

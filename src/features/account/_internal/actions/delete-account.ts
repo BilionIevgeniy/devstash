@@ -5,19 +5,19 @@ import { redirect, RedirectType } from "next/navigation";
 import { deleteAccountSchema } from "@/features/account/schemas";
 import { deleteAccount as deleteUserAccount } from "@/features/account/_internal/services/delete-account";
 import { auth, signOut } from "@/features/auth/nextauth/auth";
-import type { ActionResult } from "@/lib/action-result";
+import {
+  fail,
+  GENERIC_ERROR_MESSAGE,
+  type ActionResult,
+} from "@/lib/action-result";
 import { logger } from "@/lib/logger";
+import { firstIssueMessage } from "@/lib/validation";
 
-const GENERIC_ERROR = "Something went wrong. Please try again.";
 const SIGNED_OUT_ERROR = "You need to be signed in";
 const HOME_URL = "/";
 
 interface DeleteAccountInput {
   password?: string;
-}
-
-function failure(error: string): ActionResult {
-  return { success: false, data: null, error };
 }
 
 // auth() and not getSessionUser(): a signed-out caller gets an error in the
@@ -26,21 +26,21 @@ export async function deleteAccount(
   input: DeleteAccountInput = {},
 ): Promise<ActionResult> {
   const parsed = deleteAccountSchema.safeParse(input);
-  if (!parsed.success) return failure(parsed.error.issues[0].message);
+  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
 
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return failure(SIGNED_OUT_ERROR);
+  if (!userId) return fail(SIGNED_OUT_ERROR);
 
   try {
     const result = await deleteUserAccount(userId, {
       password: parsed.data.password,
       authenticatedAt: session.user.authenticatedAt,
     });
-    if (!result.success) return failure(result.error ?? GENERIC_ERROR);
+    if (!result.success) return fail(result.error);
   } catch (error) {
     await logger.error("Deleting the account failed", { error, userId });
-    return failure(GENERIC_ERROR);
+    return fail(GENERIC_ERROR_MESSAGE);
   }
 
   // Outside the try: redirect() throws, and the catch above would turn that

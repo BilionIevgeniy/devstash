@@ -1,13 +1,9 @@
 import "server-only";
 
 import { AI_FAILURE_MESSAGES } from "@/features/ai/domain/messages";
-import type { OperationResult } from "@/lib/action-result";
+import { fail, type Failure } from "@/lib/action-result";
 import { logger } from "@/lib/logger";
 import { aiErrorKind, isAiSpendError } from "@/lib/openai";
-
-export interface FailedAiCall extends OperationResult {
-  data: null;
-}
 
 // A failure of an OpenAI call that the user can act on, or wait out, is
 // answered in its own words. Anything else (an Upstash outage, a bug) throws
@@ -15,7 +11,7 @@ export interface FailedAiCall extends OperationResult {
 export async function failedCall(
   error: unknown,
   operation: string,
-): Promise<FailedAiCall> {
+): Promise<Failure> {
   const kind = aiErrorKind(error);
   if (!kind) throw error;
 
@@ -27,5 +23,5 @@ export async function failedCall(
   } else {
     await logger.error(`${operation} failed`, { error });
   }
-  return { success: false, error: AI_FAILURE_MESSAGES[kind], data: null };
+  return fail(AI_FAILURE_MESSAGES[kind]);
 }

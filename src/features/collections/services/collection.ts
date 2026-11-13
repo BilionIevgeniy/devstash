@@ -9,7 +9,7 @@ import type {
   CreateCollectionInput,
   UpdateCollectionInput,
 } from "@/features/collections/schemas";
-import type { OperationResult } from "@/lib/action-result";
+import { fail, ok, type OperationResult } from "@/lib/action-result";
 import { LOCKED_TRANSACTION, lockForTransaction } from "@/lib/advisory-lock";
 import { prisma } from "@/lib/prisma";
 
@@ -34,9 +34,7 @@ async function insertCollection(
   }, LOCKED_TRANSACTION);
 }
 
-export interface CreateCollectionResult extends OperationResult {
-  data: { id: string } | null;
-}
+export type CreateCollectionResult = OperationResult<{ id: string }>;
 
 export async function createUserCollection(
   userId: string,
@@ -50,9 +48,9 @@ export async function createUserCollection(
   });
 
   if (!collection) {
-    return { success: false, error: COLLECTION_LIMIT_REACHED, data: null };
+    return fail(COLLECTION_LIMIT_REACHED);
   }
-  return { success: true, error: null, data: collection };
+  return ok(collection);
 }
 
 export async function updateUserCollection(
@@ -65,8 +63,8 @@ export async function updateUserCollection(
     data: { name, description },
   });
 
-  if (count === 0) return { success: false, error: NOT_FOUND_ERROR };
-  return { success: true, error: null };
+  if (count === 0) return fail(NOT_FOUND_ERROR);
+  return ok();
 }
 
 // Raw SQL for the same reason as setUserItemFavorite: favoriting is not an edit,
@@ -83,8 +81,8 @@ export async function setUserCollectionFavorite(
     WHERE "id" = ${collectionId} AND "userId" = ${userId}
   `;
 
-  if (count === 0) return { success: false, error: NOT_FOUND_ERROR };
-  return { success: true, error: null };
+  if (count === 0) return fail(NOT_FOUND_ERROR);
+  return ok();
 }
 
 // The items stay: only their `ItemCollection` rows go, by the cascade on the
@@ -97,6 +95,6 @@ export async function deleteUserCollection(
     where: { id: collectionId, userId },
   });
 
-  if (count === 0) return { success: false, error: NOT_FOUND_ERROR };
-  return { success: true, error: null };
+  if (count === 0) return fail(NOT_FOUND_ERROR);
+  return ok();
 }

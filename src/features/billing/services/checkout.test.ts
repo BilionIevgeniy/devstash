@@ -204,6 +204,7 @@ describe("confirmCheckoutSession", () => {
   const NOT_CONFIRMED = {
     success: false,
     error: "This payment could not be confirmed.",
+    data: null,
   };
 
   beforeEach(() => {
@@ -214,6 +215,7 @@ describe("confirmCheckoutSession", () => {
     await expect(confirmCheckoutSession(USER.id, "cs_1")).resolves.toEqual({
       success: true,
       error: null,
+      data: null,
     });
 
     expect(mocks.syncSubscription).toHaveBeenCalledWith("cus_1", "sub_1");

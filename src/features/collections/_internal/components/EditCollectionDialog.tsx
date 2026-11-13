@@ -1,13 +1,7 @@
-import {
-  useRef,
-  useState,
-  useTransition,
-  type SubmitEvent,
-  type TransitionStartFunction,
-} from "react";
-import { unstable_rethrow } from "next/navigation";
+import { useState, type SubmitEvent } from "react";
 import { toast } from "sonner";
 
+import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -40,8 +34,7 @@ export function EditCollectionDialog({
   onOpenChange,
   returnFocus,
 }: EditCollectionDialogProps) {
-  const [isSaving, startSaving] = useTransition();
-  const savedRef = useRef(false);
+  const { isPending: isSaving, run, takeDone } = useSubmitDialog();
 
   // Esc, the overlay and the X wait for the result: closing now would lose
   // the input on a failure and let the form be sent twice.
@@ -49,18 +42,11 @@ export function EditCollectionDialog({
     if (!isSaving) onOpenChange(next);
   }
 
-  function handleSaved() {
-    savedRef.current = true;
-    onOpenChange(false);
-  }
-
   // The toast waits for the dialog to close, as in CreateCollectionDialog.
   function handleCloseAutoFocus(event: Event) {
     event.preventDefault();
     returnFocus();
-    if (!savedRef.current) return;
-    savedRef.current = false;
-    toast.success(SAVED_MESSAGE);
+    if (takeDone()) toast.success(SAVED_MESSAGE);
   }
 
   return (
@@ -79,8 +65,12 @@ export function EditCollectionDialog({
         <EditCollectionForm
           collection={collection}
           isSaving={isSaving}
-          startSaving={startSaving}
-          onSaved={handleSaved}
+          onSubmit={(values) =>
+            run(() => updateCollection(collection.id, values), {
+              onSuccess: () => onOpenChange(false),
+              failMessage: SAVE_FAILED_MESSAGE,
+            })
+          }
         />
       </DialogContent>
     </Dialog>
@@ -90,15 +80,13 @@ export function EditCollectionDialog({
 interface EditCollectionFormProps {
   collection: CollectionSummary;
   isSaving: boolean;
-  startSaving: TransitionStartFunction;
-  onSaved: () => void;
+  onSubmit: (values: CollectionFormValues) => void;
 }
 
 function EditCollectionForm({
   collection,
   isSaving,
-  startSaving,
-  onSaved,
+  onSubmit,
 }: EditCollectionFormProps) {
   const [initialValues] = useState<CollectionFormValues>({
     name: collection.name,
@@ -112,23 +100,7 @@ function EditCollectionForm({
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    startSaving(async () => {
-      try {
-        const result = await updateCollection(collection.id, values);
-        if (result.success) {
-          // After the await this is no longer part of the transition, so it
-          // is wrapped again: the dialog closes in the commit that brings the
-          // refreshed page, not before it.
-          startSaving(onSaved);
-        } else {
-          toast.error(result.error ?? SAVE_FAILED_MESSAGE);
-        }
-      } catch (error) {
-        // A signed-out caller's redirect arrives here too, and must go on.
-        unstable_rethrow(error);
-        toast.error(SAVE_FAILED_MESSAGE);
-      }
-    });
+    onSubmit(values);
   }
 
   const canSave =

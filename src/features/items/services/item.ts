@@ -17,7 +17,7 @@ import type { UpdateItemInput } from "@/features/items/schemas";
 import { getUserItemDetail } from "@/features/items/services/item-detail";
 import { userCanUseType } from "@/features/items/services/type-access";
 import type { ItemDetail } from "@/features/items/types";
-import type { OperationResult } from "@/lib/action-result";
+import { fail, ok, type OperationResult } from "@/lib/action-result";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 
@@ -28,9 +28,7 @@ const FILE_DELETE_FAILED = "Couldn't delete the file. Please try again.";
 const ITEM_OR_COLLECTION_NOT_FOUND =
   "This item or one of its collections no longer exists";
 
-export interface UpdateItemResult extends OperationResult {
-  data: ItemDetail | null;
-}
+export type UpdateItemResult = OperationResult<ItemDetail>;
 
 // Removes the caller's tags no item uses any more, after an update or delete
 // unlinked them. Best effort: the item is already saved, so a failure is only
@@ -58,15 +56,15 @@ export async function updateUserItem(
   input: UpdateItemInput,
 ): Promise<UpdateItemResult> {
   const current = await getItemEditState(userId, itemId);
-  if (!current) return { success: false, error: ITEM_NOT_FOUND, data: null };
+  if (!current) return fail(ITEM_NOT_FOUND);
   // The answer carries signed URLs, so a locked item cannot be saved either.
   if (!(await userCanUseType(userId, current.typeName))) {
-    return { success: false, error: PRO_ONLY, data: null };
+    return fail(PRO_ONLY);
   }
 
   const update = editableUpdate(current.typeName, input);
   if ("error" in update) {
-    return { success: false, error: update.error, data: null };
+    return fail(update.error);
   }
   const { tags, collectionIds, ...fields } = update.data;
   const linked = new Set(current.collectionIds);
@@ -90,19 +88,15 @@ export async function updateUserItem(
     });
   } catch (error) {
     if (isRecordNotFound(error)) {
-      return {
-        success: false,
-        error: ITEM_OR_COLLECTION_NOT_FOUND,
-        data: null,
-      };
+      return fail(ITEM_OR_COLLECTION_NOT_FOUND);
     }
     throw error;
   }
   await deleteOrphanTags(userId);
 
   const item = await getUserItemDetail(userId, itemId);
-  if (!item) return { success: false, error: ITEM_NOT_FOUND, data: null };
-  return { success: true, error: null, data: item };
+  if (!item) return fail(ITEM_NOT_FOUND);
+  return ok(item);
 }
 
 // Replaces only the content, for an accepted AI rewrite of it: the tags,
@@ -114,9 +108,9 @@ export async function setUserItemContent(
   content: string,
 ): Promise<UpdateItemResult> {
   const current = await getItemEditState(userId, itemId);
-  if (!current) return { success: false, error: ITEM_NOT_FOUND, data: null };
+  if (!current) return fail(ITEM_NOT_FOUND);
   if (!editableFields(current.typeName).content) {
-    return { success: false, error: NO_CONTENT, data: null };
+    return fail(NO_CONTENT);
   }
 
   try {
@@ -127,14 +121,14 @@ export async function setUserItemContent(
     });
   } catch (error) {
     if (isRecordNotFound(error)) {
-      return { success: false, error: ITEM_NOT_FOUND, data: null };
+      return fail(ITEM_NOT_FOUND);
     }
     throw error;
   }
 
   const item = await getUserItemDetail(userId, itemId);
-  if (!item) return { success: false, error: ITEM_NOT_FOUND, data: null };
-  return { success: true, error: null, data: item };
+  if (!item) return fail(ITEM_NOT_FOUND);
+  return ok(item);
 }
 
 // Raw SQL on purpose: Prisma stamps `updatedAt` on every update, and favoriting
@@ -153,8 +147,8 @@ export async function setUserItemFavorite(
     WHERE "id" = ${itemId} AND "userId" = ${userId}
   `;
 
-  if (count === 0) return { success: false, error: ITEM_NOT_FOUND };
-  return { success: true, error: null };
+  if (count === 0) return fail(ITEM_NOT_FOUND);
+  return ok();
 }
 
 // Raw SQL for the same reason as the favorite: pinning is not an edit.
@@ -169,8 +163,8 @@ export async function setUserItemPin(
     WHERE "id" = ${itemId} AND "userId" = ${userId}
   `;
 
-  if (count === 0) return { success: false, error: ITEM_NOT_FOUND };
-  return { success: true, error: null };
+  if (count === 0) return fail(ITEM_NOT_FOUND);
+  return ok();
 }
 
 // Removes the item's object from R2 before the row, so a failure leaves the
@@ -188,7 +182,7 @@ async function deleteItemFile(
         itemId,
         userId,
       });
-      return { success: false, error: FILE_DELETE_FAILED };
+      return fail(FILE_DELETE_FAILED);
     }
     return result;
   } catch (error) {
@@ -197,7 +191,7 @@ async function deleteItemFile(
       itemId,
       userId,
     });
-    return { success: false, error: FILE_DELETE_FAILED };
+    return fail(FILE_DELETE_FAILED);
   }
 }
 
@@ -208,7 +202,7 @@ export async function deleteUserItem(
   itemId: string,
 ): Promise<OperationResult> {
   const item = await getItemFileKey(userId, itemId);
-  if (!item) return { success: false, error: ITEM_NOT_FOUND };
+  if (!item) return fail(ITEM_NOT_FOUND);
 
   if (item.fileKey) {
     const file = await deleteItemFile(userId, itemId, item.fileKey);
@@ -223,11 +217,11 @@ export async function deleteUserItem(
     });
   } catch (error) {
     if (isRecordNotFound(error)) {
-      return { success: false, error: ITEM_NOT_FOUND };
+      return fail(ITEM_NOT_FOUND);
     }
     throw error;
   }
   await deleteOrphanTags(userId);
 
-  return { success: true, error: null };
+  return ok();
 }

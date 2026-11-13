@@ -22,14 +22,20 @@ import {
 } from "@/features/auth/queries";
 import { verifyPasswordByEmail } from "@/features/auth/services/account";
 import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
-import type { OperationResult } from "@/lib/action-result";
+import {
+  fail,
+  GENERIC_ERROR_MESSAGE,
+  ok,
+  type OperationResult,
+} from "@/lib/action-result";
 import { sendEmail } from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { consumeRateLimit, resetRateLimit } from "@/lib/rate-limit";
 
-const SUCCESS: OperationResult = { success: true, error: null };
-const SEND_FAILED_MESSAGE = "We couldn't send the email. Please try again later.";
+const SUCCESS: OperationResult = ok();
+const SEND_FAILED_MESSAGE =
+  "We couldn't send the email. Please try again later.";
 
 async function createVerificationToken(email: string): Promise<string> {
   const token = generateToken();
@@ -53,7 +59,7 @@ export async function sendVerificationLink(
     token = await createVerificationToken(email);
   } catch (error) {
     await logger.error("Failed to create verification token", { error });
-    return { success: false, error: "Failed to create verification token" };
+    return fail("Failed to create verification token");
   }
 
   return sendEmail({
@@ -74,10 +80,7 @@ export async function resendVerificationLink(
 ): Promise<OperationResult> {
   const check = await checkEmailSend(VERIFICATION_EMAIL_BY_ADDRESS, email, ip);
   if (check.status === "ip-limited") {
-    return {
-      success: false,
-      error: getTooManyAttemptsMessage(check.reset, Date.now()),
-    };
+    return fail(getTooManyAttemptsMessage(check.reset, Date.now()));
   }
   if (check.status === "address-limited") return SUCCESS;
 
@@ -85,7 +88,7 @@ export async function resendVerificationLink(
   if (!account || !shouldResendVerification(account)) return SUCCESS;
 
   const result = await sendVerificationLink(email, origin);
-  return result.success ? SUCCESS : { success: false, error: SEND_FAILED_MESSAGE };
+  return result.success ? SUCCESS : fail(SEND_FAILED_MESSAGE);
 }
 
 // Anyone can register an address they do not own, so holding the emailed link
@@ -98,19 +101,16 @@ export async function confirmEmailAddress(
   password: string,
 ): Promise<OperationResult> {
   if (!(await isVerificationTokenValid(email, token))) {
-    return { success: false, error: INVALID_LINK_ERROR };
+    return fail(INVALID_LINK_ERROR);
   }
 
   const limit = await consumeRateLimit(CONFIRM_EMAIL_BY_ADDRESS, email);
   if (!limit.success) {
-    return {
-      success: false,
-      error: getTooManyAttemptsMessage(limit.reset, Date.now()),
-    };
+    return fail(getTooManyAttemptsMessage(limit.reset, Date.now()));
   }
 
   if (!(await verifyPasswordByEmail(email, password))) {
-    return { success: false, error: WRONG_CONFIRM_PASSWORD_MESSAGE };
+    return fail(WRONG_CONFIRM_PASSWORD_MESSAGE);
   }
 
   const result = await verifyEmailToken(email, token);
@@ -132,7 +132,7 @@ export async function verifyEmailToken(
         where: { token: hashedToken },
       });
       if (!record || record.identifier !== email) {
-        return { success: false, error: INVALID_LINK_ERROR };
+        return fail(INVALID_LINK_ERROR);
       }
 
       // Only the request that actually deletes the token may verify the email,
@@ -141,17 +141,17 @@ export async function verifyEmailToken(
         where: { token: hashedToken },
       });
       if (count !== 1 || isTokenExpired(record.expires, new Date())) {
-        return { success: false, error: INVALID_LINK_ERROR };
+        return fail(INVALID_LINK_ERROR);
       }
 
       await tx.user.update({
         where: { email },
         data: { emailVerified: new Date() },
       });
-      return { success: true, error: null };
+      return ok();
     });
   } catch (error) {
     await logger.error("Failed to verify email", { error });
-    return { success: false, error: "Something went wrong. Please try again." };
+    return fail(GENERIC_ERROR_MESSAGE);
   }
 }

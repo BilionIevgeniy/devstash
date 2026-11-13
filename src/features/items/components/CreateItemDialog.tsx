@@ -1,15 +1,13 @@
 "use client";
 
-import {
-  useRef,
-  useState,
-  useTransition,
-  type SubmitEvent,
-  type TransitionStartFunction,
-} from "react";
+import { useRef, useState, type SubmitEvent } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
+import {
+  useSubmitDialog,
+  type SubmitRun,
+} from "@/components/common/hooks/use-submit-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -69,8 +67,7 @@ export function CreateItemDialog({
   const [isOpenState, setIsOpenState] = useState(false);
   const isOpen = controlled?.open ?? isOpenState;
   const setIsOpen = controlled?.onOpenChange ?? setIsOpenState;
-  const [isCreating, startCreating] = useTransition();
-  const createdRef = useRef(false);
+  const { isPending: isCreating, run, takeDone } = useSubmitDialog();
   const label = `New ${defaultType ?? "item"}`;
   // A type page of a Pro type keeps its button for a Free user, disabled.
   const isLocked =
@@ -82,11 +79,6 @@ export function CreateItemDialog({
     if (!isCreating) setIsOpen(open);
   }
 
-  function handleCreated() {
-    createdRef.current = true;
-    setIsOpen(false);
-  }
-
   // Sonner is outside the transition, so a toast in the form would show
   // before the refreshed page closes the dialog. Radix calls this once the
   // dialog has closed, with or without an animation; focus still returns to
@@ -96,9 +88,7 @@ export function CreateItemDialog({
       event.preventDefault();
       controlled.returnFocus();
     }
-    if (!createdRef.current) return;
-    createdRef.current = false;
-    toast.success(CREATED_MESSAGE);
+    if (takeDone()) toast.success(CREATED_MESSAGE);
   }
 
   return (
@@ -128,8 +118,8 @@ export function CreateItemDialog({
           initialType={defaultType ?? DEFAULT_TYPE}
           isPro={isPro}
           isCreating={isCreating}
-          startCreating={startCreating}
-          onCreated={handleCreated}
+          run={run}
+          onCreated={() => setIsOpen(false)}
         />
       </DialogContent>
     </Dialog>
@@ -140,7 +130,7 @@ interface CreateItemFormProps {
   initialType: CreatableTypeName;
   isPro: boolean;
   isCreating: boolean;
-  startCreating: TransitionStartFunction;
+  run: SubmitRun;
   onCreated: () => void;
 }
 
@@ -148,7 +138,7 @@ function CreateItemForm({
   initialType,
   isPro,
   isCreating,
-  startCreating,
+  run,
   onCreated,
 }: CreateItemFormProps) {
   const [typeName, setTypeName] = useState<CreatableTypeName>(initialType);
@@ -183,7 +173,7 @@ function CreateItemForm({
       values,
       upload,
       contentRef,
-      startCreating,
+      run,
       onCreated,
     });
   }

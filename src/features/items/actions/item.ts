@@ -22,33 +22,33 @@ import {
   updateUserItem,
 } from "@/features/items/services/item";
 import type { ItemDetailJson } from "@/features/items/types";
-import type { ActionResult } from "@/lib/action-result";
+import {
+  fail,
+  GENERIC_ERROR_MESSAGE,
+  ok,
+  type ActionResult,
+} from "@/lib/action-result";
 import { logger } from "@/lib/logger";
+import { firstIssueMessage } from "@/lib/validation";
 
-const GENERIC_ERROR = "Something went wrong. Please try again.";
-
-type UpdateItemActionResult = ActionResult<ItemDetailJson | null>;
-
-function failure(error: string): ActionResult<null> {
-  return { success: false, data: null, error };
-}
+type UpdateItemActionResult = ActionResult<ItemDetailJson>;
 
 export async function createItem(data: unknown): Promise<ActionResult> {
   const parsed = createItemSchema.safeParse(data);
-  if (!parsed.success) return failure(parsed.error.issues[0].message);
+  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
 
   try {
     const result = await createUserItem(userId, parsed.data);
-    if (!result.success) return failure(result.error ?? GENERIC_ERROR);
+    if (!result.success) return fail(result.error);
     // The new item comes back with this response's fresh page.
     refresh();
-    return { success: true, error: null, data: null };
+    return ok();
   } catch (error) {
     await logger.error("Creating the item failed", { error, userId });
-    return failure(GENERIC_ERROR);
+    return fail(GENERIC_ERROR_MESSAGE);
   }
 }
 
@@ -58,27 +58,25 @@ export async function updateItem(
   data: unknown,
 ): Promise<UpdateItemActionResult> {
   const parsedId = itemIdSchema.safeParse(itemId);
-  if (!parsedId.success) return failure(parsedId.error.issues[0].message);
+  if (!parsedId.success) return fail(firstIssueMessage(parsedId.error));
 
   const parsed = updateItemSchema.safeParse(data);
-  if (!parsed.success) return failure(parsed.error.issues[0].message);
+  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
 
   try {
     const result = await updateUserItem(userId, parsedId.data, parsed.data);
-    if (!result.success || !result.data) {
-      return failure(result.error ?? GENERIC_ERROR);
-    }
+    if (!result.success) return fail(result.error);
 
     // The fresh page comes back with this response, so the cards behind the
     // form update in the same commit that closes it.
     refresh();
-    return { success: true, error: null, data: toItemDetailJson(result.data) };
+    return ok(toItemDetailJson(result.data));
   } catch (error) {
     await logger.error("Updating the item failed", { error, userId });
-    return failure(GENERIC_ERROR);
+    return fail(GENERIC_ERROR_MESSAGE);
   }
 }
 
@@ -89,28 +87,26 @@ export async function replaceItemContent(
   content: unknown,
 ): Promise<UpdateItemActionResult> {
   const parsedId = itemIdSchema.safeParse(itemId);
-  if (!parsedId.success) return failure(parsedId.error.issues[0].message);
+  if (!parsedId.success) return fail(firstIssueMessage(parsedId.error));
 
   const parsed = itemContentSchema.safeParse(content);
-  if (!parsed.success) return failure(parsed.error.issues[0].message);
+  if (!parsed.success) return fail(firstIssueMessage(parsed.error));
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
 
   try {
     const result = await setUserItemContent(userId, parsedId.data, parsed.data);
-    if (!result.success || !result.data) {
-      return failure(result.error ?? GENERIC_ERROR);
-    }
+    if (!result.success) return fail(result.error);
 
     refresh();
-    return { success: true, error: null, data: toItemDetailJson(result.data) };
+    return ok(toItemDetailJson(result.data));
   } catch (error) {
     await logger.error("Replacing the content of an item failed", {
       error,
       userId,
     });
-    return failure(GENERIC_ERROR);
+    return fail(GENERIC_ERROR_MESSAGE);
   }
 }
 
@@ -120,10 +116,10 @@ export async function setItemFavorite(
   isFavorite: boolean,
 ): Promise<ActionResult> {
   const parsedId = itemIdSchema.safeParse(itemId);
-  if (!parsedId.success) return failure(parsedId.error.issues[0].message);
+  if (!parsedId.success) return fail(firstIssueMessage(parsedId.error));
 
   const parsedValue = favoriteValueSchema.safeParse(isFavorite);
-  if (!parsedValue.success) return failure(parsedValue.error.issues[0].message);
+  if (!parsedValue.success) return fail(firstIssueMessage(parsedValue.error));
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
@@ -134,31 +130,31 @@ export async function setItemFavorite(
       parsedId.data,
       parsedValue.data,
     );
-    if (!result.success) return failure(result.error ?? GENERIC_ERROR);
+    if (!result.success) return fail(result.error);
     // The fresh page comes back with this response, so the optimistic star
     // hands over to it without a flicker.
     refresh();
-    return { success: true, error: null, data: null };
+    return ok();
   } catch (error) {
     await logger.error("Updating the favorite of an item failed", {
       error,
       userId,
     });
-    return failure(GENERIC_ERROR);
+    return fail(GENERIC_ERROR_MESSAGE);
   }
 }
 
 // Takes the wanted value, like the favorite, so two tabs cannot flip it back
 // and forth.
-export async function toggleItemPin(
+export async function setItemPin(
   itemId: string,
   isPinned: boolean,
 ): Promise<ActionResult> {
   const parsedId = itemIdSchema.safeParse(itemId);
-  if (!parsedId.success) return failure(parsedId.error.issues[0].message);
+  if (!parsedId.success) return fail(firstIssueMessage(parsedId.error));
 
   const parsedValue = pinValueSchema.safeParse(isPinned);
-  if (!parsedValue.success) return failure(parsedValue.error.issues[0].message);
+  if (!parsedValue.success) return fail(firstIssueMessage(parsedValue.error));
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
   const { id: userId } = await getSessionUser();
@@ -169,14 +165,14 @@ export async function toggleItemPin(
       parsedId.data,
       parsedValue.data,
     );
-    if (!result.success) return failure(result.error ?? GENERIC_ERROR);
+    if (!result.success) return fail(result.error);
     // The fresh page comes back with this response, so the optimistic pin
     // hands over to it without a flicker.
     refresh();
-    return { success: true, error: null, data: null };
+    return ok();
   } catch (error) {
     await logger.error("Updating the pin of an item failed", { error, userId });
-    return failure(GENERIC_ERROR);
+    return fail(GENERIC_ERROR_MESSAGE);
   }
 }
 
@@ -187,11 +183,11 @@ export async function deleteItem(
   options?: unknown,
 ): Promise<ActionResult> {
   const parsedId = itemIdSchema.safeParse(itemId);
-  if (!parsedId.success) return failure(parsedId.error.issues[0].message);
+  if (!parsedId.success) return fail(firstIssueMessage(parsedId.error));
 
   const parsedOptions = deleteItemOptionsSchema.safeParse(options);
   if (!parsedOptions.success) {
-    return failure(parsedOptions.error.issues[0].message);
+    return fail(firstIssueMessage(parsedOptions.error));
   }
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
@@ -199,13 +195,13 @@ export async function deleteItem(
 
   try {
     const result = await deleteUserItem(userId, parsedId.data);
-    if (!result.success) return failure(result.error ?? GENERIC_ERROR);
+    if (!result.success) return fail(result.error);
     // The fresh page comes back with this response, so the drawer's
     // optimistic removal hands over to it without a flicker.
     if (parsedOptions.data.refresh) refresh();
-    return { success: true, error: null, data: null };
+    return ok();
   } catch (error) {
     await logger.error("Deleting the item failed", { error, userId });
-    return failure(GENERIC_ERROR);
+    return fail(GENERIC_ERROR_MESSAGE);
   }
 }

@@ -1,63 +1,28 @@
-import { startTransition, useOptimistic } from "react";
 import { toast } from "sonner";
 
+import { useOptimisticToggle } from "@/features/items/_internal/components/hooks/use-optimistic-toggle";
 import { setItemFavorite } from "@/features/items/actions/item";
-import type { ToggleOptions } from "@/features/items/components/hooks/use-item-drawer";
 import { UNDO_TOAST_DURATION } from "@/features/items/domain/list-rows";
-import { isNavigationError } from "@/lib/navigation-error";
 
 const FAVORITE_FAILED_MESSAGE = "Couldn't update the favorite.";
 const UNFAVORITED_MESSAGE = "Removed from favorites";
-const NO_OVERRIDES: ReadonlyMap<string, boolean> = new Map();
 
-interface FavoriteOverride {
-  id: string;
-  isFavorite: boolean;
-}
-
-// The stars of a provider's cards and drawer. The value shows while the
-// transition runs: on success the action's refresh brings the fresh page before
-// it ends; on failure the override goes and the star falls back. `onSaved` runs
-// in a transition of its own, because an update after an await is outside the
-// first one and would land after the override has gone.
+// The stars of a provider's cards and drawer (useOptimisticToggle). Only an
+// undoable unfavorite has a toast: the row leaves its list, so it offers Undo.
 export function useItemFavorites(
   onSaved: (id: string, isFavorite: boolean) => void,
 ) {
-  const [favoriteOverrides, addOverride] = useOptimistic(
-    NO_OVERRIDES,
-    (overrides, { id, isFavorite }: FavoriteOverride) =>
-      new Map(overrides).set(id, isFavorite),
-  );
+  const { overrides, toggle } = useOptimisticToggle(setItemFavorite, {
+    failMessage: FAVORITE_FAILED_MESSAGE,
+    onSaved,
+    notify: (_id, isFavorite, options, undo) => {
+      if (!options?.undoable || isFavorite) return;
+      toast(UNFAVORITED_MESSAGE, {
+        duration: UNDO_TOAST_DURATION,
+        action: { label: "Undo", onClick: undo },
+      });
+    },
+  });
 
-  function toggleFavorite(
-    id: string,
-    isFavorite: boolean,
-    options?: ToggleOptions,
-  ) {
-    startTransition(async () => {
-      addOverride({ id, isFavorite });
-      try {
-        const result = await setItemFavorite(id, isFavorite);
-        if (result.success) {
-          startTransition(() => onSaved(id, isFavorite));
-          if (options?.undoable && !isFavorite) {
-            toast(UNFAVORITED_MESSAGE, {
-              duration: UNDO_TOAST_DURATION,
-              action: {
-                label: "Undo",
-                onClick: () => toggleFavorite(id, true),
-              },
-            });
-          }
-        } else {
-          toast.error(result.error ?? FAVORITE_FAILED_MESSAGE);
-        }
-      } catch (error) {
-        if (isNavigationError(error)) return;
-        toast.error(FAVORITE_FAILED_MESSAGE);
-      }
-    });
-  }
-
-  return { favoriteOverrides, toggleFavorite };
+  return { favoriteOverrides: overrides, toggleFavorite: toggle };
 }
