@@ -1,9 +1,8 @@
 import "client-only";
 
-import { unstable_rethrow } from "next/navigation";
-import type { RefObject, TransitionStartFunction } from "react";
-import { toast } from "sonner";
+import type { RefObject } from "react";
 
+import type { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
 import type { EditorHandle } from "@/features/editor/types";
 import type { UploadedFile } from "@/features/files/types";
 import { rejectInvalidContent } from "@/features/items/_internal/components/reject-invalid-content";
@@ -26,7 +25,7 @@ export interface NewItemSubmission {
   values: ItemFormValues;
   upload: UploadedFile | null;
   contentRef: RefObject<EditorHandle | null>;
-  startCreating: TransitionStartFunction;
+  run: ReturnType<typeof useSubmitDialog>["run"];
   /** Called in the commit that brings the refreshed page with the new item. */
   onCreated: () => void;
 }
@@ -52,37 +51,20 @@ function createPayload(
 }
 
 // The create dialog's submit: content the server would refuse stops here, the
-// rest goes to the action inside the caller's transition.
+// rest goes to the action through the dialog's run (useSubmitDialog).
 export function submitNewItem({
   typeName,
   fields,
   values,
   upload,
   contentRef,
-  startCreating,
+  run,
   onCreated,
 }: NewItemSubmission): void {
   if (rejectInvalidContent(fields, values.content, contentRef)) return;
 
-  startCreating(async () => {
-    try {
-      const result = await createItem(
-        createPayload(typeName, fields, values, upload),
-      );
-      if (result.success) {
-        // After the await this is no longer part of the transition, so it
-        // is wrapped again: the dialog closes in the commit that brings the
-        // refreshed page with the new item, not before it.
-        startCreating(onCreated);
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      // A signed-out caller's redirect arrives here too, and must go on. A
-      // rejection left in the transition would replace the page with an
-      // error page, the root one or `(app)/error.tsx`, by where this mounts.
-      unstable_rethrow(error);
-      toast.error(CREATE_FAILED_MESSAGE);
-    }
+  run(() => createItem(createPayload(typeName, fields, values, upload)), {
+    onSuccess: onCreated,
+    failMessage: CREATE_FAILED_MESSAGE,
   });
 }

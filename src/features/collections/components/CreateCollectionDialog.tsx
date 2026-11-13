@@ -1,16 +1,10 @@
 "use client";
 
-import {
-  useRef,
-  useState,
-  useTransition,
-  type SubmitEvent,
-  type TransitionStartFunction,
-} from "react";
-import { unstable_rethrow } from "next/navigation";
+import { useState, type SubmitEvent } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
+import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -43,18 +37,12 @@ export function CreateCollectionDialog({
   const [isOpenState, setIsOpenState] = useState(false);
   const isOpen = controlled?.open ?? isOpenState;
   const setIsOpen = controlled?.onOpenChange ?? setIsOpenState;
-  const [isCreating, startCreating] = useTransition();
-  const createdRef = useRef(false);
+  const { isPending: isCreating, run, takeDone } = useSubmitDialog();
 
   // Esc, the overlay and the X wait for the result: closing now would lose
   // the input on a failure and let the form be sent twice.
   function handleOpenChange(open: boolean) {
     if (!isCreating) setIsOpen(open);
-  }
-
-  function handleCreated() {
-    createdRef.current = true;
-    setIsOpen(false);
   }
 
   // Sonner is outside the transition, so a toast in the form would show
@@ -66,9 +54,7 @@ export function CreateCollectionDialog({
       event.preventDefault();
       controlled.returnFocus();
     }
-    if (!createdRef.current) return;
-    createdRef.current = false;
-    toast.success(CREATED_MESSAGE);
+    if (takeDone()) toast.success(CREATED_MESSAGE);
   }
 
   return (
@@ -94,8 +80,12 @@ export function CreateCollectionDialog({
         {/* Unmounted with the closed dialog, so every open starts empty. */}
         <CreateCollectionForm
           isCreating={isCreating}
-          startCreating={startCreating}
-          onCreated={handleCreated}
+          onSubmit={(values) =>
+            run(() => createCollection(values), {
+              onSuccess: () => setIsOpen(false),
+              failMessage: CREATE_FAILED_MESSAGE,
+            })
+          }
         />
       </DialogContent>
     </Dialog>
@@ -104,14 +94,12 @@ export function CreateCollectionDialog({
 
 interface CreateCollectionFormProps {
   isCreating: boolean;
-  startCreating: TransitionStartFunction;
-  onCreated: () => void;
+  onSubmit: (values: CollectionFormValues) => void;
 }
 
 function CreateCollectionForm({
   isCreating,
-  startCreating,
-  onCreated,
+  onSubmit,
 }: CreateCollectionFormProps) {
   const [values, setValues] = useState(EMPTY_VALUES);
 
@@ -121,25 +109,7 @@ function CreateCollectionForm({
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    startCreating(async () => {
-      try {
-        const result = await createCollection(values);
-        if (result.success) {
-          // After the await this is no longer part of the transition, so it
-          // is wrapped again: the dialog closes in the commit that brings the
-          // refreshed page with the new collection, not before it.
-          startCreating(onCreated);
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        // A signed-out caller's redirect arrives here too, and must go on. A
-        // rejection left in the transition would reach the root error page:
-        // the dialog sits in the layout, above `(app)/error.tsx`.
-        unstable_rethrow(error);
-        toast.error(CREATE_FAILED_MESSAGE);
-      }
-    });
+    onSubmit(values);
   }
 
   return (

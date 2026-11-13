@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState, useTransition, type MouseEvent } from "react";
-import { unstable_rethrow } from "next/navigation";
+import { useState, type MouseEvent } from "react";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
 import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { DeleteItemConfirm } from "@/features/items/_internal/components/DeleteItemConfirm";
@@ -33,27 +33,13 @@ export function DeleteLockedItemButton({
   className,
 }: DeleteLockedItemButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isDeleting, startDeleting] = useTransition();
-  const deletedRef = useRef(false);
+  const { isPending: isDeleting, run, takeDone } = useSubmitDialog();
 
   function handleConfirm(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
-    startDeleting(async () => {
-      try {
-        const result = await deleteItem(itemId);
-        if (result.success) {
-          deletedRef.current = true;
-          // Wrapped again after the await: "Deleting…" stays until the commit
-          // that brings the page without this item.
-          startDeleting(() => setIsOpen(false));
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        // A signed-out caller's redirect arrives here too, and must go on.
-        unstable_rethrow(error);
-        toast.error(DELETE_FAILED_MESSAGE);
-      }
+    run(() => deleteItem(itemId), {
+      onSuccess: () => setIsOpen(false),
+      failMessage: DELETE_FAILED_MESSAGE,
     });
   }
 
@@ -61,9 +47,8 @@ export function DeleteLockedItemButton({
   // default, which returns the focus to the button. The toast waits for here,
   // so it does not run ahead of the page without the item.
   function handleCloseAutoFocus(event: Event) {
-    if (!deletedRef.current) return;
+    if (!takeDone()) return;
     event.preventDefault();
-    deletedRef.current = false;
     returnFocus();
     toast.success(DELETED_MESSAGE);
   }

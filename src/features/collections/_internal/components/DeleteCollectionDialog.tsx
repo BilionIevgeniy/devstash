@@ -1,5 +1,5 @@
-import { useRef, useTransition, type MouseEvent } from "react";
-import { unstable_rethrow, useRouter } from "next/navigation";
+import type { MouseEvent } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -13,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
 import type { CollectionDialogState } from "@/features/collections/_internal/components/hooks/use-collection-dialogs";
 import { deleteCollection } from "@/features/collections/actions/collection";
 import type { CollectionSummary } from "@/features/collections/types";
@@ -34,8 +35,7 @@ export function DeleteCollectionDialog({
   returnFocus,
 }: DeleteCollectionDialogProps) {
   const router = useRouter();
-  const [isDeleting, startDeleting] = useTransition();
-  const deletedRef = useRef(false);
+  const { isPending: isDeleting, run, takeDone } = useSubmitDialog();
 
   function handleOpenChange(next: boolean) {
     if (!isDeleting) onOpenChange(next);
@@ -54,25 +54,10 @@ export function DeleteCollectionDialog({
 
   function handleConfirm(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
-    startDeleting(async () => {
-      try {
-        const result = await deleteCollection(collection.id, {
-          refresh: leaveTo === undefined,
-        });
-        if (result.success) {
-          deletedRef.current = true;
-          // Wrapped again after the await: "Deleting…" stays until the commit
-          // that brings the page without this collection.
-          startDeleting(finishDelete);
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        // A signed-out caller's redirect arrives here too, and must go on.
-        unstable_rethrow(error);
-        toast.error(DELETE_FAILED_MESSAGE);
-      }
-    });
+    run(
+      () => deleteCollection(collection.id, { refresh: leaveTo === undefined }),
+      { onSuccess: finishDelete, failMessage: DELETE_FAILED_MESSAGE },
+    );
   }
 
   // Radix calls this after a close and after an unmount, which is how the
@@ -81,9 +66,7 @@ export function DeleteCollectionDialog({
   function handleCloseAutoFocus(event: Event) {
     event.preventDefault();
     returnFocus();
-    if (!deletedRef.current) return;
-    deletedRef.current = false;
-    toast.success(DELETED_MESSAGE);
+    if (takeDone()) toast.success(DELETED_MESSAGE);
   }
 
   return (

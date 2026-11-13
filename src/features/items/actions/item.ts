@@ -146,7 +146,7 @@ export async function setItemFavorite(
 
 // Takes the wanted value, like the favorite, so two tabs cannot flip it back
 // and forth.
-export async function toggleItemPin(
+export async function setItemPin(
   itemId: string,
   isPinned: boolean,
 ): Promise<ActionResult> {
