@@ -1,0 +1,13 @@
+// markdownlint rules for the specs in context/features/ and for
+// context/current-feature.md, where /feature load copies a spec's text.
+// A nested config replaces any parent config: if a root .markdownlint.jsonc is
+// ever added, use "extends" here instead of repeating its rules.
+{
+  // The extension turns this off in its built-in defaults, which no longer
+  // apply once a config file exists.
+  "MD013": false,
+  // A spec numbers its steps across its sections (1-10), not from 1 in each.
+  "MD029": false,
+  // A spec lists its sources ("Read first") as bare URLs.
+  "MD034": false
+}
