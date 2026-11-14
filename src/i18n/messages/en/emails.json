@@ -1,0 +1,17 @@
+{
+  "expiry": "This link expires in {hours, plural, one {# hour} other {# hours}}.",
+  "verification": {
+    "subject": "Verify your DevStash email",
+    "heading": "Verify your email",
+    "intro": "Thanks for signing up for DevStash. Confirm your email address to finish creating your account",
+    "button": "Verify email",
+    "ignore": "If you didn't create an account, you can ignore this email."
+  },
+  "reset": {
+    "subject": "Reset your DevStash password",
+    "heading": "Reset your password",
+    "intro": "We received a request to reset the password for your DevStash account. Use the link below to choose a new one",
+    "button": "Reset password",
+    "ignore": "If you didn't request this, you can ignore this email."
+  }
+}

@@ -1,4 +1,5 @@
 import { Settings } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { DeleteAccountDialog } from "@/features/account/components/DeleteAccountDialog";
@@ -13,6 +14,7 @@ interface AccountActionsProps {
 }
 
 export async function AccountActions({ searchParams }: AccountActionsProps) {
+  const t = await getTranslations("account");
   const { id: userId, authenticatedAt } = await getSessionUser();
   const [profile, { reauth }] = await Promise.all([
     getUserProfile(userId),
@@ -29,14 +31,14 @@ export async function AccountActions({ searchParams }: AccountActionsProps) {
     <section className="space-y-4">
       <h2 className="flex items-center gap-2 text-lg font-semibold">
         <Settings className="size-4 text-muted-foreground" />
-        Account
+        {t("title")}
       </h2>
       {profile.hasPassword && <ChangePasswordForm />}
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-destructive/30 bg-card p-6">
         <div>
-          <h3 className="font-medium">Delete account</h3>
+          <h3 className="font-medium">{t("deleteTitle")}</h3>
           <p className="text-sm text-muted-foreground">
-            Permanently delete your account and all of your data.
+            {t("deleteDescription")}
           </p>
         </div>
         <DeleteAccountDialog

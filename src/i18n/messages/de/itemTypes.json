@@ -1,0 +1,9 @@
+{
+  "snippet": { "one": "Snippet", "other": "Snippets" },
+  "prompt": { "one": "Prompt", "other": "Prompts" },
+  "command": { "one": "Befehl", "other": "Befehle" },
+  "note": { "one": "Notiz", "other": "Notizen" },
+  "file": { "one": "Datei", "other": "Dateien" },
+  "image": { "one": "Bild", "other": "Bilder" },
+  "link": { "one": "Link", "other": "Links" }
+}

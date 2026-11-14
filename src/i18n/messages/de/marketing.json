@@ -1,0 +1,113 @@
+{
+  "meta": {
+    "title": "DevStash – Klüger ablegen. Schneller bauen.",
+    "description": "Ein schneller, durchsuchbarer Ort für deine Code-Snippets, KI-Prompts, Befehle, Notizen, Dateien, Bilder und Links."
+  },
+  "nav": {
+    "main": "Hauptmenü",
+    "mobile": "Mobiles Menü",
+    "features": "Funktionen",
+    "pricing": "Preise",
+    "signIn": "Anmelden",
+    "getStarted": "Loslegen",
+    "dashboard": "Dashboard",
+    "openMenu": "Menü öffnen",
+    "closeMenu": "Menü schließen"
+  },
+  "language": {
+    "label": "Sprache",
+    "other": "English",
+    "otherLabel": "This page in English"
+  },
+  "footer": {
+    "tagline": "Klüger ablegen. Schneller bauen.",
+    "product": "Produkt",
+    "legal": "Rechtliches",
+    "privacy": "Datenschutz",
+    "imprint": "Impressum",
+    "rights": "© {year} DevStash. Alle Rechte vorbehalten."
+  },
+  "hero": {
+    "titleStart": "Verlier nie wieder dein",
+    "titleHighlight": "Entwicklerwissen",
+    "lead": "Deine Snippets, Prompts, Befehle und Notizen sind über Notion, GitHub, Slack und ein Dutzend Browser-Tabs verstreut. DevStash bringt sie an einen schnellen, durchsuchbaren Ort.",
+    "getStarted": "Kostenlos loslegen",
+    "seeFeatures": "Funktionen ansehen",
+    "today": "Dein Wissen heute …",
+    "withDevStash": "… mit DevStash"
+  },
+  "preview": {
+    "label": "DevStash-Dashboard mit einer Seitenleiste der Eintragstypen und einem Raster von Eintragskarten",
+    "search": "Einträge durchsuchen",
+    "types": {
+      "snippets": "Snippets",
+      "prompts": "Prompts",
+      "commands": "Befehle",
+      "notes": "Notizen",
+      "files": "Dateien",
+      "images": "Bilder",
+      "links": "Links"
+    },
+    "type": {
+      "snippet": "Snippet",
+      "prompt": "Prompt",
+      "command": "Befehl",
+      "note": "Notiz",
+      "file": "Datei",
+      "image": "Bild"
+    },
+    "cards": {
+      "reviewPrompt": "Code-Review-Prompt",
+      "sprintNotes": "Sprint-Notizen"
+    }
+  },
+  "features": {
+    "title": "Alles, was du brauchst, an einem Ort",
+    "lead": "Schluss mit dem Wechseln zwischen Tools. DevStash hält deine Entwickler-Ressourcen geordnet und durchsuchbar.",
+    "pro": "Pro",
+    "snippets": {
+      "title": "Code-Snippets",
+      "text": "Speichere wiederverwendbaren Code mit Syntax-Highlighting und kopiere ihn mit einem Klick."
+    },
+    "prompts": {
+      "title": "KI-Prompts",
+      "text": "Behalte deine besten Prompts in einer Bibliothek, bereit für jedes Modell."
+    },
+    "search": {
+      "title": "Sofortsuche",
+      "text": "Durchsuche Inhalte, Tags, Titel und Typen. Drück ⌘K, egal wo du bist."
+    },
+    "commands": {
+      "title": "Befehle",
+      "text": "Deine meistgenutzten Terminal-Befehle, raus aus der Bash-History."
+    },
+    "files": {
+      "title": "Dateien & Dokumente",
+      "text": "Bewahre Projektdateien, Bilder und Dokumente neben deinem Code auf."
+    },
+    "collections": {
+      "title": "Sammlungen",
+      "text": "Gruppiere gemischte Einträge nach Projekt, Thema oder Workflow."
+    }
+  },
+  "ai": {
+    "badge": "Pro-Funktion",
+    "title": "Produktiver mit KI",
+    "lead": "Lass die KI die Routinearbeit erledigen, damit du dich aufs Bauen konzentrieren kannst.",
+    "tags": "Tag-Vorschläge",
+    "summaries": "KI-Zusammenfassungen",
+    "explain": "Code erklären",
+    "optimize": "Prompt-Optimierung",
+    "codeLabel": "Beispiel: ein useDebounce-Hook",
+    "generatedTags": "KI-generierte Tags"
+  },
+  "pricing": {
+    "title": "Einfache, transparente Preise",
+    "lead": "Starte kostenlos. Upgrade, wenn du mehr brauchst."
+  },
+  "cta": {
+    "title": "Bereit, dein Wissen zu ordnen?",
+    "lead": "Starte kostenlos mit {items} Einträgen und {collections} Sammlungen.",
+    "button": "Kostenlos loslegen"
+  }
+}

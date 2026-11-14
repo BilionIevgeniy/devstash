@@ -3,19 +3,22 @@ import {
   buildActionEmail,
   type BuiltEmail,
 } from "@/features/auth/_internal/emails/action-email";
-
-const COPY: ActionEmailCopy = {
-  subject: "Verify your DevStash email",
-  heading: "Verify your email",
-  intro:
-    "Thanks for signing up for DevStash. Confirm your email address to finish creating your account",
-  buttonLabel: "Verify email",
-  ignoreNote: "If you didn't create an account, you can ignore this email.",
-};
+import { emailTranslator } from "@/features/auth/_internal/emails/email-copy";
+import type { Locale } from "@/i18n/config";
 
 export function buildVerificationEmail(
   verifyUrl: string,
   expiresInHours: number,
+  locale: Locale,
 ): BuiltEmail {
-  return buildActionEmail(COPY, verifyUrl, expiresInHours);
+  const t = emailTranslator(locale);
+  const copy: ActionEmailCopy = {
+    subject: t("verification.subject"),
+    heading: t("verification.heading"),
+    intro: t("verification.intro"),
+    buttonLabel: t("verification.button"),
+    ignoreNote: t("verification.ignore"),
+    expiry: t("expiry", { hours: expiresInHours }),
+  };
+  return buildActionEmail(copy, verifyUrl);
 }

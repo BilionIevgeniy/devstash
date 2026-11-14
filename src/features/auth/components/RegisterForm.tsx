@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useTranslations } from "next-intl";
 
 import { CheckEmailNotice } from "@/features/auth/_internal/components/CheckEmailNotice";
 import { postRegistration } from "@/features/auth/_internal/components/fetch-register";
@@ -18,17 +19,17 @@ import {
 import type { FormActionState } from "@/features/auth/types";
 
 const FIELDS = [
-  { name: "name", label: "Name", type: "text", autoComplete: "name" },
-  { name: "email", label: "Email", type: "email", autoComplete: "email" },
+  { name: "name", label: "name", type: "text", autoComplete: "name" },
+  { name: "email", label: "email", type: "email", autoComplete: "email" },
   {
     name: "password",
-    label: "Password",
+    label: "password",
     type: "password",
     autoComplete: "new-password",
   },
   {
     name: "confirmPassword",
-    label: "Confirm password",
+    label: "confirmPassword",
     type: "password",
     autoComplete: "new-password",
   },
@@ -70,6 +71,7 @@ export function RegisterForm() {
   // Gone while a new attempt runs, so a repeated error is announced again.
   const error = isPending ? null : state.error;
   const errorText = useErrorText();
+  const t = useTranslations("auth");
 
   if (state.registeredEmail) {
     return <CheckEmailNotice email={state.registeredEmail} />;
@@ -80,7 +82,7 @@ export function RegisterForm() {
       {FIELDS.map(({ name, label, type, autoComplete }) => (
         <div key={name} className="space-y-2">
           <label htmlFor={name} className="text-sm font-medium">
-            {label}
+            {t(`fields.${label}`)}
           </label>
           <Input
             id={name}
@@ -100,7 +102,7 @@ export function RegisterForm() {
         </p>
       )}
       <Button type="submit" size="lg" className="w-full" disabled={isPending}>
-        {isPending ? "Creating account…" : "Create account"}
+        {isPending ? t("register.pending") : t("register.submit")}
       </Button>
     </form>
   );

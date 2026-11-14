@@ -1,5 +1,6 @@
 import { FilteredEmpty } from "@/app/(app)/items/[type]/_components/FilteredEmpty";
-import { typeSlug } from "@/features/item-types/domain/item-type";
+import { typeLabel } from "@/features/item-types/domain/item-type";
+import { getTranslations } from "next-intl/server";
 import type { ItemTypeInfo } from "@/features/item-types/types";
 import { FileList } from "@/features/items/components/FileList";
 import { ImageGallery } from "@/features/items/components/ImageGallery";
@@ -35,6 +36,7 @@ export async function ItemsListing({
   totalCount,
   basePath,
 }: ItemsListingProps) {
+  const t = await getTranslations("pages.items");
   if (totalCount === 0 && isFilteredList(params)) {
     return (
       <FilteredEmpty
@@ -43,7 +45,10 @@ export async function ItemsListing({
     );
   }
 
-  const emptyMessage = `No ${typeSlug(type.name)} yet.`;
+  const typeName = await getTranslations("itemTypes");
+  const emptyMessage = t("empty", {
+    type: typeLabel(typeName, type.name, "other"),
+  });
   const read = [
     userId,
     type.id,

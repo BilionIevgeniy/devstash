@@ -1,6 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
+import { getLocale } from "next-intl/server";
 import { emailSchema, resetPasswordSchema } from "@/features/auth/schemas";
 import {
   requestPasswordResetLink,
@@ -36,6 +37,7 @@ export async function requestPasswordReset(
       parsed.data,
       origin,
       getClientIp(await headers()),
+      await getLocale(),
     );
     return result.success ? SUCCESS : result;
   } catch (error) {

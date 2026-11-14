@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { Pencil, Trash2 } from "lucide-react";
 
@@ -17,6 +18,7 @@ interface CollectionHeaderActionsProps {
 export function CollectionHeaderActions({
   collection,
 }: CollectionHeaderActionsProps) {
+  const t = useTranslations("collections.actions");
   const { openDialog, editDialog, deleteDialog } = useCollectionDialogs();
   const favorite = useCollectionFavorite(collection.id, collection.isFavorite);
 
@@ -24,14 +26,14 @@ export function CollectionHeaderActions({
     <div className="flex shrink-0 items-center gap-1">
       <CollectionFavoriteButton
         favorite={favorite}
-        label="Favorite"
+        label={t("favorite")}
         size="icon"
       />
       <Button
         type="button"
         variant="ghost"
         size="icon"
-        aria-label="Edit collection"
+        aria-label={t("edit")}
         onClick={(event) => openDialog("edit", event.currentTarget)}
       >
         <Pencil />
@@ -40,7 +42,7 @@ export function CollectionHeaderActions({
         type="button"
         variant="ghost"
         size="icon"
-        aria-label="Delete collection"
+        aria-label={t("delete")}
         className="text-destructive hover:text-destructive"
         onClick={(event) => openDialog("delete", event.currentTarget)}
       >

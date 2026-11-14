@@ -5,24 +5,41 @@ export const FREE_COLLECTION_LIMIT = 3;
 export const PRO_MONTHLY_PRICE = 8;
 export const PRO_YEARLY_PRICE = 72;
 
+// The lines of a pricing card, as keys of the `billing.features` messages:
+// the component words them. "items" and "collections" take the Free limits.
 export const FREE_PLAN_FEATURES = [
-  `${FREE_ITEM_LIMIT} items`,
-  `${FREE_COLLECTION_LIMIT} collections`,
-  "Snippets, prompts, commands, notes and links",
-  "Basic search",
-];
+  "items",
+  "collections",
+  "basicTypes",
+  "basicSearch",
+] as const;
 
 // What Pro gives today: the upgrade page sells these, so nothing unbuilt goes
 // here. The homepage adds its roadmap lines on top.
 export const PRO_PLAN_FEATURES = [
-  "Unlimited items",
-  "Unlimited collections",
-  "File and image uploads",
-  "AI tag suggestions",
-  "AI summaries",
-  "AI code explanations",
-  "AI prompt optimization",
-];
+  "unlimitedItems",
+  "unlimitedCollections",
+  "uploads",
+  "aiTags",
+  "aiSummaries",
+  "aiExplain",
+  "aiOptimize",
+] as const;
+
+/** The roadmap lines the homepage adds to the Pro card. */
+export const PRO_ROADMAP_FEATURES = ["customTypes", "exportJson"] as const;
+
+export type PlanFeature =
+  | (typeof FREE_PLAN_FEATURES)[number]
+  | (typeof PRO_PLAN_FEATURES)[number]
+  | (typeof PRO_ROADMAP_FEATURES)[number];
+
+/** The number a plan line counts, for the lines that have one. */
+export function planFeatureCount(feature: PlanFeature): number | undefined {
+  if (feature === "items") return FREE_ITEM_LIMIT;
+  if (feature === "collections") return FREE_COLLECTION_LIMIT;
+  return undefined;
+}
 
 const MONTHS_PER_YEAR = 12;
 
@@ -39,18 +56,16 @@ export function proYearlySavingsPercent(): number {
   return Math.round((1 - PRO_YEARLY_PRICE / fullYear) * 100);
 }
 
-// What the Pro card of a pricing table shows for the chosen period.
+// What the Pro card of a pricing table shows for the chosen period, in
+// dollars: the price per month, and the yearly total when billed yearly. The
+// component formats them for the locale.
 export function proPriceDisplay(yearly: boolean): {
-  price: string;
-  note: string;
+  perMonth: number;
+  yearlyTotal: number | null;
 } {
-  if (yearly) {
-    return {
-      price: `$${proYearlyPricePerMonth()}`,
-      note: `Billed $${PRO_YEARLY_PRICE}/yr`,
-    };
-  }
-  return { price: `$${PRO_MONTHLY_PRICE}`, note: "Billed monthly" };
+  return yearly
+    ? { perMonth: proYearlyPricePerMonth(), yearlyTotal: PRO_YEARLY_PRICE }
+    : { perMonth: PRO_MONTHLY_PRICE, yearlyTotal: null };
 }
 
 // The Stripe statuses that grant Pro: Pro lasts while Stripe is still trying to

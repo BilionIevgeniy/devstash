@@ -1,4 +1,5 @@
 import type { Ref } from "react";
+import { useTranslations } from "next-intl";
 
 import { Textarea } from "@/components/ui/textarea";
 
@@ -20,10 +21,11 @@ export function EditorFallback({
   onChange,
   textareaRef,
 }: EditorFallbackProps) {
+  const t = useTranslations("editor");
   return (
     <div className="space-y-2 p-3">
       <p role="status" className="text-xs text-muted-foreground">
-        The code editor couldn&apos;t load. Reload the page to try again.
+        {t("loadFailed")}
       </p>
       <Textarea
         ref={textareaRef}

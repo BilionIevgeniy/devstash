@@ -1,10 +1,13 @@
 import type { ComponentProps } from "react";
+import { useTranslations } from "next-intl";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/utils";
 
-interface UserAvatarProps
-  extends Pick<ComponentProps<typeof Avatar>, "size" | "className"> {
+interface UserAvatarProps extends Pick<
+  ComponentProps<typeof Avatar>,
+  "size" | "className"
+> {
   name?: string | null;
   email?: string | null;
   image?: string | null;
@@ -23,9 +26,11 @@ export function UserAvatar({
   size,
   className,
 }: UserAvatarProps) {
+  const t = useTranslations("auth");
+
   return (
     <Avatar size={size} className={className}>
-      {image && <AvatarImage src={image} alt={name ?? "User avatar"} />}
+      {image && <AvatarImage src={image} alt={name ?? t("avatarAlt")} />}
       <AvatarFallback>{getFallbackText(name, email)}</AvatarFallback>
     </Avatar>
   );

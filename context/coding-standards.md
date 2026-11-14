@@ -64,6 +64,17 @@ The architecture rules (layout, ranks, roles inside a feature, where new code go
 - Constants: SCREAMING_SNAKE_CASE
 - Types/Interfaces: PascalCase (no prefix)
 
+## Text and languages
+
+The interface is English and German ([ADR 0024](../docs/adr/0024-locale-decision.md)).
+
+- No user-facing literal in JSX: text, `aria-label`, `placeholder`, `title`, `alt` and the label props of our components come from `src/i18n/messages/<locale>/<namespace>.json` through `useTranslations` (client and sync server components) or `await getTranslations` (async server components). A toast's text too. The lint enforces both (`i18next/no-literal-string`, the toast ban); constant tables outside JSX and metadata are on the review
+- A new key goes into `en/` and `de/` in the same change: `tsc` refuses a key English lacks, and `messages.test.ts` fails on a German file that differs or a message that does not format. German says "du"; legal texts say "Sie"
+- `domain/` returns keys, codes and shapes, never words (`collectionSummary`, `fileSizeParts`, `FREE_PLAN_FEATURES`); the component words them. A pure helper that needs words takes the translator as a parameter (`typeLabel`)
+- Plurals and numbers belong in the message (`{count, plural, one {# item} other {# items}}`), never in a template string. Dates, numbers and prices go through `useFormatter` / `getFormatter` with the named formats of `src/i18n/config.ts` (`short`, `long`, `numeric`, `price`); the time zone is `Europe/Berlin` on the server and in the browser
+- The static pages (`/`, `/de`, the legal pages) and everything a root boundary renders read no locale from the request: a marketing component gets `locale` and calls `getTranslations({ locale })`, a shared component used there is a client component under `MarketingFrame`'s provider (`Logo`, `TestModeHint`). The build output shows `○` for them; a `ƒ` there is a bug
+- A component test renders through `test/intl.tsx` (`render`, `renderHook`, `locale: "de"` for German), which puts the messages around it like the layouts do
+
 ## Styling
 
 - Tailwind CSS for all styling
@@ -81,6 +92,7 @@ Check every UI change against these before writing it; the plan names which ones
 - Optimistic only where the rollback is cheap and the result is known in advance (hiding a deleted card). Not where the server decides the data (ids, dates, order) or where a failure would lose the user's input (creating)
 - When an action changes the page itself, wait for the result before leaving, and keep the history honest: `router.replace` so Back does not lead to something deleted
 - No layout shift: a skeleton mirrors the size of the content it stands for, and each route segment that loads on its own has its own `loading.tsx`
+- No flash of the wrong state: what a client component learns after mount (the session on a static page) is unknown until it comes, and the parts that depend on it keep their place unseen (`invisible`) instead of showing a guess. A value the tab already knows is reused when the component mounts again (`useHasSession` after the homepage's layouts swap). A browser check of such a component runs signed in and signed out
 - Exit animations finish before the navigation they lead to, so nothing vanishes mid-slide
 - Keyboard and focus: Esc closes, focus returns to the trigger, every dialog and sheet has a title (hidden if need be)
 - Errors in plain words, and the form with the user's input stays open so they can retry

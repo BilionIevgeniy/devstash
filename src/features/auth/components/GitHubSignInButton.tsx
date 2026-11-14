@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2Icon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useFormStatus } from "react-dom";
 
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 // state lasts until the browser has followed the redirect to GitHub.
 export function GitHubSignInButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
+  const t = useTranslations("auth.signIn");
 
   return (
     <Button
@@ -21,7 +23,7 @@ export function GitHubSignInButton({ label }: { label: string }) {
       {pending ? (
         <>
           <Loader2Icon className="size-4 animate-spin" />
-          Signing in…
+          {t("pending")}
         </>
       ) : (
         label

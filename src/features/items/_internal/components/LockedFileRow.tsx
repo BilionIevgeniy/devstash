@@ -2,7 +2,7 @@ import { Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { FileTypeIcon } from "@/features/files/components/FileTypeIcon";
-import { formatFileSize } from "@/features/files/domain/file-rules";
+import { useFileSize } from "@/features/files/components/hooks/use-file-size";
 import { DeleteLockedItemButton } from "@/features/items/_internal/components/DeleteLockedItemButton";
 import type { LockedFile } from "@/features/items/types";
 
@@ -12,6 +12,7 @@ interface LockedFileRowProps {
 }
 
 export function LockedFileRow({ file, returnFocus }: LockedFileRowProps) {
+  const fileSize = useFileSize();
   return (
     <li className="flex items-center gap-3 px-4 py-3">
       <FileTypeIcon
@@ -21,7 +22,7 @@ export function LockedFileRow({ file, returnFocus }: LockedFileRowProps) {
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{file.title}</p>
         <p className="truncate text-xs text-muted-foreground">
-          {file.fileName} · {formatFileSize(file.size)}
+          {file.fileName} · {fileSize(file.size)}
         </p>
       </div>
       <Button asChild variant="ghost" size="icon">

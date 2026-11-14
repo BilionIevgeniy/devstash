@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 import { editableFields } from "@/features/items/domain/item-fields";
 
 // Shared with the file view in ItemDrawerContent, so the skeleton of a file or
@@ -12,10 +13,11 @@ interface ItemDrawerSkeletonProps {
 }
 
 export function ItemDrawerSkeleton({ typeName }: ItemDrawerSkeletonProps) {
+  const t = useTranslations("items.drawer");
   const fileKind = typeName ? editableFields(typeName).file : null;
 
   return (
-    <div className="space-y-6" aria-busy="true" aria-label="Loading item">
+    <div className="space-y-6" aria-busy="true" aria-label={t("loading")}>
       {fileKind ? (
         <div className="space-y-2">
           <Skeleton className="h-4 w-16" />

@@ -1,4 +1,5 @@
 import { FolderHeart, FolderOpen, Package, Star } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import type { LucideIcon } from "lucide-react";
 
 import { getCollectionStats } from "@/features/collections/queries";
@@ -24,6 +25,7 @@ function StatCard({ label, value, icon: Icon }: StatCardProps) {
 }
 
 export async function StatsCards() {
+  const t = await getTranslations("pages.dashboard");
   const { id: userId } = await getSessionUser();
   const [itemStats, collectionStats] = await Promise.all([
     getItemStats(userId),
@@ -32,19 +34,19 @@ export async function StatsCards() {
 
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-      <StatCard label="Items" value={itemStats.total} icon={Package} />
+      <StatCard label={t("items")} value={itemStats.total} icon={Package} />
       <StatCard
-        label="Collections"
+        label={t("collections")}
         value={collectionStats.total}
         icon={FolderOpen}
       />
       <StatCard
-        label="Favorite Items"
+        label={t("favoriteItems")}
         value={itemStats.favorites}
         icon={Star}
       />
       <StatCard
-        label="Favorite Collections"
+        label={t("favoriteCollections")}
         value={collectionStats.favorites}
         icon={FolderHeart}
       />

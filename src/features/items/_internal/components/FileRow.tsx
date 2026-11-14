@@ -1,10 +1,11 @@
 "use client";
+import { useFormatter } from "next-intl";
 
 import { Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { FileTypeIcon } from "@/features/files/components/FileTypeIcon";
-import { formatFileSize } from "@/features/files/domain/file-rules";
+import { useFileSize } from "@/features/files/components/hooks/use-file-size";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { DeleteLockedItemButton } from "@/features/items/_internal/components/DeleteLockedItemButton";
 import { ItemFavoriteButton } from "@/features/items/_internal/components/ItemFavoriteButton";
@@ -16,7 +17,7 @@ import {
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
 import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
 import type { FileListItem } from "@/features/items/types";
-import { cn, formatLongDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface FileRowProps {
   item: FileListItem;
@@ -61,6 +62,8 @@ function FileRowActions({ item }: FileRowProps) {
 // it must not open the drawer. The download URL is signed for at least an hour after the
 // render (see "Known risks" in docs/architecture.md).
 export function FileRow({ item }: FileRowProps) {
+  const fileSize = useFileSize();
+  const format = useFormatter();
   const { hiddenIds } = useItemDrawer();
   const { file } = item;
 
@@ -68,8 +71,8 @@ export function FileRow({ item }: FileRowProps) {
   // (the Download link, the divider): the whole row has to go.
   if (hiddenIds.has(item.id)) return null;
 
-  const date = formatLongDate(item.createdAt);
-  const size = file ? formatFileSize(file.size) : null;
+  const date = format.dateTime(item.createdAt, "numeric");
+  const size = file ? fileSize(file.size) : null;
 
   return (
     <div

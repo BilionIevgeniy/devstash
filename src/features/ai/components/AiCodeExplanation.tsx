@@ -1,14 +1,14 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useId, type ReactNode } from "react";
 
 import { AiAnswerView } from "@/features/ai/_internal/components/AiAnswerView";
+import { AiStreamControls } from "@/features/ai/_internal/components/AiStreamControls";
 import { AiDataNote } from "@/features/ai/_internal/components/AiDataNote";
-import { AiStreamButton } from "@/features/ai/_internal/components/AiStreamButton";
-import { AiViewToggle } from "@/features/ai/_internal/components/AiViewToggle";
 import { useAiTextStream } from "@/features/ai/_internal/components/hooks/use-ai-text-stream";
+import { useAiStreamLabels } from "@/features/ai/_internal/components/hooks/use-ai-stream-labels";
 import { EXPLAIN_CODE_MAX, isCutForModel } from "@/features/ai/domain/input";
-import { AI_EXPLAIN_CUT_SHORT_MESSAGE } from "@/features/ai/domain/messages";
 
 export interface CodeExplanationSlots {
   /** The view toggle and the Explain button, for the editor's header. */
@@ -27,18 +27,7 @@ interface AiCodeExplanationProps {
   children: (slots: CodeExplanationSlots) => ReactNode;
 }
 
-const STREAM = {
-  url: "/api/ai/explain",
-  doneAnnouncement: "Explanation ready",
-  cutShortAnnouncement: "Explanation cut short",
-};
-const BUTTON_LABELS = {
-  idle: "Explain",
-  pending: "Explaining…",
-  again: "Regenerate",
-};
-const VIEW_LABELS = { source: "Code", answer: "Explain" };
-const CODE_CUT_MESSAGE = `Only the first ${EXPLAIN_CODE_MAX.toLocaleString("en-US")} characters were explained.`;
+const STREAM_URL = "/api/ai/explain";
 
 // Explain Code for a read-only editor. It knows nothing about the editor: it
 // hands over its controls and its view, and the caller places them. The
@@ -51,26 +40,29 @@ export function AiCodeExplanation({
   canUseAi,
   children,
 }: AiCodeExplanationProps) {
+  const t = useTranslations("ai.explain");
+  const { stream, buttonLabels, viewLabels } = useAiStreamLabels(
+    "ai.explain",
+    STREAM_URL,
+  );
   const { status, view, text, announcement, run, setView } =
-    useAiTextStream(STREAM);
+    useAiTextStream(stream);
   const noteId = useId();
   const isPending = status === "waiting" || status === "streaming";
   const hasAnswer = text !== "";
 
   const headerActions = (
-    <>
-      {(hasAnswer || isPending) && (
-        <AiViewToggle view={view} onChange={setView} labels={VIEW_LABELS} />
-      )}
-      <AiStreamButton
-        labels={BUTTON_LABELS}
-        canUseAi={canUseAi}
-        describedBy={noteId}
-        hasAnswer={hasAnswer}
-        isPending={isPending}
-        onClick={() => void run({ title, code, language })}
-      />
-    </>
+    <AiStreamControls
+      view={view}
+      onViewChange={setView}
+      viewLabels={viewLabels}
+      buttonLabels={buttonLabels}
+      canUseAi={canUseAi}
+      noteId={noteId}
+      hasAnswer={hasAnswer}
+      isPending={isPending}
+      onRun={() => void run({ title, code, language })}
+    />
   );
 
   return (
@@ -81,11 +73,13 @@ export function AiCodeExplanation({
           view === "answer" ? (
             <AiAnswerView
               text={text}
-              pendingLabel={BUTTON_LABELS.pending}
+              pendingLabel={buttonLabels.pending}
               isCutShort={status === "cut-short"}
-              cutShortMessage={AI_EXPLAIN_CUT_SHORT_MESSAGE}
+              cutShortMessage={t("cutMessage")}
               inputCutMessage={
-                isCutForModel(code, EXPLAIN_CODE_MAX) ? CODE_CUT_MESSAGE : null
+                isCutForModel(code, EXPLAIN_CODE_MAX)
+                  ? t("codeCut", { max: EXPLAIN_CODE_MAX })
+                  : null
               }
             />
           ) : undefined,

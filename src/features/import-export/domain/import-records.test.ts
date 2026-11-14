@@ -61,9 +61,9 @@ describe("remapCollectionIds", () => {
 
 describe("recordLabel", () => {
   it("uses the title or name, else the stand-in", () => {
-    expect(recordLabel({ title: " Hooks " }, "Untitled")).toBe("Hooks");
-    expect(recordLabel({ name: "React" }, "Untitled")).toBe("React");
-    expect(recordLabel({ title: 4 }, "Untitled")).toBe("Untitled");
-    expect(recordLabel(null, "Untitled")).toBe("Untitled");
+    expect(recordLabel({ title: " Hooks " })).toBe("Hooks");
+    expect(recordLabel({ name: "React" })).toBe("React");
+    expect(recordLabel({ title: 4 })).toBeNull();
+    expect(recordLabel(null)).toBeNull();
   });
 });

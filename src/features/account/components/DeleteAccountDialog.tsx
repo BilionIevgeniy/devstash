@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useState, useTransition, type MouseEvent } from "react";
 import { unstable_rethrow } from "next/navigation";
@@ -35,13 +36,14 @@ export function DeleteAccountDialog({
   requiresReauth,
   returnError,
 }: DeleteAccountDialogProps) {
+  const tActions = useTranslations("common.actions");
+  const t = useTranslations("account");
   const [isPending, startTransition] = useTransition();
   const [password, setPassword] = useState("");
   const [reauthNeeded, setReauthNeeded] = useState(requiresReauth);
   const [error, setError] = useState<ErrorRef | null>(
     returnError && { error: returnError },
   );
-  const errorText = useErrorText();
   useClearReauthParam(returnError !== null);
 
   function handleConfirm(event: MouseEvent<HTMLButtonElement>) {
@@ -81,16 +83,14 @@ export function DeleteAccountDialog({
       }}
     >
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">Delete account</Button>
+        <Button variant="destructive">{t("deleteTitle")}</Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+          <AlertDialogTitle>{t("dialogTitle")}</AlertDialogTitle>
           <AlertDialogDescription>
-            This permanently deletes your account and all of your items,
-            collections, tags, files and images. This cannot be undone.
-            {reauthNeeded &&
-              ` ${errorText("reauthRequired")}, then come back here to finish.`}
+            {t("dialogDescription")}
+            {reauthNeeded && ` ${t("reauthNote")}`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {hasPassword && (
@@ -98,17 +98,19 @@ export function DeleteAccountDialog({
         )}
         {error && <DeleteError error={error} />}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>
+            {tActions("cancel")}
+          </AlertDialogCancel>
           <AlertDialogAction
             variant={reauthNeeded ? "default" : "destructive"}
             disabled={isPending || (hasPassword && !password)}
             onClick={handleConfirm}
           >
             {reauthNeeded
-              ? "Continue with GitHub"
+              ? t("continueGithub")
               : isPending
-                ? "Deleting…"
-                : "Delete account"}
+                ? tActions("deleting")
+                : t("deleteTitle")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -131,10 +133,11 @@ interface ConfirmPasswordFieldProps {
 }
 
 function ConfirmPasswordField({ value, onChange }: ConfirmPasswordFieldProps) {
+  const t = useTranslations("account");
   return (
     <div className="space-y-2">
       <label htmlFor="delete-password" className="text-sm font-medium">
-        Enter your password to confirm
+        {t("confirmPassword")}
       </label>
       <Input
         id="delete-password"

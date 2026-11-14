@@ -1,0 +1,30 @@
+{
+  "fields": {
+    "name": "Name",
+    "description": "Beschreibung"
+  },
+  "actions": {
+    "favorite": "Favorit",
+    "favoriteNamed": "{name} als Favorit markieren",
+    "menuNamed": "Aktionen für {name}",
+    "edit": "Sammlung bearbeiten",
+    "delete": "Sammlung löschen"
+  },
+  "create": {
+    "title": "Neue Sammlung",
+    "description": "Fasse zusammengehörige Einträge an einem Ort zusammen."
+  },
+  "edit": {
+    "title": "Sammlung bearbeiten",
+    "description": "Ändere den Namen und die Beschreibung."
+  },
+  "delete": {
+    "title": "Diese Sammlung löschen?",
+    "description": "„{name}“ wird endgültig gelöscht. Ihre Einträge bleiben erhalten und verlassen nur diese Sammlung."
+  },
+  "toasts": {
+    "created": "Sammlung erstellt",
+    "updated": "Sammlung aktualisiert",
+    "deleted": "Sammlung gelöscht"
+  }
+}

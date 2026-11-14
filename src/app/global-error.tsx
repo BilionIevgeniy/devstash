@@ -1,5 +1,6 @@
 "use client";
 
+import { BilingualErrorText } from "@/components/common/BilingualErrorText";
 import { ErrorState } from "@/components/common/ErrorState";
 import { useReportError } from "@/components/common/hooks/use-report-error";
 import { Button } from "@/components/ui/button";
@@ -22,13 +23,19 @@ export default function GlobalError({
   return (
     <html lang="en" className="dark h-full antialiased">
       <body className="flex min-h-full flex-col items-center justify-center p-6">
-        <title>Something went wrong · DevStash</title>
+        <title>
+          Something went wrong · Etwas ist schiefgelaufen · DevStash
+        </title>
         <ErrorState
-          title="Something went wrong"
-          description="DevStash could not be loaded. Please try again."
-          reference={digest}
+          title={<BilingualErrorText part="title" />}
+          description={<BilingualErrorText part="description" whole />}
+          reference={
+            digest && <BilingualErrorText part="reference" digest={digest} />
+          }
         >
-          <Button onClick={retry}>Try again</Button>
+          <Button onClick={retry}>
+            <BilingualErrorText part="retry" />
+          </Button>
         </ErrorState>
       </body>
     </html>

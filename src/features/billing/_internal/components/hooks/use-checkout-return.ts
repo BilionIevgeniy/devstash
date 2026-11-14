@@ -1,18 +1,20 @@
 import { unstable_rethrow, useRouter } from "next/navigation";
 import { useEffect, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { confirmCheckout } from "@/features/billing/actions/checkout";
 
 const TOAST_ID = "checkout-return";
-const WELCOME = "Welcome to DevStash Pro!";
-const NOT_CONFIRMED =
-  "We couldn't confirm your payment yet. If you paid, your plan will update shortly.";
 const SETTINGS_URL = "/settings";
 
 // isPro is usually true on arrival: Stripe waits for the webhook before the
 // redirect. The fixed toast id covers effects that run twice in development.
 export function useCheckoutReturn(sessionId: string | null, isPro: boolean) {
+  const t = useTranslations("billing.settings");
+  // Strings, so the effect lists them: they change only with the language.
+  const welcome = t("welcome");
+  const notConfirmed = t("notConfirmed");
   const router = useRouter();
   const [, startConfirming] = useTransition();
 
@@ -20,13 +22,13 @@ export function useCheckoutReturn(sessionId: string | null, isPro: boolean) {
     if (!sessionId) return;
 
     if (isPro) {
-      toast.success(WELCOME, { id: TOAST_ID });
+      toast.success(welcome, { id: TOAST_ID });
       router.replace(SETTINGS_URL);
       return;
     }
 
     function settle() {
-      toast.info(NOT_CONFIRMED, { id: TOAST_ID });
+      toast.info(notConfirmed, { id: TOAST_ID });
       router.replace(SETTINGS_URL);
     }
 
@@ -41,7 +43,7 @@ export function useCheckoutReturn(sessionId: string | null, isPro: boolean) {
         settle();
       }
     });
-  }, [sessionId, isPro, router]);
+  }, [sessionId, isPro, router, welcome, notConfirmed]);
 
   return { isConfirming: sessionId !== null && !isPro };
 }

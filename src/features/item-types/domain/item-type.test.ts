@@ -3,6 +3,7 @@ import {
   parseTypeSlug,
   sortBySystemOrder,
   toItemTypeInfo,
+  typeLabel,
   typeSlug,
 } from "@/features/item-types/domain/item-type";
 
@@ -19,19 +20,26 @@ const SYSTEM_TYPES = [
 describe("toItemTypeInfo", () => {
   it("copies the fields of a complete row", () => {
     expect(
-      toItemTypeInfo({ id: "t1", name: "snippet", icon: "Code", color: "#3b82f6" }),
+      toItemTypeInfo({
+        id: "t1",
+        name: "snippet",
+        icon: "Code",
+        color: "#3b82f6",
+      }),
     ).toEqual({ id: "t1", name: "snippet", icon: "Code", color: "#3b82f6" });
   });
 
   it("falls back to the File icon when the row has none", () => {
     expect(
-      toItemTypeInfo({ id: "t1", name: "custom", icon: null, color: "#fff" }).icon,
+      toItemTypeInfo({ id: "t1", name: "custom", icon: null, color: "#fff" })
+        .icon,
     ).toBe("File");
   });
 
   it("turns a missing color into undefined", () => {
     expect(
-      toItemTypeInfo({ id: "t1", name: "custom", icon: "Code", color: null }).color,
+      toItemTypeInfo({ id: "t1", name: "custom", icon: "Code", color: null })
+        .color,
     ).toBeUndefined();
   });
 });
@@ -45,7 +53,9 @@ describe("sortBySystemOrder", () => {
   });
 
   it("puts types it does not know after the system types, in their given order", () => {
-    const types = ["zeta", "link", "alpha", "snippet"].map((name) => ({ name }));
+    const types = ["zeta", "link", "alpha", "snippet"].map((name) => ({
+      name,
+    }));
     expect(sortBySystemOrder(types).map((type) => type.name)).toEqual([
       "snippet",
       "link",
@@ -102,5 +112,18 @@ describe("parseTypeSlug", () => {
 
   it("is null for an empty slug", () => {
     expect(parseTypeSlug("")).toBeNull();
+  });
+});
+
+describe("typeLabel", () => {
+  const t = (key: string) => `<${key}>`;
+
+  it("words a system type through the messages, singular or plural", () => {
+    expect(typeLabel(t, "command", "other")).toBe("<command.other>");
+    expect(typeLabel(t, "note", "one")).toBe("<note.one>");
+  });
+
+  it("shows a custom type as it is named", () => {
+    expect(typeLabel(t, "Recipes", "other")).toBe("Recipes");
   });
 });

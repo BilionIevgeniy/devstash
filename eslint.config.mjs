@@ -3,6 +3,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 import betterTailwindcss from "eslint-plugin-better-tailwindcss";
+import i18next from "eslint-plugin-i18next";
 
 const APP = "./src/app";
 
@@ -212,7 +213,66 @@ const SHARED_SYNTAX_BANS = [
     message:
       'Error text lives in src/i18n/messages: return fail("generic") and show it through useErrorText or getErrorText (ADR 0022).',
   },
+  {
+    // A toast's text is a message too; the JSX rule below cannot see it.
+    selector:
+      "CallExpression[callee.object.name='toast'][arguments.0.type=/^(Literal|TemplateLiteral)$/], CallExpression[callee.name='toast'][arguments.0.type=/^(Literal|TemplateLiteral)$/]",
+    message:
+      "Toast text comes from the messages: toast.success(t(\"items.toasts.saved\")) (ADR 0024).",
+  },
 ];
+
+// No user-facing literal in JSX (feature 11, ADR 0024): text, the attributes a
+// user reads or hears, and strings in JSX expressions (`{x ? "A" : "B"}`). The
+// words come from src/i18n/messages through t(); a translator is called t or
+// t<Something>. Left alone: punctuation, uppercase codes, file names, the brand
+// and ⌘K. Constant tables outside JSX and metadata are left to the review.
+const I18N_LITERALS = {
+  mode: "jsx-only",
+  "jsx-attributes": {
+    include: [
+      "aria-label",
+      "ariaLabel",
+      "placeholder",
+      "title",
+      "alt",
+      "label",
+      "description",
+      "heading",
+      "hint",
+      "copyLabel",
+      "badge",
+      "lead",
+    ],
+    // Only the attributes above are checked: the rest are not text.
+    exclude: [".*"],
+  },
+  callees: {
+    exclude: [
+      "i18n(ext)?",
+      "t",
+      "t[A-Z][A-Za-z]*",
+      "t\\.(rich|markup)",
+      "errorText",
+      "typeLabel",
+      "typeName",
+      "format\\..*",
+      "cn",
+      "useTranslations",
+      "getTranslations",
+    ],
+  },
+  words: {
+    exclude: [
+      "[0-9!-/:-@[-`{-~·…–—\\s]+",
+      "[A-Z_-]+",
+      "DevStash",
+      "⌘K",
+      "[a-z0-9-]+\\.[a-z]+",
+      "markdown",
+    ],
+  },
+};
 const restrictSyntax = (selectors = [], message = "") => [
   "error",
   ...SHARED_SYNTAX_BANS,
@@ -451,6 +511,23 @@ const eslintConfig = defineConfig([
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
     },
     rules: { "@typescript-eslint/no-floating-promises": "error" },
+  },
+  {
+    // No literal UI text in JSX (I18N_LITERALS). Left out: the shadcn
+    // primitives, the tests, and what is bilingual by design (ADR 0024): the
+    // legal pages with their link between the two languages, and the root
+    // error pages, which no provider reaches.
+    files: ["src/**/*.tsx"],
+    ignores: [
+      "src/**/*.test.tsx",
+      "src/components/ui/**",
+      "src/app/(marketing)/_legal/**",
+      "src/app/(marketing)/_components/LegalPage.tsx",
+      "src/components/common/BilingualErrorText.tsx",
+      "src/app/global-error.tsx",
+    ],
+    plugins: { i18next },
+    rules: { "i18next/no-literal-string": ["error", I18N_LITERALS] },
   },
   // Override default ignores of eslint-config-next.
   globalIgnores([

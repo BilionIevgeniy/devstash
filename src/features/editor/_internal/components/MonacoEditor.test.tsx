@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen } from "../../../../../test/intl";
 import { createRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 

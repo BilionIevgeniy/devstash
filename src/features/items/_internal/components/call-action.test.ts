@@ -8,7 +8,7 @@ vi.mock("sonner", () => ({ toast: { error: toastError } }));
 vi.mock("next/navigation", () => ({ unstable_rethrow: rethrow }));
 
 import { callAction } from "@/features/items/_internal/components/call-action";
-import { createErrorText } from "@/i18n/error-text";
+import { createErrorText } from "../../../../../test/error-text";
 
 const FAIL_CODE = "itemSaveFailed";
 const errorText = createErrorText();

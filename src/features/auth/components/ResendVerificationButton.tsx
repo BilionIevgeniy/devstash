@@ -1,14 +1,12 @@
 "use client";
 
 import { useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { resendVerificationEmail } from "@/features/auth/_internal/actions/email-verification";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
-
-const SENT_MESSAGE =
-  "If this account needs verification, we sent a new link to your email.";
 
 interface ResendVerificationButtonProps {
   email: string;
@@ -19,13 +17,14 @@ export function ResendVerificationButton({
 }: ResendVerificationButtonProps) {
   const [isPending, startTransition] = useTransition();
   const errorText = useErrorText();
+  const t = useTranslations("auth.resend");
 
   function handleClick() {
     startTransition(async () => {
       try {
         const result = await resendVerificationEmail(email);
         if (result.success) {
-          toast.success(SENT_MESSAGE);
+          toast.success(t("sent"));
         } else {
           toast.error(errorText(result));
         }
@@ -45,7 +44,7 @@ export function ResendVerificationButton({
       disabled={isPending || !email}
       onClick={handleClick}
     >
-      {isPending ? "Sending…" : "Resend verification email"}
+      {isPending ? t("pending") : t("button")}
     </Button>
   );
 }

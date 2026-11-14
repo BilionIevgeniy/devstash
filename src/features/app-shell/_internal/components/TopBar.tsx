@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { PanelLeft, Pin, Star } from "lucide-react";
 
@@ -19,12 +20,13 @@ export function TopBar({
   upgradeButton,
   newItemButton,
 }: TopBarProps) {
+  const t = useTranslations("shell");
   return (
     <header className="flex h-16 shrink-0 items-center gap-4 border-b px-4">
       <Button
         variant="ghost"
         size="icon"
-        aria-label="Toggle sidebar"
+        aria-label={t("toggleSidebar")}
         className="hidden md:inline-flex"
         onClick={onToggleSidebar}
       >
@@ -33,7 +35,7 @@ export function TopBar({
       <Button
         variant="ghost"
         size="icon"
-        aria-label="Open sidebar"
+        aria-label={t("openSidebar")}
         className="md:hidden"
         onClick={onOpenDrawer}
       >
@@ -45,12 +47,12 @@ export function TopBar({
             right, so the buttons after it do not move when it arrives. */}
         {upgradeButton}
         <Button asChild variant="ghost" size="icon">
-          <Link href="/favorites" aria-label="Favorites">
+          <Link href="/favorites" aria-label={t("favorites")}>
             <Star />
           </Link>
         </Button>
         <Button asChild variant="ghost" size="icon">
-          <Link href="/pinned" aria-label="Pinned">
+          <Link href="/pinned" aria-label={t("pinned")}>
             <Pin />
           </Link>
         </Button>

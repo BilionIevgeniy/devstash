@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -54,19 +55,20 @@ export function PaginationNav({
   totalPages,
   hrefFor = (target) => pageHref(basePath, target),
 }: PaginationNavProps) {
+  const t = useTranslations("common.pagination");
   if (totalPages <= 1) return null;
 
   return (
     <nav
-      aria-label="Pagination"
+      aria-label={t("label")}
       className="flex flex-wrap items-center justify-center gap-1"
     >
       <PageStep
         href={page > 1 ? hrefFor(page - 1) : null}
-        label="Previous page"
+        label={t("previousPage")}
       >
         <ChevronLeft />
-        <span className="hidden sm:inline">Previous</span>
+        <span className="hidden sm:inline">{t("previous")}</span>
       </PageStep>
       {pageNumbers(page, totalPages).map((mark, index) =>
         mark === "gap" ? (
@@ -81,7 +83,7 @@ export function PaginationNav({
           <Link
             key={mark}
             href={hrefFor(mark)}
-            aria-label={`Page ${mark}`}
+            aria-label={t("page", { page: mark })}
             aria-current={mark === page ? "page" : undefined}
             className={cn(
               buttonVariants({
@@ -98,9 +100,9 @@ export function PaginationNav({
       )}
       <PageStep
         href={page < totalPages ? hrefFor(page + 1) : null}
-        label="Next page"
+        label={t("nextPage")}
       >
-        <span className="hidden sm:inline">Next</span>
+        <span className="hidden sm:inline">{t("next")}</span>
         <ChevronRight />
       </PageStep>
     </nav>

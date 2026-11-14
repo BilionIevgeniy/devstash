@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import {
   createContext,
@@ -104,9 +105,10 @@ export function ItemRouteDrawerView({
 }
 
 export function ItemRouteDrawerMissing() {
+  const t = useTranslations("items.drawer");
   return (
     <div className="px-6 pt-12 pb-6">
-      <SheetTitle className="text-lg">This item no longer exists</SheetTitle>
+      <SheetTitle className="text-lg">{t("missing")}</SheetTitle>
     </div>
   );
 }
@@ -116,11 +118,12 @@ export function ItemRouteDrawerMissing() {
 // the params hold the type of the page behind the drawer, which a sidebar row
 // of another type does not share.
 export function ItemRouteDrawerSkeleton() {
+  const t = useTranslations("items.drawer");
   const slug = usePathname().split("/")[2];
 
   return (
     <div className="px-6 pt-12 pb-6">
-      <SheetTitle className="sr-only">Loading item</SheetTitle>
+      <SheetTitle className="sr-only">{t("loading")}</SheetTitle>
       <ItemDrawerSkeleton typeName={parseTypeSlug(slug) ?? undefined} />
     </div>
   );

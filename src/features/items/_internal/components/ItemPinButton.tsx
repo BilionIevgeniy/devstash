@@ -1,6 +1,7 @@
 "use client";
 
 import { Pin } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { useItemPin } from "@/features/items/components/hooks/use-item-drawer";
@@ -25,6 +26,7 @@ export function ItemPinButton({
   color,
   undoable,
 }: ItemPinButtonProps) {
+  const t = useTranslations("items.actions");
   const pin = useItemPin(itemId, isPinned, { undoable });
 
   return (
@@ -32,7 +34,7 @@ export function ItemPinButton({
       type="button"
       variant="ghost"
       size="icon"
-      aria-label={`Pin ${title}`}
+      aria-label={t("pinNamed", { title })}
       aria-pressed={pin.isPinned}
       aria-disabled={pin.isPending}
       onClick={pin.toggle}

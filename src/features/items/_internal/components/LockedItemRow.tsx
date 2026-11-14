@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
-import { LOCKED_LABEL } from "@/features/items/domain/item-fields";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 interface LockedItemRowProps {
@@ -20,11 +20,12 @@ export function LockedItemRow({
   children,
   className,
 }: LockedItemRowProps) {
+  const t = useTranslations("items.locked");
   return (
     <Link
       href={UPGRADE_PATH}
-      aria-label={`${title}: ${LOCKED_LABEL.toLowerCase()}`}
-      title={LOCKED_LABEL}
+      aria-label={t("named", { title })}
+      title={t("label")}
       className={cn(
         "rounded-lg opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-ring",
         className,

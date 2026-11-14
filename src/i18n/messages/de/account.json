@@ -1,0 +1,10 @@
+{
+  "title": "Konto",
+  "deleteTitle": "Konto löschen",
+  "deleteDescription": "Lösch dein Konto und alle deine Daten endgültig.",
+  "dialogTitle": "Dein Konto löschen?",
+  "dialogDescription": "Damit werden dein Konto und alle deine Einträge, Sammlungen, Tags, Dateien und Bilder endgültig gelöscht. Das kann nicht rückgängig gemacht werden.",
+  "reauthNote": "Melde dich zu deiner Sicherheit erneut mit GitHub an, um das zu bestätigen, und komm dann hierher zurück.",
+  "continueGithub": "Weiter mit GitHub",
+  "confirmPassword": "Gib zur Bestätigung dein Passwort ein"
+}

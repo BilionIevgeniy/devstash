@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen } from "../../../../../test/intl";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -83,7 +83,7 @@ describe("ImportButton", () => {
     await choose(jsonFile(exportFile));
 
     expect(await screen.findByRole("status")).toHaveTextContent(
-      "Import finished. 2 created, 0 already there, 1 files not imported.",
+      "Import finished. 2 created, 0 already there, 1 file not imported.",
     );
     expect(importItems).toHaveBeenCalledWith([
       { type: "snippet", title: "A", collectionIds: ["new-c"] },

@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useState, type ReactNode } from "react";
 import { Check, Copy, Loader2Icon } from "lucide-react";
@@ -8,7 +9,6 @@ import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 
 const COPIED_RESET_MS = 2000;
-const COPIED_MESSAGE = "Copied to clipboard";
 
 type CopySource =
   /** The text the button puts on the clipboard. */
@@ -54,6 +54,7 @@ export function CopyButton({
   className,
   children,
 }: CopyButtonProps) {
+  const t = useTranslations("common");
   const [isCopied, setIsCopied] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const errorText = useErrorText();
@@ -64,7 +65,7 @@ export function CopyButton({
       if (getValue) await writeLater(getValue());
       else await navigator.clipboard.writeText(value);
       setIsCopied(true);
-      toast.success(COPIED_MESSAGE);
+      toast.success(t("copied"));
       setTimeout(() => setIsCopied(false), COPIED_RESET_MS);
     } catch {
       toast.error(errorText("copyFailed"));

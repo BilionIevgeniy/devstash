@@ -1,4 +1,5 @@
 import { useState, type SubmitEvent } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
@@ -21,8 +22,6 @@ import {
 } from "@/features/collections/domain/collection-fields";
 import type { CollectionSummary } from "@/features/collections/types";
 
-const SAVED_MESSAGE = "Collection updated";
-
 interface EditCollectionDialogProps extends CollectionDialogState {
   collection: CollectionSummary;
 }
@@ -33,6 +32,7 @@ export function EditCollectionDialog({
   onOpenChange,
   returnFocus,
 }: EditCollectionDialogProps) {
+  const t = useTranslations("collections");
   const { isPending: isSaving, run, takeDone } = useSubmitDialog();
 
   // Esc, the overlay and the X wait for the result: closing now would lose
@@ -45,7 +45,7 @@ export function EditCollectionDialog({
   function handleCloseAutoFocus(event: Event) {
     event.preventDefault();
     returnFocus();
-    if (takeDone()) toast.success(SAVED_MESSAGE);
+    if (takeDone()) toast.success(t("toasts.updated"));
   }
 
   return (
@@ -55,10 +55,8 @@ export function EditCollectionDialog({
         onCloseAutoFocus={handleCloseAutoFocus}
       >
         <DialogHeader>
-          <DialogTitle>Edit collection</DialogTitle>
-          <DialogDescription>
-            Change the name and the description.
-          </DialogDescription>
+          <DialogTitle>{t("edit.title")}</DialogTitle>
+          <DialogDescription>{t("edit.description")}</DialogDescription>
         </DialogHeader>
         {/* Unmounted with the closed dialog, so every open starts saved. */}
         <EditCollectionForm
@@ -87,6 +85,7 @@ function EditCollectionForm({
   isSaving,
   onSubmit,
 }: EditCollectionFormProps) {
+  const t = useTranslations("common.actions");
   const [initialValues] = useState<CollectionFormValues>({
     name: collection.name,
     description: collection.description ?? "",
@@ -111,11 +110,11 @@ function EditCollectionForm({
       <DialogFooter>
         <DialogClose asChild>
           <Button type="button" variant="ghost" disabled={isSaving}>
-            Cancel
+            {t("cancel")}
           </Button>
         </DialogClose>
         <Button type="submit" disabled={isSaving || !canSave}>
-          {isSaving ? "Saving…" : "Save"}
+          {isSaving ? t("saving") : t("save")}
         </Button>
       </DialogFooter>
     </form>

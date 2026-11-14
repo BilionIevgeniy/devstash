@@ -1,4 +1,5 @@
 import { Sparkles } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -17,17 +18,18 @@ export async function UpgradeButton() {
   const { id: userId } = await getSessionUser();
   const { isPro } = await getEntitlements(userId);
   if (isPro) return null;
+  const t = await getTranslations("shell");
 
   return (
     <>
       <Button asChild className={cn(GRADIENT, "hidden sm:inline-flex")}>
         <Link href={UPGRADE_PATH}>
           <Sparkles />
-          <span>Upgrade</span>
+          <span>{t("upgrade")}</span>
         </Link>
       </Button>
       <Button asChild size="icon" className={cn(GRADIENT, "sm:hidden")}>
-        <Link href={UPGRADE_PATH} aria-label="Upgrade to Pro">
+        <Link href={UPGRADE_PATH} aria-label={t("upgradeToPro")}>
           <Sparkles />
         </Link>
       </Button>

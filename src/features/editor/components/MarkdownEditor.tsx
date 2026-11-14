@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import dynamic from "next/dynamic";
 import {
@@ -17,7 +18,6 @@ import type { EditorHandle } from "@/features/editor/types";
 import { cn } from "@/lib/utils";
 
 const FRAME_CLASS = "overflow-hidden rounded-md border bg-card";
-const COPY_LABEL = "Copy content";
 
 // The create dialog sits in the top bar of every page; loaded on its own, the
 // Markdown parser (~60 KB gzip) is fetched only when a preview first renders.
@@ -52,13 +52,14 @@ export function MarkdownEditor({
   readOnly = false,
   onChange,
   id,
-  ariaLabel = "Content",
+  ariaLabel,
   headerActions,
   view,
   copyValue,
   copyLabel,
   ref,
 }: MarkdownEditorProps) {
+  const t = useTranslations("editor");
   const [tab, setTab] = useState("write");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -98,13 +99,13 @@ export function MarkdownEditor({
         "gap-0 transition-[color,box-shadow] has-[textarea:focus-visible]:border-ring has-[textarea:focus-visible]:ring-3 has-[textarea:focus-visible]:ring-ring/50",
       )}
     >
-      <EditorHeader value={value} copyLabel={COPY_LABEL}>
+      <EditorHeader value={value} copyLabel={t("copyContent")}>
         <TabsList variant="line" className="ml-auto h-7">
           <TabsTrigger value="write" className="px-2 text-xs">
-            Write
+            {t("write")}
           </TabsTrigger>
           <TabsTrigger value="preview" className="px-2 text-xs">
-            Preview
+            {t("preview")}
           </TabsTrigger>
         </TabsList>
       </EditorHeader>
@@ -120,7 +121,7 @@ export function MarkdownEditor({
           id={id}
           value={value}
           onChange={(event) => onChange?.(event.target.value)}
-          aria-label={ariaLabel}
+          aria-label={ariaLabel ?? t("content")}
           className="block field-sizing-content max-h-100 min-h-40 w-full resize-none bg-transparent p-4 font-mono text-xs outline-none"
         />
       </TabsContent>
@@ -145,11 +146,12 @@ function ReadOnlyMarkdown({
   copyValue,
   copyLabel,
 }: ReadOnlyMarkdownProps) {
+  const t = useTranslations("editor");
   return (
     <div className={FRAME_CLASS}>
       <EditorHeader
         value={copyValue ?? value}
-        copyLabel={copyLabel ?? COPY_LABEL}
+        copyLabel={copyLabel ?? t("copyContent")}
       >
         <span className="ml-auto font-mono text-xs text-muted-foreground">
           markdown
@@ -166,10 +168,11 @@ function ReadOnlyMarkdown({
 }
 
 function PreviewPane({ value }: { value: string }) {
+  const t = useTranslations("editor");
   return (
     <div className="max-h-100 overflow-y-auto p-4">
       {value.trim() === "" ? (
-        <p className="text-sm text-muted-foreground">Nothing to preview</p>
+        <p className="text-sm text-muted-foreground">{t("nothingToPreview")}</p>
       ) : (
         <MarkdownPreview value={value} images="show" />
       )}

@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import {
   Select,
   SelectContent,
@@ -20,6 +21,7 @@ interface TagFilterProps {
 // The current tag is offered even when no item has it any more (a shared link,
 // a tag just removed), so the select always shows what the URL says.
 export function TagFilter({ tags, value, onChange }: TagFilterProps) {
+  const t = useTranslations("pages.items");
   const options =
     value === null || tags.includes(value) ? tags : [value, ...tags];
 
@@ -30,11 +32,11 @@ export function TagFilter({ tags, value, onChange }: TagFilterProps) {
         onChange(next === ALL_TAGS ? null : next.slice(TAG_PREFIX.length))
       }
     >
-      <SelectTrigger aria-label="Filter by tag" className="w-44 max-w-full">
+      <SelectTrigger aria-label={t("filterByTag")} className="w-44 max-w-full">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={ALL_TAGS}>All tags</SelectItem>
+        <SelectItem value={ALL_TAGS}>{t("allTags")}</SelectItem>
         {options.map((tag) => (
           <SelectItem key={tag} value={`${TAG_PREFIX}${tag}`}>
             {tag}

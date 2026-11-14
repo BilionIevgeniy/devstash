@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { toast } from "sonner";
 
@@ -8,8 +9,6 @@ import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
 import { callAction } from "@/features/items/_internal/components/call-action";
 import { replaceItemContent } from "@/features/items/actions/item";
 import type { ItemDetailJson } from "@/features/items/types";
-
-const SAVED_MESSAGE = "Prompt updated";
 
 interface PromptContentProps {
   itemId: string;
@@ -31,6 +30,7 @@ export function PromptContent({
   canUseAi,
   onSaved,
 }: PromptContentProps) {
+  const t = useTranslations("items.toasts");
   const errorText = useErrorText();
   async function handleAccept(optimized: string) {
     const saved = await callAction(
@@ -39,7 +39,7 @@ export function PromptContent({
       errorText,
     );
     if (!saved) return null;
-    toast.success(SAVED_MESSAGE);
+    toast.success(t("promptUpdated"));
     return () => onSaved(saved);
   }
 

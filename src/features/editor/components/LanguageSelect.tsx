@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
@@ -19,9 +20,9 @@ import {
 import {
   EDITOR_LANGUAGES,
   PLAIN_TEXT_LANGUAGE,
-  languageLabel,
   languageOption,
 } from "@/features/editor/domain/code-language";
+import { useLanguageLabel } from "@/features/editor/components/hooks/use-language-label";
 
 interface LanguageSelectProps {
   /** The trigger's id, so a field label points at it. */
@@ -37,6 +38,8 @@ interface LanguageSelectProps {
 // typed, with nothing checked, until another option is picked. Modal, so the
 // list scrolls inside the dialog or sheet that holds the form.
 export function LanguageSelect({ id, value, onChange }: LanguageSelectProps) {
+  const label = useLanguageLabel();
+  const t = useTranslations("editor");
   const [open, setOpen] = useState(false);
   const checked = languageOption(value);
 
@@ -55,22 +58,22 @@ export function LanguageSelect({ id, value, onChange }: LanguageSelectProps) {
           role="combobox"
           className="w-full justify-between font-normal"
         >
-          <span className="truncate">{languageLabel(value)}</span>
+          <span className="truncate">{label(value)}</span>
           <ChevronDown className="text-muted-foreground" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        aria-label="Languages"
+        aria-label={t("languages")}
         align="start"
         className="w-(--radix-popover-trigger-width) p-0"
       >
         <Command defaultValue={checked ?? undefined}>
           <CommandInput
-            aria-label="Search languages"
-            placeholder="Search languages…"
+            aria-label={t("searchLanguages")}
+            placeholder={t("searchPlaceholder")}
           />
           <CommandList>
-            <CommandEmpty>No language found</CommandEmpty>
+            <CommandEmpty>{t("noLanguage")}</CommandEmpty>
             {EDITOR_LANGUAGES.map((language) => (
               <CommandItem
                 key={language.id}
@@ -79,7 +82,9 @@ export function LanguageSelect({ id, value, onChange }: LanguageSelectProps) {
                 data-checked={language.id === checked}
                 onSelect={() => pick(language.id)}
               >
-                {language.label}
+                {language.id === PLAIN_TEXT_LANGUAGE
+                  ? t("plainText")
+                  : language.label}
               </CommandItem>
             ))}
           </CommandList>

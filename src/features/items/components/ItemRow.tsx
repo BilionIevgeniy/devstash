@@ -1,6 +1,7 @@
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
+import { useFormatter } from "next-intl";
 import { PinMark } from "@/features/items/_internal/components/PinMark";
-import { cn, formatShortDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { ItemCardData } from "@/features/items/types";
 
 interface ItemRowProps {
@@ -8,6 +9,7 @@ interface ItemRowProps {
 }
 
 export function ItemRow({ item }: ItemRowProps) {
+  const format = useFormatter();
   const { type } = item;
   const iconBackground = type.color
     ? `color-mix(in oklab, ${type.color} 10%, transparent)`
@@ -55,7 +57,7 @@ export function ItemRow({ item }: ItemRowProps) {
         dateTime={item.createdAt.toISOString()}
         className="shrink-0 text-xs text-muted-foreground"
       >
-        {formatShortDate(item.createdAt)}
+        {format.dateTime(item.createdAt, "short")}
       </time>
     </article>
   );

@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { languageLabel } from "@/features/editor/domain/code-language";
+import { useLanguageLabel } from "@/features/editor/components/hooks/use-language-label";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { typeSlug } from "@/features/item-types/domain/item-type";
 import type { DashboardItem } from "@/features/items/types";
@@ -18,6 +18,7 @@ export function ItemDrawerHeader({
   language,
   variant,
 }: ItemDrawerHeaderProps) {
+  const languageLabel = useLanguageLabel();
   const { type } = item;
   const iconBackground = type.color
     ? `color-mix(in oklab, ${type.color} 10%, transparent)`

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type MouseEvent } from "react";
+import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 
 import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -27,6 +28,7 @@ export function DeleteItemDialog({
   disabled,
   onDelete,
 }: DeleteItemDialogProps) {
+  const t = useTranslations("items.actions");
   const [isOpen, setIsOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -53,7 +55,7 @@ export function DeleteItemDialog({
           size="icon"
           className="text-destructive hover:text-destructive"
           disabled={disabled}
-          aria-label={`Delete ${title}`}
+          aria-label={t("deleteNamed", { title })}
         >
           <Trash2 />
         </Button>

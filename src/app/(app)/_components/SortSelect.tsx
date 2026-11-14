@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import {
   Select,
   SelectContent,
@@ -10,14 +11,8 @@ import type { FavoriteItemSort } from "@/features/items/domain/favorite-sort";
 // Shared with the loading.tsx files, so the skeleton is as wide as the control.
 export const SORT_SELECT_WIDTH = "w-36";
 
-// The sorts of favorite collections and of pins are subsets of these.
-const SORT_LABELS: Record<FavoriteItemSort, string> = {
-  newest: "Newest",
-  oldest: "Oldest",
-  "a-z": "A-Z",
-  "z-a": "Z-A",
-  type: "Item type",
-};
+// The sorts of favorite collections and of pins are subsets of the keys of
+// `pages.sort`.
 
 interface SortSelectProps<T extends FavoriteItemSort> {
   sorts: readonly T[];
@@ -32,6 +27,7 @@ export function SortSelect<T extends FavoriteItemSort>({
   onChange,
   ariaLabel,
 }: SortSelectProps<T>) {
+  const t = useTranslations("pages.sort");
   return (
     <Select value={value} onValueChange={(next) => onChange(next as T)}>
       <SelectTrigger aria-label={ariaLabel} className={SORT_SELECT_WIDTH}>
@@ -40,7 +36,7 @@ export function SortSelect<T extends FavoriteItemSort>({
       <SelectContent>
         {sorts.map((sort) => (
           <SelectItem key={sort} value={sort}>
-            {SORT_LABELS[sort]}
+            {t(sort as FavoriteItemSort)}
           </SelectItem>
         ))}
       </SelectContent>

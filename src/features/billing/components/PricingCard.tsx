@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 
 import { CheckList } from "@/components/common/CheckList";
@@ -24,6 +25,8 @@ export function PricingCard({
   action,
   highlighted = false,
 }: PricingCardProps) {
+  const t = useTranslations("billing.plans");
+
   return (
     <article
       className={cn(
@@ -34,7 +37,7 @@ export function PricingCard({
     >
       {highlighted && (
         <GradientBadge className="absolute -top-3.25 left-1/2 -translate-x-1/2 whitespace-nowrap">
-          Most Popular
+          {t("mostPopular")}
         </GradientBadge>
       )}
       <h3 className="text-lg leading-[1.35] font-semibold tracking-[-0.01em]">
@@ -49,7 +52,7 @@ export function PricingCard({
           <span className="mr-1 inline-block text-5xl leading-[1.1] font-bold tracking-[-0.03em] text-foreground tabular-nums">
             {price}
           </span>
-          <span>/month</span>
+          <span>{t("perMonth")}</span>
         </p>
         <p className="mt-1 min-h-6 text-[13px] text-dim">{note}</p>
       </div>

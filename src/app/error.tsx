@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BilingualErrorText } from "@/components/common/BilingualErrorText";
 
 import { ErrorState } from "@/components/common/ErrorState";
 import { useReportError } from "@/components/common/hooks/use-report-error";
@@ -23,13 +24,19 @@ export default function RootError({
   return (
     <main className="flex flex-1 items-center justify-center p-6">
       <ErrorState
-        title="Something went wrong"
-        description="This page could not be loaded. Please try again."
-        reference={digest}
+        title={<BilingualErrorText part="title" />}
+        description={<BilingualErrorText part="description" />}
+        reference={
+          digest && <BilingualErrorText part="reference" digest={digest} />
+        }
       >
-        <Button onClick={retry}>Try again</Button>
+        <Button onClick={retry}>
+          <BilingualErrorText part="retry" />
+        </Button>
         <Button asChild variant="outline">
-          <Link href="/">Go to the homepage</Link>
+          <Link href="/">
+            <BilingualErrorText part="home" />
+          </Link>
         </Button>
       </ErrorState>
     </main>

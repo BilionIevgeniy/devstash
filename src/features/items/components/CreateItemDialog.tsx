@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useRef, useState, type SubmitEvent } from "react";
 import { Plus } from "lucide-react";
@@ -45,7 +46,6 @@ const EMPTY_VALUES: ItemFormValues = {
   tags: "",
   collectionIds: [],
 };
-const CREATED_MESSAGE = "Item created";
 
 interface CreateItemDialogProps {
   /** The type chosen when the dialog opens; also names the button. */
@@ -65,11 +65,15 @@ export function CreateItemDialog({
   isPro,
   controlled,
 }: CreateItemDialogProps) {
+  const typeName = useTranslations("itemTypes");
+  const t = useTranslations("items");
   const [isOpenState, setIsOpenState] = useState(false);
   const isOpen = controlled?.open ?? isOpenState;
   const setIsOpen = controlled?.onOpenChange ?? setIsOpenState;
   const { isPending: isCreating, run, takeDone } = useSubmitDialog();
-  const label = `New ${defaultType ?? "item"}`;
+  const label = defaultType
+    ? t("create.newType", { type: typeName(`${defaultType}.one`) })
+    : t("create.newItem");
   // A type page of a Pro type keeps its button for a Free user, disabled.
   const isLocked =
     defaultType !== undefined && !canCreateType(defaultType, isPro);
@@ -89,7 +93,7 @@ export function CreateItemDialog({
       event.preventDefault();
       controlled.returnFocus();
     }
-    if (takeDone()) toast.success(CREATED_MESSAGE);
+    if (takeDone()) toast.success(t("toasts.created"));
   }
 
   return (
@@ -98,7 +102,7 @@ export function CreateItemDialog({
         <DialogTrigger asChild>
           <Button disabled={isLocked}>
             <Plus />
-            <span className="capitalize">{label}</span>
+            <span>{label}</span>
             {isLocked && <ProBadge />}
           </Button>
         </DialogTrigger>
@@ -108,10 +112,8 @@ export function CreateItemDialog({
         onCloseAutoFocus={handleCloseAutoFocus}
       >
         <DialogHeader>
-          <DialogTitle className="capitalize">{label}</DialogTitle>
-          <DialogDescription>
-            Save a snippet, prompt, command, note, link, file or image.
-          </DialogDescription>
+          <DialogTitle>{label}</DialogTitle>
+          <DialogDescription>{t("create.description")}</DialogDescription>
         </DialogHeader>
         {/* Unmounted with the closed dialog, so every open starts empty and
             a running upload is aborted. */}
@@ -224,15 +226,16 @@ interface CreateFormFooterProps {
 }
 
 function CreateFormFooter({ isCreating, canCreate }: CreateFormFooterProps) {
+  const t = useTranslations("common.actions");
   return (
     <DialogFooter>
       <DialogClose asChild>
         <Button type="button" variant="ghost" disabled={isCreating}>
-          Cancel
+          {t("cancel")}
         </Button>
       </DialogClose>
       <Button type="submit" disabled={isCreating || !canCreate}>
-        {isCreating ? "Creating…" : "Create"}
+        {isCreating ? t("creating") : t("create")}
       </Button>
     </DialogFooter>
   );

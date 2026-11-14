@@ -1,4 +1,5 @@
 "use client";
+import { useFormatter, useTranslations } from "next-intl";
 
 import { useState } from "react";
 
@@ -20,6 +21,8 @@ interface CheckoutButtonsProps {
 
 // The choice of a plan in the billing section. /upgrade chooses by its switch.
 export function CheckoutButtons({ testMode }: CheckoutButtonsProps) {
+  const format = useFormatter();
+  const t = useTranslations("billing.settings");
   const { isPending, run } = useBillingRedirect();
   const [active, setActive] = useState<Plan | null>(null);
 
@@ -32,14 +35,19 @@ export function CheckoutButtons({ testMode }: CheckoutButtonsProps) {
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
         <BillingButton
-          label={`Upgrade $${PRO_MONTHLY_PRICE}/mo`}
+          label={t("upgradeMonthly", {
+            price: format.number(PRO_MONTHLY_PRICE, "price"),
+          })}
           variant="default"
           isPending={isPending}
           isActive={active === "monthly"}
           onClick={() => start("monthly")}
         />
         <BillingButton
-          label={`Upgrade $${PRO_YEARLY_PRICE}/yr (save ${proYearlySavingsPercent()}%)`}
+          label={t("upgradeYearly", {
+            price: format.number(PRO_YEARLY_PRICE, "price"),
+            percent: proYearlySavingsPercent(),
+          })}
           variant="outline"
           isPending={isPending}
           isActive={active === "yearly"}

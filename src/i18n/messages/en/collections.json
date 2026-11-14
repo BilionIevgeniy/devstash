@@ -1,0 +1,30 @@
+{
+  "fields": {
+    "name": "Name",
+    "description": "Description"
+  },
+  "actions": {
+    "favorite": "Favorite",
+    "favoriteNamed": "Favorite {name}",
+    "menuNamed": "Actions for {name}",
+    "edit": "Edit collection",
+    "delete": "Delete collection"
+  },
+  "create": {
+    "title": "New collection",
+    "description": "Group related items in one place."
+  },
+  "edit": {
+    "title": "Edit collection",
+    "description": "Change the name and the description."
+  },
+  "delete": {
+    "title": "Delete this collection?",
+    "description": "“{name}” will be permanently deleted. Its items are kept and only leave this collection."
+  },
+  "toasts": {
+    "created": "Collection created",
+    "updated": "Collection updated",
+    "deleted": "Collection deleted"
+  }
+}

@@ -24,17 +24,11 @@ describe("yearly Pro pricing", () => {
 
 describe("proPriceDisplay", () => {
   it("shows the monthly price", () => {
-    expect(proPriceDisplay(false)).toEqual({
-      price: "$8",
-      note: "Billed monthly",
-    });
+    expect(proPriceDisplay(false)).toEqual({ perMonth: 8, yearlyTotal: null });
   });
 
   it("shows the yearly price per month, with the yearly total", () => {
-    expect(proPriceDisplay(true)).toEqual({
-      price: "$6",
-      note: "Billed $72/yr",
-    });
+    expect(proPriceDisplay(true)).toEqual({ perMonth: 6, yearlyTotal: 72 });
   });
 });
 

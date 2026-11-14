@@ -1,0 +1,16 @@
+{
+  "title": "Suche",
+  "description": "Durchsuche deine Einträge und Sammlungen",
+  "placeholder": "Einträge und Sammlungen durchsuchen …",
+  "trigger": "Einträge und Sammlungen durchsuchen",
+  "items": "Einträge",
+  "collections": "Sammlungen",
+  "noResults": "Keine Ergebnisse.",
+  "tryAgain": "Noch einmal versuchen",
+  "loading": "Wird geladen …",
+  "loadMoreFailed": "Weitere Ergebnisse konnten nicht geladen werden. Versuch es noch einmal",
+  "showMore": "Weitere Ergebnisse anzeigen",
+  "showMoreKind": "mehr anzeigen",
+  "locked": "Verlängere dein Abo, um ihn zu öffnen",
+  "loadingSearch": "Suche wird geladen"
+}

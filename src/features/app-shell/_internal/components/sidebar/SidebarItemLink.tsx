@@ -1,12 +1,13 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { LINK_CLASS } from "@/features/app-shell/_internal/components/sidebar/shared";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
-import { LOCKED_LABEL } from "@/features/items/domain/item-fields";
 import type { SidebarItem } from "@/features/items/types";
 import { isItemPage, itemPagePath } from "@/features/search/domain/item-page";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ interface SidebarItemLinkProps {
 // On the item's own full page the link goes nowhere: the same URL would open
 // the intercepted drawer over the page, with no history entry to close it to.
 export function SidebarItemLink({ item, isLocked }: SidebarItemLinkProps) {
+  const t = useTranslations("shell");
   const isCurrent = isItemPage(usePathname(), item);
 
   const content = (
@@ -37,7 +39,7 @@ export function SidebarItemLink({ item, isLocked }: SidebarItemLinkProps) {
     return (
       <Link
         href={UPGRADE_PATH}
-        aria-label={`${item.title}: ${LOCKED_LABEL.toLowerCase()}`}
+        aria-label={t("locked", { title: item.title })}
         className={cn(LINK_CLASS, "opacity-50")}
       >
         {content}

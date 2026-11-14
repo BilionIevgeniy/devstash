@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 import { useState } from "react";
 import { FilePlus, FolderPlus, Plus } from "lucide-react";
 
@@ -23,6 +25,7 @@ interface CreateMenuProps {
 // The top bar's two create buttons in one, for a phone. The dialogs have no
 // trigger of their own here, so they hand the focus back to the +.
 export function CreateMenu({ isPro }: CreateMenuProps) {
+  const t = useTranslations("shell");
   const [trigger, setTrigger] = useState<HTMLButtonElement | null>(null);
   const [openDialog, setOpenDialog] = useState<CreateDialog | null>(null);
 
@@ -48,7 +51,7 @@ export function CreateMenu({ isPro }: CreateMenuProps) {
             ref={setTrigger}
             type="button"
             size="icon"
-            aria-label="Create"
+            aria-label={t("create")}
           >
             <Plus />
           </Button>
@@ -60,11 +63,11 @@ export function CreateMenu({ isPro }: CreateMenuProps) {
         >
           <DropdownMenuItem onSelect={() => setOpenDialog("item")}>
             <FilePlus />
-            New item
+            {t("newItem")}
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setOpenDialog("collection")}>
             <FolderPlus />
-            New collection
+            {t("newCollection")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

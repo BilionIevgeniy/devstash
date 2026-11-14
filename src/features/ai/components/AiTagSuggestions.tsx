@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useId, type ReactNode } from "react";
 
@@ -29,6 +30,7 @@ export function AiTagSuggestions({
   onAccept,
   children,
 }: AiTagSuggestionsProps) {
+  const t = useTranslations("ai.generate");
   const {
     suggestions,
     announcement,
@@ -51,7 +53,7 @@ export function AiTagSuggestions({
       {children(
         <GenerateWithAiButton
           ref={buttonRef}
-          target="for tags"
+          target={t("forTags")}
           describedBy={noteId}
           isPending={isPending}
           disabled={isBlank}

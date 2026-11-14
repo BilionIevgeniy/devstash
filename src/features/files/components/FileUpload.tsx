@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { RotateCcw } from "lucide-react";
 
@@ -21,16 +22,16 @@ interface FileUploadProps {
 // progress is the browser's own. Unmounting aborts a running upload, so a
 // closed dialog or a switched type never keeps sending.
 export function FileUpload({ kind, onChange, disabled }: FileUploadProps) {
+  const t = useTranslations("files");
   const { state, upload, reset } = useFileUpload(kind, onChange);
   const errorText = useErrorText();
-  const label = kind === "image" ? "image" : "file";
 
   if (state.status === "uploading" || state.status === "done") {
     return (
       <UploadProgress
         file={state.file}
         progress={state.status === "uploading" ? state.progress : null}
-        label={label}
+        kind={kind}
         disabled={disabled}
         onRemove={reset}
       />
@@ -43,7 +44,6 @@ export function FileUpload({ kind, onChange, disabled }: FileUploadProps) {
     <div className="space-y-2">
       <DropZone
         kind={kind}
-        label={label}
         disabled={disabled}
         onFile={(file) => void upload(file)}
       />
@@ -60,7 +60,7 @@ export function FileUpload({ kind, onChange, disabled }: FileUploadProps) {
               onClick={() => void upload(failedFile)}
             >
               <RotateCcw />
-              Retry
+              {t("retry")}
             </Button>
           )}
         </div>

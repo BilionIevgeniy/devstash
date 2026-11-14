@@ -1,0 +1,22 @@
+{
+  "title": "Editor",
+  "fontSize": "Font size",
+  "tabSize": "Tab size",
+  "theme": "Theme",
+  "wordWrap": "Word wrap",
+  "minimap": "Minimap",
+  "saved": "Editor preferences saved",
+  "languages": "Languages",
+  "searchLanguages": "Search languages",
+  "searchPlaceholder": "Search languages…",
+  "noLanguage": "No language found",
+  "plainText": "Plain text",
+  "write": "Write",
+  "preview": "Preview",
+  "nothingToPreview": "Nothing to preview",
+  "content": "Content",
+  "code": "Code",
+  "copyContent": "Copy content",
+  "copyCode": "Copy code",
+  "loadFailed": "The code editor couldn't load. Reload the page to try again."
+}

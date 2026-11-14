@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { Upload } from "lucide-react";
 import { useRef, type ChangeEvent } from "react";
@@ -11,16 +12,23 @@ import {
 } from "@/features/import-export/_internal/components/hooks/use-import";
 import { ImportSummaryView } from "@/features/import-export/_internal/components/ImportSummaryView";
 
-function buttonLabel(state: ImportState, isRefreshing: boolean): string {
-  if (isRefreshing) return "Finishing…";
-  if (state.status === "reading") return "Reading the file…";
+type Translate = ReturnType<typeof useTranslations<"importExport">>;
+
+function buttonLabel(
+  t: Translate,
+  state: ImportState,
+  isRefreshing: boolean,
+): string {
+  if (isRefreshing) return t("finishing");
+  if (state.status === "reading") return t("reading");
   if (state.status === "running") {
-    return `Importing… ${state.done} of ${state.total}`;
+    return t("importing", { done: state.done, total: state.total });
   }
-  return "Import JSON";
+  return t("import");
 }
 
 export function ImportButton() {
+  const t = useTranslations("importExport");
   const { state, isBusy, isRefreshing, start } = useImport();
   const errorText = useErrorText();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -38,7 +46,7 @@ export function ImportButton() {
         ref={inputRef}
         type="file"
         accept="application/json,.json"
-        aria-label="Import file"
+        aria-label={t("importFile")}
         tabIndex={-1}
         className="sr-only"
         disabled={isBusy}
@@ -51,7 +59,7 @@ export function ImportButton() {
         onClick={() => inputRef.current?.click()}
       >
         <Upload />
-        {buttonLabel(state, isRefreshing)}
+        {buttonLabel(t, state, isRefreshing)}
       </Button>
       {state.status === "invalid" && (
         <p role="alert" className="text-sm text-destructive">

@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { Download } from "lucide-react";
 import { useState } from "react";
@@ -10,6 +11,7 @@ import { downloadExport } from "@/features/import-export/_internal/components/fe
 
 // The browser saves the file itself, so success needs no toast.
 export function ExportButton() {
+  const t = useTranslations("importExport");
   const [isPending, setIsPending] = useState(false);
   const errorText = useErrorText();
 
@@ -23,7 +25,7 @@ export function ExportButton() {
   return (
     <Button type="button" disabled={isPending} onClick={exportData}>
       <Download />
-      {isPending ? "Exporting…" : "Export JSON"}
+      {isPending ? t("exporting") : t("export")}
     </Button>
   );
 }

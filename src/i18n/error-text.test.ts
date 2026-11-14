@@ -1,12 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { ERROR_PARAM_NAMES, type ErrorCode } from "@/i18n/error-codes";
-import { createErrorText } from "@/i18n/error-text";
+import { createErrorText } from "../../test/error-text";
 import errors from "@/i18n/messages/en/errors.json";
 
 const GENERIC = errors.generic;
 
-describe("createErrorText", () => {
+// The error messages as the app shows them: formatted with their params, and
+// the generic text where a code or a param is missing (fallback.ts).
+describe("the error texts", () => {
   it.each(Object.keys(errors) as ErrorCode[])(
     "formats %s with its params and reports nothing",
     (code) => {
@@ -54,5 +56,26 @@ describe("createErrorText", () => {
       GENERIC,
     );
     expect(onError).toHaveBeenCalledOnce();
+  });
+});
+
+describe("the error texts in German", () => {
+  it("says Minute and Minuten for the rate limit", () => {
+    const errorText = createErrorText(undefined, "de");
+
+    expect(
+      errorText({ error: "tooManyAttempts", params: { minutes: 1 } }),
+    ).toBe("Zu viele Versuche. Bitte versuch es in 1 Minute noch einmal.");
+    expect(
+      errorText({ error: "tooManyAttempts", params: { minutes: 5 } }),
+    ).toBe("Zu viele Versuche. Bitte versuch es in 5 Minuten noch einmal.");
+  });
+
+  it("falls back to the German generic text", () => {
+    const unknown = { error: "removedCode" } as unknown as { error: ErrorCode };
+
+    expect(createErrorText(undefined, "de")(unknown)).toBe(
+      "Etwas ist schiefgelaufen. Bitte versuch es noch einmal.",
+    );
   });
 });

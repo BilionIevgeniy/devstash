@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { requestPasswordReset } from "@/features/auth/_internal/actions/password-reset";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
@@ -13,16 +14,20 @@ export function ForgotPasswordForm() {
     null,
   );
   const errorText = useErrorText();
+  const t = useTranslations("auth");
   const [email, setEmail] = useState("");
 
   if (state?.success) {
     return (
       <div className="space-y-2 text-center">
-        <h2 className="text-lg font-semibold">Check your email</h2>
+        <h2 className="text-lg font-semibold">{t("forgot.sentTitle")}</h2>
         <p className="text-sm text-muted-foreground">
-          If an account exists for{" "}
-          <span className="font-medium text-foreground">{email}</span>, we sent
-          a link to reset your password.
+          {t.rich("forgot.sentBody", {
+            email,
+            strong: (chunks) => (
+              <span className="font-medium text-foreground">{chunks}</span>
+            ),
+          })}
         </p>
       </div>
     );
@@ -32,7 +37,7 @@ export function ForgotPasswordForm() {
     <form action={formAction} className="space-y-4">
       <div className="space-y-2">
         <label htmlFor="email" className="text-sm font-medium">
-          Email
+          {t("fields.email")}
         </label>
         <Input
           id="email"
@@ -50,7 +55,7 @@ export function ForgotPasswordForm() {
         </p>
       )}
       <Button type="submit" size="lg" className="w-full" disabled={isPending}>
-        {isPending ? "Sending…" : "Send reset link"}
+        {isPending ? t("forgot.pending") : t("forgot.submit")}
       </Button>
     </form>
   );

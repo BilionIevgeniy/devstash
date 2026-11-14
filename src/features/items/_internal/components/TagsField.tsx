@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { useErrorText } from "@/components/common/hooks/use-error-text";
@@ -33,6 +34,7 @@ export function TagsField({
   title,
   content,
 }: TagsFieldProps) {
+  const t = useTranslations("items.fields");
   const errorText = useErrorText();
   function handleAccept(tag: string): boolean {
     const next = appendTag(value, tag);
@@ -45,7 +47,7 @@ export function TagsField({
   }
 
   const field = (action?: ReactNode) => (
-    <Field label="Tags" hint="Separate tags with commas" action={action}>
+    <Field label={t("tags")} hint={t("tagsHint")} action={action}>
       {(id) => (
         <Input
           id={id}

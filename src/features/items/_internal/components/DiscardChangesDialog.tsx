@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { useTranslations } from "next-intl";
 
 import {
   AlertDialog,
@@ -27,6 +28,7 @@ export function DiscardChangesDialog({
   onOpenChange,
   onDiscard,
 }: DiscardChangesDialogProps) {
+  const t = useTranslations();
   const discardedRef = useRef(false);
 
   return (
@@ -39,13 +41,15 @@ export function DiscardChangesDialog({
         }}
       >
         <AlertDialogHeader>
-          <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+          <AlertDialogTitle>{t("items.discard.title")}</AlertDialogTitle>
           <AlertDialogDescription>
-            Your unsaved edits to this item will be lost.
+            {t("items.discard.description")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Keep editing</AlertDialogCancel>
+          <AlertDialogCancel>
+            {t("common.actions.keepEditing")}
+          </AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             onClick={() => {
@@ -53,7 +57,7 @@ export function DiscardChangesDialog({
               onDiscard();
             }}
           >
-            Discard
+            {t("common.actions.discard")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

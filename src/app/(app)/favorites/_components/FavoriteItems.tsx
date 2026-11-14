@@ -1,4 +1,6 @@
 import { LIST_ROW_WRAPPER, ListRow } from "@/app/(app)/_components/ListRow";
+import { typeLabel } from "@/features/item-types/domain/item-type";
+import { useTranslations } from "next-intl";
 import { ListRowFrame } from "@/app/(app)/_components/ListRowFrame";
 import { SortSelect } from "@/app/(app)/_components/SortSelect";
 import { FavoriteSection } from "@/app/(app)/favorites/_components/FavoriteSection";
@@ -22,18 +24,20 @@ export function FavoriteItems({
   sort,
   onSortChange,
 }: FavoriteItemsProps) {
+  const typeName = useTranslations("itemTypes");
+  const t = useTranslations("pages.favorites");
   if (items.length === 0) return null;
 
   return (
     <FavoriteSection
-      title="Items"
+      title={t("items")}
       count={items.length}
       action={
         <SortSelect
           sorts={FAVORITE_ITEM_SORTS}
           value={sort}
           onChange={onSortChange}
-          ariaLabel="Sort items"
+          ariaLabel={t("sortItems")}
         />
       }
     >
@@ -52,7 +56,7 @@ export function FavoriteItems({
                 />
               }
               title={item.title}
-              badge={item.type.name}
+              badge={typeLabel(typeName, item.type.name, "one")}
               date={item.favoritedAt}
             />
           </ItemDrawerTrigger>

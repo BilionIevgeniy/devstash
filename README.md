@@ -16,8 +16,9 @@ What the product is and who it is for: [context/project-overview.md](context/pro
 | Files | Cloudflare R2, uploaded by the browser through presigned URLs |
 | Billing | Stripe subscriptions, synced by webhook |
 | AI | OpenAI |
+| Languages | English and German with next-intl: `/` and `/de` for the homepage, a cookie or the browser's language for the app ([ADR 0024](docs/adr/0024-locale-decision.md)) |
 | Email, rate limits | Resend, Upstash Redis |
-| Tests | Vitest, React Testing Library |
+| Tests | Vitest, React Testing Library, Playwright |
 | Hosting | Vercel |
 
 ## Getting started

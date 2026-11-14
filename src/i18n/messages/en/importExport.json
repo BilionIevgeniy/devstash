@@ -1,0 +1,20 @@
+{
+  "title": "Data",
+  "description": "Download every item and collection as JSON, or import a DevStash export. Files and images come as download links that expire after about an hour. An import skips what is already there and does not restore favorites, pins or dates.",
+  "proOnly": "Export and import are part of Pro.",
+  "upgrade": "Upgrade to Pro",
+  "export": "Export JSON",
+  "exporting": "Exporting…",
+  "import": "Import JSON",
+  "importFile": "Import file",
+  "reading": "Reading the file…",
+  "importing": "Importing… {done} of {total}",
+  "finishing": "Finishing…",
+  "stopped": "The import stopped early.",
+  "finished": "Import finished.",
+  "counts": "{created} created, {duplicates} already there.",
+  "countsWithFiles": "{created} created, {duplicates} already there, {files, plural, one {# file} other {# files}} not imported.",
+  "filesNote": "Files and images are not part of an export. Download them from the links in the file and upload them again.",
+  "failed": "{count} could not be imported",
+  "untitled": "Untitled"
+}

@@ -1,0 +1,54 @@
+{
+  "plans": {
+    "free": "Free",
+    "pro": "Pro",
+    "freeForever": "Free forever",
+    "perMonth": "/month",
+    "billedMonthly": "Billed monthly",
+    "billedYearly": "Billed {total}/yr",
+    "mostPopular": "Most Popular",
+    "getStarted": "Get Started",
+    "goPro": "Go Pro",
+    "currentPlan": "Current plan",
+    "upgrade": "Upgrade to Pro"
+  },
+  "toggle": {
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "label": "Yearly billing",
+    "save": "Save {percent}%"
+  },
+  "features": {
+    "items": "{count} items",
+    "collections": "{count} collections",
+    "basicTypes": "Snippets, prompts, commands, notes and links",
+    "basicSearch": "Basic search",
+    "unlimitedItems": "Unlimited items",
+    "unlimitedCollections": "Unlimited collections",
+    "uploads": "File and image uploads",
+    "aiTags": "AI tag suggestions",
+    "aiSummaries": "AI summaries",
+    "aiExplain": "AI code explanations",
+    "aiOptimize": "AI prompt optimization",
+    "customTypes": "Custom item types (coming soon)",
+    "exportJson": "Export (JSON)"
+  },
+  "testModeHint": "Demo mode: no real charges. Pay with card 4242 4242 4242 4242, any future date and any CVC.",
+  "settings": {
+    "title": "Billing",
+    "plan": "Plan",
+    "confirming": "Confirming your payment…",
+    "usage": "{items}/{itemLimit} items, {collections}/{collectionLimit} collections",
+    "limitReached": "You've reached the Free plan's limit. Delete something to create more, or <link>upgrade to Pro</link>.",
+    "paymentIssue": "Your last payment didn't go through. Open Manage Billing to fix it.",
+    "manage": "Manage Billing",
+    "upgradeMonthly": "Upgrade {price}/mo",
+    "upgradeYearly": "Upgrade {price}/yr (save {percent}%)",
+    "welcome": "Welcome to DevStash Pro!",
+    "notConfirmed": "We couldn't confirm your payment yet. If you paid, your plan will update shortly."
+  },
+  "upgradePage": {
+    "title": "Upgrade to Pro",
+    "lead": "Keep everything in one place, with no limits"
+  }
+}

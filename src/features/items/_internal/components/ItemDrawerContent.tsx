@@ -1,4 +1,5 @@
 import { Tag } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import type { ItemDeleteHandler } from "@/features/items/_internal/components/DeleteItemDialog";
 import { DrawerSection } from "@/features/items/_internal/components/DrawerSection";
@@ -45,6 +46,7 @@ export function ItemDrawerContent({
   onDirtyChange,
   variant = "sheet",
 }: ItemDrawerContentProps) {
+  const t = useTranslations("items");
   const detail = state.status === "ready" ? state.detail : null;
   const canUseAi = state.status === "ready" && state.canUseAi;
 
@@ -86,7 +88,7 @@ export function ItemDrawerContent({
       />
       <div className="flex-1 space-y-6 overflow-y-auto p-6">
         {item.description && (
-          <DrawerSection title="Description">
+          <DrawerSection title={t("fields.description")}>
             <p>{item.description}</p>
           </DrawerSection>
         )}
@@ -94,7 +96,7 @@ export function ItemDrawerContent({
           <ItemDrawerSkeleton typeName={item.type.name} />
         )}
         {state.status === "error" && (
-          <p className="text-destructive">Couldn&apos;t load this item.</p>
+          <p className="text-destructive">{t("drawer.loadFailed")}</p>
         )}
         {detail && (
           <ItemBody
@@ -113,8 +115,9 @@ export function ItemDrawerContent({
 }
 
 function ItemTagList({ tags }: { tags: string[] }) {
+  const t = useTranslations("items.fields");
   return (
-    <DrawerSection title="Tags" icon={Tag}>
+    <DrawerSection title={t("tags")} icon={Tag}>
       <ul className="flex flex-wrap gap-2">
         {tags.map((tag) => (
           <li

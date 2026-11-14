@@ -1,4 +1,4 @@
-import { AI_DATA_NOTICE } from "@/features/ai/domain/messages";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 interface AiDataNoteProps {
@@ -11,9 +11,10 @@ interface AiDataNoteProps {
 // plain text, not a tooltip: a tooltip never opens on a phone, and a screen
 // reader hears nothing from one that is closed.
 export function AiDataNote({ id, className }: AiDataNoteProps) {
+  const t = useTranslations("ai");
   return (
     <p id={id} className={cn("text-xs text-muted-foreground", className)}>
-      {AI_DATA_NOTICE}
+      {t("dataNotice")}
     </p>
   );
 }

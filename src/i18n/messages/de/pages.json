@@ -1,0 +1,70 @@
+{
+  "sort": {
+    "newest": "Neueste",
+    "oldest": "Älteste",
+    "a-z": "A–Z",
+    "z-a": "Z–A",
+    "type": "Eintragstyp"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "lead": "Dein Wissensspeicher als Entwickler",
+    "recentItems": "Neueste Einträge",
+    "noItems": "Noch keine Einträge.",
+    "pinned": "Angeheftet",
+    "collections": "Sammlungen",
+    "viewAll": "Alle anzeigen",
+    "noCollections": "Noch keine Sammlungen.",
+    "items": "Einträge",
+    "favoriteItems": "Favorisierte Einträge",
+    "favoriteCollections": "Favorisierte Sammlungen"
+  },
+  "favorites": {
+    "title": "Favoriten",
+    "lead": "Deine markierten Einträge und Sammlungen",
+    "empty": "Noch keine Favoriten.",
+    "items": "Einträge",
+    "collections": "Sammlungen",
+    "sortItems": "Einträge sortieren",
+    "sortCollections": "Sammlungen sortieren",
+    "collectionBadge": "Sammlung"
+  },
+  "pinned": {
+    "title": "Angeheftet",
+    "lead": "Deine angehefteten Einträge, nach Typ",
+    "empty": "Noch keine angehefteten Einträge.",
+    "sort": "Angeheftete sortieren"
+  },
+  "collections": {
+    "title": "Sammlungen",
+    "empty": "Noch keine Sammlungen.",
+    "emptyCollection": "Noch keine Einträge in dieser Sammlung.",
+    "count": "{count, plural, one {# Sammlung} other {# Sammlungen}}"
+  },
+  "items": {
+    "empty": "Noch keine {type}.",
+    "filteredEmpty": "Keine Einträge passen zu diesen Filtern.",
+    "clearFilters": "Filter zurücksetzen",
+    "sort": "Einträge sortieren",
+    "allTags": "Alle Tags",
+    "filterByTag": "Nach Tag filtern"
+  },
+  "profile": {
+    "title": "Profil",
+    "lead": "Deine Kontodaten und Nutzung",
+    "memberSince": "Mitglied seit {date}",
+    "usage": "Nutzung",
+    "items": "Einträge",
+    "collections": "Sammlungen"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "lead": "Verwalte deinen Editor, die Abrechnung, deine Daten und dein Konto"
+  },
+  "lockedFiles": {
+    "title": "Gesperrte Dateien",
+    "lead": "Lade sie herunter oder lösch sie, oder verlängere dein Abo, um sie zu öffnen",
+    "back": "Zurück zu den Einstellungen",
+    "renew": "Verlängern"
+  }
+}

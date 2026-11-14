@@ -39,7 +39,7 @@ export async function createSnippet(
   title: string,
   tags: string[] = [],
 ): Promise<void> {
-  const dialog = await openCreateDialog(page, "/items/snippets", "snippet");
+  const dialog = await openCreateDialog(page, "/items/snippets", "Snippet");
 
   await dialog.getByLabel("Title", { exact: true }).fill(title);
   if (tags.length > 0) {

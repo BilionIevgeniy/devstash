@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { useRowFocus } from "@/app/(app)/_components/hooks/use-row-focus";
 import { FavoriteCollections } from "@/app/(app)/favorites/_components/FavoriteCollections";
@@ -27,6 +28,7 @@ interface FavoriteListsProps {
 // The rows that leave at once are left out first: the empty state, the sort
 // and the counts all follow from what remains.
 export function FavoriteLists({ items, collections }: FavoriteListsProps) {
+  const t = useTranslations("pages.favorites");
   const { hiddenIds, favoriteOverrides } = useItemDrawer();
   const [itemSortValue, setItemSortValue] = useSearchParam(
     "itemSort",
@@ -52,7 +54,7 @@ export function FavoriteLists({ items, collections }: FavoriteListsProps) {
           tabIndex={-1}
           className="text-sm text-muted-foreground outline-none"
         >
-          No favorites yet.
+          {t("empty")}
         </p>
       ) : (
         <>

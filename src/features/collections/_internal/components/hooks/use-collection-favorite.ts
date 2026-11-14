@@ -1,5 +1,6 @@
 import { useOptimistic, useTransition } from "react";
 import { unstable_rethrow } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { useErrorText } from "@/components/common/hooks/use-error-text";
@@ -7,7 +8,6 @@ import { setCollectionFavorite } from "@/features/collections/actions/collection
 import { UNDO_TOAST_DURATION } from "@/features/items/domain/list-rows";
 import type { ErrorText } from "@/i18n/error-text";
 import { isNavigationError } from "@/lib/navigation-error";
-const UNFAVORITED_MESSAGE = "Removed from favorites";
 
 export interface CollectionFavorite {
   isFavorite: boolean;
@@ -42,6 +42,7 @@ export function useCollectionFavorite(
   isFavorite: boolean,
   options?: FavoriteOptions,
 ): CollectionFavorite {
+  const t = useTranslations("common");
   const [current, setCurrent] = useOptimistic(isFavorite);
   const [isPending, startTransition] = useTransition();
   const errorText = useErrorText();
@@ -56,10 +57,10 @@ export function useCollectionFavorite(
         if (!result.success) {
           toast.error(errorText(result));
         } else if (options?.undoable && current) {
-          toast(UNFAVORITED_MESSAGE, {
+          toast(t("removedFromFavorites"), {
             duration: UNDO_TOAST_DURATION,
             action: {
-              label: "Undo",
+              label: t("actions.undo"),
               onClick: () => restoreFavorite(collectionId, errorText),
             },
           });

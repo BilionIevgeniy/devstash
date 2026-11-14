@@ -39,7 +39,7 @@ test("an item opens in the drawer and Esc closes it", async ({ page }) => {
 // click goes through the editor's handle. Monaco loads on its own, and a click
 // before it has mounted does nothing, so the click is repeated.
 test("clicking the Content label focuses the code editor", async ({ page }) => {
-  const dialog = await openCreateDialog(page, "/items/snippets", "snippet");
+  const dialog = await openCreateDialog(page, "/items/snippets", "Snippet");
 
   await expect(async () => {
     await dialog.getByText("Content", { exact: true }).click();
@@ -54,7 +54,7 @@ test("clicking the Content label focuses the code editor", async ({ page }) => {
 test("clicking the Content label of a note in Preview returns to Write", async ({
   page,
 }) => {
-  const dialog = await openCreateDialog(page, "/items/notes", "note");
+  const dialog = await openCreateDialog(page, "/items/notes", "Note");
   const preview = dialog.getByRole("tab", { name: "Preview", exact: true });
   await preview.click();
   await expect(preview).toHaveAttribute("aria-selected", "true");
@@ -73,7 +73,7 @@ test("clicking the Content label of a note in Preview returns to Write", async (
 test("a note over the content limit is refused with the editor focused", async ({
   page,
 }) => {
-  const dialog = await openCreateDialog(page, "/items/notes", "note");
+  const dialog = await openCreateDialog(page, "/items/notes", "Note");
   await dialog
     .getByLabel("Title", { exact: true })
     .fill(uniqueTitle("Too long note"));

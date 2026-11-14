@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "description": "Ein Wissensspeicher für Entwickler: Snippets, Befehle, Prompts, Notizen, Dateien, Bilder, Links und eigene Typen."
+  },
+  "appError": {
+    "title": "Etwas ist schiefgelaufen",
+    "description": "Diese Seite konnte nicht geladen werden. Prüf deine Verbindung und versuch es noch einmal.",
+    "retry": "Noch einmal versuchen",
+    "reference": "Referenz: <code>{reference}</code>. Gib sie an, falls das Problem bleibt."
+  },
+  "pagination": {
+    "label": "Seitennavigation",
+    "previous": "Zurück",
+    "previousPage": "Vorherige Seite",
+    "next": "Weiter",
+    "nextPage": "Nächste Seite",
+    "page": "Seite {page}"
+  },
+  "language": {
+    "label": "Sprache",
+    "en": "English",
+    "de": "Deutsch",
+    "switching": "Wird umgestellt …",
+    "failed": "Die Sprache konnte nicht geändert werden. Bitte versuch es noch einmal."
+  },
+  "actions": {
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "deleting": "Wird gelöscht …",
+    "save": "Speichern",
+    "saving": "Wird gespeichert …",
+    "create": "Erstellen",
+    "creating": "Wird erstellt …",
+    "edit": "Bearbeiten",
+    "copy": "Kopieren",
+    "undo": "Rückgängig",
+    "download": "Herunterladen",
+    "discard": "Verwerfen",
+    "keepEditing": "Weiter bearbeiten"
+  },
+  "removedFromFavorites": "Aus den Favoriten entfernt",
+  "copied": "In die Zwischenablage kopiert",
+  "logoHome": "DevStash-Startseite",
+  "itemCount": "{count, plural, one {# Eintrag} other {# Einträge}}"
+}

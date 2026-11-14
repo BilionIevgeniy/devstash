@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { Field } from "@/components/common/Field";
 import { Button } from "@/components/ui/button";
@@ -31,13 +32,13 @@ interface CollectionSelectProps {
   disabled?: boolean;
 }
 
-function statusMessage(
+function statusKey(
   options: CollectionOptionsState,
   isEmpty: boolean,
-): string | null {
-  if (options.status === "loading") return "Loading…";
-  if (options.status === "error") return "Couldn't load your collections";
-  return isEmpty ? "No collections yet" : null;
+): "loading" | "loadFailed" | "empty" | null {
+  if (options.status === "loading") return "loading";
+  if (options.status === "error") return "loadFailed";
+  return isEmpty ? "empty" : null;
 }
 
 // The id goes on the trigger for the label, which leaves the menu's own
@@ -49,12 +50,15 @@ export function CollectionSelect({
   linked = NO_LINKS,
   disabled,
 }: CollectionSelectProps) {
+  const t = useTranslations("items");
   const options = useCollectionOptions();
   const choices = collectionChoices(
     linked,
     options.status === "ready" ? options.collections : [],
   );
-  const message = statusMessage(options, choices.length === 0);
+  const status = statusKey(options, choices.length === 0);
+  const message = status && t(`collectionSelect.${status}`);
+  const summary = collectionSummary(choices, value);
 
   function toggle(id: string, isChecked: boolean) {
     onChange(
@@ -63,7 +67,7 @@ export function CollectionSelect({
   }
 
   return (
-    <Field label="Collections">
+    <Field label={t("fields.collections")}>
       {(id) => (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -75,14 +79,18 @@ export function CollectionSelect({
               disabled={disabled}
             >
               <span className="truncate">
-                {collectionSummary(choices, value)}
+                {summary.kind === "none"
+                  ? t("collectionSelect.choose")
+                  : summary.kind === "count"
+                    ? t("collectionSelect.selected", { count: summary.count })
+                    : summary.names}
               </span>
               <ChevronDown className="text-muted-foreground" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             aria-labelledby={undefined}
-            aria-label="Collections"
+            aria-label={t("fields.collections")}
             className="max-h-60"
           >
             {choices.map((collection) => (

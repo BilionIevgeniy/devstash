@@ -1,28 +1,26 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 
 import { BillingToggle } from "@/features/billing/components/BillingToggle";
 import { PricingCard } from "@/features/billing/components/PricingCard";
 import { PricingCardButton } from "@/features/billing/components/PricingCardButton";
 import { PricingGrid } from "@/features/billing/components/PricingGrid";
+import { usePlanText } from "@/features/billing/components/hooks/use-plan-text";
 import {
   FREE_PLAN_FEATURES,
   PRO_PLAN_FEATURES,
-  proPriceDisplay,
+  PRO_ROADMAP_FEATURES,
 } from "@/features/billing/domain/limits";
 
 import { ScrollFadeIn } from "./ScrollFadeIn";
 import { SectionHead } from "./SectionHead";
 
 // The roadmap lines on top of what Pro gives today: custom item types are not
-// built yet (context/todo.md), and the export will be JSON only.
-const PRO_FEATURES = [
-  ...PRO_PLAN_FEATURES,
-  "Custom item types (coming soon)",
-  "Export (JSON)",
-];
+// built yet (context/todo.md), and the export is JSON only.
+const PRO_FEATURES = [...PRO_PLAN_FEATURES, ...PRO_ROADMAP_FEATURES];
 
 interface PricingSectionProps {
   /** A line under the cards, rendered by the page: it needs the server. */
@@ -31,14 +29,13 @@ interface PricingSectionProps {
 
 export function PricingSection({ note }: PricingSectionProps) {
   const [isYearly, setIsYearly] = useState(false);
+  const t = useTranslations("marketing.pricing");
+  const plan = usePlanText();
 
   return (
     <section id="pricing" className="marketing-section scroll-mt-20">
       <div className="marketing-container">
-        <SectionHead
-          title="Simple, Transparent Pricing"
-          lead="Start free. Upgrade when you need more power."
-        />
+        <SectionHead title={t("title")} lead={t("lead")} />
         <PricingGrid
           toggle={
             <ScrollFadeIn>
@@ -48,13 +45,11 @@ export function PricingSection({ note }: PricingSectionProps) {
           free={
             <ScrollFadeIn className="h-full">
               <PricingCard
-                name="Free"
-                price="$0"
-                note="Free forever"
-                features={FREE_PLAN_FEATURES}
+                {...plan.free}
+                features={plan.features(FREE_PLAN_FEATURES)}
                 action={
                   <PricingCardButton asChild variant="outline">
-                    <Link href="/register">Get Started</Link>
+                    <Link href="/register">{plan.t("plans.getStarted")}</Link>
                   </PricingCardButton>
                 }
               />
@@ -63,13 +58,12 @@ export function PricingSection({ note }: PricingSectionProps) {
           pro={
             <ScrollFadeIn className="h-full">
               <PricingCard
-                name="Pro"
-                {...proPriceDisplay(isYearly)}
-                features={PRO_FEATURES}
+                {...plan.pro(isYearly)}
+                features={plan.features(PRO_FEATURES)}
                 highlighted
                 action={
                   <PricingCardButton asChild>
-                    <Link href="/register">Go Pro</Link>
+                    <Link href="/register">{plan.t("plans.goPro")}</Link>
                   </PricingCardButton>
                 }
               />

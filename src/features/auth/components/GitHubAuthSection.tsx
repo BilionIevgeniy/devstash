@@ -1,4 +1,5 @@
 import { signInWithGitHub } from "@/features/auth/actions/sign-in";
+import { useTranslations } from "next-intl";
 import { GitHubSignInButton } from "@/features/auth/components/GitHubSignInButton";
 
 interface GitHubAuthSectionProps {
@@ -13,11 +14,13 @@ export function GitHubAuthSection({
   callbackUrl,
   label,
 }: GitHubAuthSectionProps) {
+  const t = useTranslations("auth");
+
   return (
     <>
       <div className="flex items-center gap-3 text-xs text-muted-foreground">
         <div className="h-px flex-1 bg-border" />
-        or
+        {t("or")}
         <div className="h-px flex-1 bg-border" />
       </div>
 

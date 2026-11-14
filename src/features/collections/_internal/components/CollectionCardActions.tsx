@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import { CollectionCardMenu } from "@/features/collections/_internal/components/CollectionCardMenu";
 import { CollectionFavoriteButton } from "@/features/collections/_internal/components/CollectionFavoriteButton";
@@ -13,13 +14,14 @@ interface CollectionCardActionsProps {
 export function CollectionCardActions({
   collection,
 }: CollectionCardActionsProps) {
+  const t = useTranslations("collections.actions");
   const favorite = useCollectionFavorite(collection.id, collection.isFavorite);
 
   return (
     <div className="absolute top-2 right-2 z-10 flex items-center">
       <CollectionFavoriteButton
         favorite={favorite}
-        label={`Favorite ${collection.name}`}
+        label={t("favoriteNamed", { name: collection.name })}
         size="icon-sm"
       />
       <CollectionCardMenu collection={collection} favorite={favorite} />

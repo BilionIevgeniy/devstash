@@ -1,0 +1,9 @@
+{
+  "drop": "Drop the {kind, select, image {image} other {file}} here or click to choose",
+  "limits": "{extensions} · up to {size}",
+  "upload": "Upload {kind, select, image {an image} other {a file}}",
+  "uploading": "Uploading… {progress}%",
+  "cancelUpload": "Cancel upload",
+  "remove": "Remove the {kind, select, image {image} other {file}}",
+  "retry": "Retry"
+}

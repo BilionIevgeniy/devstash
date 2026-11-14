@@ -1,4 +1,5 @@
 "use client";
+import { useTranslations } from "next-intl";
 
 import type { RefObject } from "react";
 import { Loader2, Sparkles } from "lucide-react";
@@ -28,6 +29,7 @@ export function GenerateWithAiButton({
   onClick,
   ref,
 }: GenerateWithAiButtonProps) {
+  const t = useTranslations("ai.generate");
   return (
     <Button
       ref={ref}
@@ -47,7 +49,7 @@ export function GenerateWithAiButton({
           aria-hidden
         />
       )}
-      {isPending ? "Generating…" : "Generate with AI"}
+      {isPending ? t("pending") : t("idle")}
       <span className="sr-only"> {target}</span>
     </Button>
   );

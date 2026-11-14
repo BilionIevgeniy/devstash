@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import {
   CollectionsSkeleton,
   ItemsSkeleton,
@@ -8,11 +9,12 @@ import {
 
 // The page waits for the plan before its own sections stream in.
 export default function DashboardLoading() {
+  const t = useTranslations("pages.dashboard");
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Your developer knowledge hub</p>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
+        <p className="text-muted-foreground">{t("lead")}</p>
       </header>
       <StatsSkeleton />
       <CollectionsSkeleton />

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import {
   FREE_COLLECTION_LIMIT,
@@ -16,23 +17,29 @@ export function UsageSummary({
   itemCount,
   collectionCount,
 }: UsageSummaryProps) {
+  const t = useTranslations("billing.settings");
   return (
     <div className="space-y-1 text-sm">
       <p className="text-muted-foreground">
-        {itemCount}/{FREE_ITEM_LIMIT} items, {collectionCount}/
-        {FREE_COLLECTION_LIMIT} collections
+        {t("usage", {
+          items: itemCount,
+          itemLimit: FREE_ITEM_LIMIT,
+          collections: collectionCount,
+          collectionLimit: FREE_COLLECTION_LIMIT,
+        })}
       </p>
       {reachedFreeLimit(itemCount, collectionCount) && (
         <p>
-          You&apos;ve reached the Free plan&apos;s limit. Delete something to
-          create more, or{" "}
-          <Link
-            href={UPGRADE_PATH}
-            className="font-medium underline underline-offset-4"
-          >
-            upgrade to Pro
-          </Link>
-          .
+          {t.rich("limitReached", {
+            link: (chunks) => (
+              <Link
+                href={UPGRADE_PATH}
+                className="font-medium underline underline-offset-4"
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       )}
     </div>

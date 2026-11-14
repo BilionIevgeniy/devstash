@@ -1,13 +1,11 @@
-import { createErrorText, type ErrorText } from "@/i18n/error-text";
+import { useTranslations } from "next-intl";
 
-// In the browser an unknown code or a broken message has nowhere to be
-// reported: the generic text is shown and that is all.
-const errorText = createErrorText();
+import { errorTextFrom, type ErrorText } from "@/i18n/error-text";
 
-// The words of a failure for a component or a hook: `errorText(result)` or
-// `errorText("generic")`. A plain helper (`callAction`, `rejectInvalidContent`)
-// takes the function from its caller instead of calling this. English only for
-// now; the locale replaces the inside of this hook, not its callers.
+// The words of a failure for a component or a hook, in the locale of the
+// nearest I18nProvider: `errorText(result)` or `errorText("generic")`. A plain
+// helper (`callAction`, `rejectInvalidContent`) takes the function from its
+// caller instead of calling this.
 export function useErrorText(): ErrorText {
-  return errorText;
+  return errorTextFrom(useTranslations("errors"));
 }

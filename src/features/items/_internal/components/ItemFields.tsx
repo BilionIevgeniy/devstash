@@ -1,6 +1,7 @@
 "use client";
 
 import type { RefObject } from "react";
+import { useTranslations } from "next-intl";
 
 import { Field } from "@/components/common/Field";
 import { Input } from "@/components/ui/input";
@@ -46,11 +47,12 @@ export function ItemFields({
   fileName,
   contentRef,
 }: ItemFieldsProps) {
+  const t = useTranslations("items.fields");
   const source = aiSource(fields, { ...values, fileName });
 
   return (
     <>
-      <Field label="Title">
+      <Field label={t("title")}>
         {(id) => (
           <Input
             id={id}
@@ -70,7 +72,7 @@ export function ItemFields({
         content={source.text}
       />
       {fields.url && (
-        <Field label="URL">
+        <Field label={t("url")}>
           {(id) => (
             <Input
               id={id}
@@ -84,7 +86,7 @@ export function ItemFields({
         </Field>
       )}
       {fields.language && (
-        <Field label="Language">
+        <Field label={t("language")}>
           {(id) => (
             <LanguageSelect
               id={id}
@@ -133,8 +135,9 @@ function ContentField({
   onChange,
   editorRef,
 }: ContentFieldProps) {
+  const t = useTranslations("items.fields");
   return (
-    <Field label="Content" onLabelClick={() => editorRef.current?.focus()}>
+    <Field label={t("content")} onLabelClick={() => editorRef.current?.focus()}>
       {(id) =>
         isCode ? (
           <CodeEditor
@@ -142,7 +145,7 @@ function ContentField({
             value={value}
             language={language}
             onChange={onChange}
-            ariaLabel="Content"
+            ariaLabel={t("content")}
           />
         ) : (
           <MarkdownEditor

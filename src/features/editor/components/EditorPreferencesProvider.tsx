@@ -10,6 +10,8 @@ import {
 } from "react";
 import { toast } from "sonner";
 
+import { useTranslations } from "next-intl";
+
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { updateEditorPreferences } from "@/features/editor/_internal/actions/preferences";
 import {
@@ -23,7 +25,6 @@ import { isNavigationError } from "@/lib/navigation-error";
 
 const SAVE_FAILED: ErrorRef = { error: "preferencesSaveFailed" };
 
-const SAVED_MESSAGE = "Editor preferences saved";
 // One toast for all saves, so quick changes replace it instead of stacking.
 const TOAST_ID = "editor-preferences";
 
@@ -62,6 +63,7 @@ export function EditorPreferencesProvider({
   preferences,
   children,
 }: EditorPreferencesProviderProps) {
+  const t = useTranslations("editor");
   const [current, setCurrent] = useState<EditorPreferences | null>(null);
   const tracker = useRef(NEW_SAVE_TRACKER);
   const errorText = useErrorText();
@@ -89,7 +91,7 @@ export function EditorPreferencesProvider({
     tracker.current = settled.tracker;
 
     if (settled.outcome.show === "saved") {
-      toast.success(SAVED_MESSAGE, { id: TOAST_ID });
+      toast.success(t("saved"), { id: TOAST_ID });
     } else if (settled.outcome.show === "failed") {
       setCurrent(settled.outcome.rollbackTo);
       toast.error(errorText(error ?? SAVE_FAILED), { id: TOAST_ID });

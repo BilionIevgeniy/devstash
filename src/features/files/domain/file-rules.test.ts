@@ -8,7 +8,7 @@ import {
   DOWNLOAD_WINDOW_SECONDS,
   fileExtension,
   fileIconKind,
-  formatFileSize,
+  fileSizeParts,
   isUserKey,
   objectKey,
   signingWindowFor,
@@ -94,12 +94,16 @@ describe("checkDeclaredFile", () => {
   });
 });
 
-describe("formatFileSize", () => {
+describe("fileSizeParts", () => {
   it("picks the unit and keeps one decimal only for small values", () => {
-    expect(formatFileSize(980)).toBe("980 B");
-    expect(formatFileSize(1536)).toBe("1.5 KB");
-    expect(formatFileSize(5 * MB)).toBe("5.0 MB");
-    expect(formatFileSize(150 * 1024)).toBe("150 KB");
+    expect(fileSizeParts(980)).toEqual({ value: 980, digits: 0, unit: "B" });
+    expect(fileSizeParts(1536)).toEqual({ value: 1.5, digits: 1, unit: "KB" });
+    expect(fileSizeParts(5 * MB)).toEqual({ value: 5, digits: 1, unit: "MB" });
+    expect(fileSizeParts(150 * 1024)).toEqual({
+      value: 150,
+      digits: 0,
+      unit: "KB",
+    });
   });
 });
 

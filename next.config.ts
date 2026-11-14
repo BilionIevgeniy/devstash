@@ -1,5 +1,6 @@
 import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 import packageJson from "./package.json";
 
@@ -59,7 +60,11 @@ const nextConfig: NextConfig = {
 // The build side of Sentry. It reads SENTRY_ORG, SENTRY_PROJECT and
 // SENTRY_AUTH_TOKEN from the environment, and uploads the source maps of the
 // Vercel build when the token is there. The runtime side is src/lib/sentry.ts.
-export default withSentryConfig(nextConfig, {
+// next-intl reads the request config from lib (ADR 0024): the locale of a
+// render, its messages, formats and time zone.
+const withNextIntl = createNextIntlPlugin("./src/lib/i18n-request.ts");
+
+export default withSentryConfig(withNextIntl(nextConfig), {
   telemetry: false,
   silent: !process.env.CI,
   // Tracing is not used and the SDK's debug logging is never switched on, so

@@ -16,6 +16,8 @@ How DevStash is organized, where each kind of code lives, and what to create whe
 src/
   app/            routes: page.tsx, layout.tsx, route.ts. Composes features, no business logic
     (app)/        authenticated pages (dashboard, items/[type], items/[type]/[id], profile, settings) under one shared layout
+    (auth)/       sign-in, registration and the email-link pages, in the locale of the request
+    (marketing)/  the homepage at / ((en)) and /de, both static, and the bilingual legal pages
     api/          route handlers: NextAuth, registration, item detail, later webhooks and streaming
   features/       the product, one folder per feature
     auth/         sign-in, registration, email verification, password reset, change password
@@ -222,6 +224,7 @@ Expected failures (wrong password, expired link) are returned as a result; unexp
 
 | Operation | Where it goes |
 | --------- | ------------- |
+| A preference cookie set from a static page (the homepage's language) | `app/api/locale/route.ts` POST, fired without waiting by a `client-only` helper: JSON only, `Sec-Fetch-Site` same-origin, the schema of the owner (`app-shell`), one call to `lib/locale-cookie.ts`. Not a Server Action, which would refresh the page during the link's navigation ([ADR 0024](adr/0024-locale-decision.md)) |
 | Page read: list or detail | `queries.ts`, `getX(userId)`, called by the server component; wrap in `cache()` when sections share it |
 | Filtered or searched read | `queries.ts`; the `searchParams` parser in `schemas.ts` (it never throws: a missing, repeated or unknown value is the default), the URL builder and the defaults in `domain/` (`items/domain/list-params.ts`); cross-feature search in `search/services/search.ts`, composed from the owners' `queries/search.ts`; the full-text ranking, the one raw SQL of a query, in `<feature>/_internal/queries/search-ranking.ts` ([ADR 0018](adr/0018-search-in-postgres.md)) |
 | Paginated read | `queries.ts` through `readPage` from `lib/pagination.ts`, which also holds `parsePage` and the page math ([ADR 0010](adr/0010-pagination-in-lib-and-object-key-reads-in-internal.md)); the rows per page in the feature's `domain/`; the page renders its content in `<Suspense key={page}>`, because `loading.tsx` does not show on a change of `?page`, with `PaginationNav` at the bottom. A page with filters (`/items/[type]`) reads the count in the page and the rows by `skip`/`take` in the Suspense, so the header, the filters and `PaginationNav` sit outside it; see "List state in the URL" |
@@ -312,6 +315,7 @@ Each feature keeps its business rules in `features/[feature]/domain/` as pure Ty
 
 - the layer order and the `_internal/` boundary (`import/no-restricted-paths`); `src/i18n/` imports no other layer
 - the direction of the roles inside a feature: queries and schemas do not import services, actions or components; services do not import actions or components; actions do not import components; components do not import services; hooks in `components/hooks/` do not import any `.tsx`
+- no literal user-facing text in JSX or a toast (`i18next/no-literal-string` in mode `jsx-only` with the attributes a user reads, and a `no-restricted-syntax` ban on a literal toast text); the bilingual legal and root error pages are left out ([ADR 0024](adr/0024-locale-decision.md))
 - the domain core: no package import (colocated `*.test.ts` files are excepted), only `domain/`, `types.ts` and `lib/utils`
 - no Prisma in actions, components (including `components/common`) and `app/`; no `next/headers`, `next/cache` or `next/navigation` in services; vendor SDKs only in `lib`
 - the split between reads and writes (`no-restricted-syntax`, [ADR 0009](adr/0009-read-write-split-enforced-by-lint.md)): no read through `prisma` in services and `nextauth/`, while a read through `tx` is allowed; no write, `$transaction` or raw SQL in `queries.ts`, except `prisma.$queryRaw` in the two search rankings, named one by one (`items` and `collections` `_internal/queries/search-ranking.ts`, [ADR 0018](adr/0018-search-in-postgres.md))
@@ -330,7 +334,7 @@ Not checked by lint, so it is on the author and the reviewer: one call into a se
 
 ### Legal and privacy
 
-- **Two public pages.** `/impressum` and `/datenschutz` are static routes in `app/(marketing)/`, German first and English below, with `lang` on each wrapper; they never read the locale cookie. Their text is data in `_legal/`, rendered by `LegalPage` and `LegalDocument`; `(marketing)/layout.tsx` carries the header and footer. `src/proxy.ts` lists only authenticated routes, so both are public. The paths are in `lib/legal-paths.ts`
+- **Two public pages.** `/impressum` and `/datenschutz` are static routes in `app/(marketing)/(en)/`, German first and English below, with `lang` on each wrapper; they never read the locale cookie. Their text is data in `_legal/`, rendered by `LegalPage` and `LegalDocument`; `MarketingFrame` (used by the `(en)` and `de` layouts) carries the header and footer. `src/proxy.ts` lists only authenticated routes, so both are public. The paths are in `lib/legal-paths.ts`
 - **One place for the provider's facts.** `_legal/operator.ts` holds name, address and contacts for both pages and both languages. A `⟦OPERATOR: …⟧` left in it fails a production build (`VERCEL_ENV=production`, `operator-guard.ts`); previews and local builds pass, and a preview must never be promoted to production. The guard covers these facts only: what the notice says about the vendors (DPAs, transfer mechanisms, regions) is not machine-checked, and the processing record lists what is still unconfirmed
 - **The vendor list has two homes that must agree.** `docs/privacy/processing-record.md` (what each vendor gets, region, transfer mechanism, DPA) and `_legal/vendors.ts` (what the notice names). Each language of the notice holds a `Record<VendorId, string>`, so a vendor added to the list fails the typecheck until both texts cover it. Adding or moving a vendor, a cookie, any browser storage, analytics or Sentry Replay changes the record, the notice and possibly the cookie and consent position: write a record in `docs/adr/` if the position changes ([ADR 0014](adr/0014-launch-mode.md))
 - **The cookie table is part of the notice.** Lifetimes come from the Auth.js defaults (`session.maxAge` is not set) and from `SIDEBAR_COOKIE` and `YEAR_SECONDS` in `app-shell/domain/sidebar.ts`; changing either changes the notice. `csrf-token` and `callback-url` are set on the first page view, because the marketing header reads the session

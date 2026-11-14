@@ -1,39 +1,25 @@
 "use client";
 
-import {
-  useRef,
-  useState,
-  useTransition,
-  type SubmitEvent,
-  type ReactNode,
-} from "react";
+import { useTranslations } from "next-intl";
+import { useRef, useState, type SubmitEvent, type ReactNode } from "react";
 import { Check, X } from "lucide-react";
-import { toast } from "sonner";
 
-import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import type { EditorHandle } from "@/features/editor/types";
-import { callAction } from "@/features/items/_internal/components/call-action";
 import { CollectionSelect } from "@/features/items/_internal/components/CollectionSelect";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
 import { ItemFields } from "@/features/items/_internal/components/ItemFields";
+import { useItemSave } from "@/features/items/_internal/components/hooks/use-item-save";
 import { useUnsavedChanges } from "@/features/items/_internal/components/hooks/use-unsaved-changes";
-import { rejectInvalidContent } from "@/features/items/_internal/components/reject-invalid-content";
-import { updateItem } from "@/features/items/actions/item";
 import {
   hasItemChanges,
-  typeFieldValues,
   type ItemFormValues,
 } from "@/features/items/domain/item-changes";
 import {
   editableFields,
-  parseTagInput,
   TAG_JOINER,
-  type EditableFields,
 } from "@/features/items/domain/item-fields";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
-
-const SAVED_MESSAGE = "Item saved";
 
 interface ItemEditFormProps {
   item: DashboardItem;
@@ -66,17 +52,6 @@ function initialValues(
   };
 }
 
-// Only the fields of this type are sent, so a hidden field is never cleared.
-function updatePayload(fields: EditableFields, values: ItemFormValues) {
-  return {
-    title: values.title,
-    description: values.description,
-    tags: parseTagInput(values.tags),
-    collectionIds: values.collectionIds,
-    ...typeFieldValues(fields, values),
-  };
-}
-
 export function ItemEditForm({
   item,
   detail,
@@ -89,10 +64,9 @@ export function ItemEditForm({
   const fields = editableFields(item.type.name);
   const initial = initialValues(item, detail);
   const [values, setValues] = useState(initial);
-  const [isSaving, startSaving] = useTransition();
   const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
-  const errorText = useErrorText();
   const contentRef = useRef<EditorHandle>(null);
+  const { isSaving, save } = useItemSave(item.id, fields, contentRef, onSaved);
   const isChanged = hasItemChanges(fields, initial, values);
   const isMissingRequired =
     values.title.trim() === "" || (fields.url && values.url.trim() === "");
@@ -112,24 +86,7 @@ export function ItemEditForm({
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!isChanged) return;
-    if (rejectInvalidContent(fields, values.content, contentRef, errorText)) {
-      return;
-    }
-    startSaving(async () => {
-      const saved = await callAction(
-        () => updateItem(item.id, updatePayload(fields, values)),
-        "itemSaveFailed",
-        errorText,
-      );
-      if (!saved) return;
-
-      toast.success(SAVED_MESSAGE);
-      // After the await this is no longer part of the transition, so it is
-      // wrapped again: the form closes in the commit that brings the refreshed
-      // page.
-      startSaving(() => onSaved(saved));
-    });
+    if (isChanged) save(values);
   }
 
   return (
@@ -179,6 +136,7 @@ function EditToolbar({
   onCancel,
   children,
 }: EditToolbarProps) {
+  const t = useTranslations("common.actions");
   return (
     <div className="flex items-center justify-end gap-1 border-b px-6 py-3">
       <Button
@@ -188,11 +146,11 @@ function EditToolbar({
         disabled={isSaving}
       >
         <X />
-        Cancel
+        {t("cancel")}
       </Button>
       <Button type="submit" disabled={isSaving || !canSave}>
         <Check />
-        {isSaving ? "Saving…" : "Save"}
+        {isSaving ? t("saving") : t("save")}
       </Button>
       {children}
     </div>

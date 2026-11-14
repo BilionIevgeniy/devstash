@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   collectionChoices,
   collectionSummary,
-  NO_COLLECTIONS_LABEL,
 } from "@/features/items/domain/item-collections";
 
 const react = { id: "col-1", name: "React" };
@@ -29,16 +28,20 @@ describe("collectionSummary", () => {
   const choices = [go, python, react];
 
   it("asks for a choice when nothing is selected", () => {
-    expect(collectionSummary(choices, [])).toBe(NO_COLLECTIONS_LABEL);
+    expect(collectionSummary(choices, [])).toEqual({ kind: "none" });
   });
 
   it("names a short selection", () => {
-    expect(collectionSummary(choices, ["col-1", "col-3"])).toBe("Go, React");
+    expect(collectionSummary(choices, ["col-1", "col-3"])).toEqual({
+      kind: "names",
+      names: "Go, React",
+    });
   });
 
   it("counts a longer selection", () => {
-    expect(collectionSummary(choices, ["col-1", "col-2", "col-3"])).toBe(
-      "3 selected",
-    );
+    expect(collectionSummary(choices, ["col-1", "col-2", "col-3"])).toEqual({
+      kind: "count",
+      count: 3,
+    });
   });
 });
