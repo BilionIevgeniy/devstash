@@ -19,35 +19,80 @@ import { MobileNavPanel } from "./MobileNavPanel";
 const PANEL_ID = "mobile-nav";
 const DESKTOP_LINK = "transition-colors hover:text-foreground";
 
-// Sign in and the main action, which depend on the session. Until the answer
-// comes they keep their place unseen, so a signed-in user never sees Sign in
-// flash (the static page renders as a guest).
-function SessionActions({ hasSession }: { hasSession: boolean | null }) {
+// `Button` fades every property, `visibility` included: when the answer flips,
+// the variant that hides would stay drawn over the one that shows for 150 ms.
+const BUTTON_TRANSITION =
+  "transition-[color,background-color,border-color,box-shadow,translate]";
+
+// The guest buttons. Hidden, they are not prefetched: a signed-in visitor
+// would load /sign-in and /register for links nobody sees.
+function GuestActions({ hidden }: { hidden: boolean }) {
   const t = useTranslations("marketing");
-  const pending = hasSession === null ? "invisible" : undefined;
-  const primary = hasSession
-    ? { href: "/dashboard", label: t("nav.dashboard") }
-    : { href: "/register", label: t("nav.getStarted") };
+  const prefetch = hidden ? false : undefined;
 
   return (
-    <>
-      {!hasSession && (
-        <Button
-          asChild
-          variant="ghost"
-          size="lg"
-          className={cn(
-            "hidden px-3.5 text-muted-foreground md:inline-flex",
-            pending,
-          )}
-        >
-          <Link href="/sign-in">{t("nav.signIn")}</Link>
-        </Button>
+    <div
+      className={cn(
+        "col-start-1 row-start-1 flex items-center gap-2 justify-self-end",
+        hidden && "invisible",
       )}
-      <Button asChild size="lg" className={cn("px-3.5", pending)}>
-        <Link href={primary.href}>{primary.label}</Link>
+    >
+      <Button
+        asChild
+        variant="ghost"
+        size="lg"
+        className={cn(
+          "hidden px-3.5 text-muted-foreground md:inline-flex",
+          BUTTON_TRANSITION,
+        )}
+      >
+        <Link href="/sign-in" prefetch={prefetch}>
+          {t("nav.signIn")}
+        </Link>
       </Button>
-    </>
+      <Button asChild size="lg" className={cn("px-3.5", BUTTON_TRANSITION)}>
+        <Link href="/register" prefetch={prefetch}>
+          {t("nav.getStarted")}
+        </Link>
+      </Button>
+    </div>
+  );
+}
+
+// The main action of a signed-in visitor. Hidden, it is not prefetched: a
+// guest would load /dashboard, which the proxy sends to sign-in.
+function MemberAction({ hidden }: { hidden: boolean }) {
+  const t = useTranslations("marketing");
+
+  return (
+    <div
+      className={cn(
+        "col-start-1 row-start-1 flex items-center justify-self-end",
+        hidden && "invisible",
+      )}
+    >
+      <Button asChild size="lg" className={cn("px-3.5", BUTTON_TRANSITION)}>
+        <Link href="/dashboard" prefetch={hidden ? false : undefined}>
+          {t("nav.dashboard")}
+        </Link>
+      </Button>
+    </div>
+  );
+}
+
+// Sign in and the main action, which depend on the session. The static page
+// renders as a guest and the answer comes after mount, so both variants stay
+// in the markup, stacked in one grid cell as wide as the wider of the two: the
+// place is kept whatever the answer, and the language link beside it never
+// moves. The variant that does not apply (both, until the answer) is
+// `invisible`, which also takes it out of the tab order and the accessibility
+// tree; a signed-in user never sees Sign in flash.
+function SessionActions({ hasSession }: { hasSession: boolean | null }) {
+  return (
+    <div className="grid items-center">
+      <GuestActions hidden={hasSession !== false} />
+      <MemberAction hidden={hasSession !== true} />
+    </div>
   );
 }
 
