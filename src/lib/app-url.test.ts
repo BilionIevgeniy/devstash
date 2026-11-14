@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { getAppOrigin } from "@/lib/app-url";
+import { getAppOrigin, getSiteOrigin } from "@/lib/app-url";
 
 describe("getAppOrigin", () => {
   afterEach(() => {
@@ -26,5 +26,35 @@ describe("getAppOrigin", () => {
     vi.stubEnv("NODE_ENV", "production");
 
     expect(() => getAppOrigin()).toThrow("APP_URL is not set");
+  });
+});
+
+describe("getSiteOrigin", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("takes the configured APP_URL first", () => {
+    vi.stubEnv("APP_URL", "https://devstash.example.com/path");
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "devstash.vercel.app");
+
+    expect(getSiteOrigin()).toBe("https://devstash.example.com");
+  });
+
+  // A preview build has no APP_URL and must not fail.
+  it("falls back to Vercel's production domain in production", () => {
+    vi.stubEnv("APP_URL", "");
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "devstash.example.com");
+
+    expect(getSiteOrigin()).toBe("https://devstash.example.com");
+  });
+
+  it("falls back to localhost when neither is set", () => {
+    vi.stubEnv("APP_URL", "");
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "");
+
+    expect(getSiteOrigin()).toBe("http://localhost:3000");
   });
 });

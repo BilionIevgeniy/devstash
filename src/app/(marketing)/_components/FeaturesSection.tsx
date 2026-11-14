@@ -17,11 +17,11 @@ import { ScrollFadeIn } from "./ScrollFadeIn";
 import { SectionHead } from "./SectionHead";
 import { TYPE_ACCENTS } from "./type-accents";
 
-type FeatureKey =
+type FeatureId =
   "snippets" | "prompts" | "search" | "commands" | "files" | "collections";
 
 interface Feature {
-  key: FeatureKey;
+  id: FeatureId;
   icon: LucideIcon;
   accent: string;
   pro?: boolean;
@@ -34,12 +34,12 @@ interface FeatureText {
 }
 
 const FEATURES: Feature[] = [
-  { key: "snippets", icon: Code, accent: TYPE_ACCENTS.snippet },
-  { key: "prompts", icon: Sparkles, accent: TYPE_ACCENTS.prompt },
-  { key: "search", icon: Search, accent: TYPE_ACCENTS.link },
-  { key: "commands", icon: Terminal, accent: TYPE_ACCENTS.command },
-  { key: "files", icon: File, accent: TYPE_ACCENTS.file, pro: true },
-  { key: "collections", icon: Folder, accent: TYPE_ACCENTS.note },
+  { id: "snippets", icon: Code, accent: TYPE_ACCENTS.snippet },
+  { id: "prompts", icon: Sparkles, accent: TYPE_ACCENTS.prompt },
+  { id: "search", icon: Search, accent: TYPE_ACCENTS.link },
+  { id: "commands", icon: Terminal, accent: TYPE_ACCENTS.command },
+  { id: "files", icon: File, accent: TYPE_ACCENTS.file, pro: true },
+  { id: "collections", icon: Folder, accent: TYPE_ACCENTS.note },
 ];
 
 // One step per column, so each row of cards comes in from left to right.
@@ -86,13 +86,13 @@ export async function FeaturesSection({ locale }: { locale: Locale }) {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((feature, index) => (
             <ScrollFadeIn
-              key={feature.key}
+              key={feature.id}
               className={cn("h-full", COLUMN_DELAYS[index % 3])}
             >
               <FeatureCard
                 {...feature}
-                title={t(`${feature.key}.title`)}
-                text={t(`${feature.key}.text`)}
+                title={t(`${feature.id}.title`)}
+                text={t(`${feature.id}.text`)}
                 proLabel={t("pro")}
               />
             </ScrollFadeIn>
