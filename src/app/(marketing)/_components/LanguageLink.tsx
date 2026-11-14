@@ -37,7 +37,7 @@ export function LanguageLink({ variant, className }: LanguageLinkProps) {
       aria-label={variant === "code" ? t("otherLabel") : undefined}
       onClick={() => rememberLocale(other)}
       className={cn(
-        "group/lang group-has-data-pending/lang:opacity-60",
+        "transition-opacity has-data-pending:opacity-60",
         className,
       )}
     >

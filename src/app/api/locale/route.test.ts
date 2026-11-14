@@ -66,6 +66,31 @@ describe("POST /api/locale", () => {
     expect(set).not.toHaveBeenCalled();
   });
 
+  // An older browser sends no Sec-Fetch-Site; JSON-only already stops a form.
+  it("accepts a request without Sec-Fetch-Site", async () => {
+    const plain = new Request(URL, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ locale: "en" }),
+    });
+
+    const response = await POST(plain);
+
+    expect(response.status).toBe(204);
+    expect(set).toHaveBeenCalledOnce();
+  });
+
+  it("refuses a same-site request from another subdomain with 403", async () => {
+    const response = await POST(
+      request(JSON.stringify({ locale: "de" }), {
+        "sec-fetch-site": "same-site",
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(set).not.toHaveBeenCalled();
+  });
+
   it.each([
     ["broken JSON", "{", "invalidRequest"],
     ["an unknown language", JSON.stringify({ locale: "fr" }), "invalidInput"],
