@@ -125,7 +125,7 @@ Course specs name the paths of the original layout. Put the code here instead:
 - Vendor SDKs (`resend`, `@upstash/*`, `stripe`, `openai`, `@aws-sdk/*`) are imported only inside `lib`. The one exception is `next-intl`, whose hooks and server functions are called where text is rendered: components, hooks, pages and `src/i18n/` ([ADR 0023](../docs/adr/0023-next-intl-outside-lib.md)); `domain/` still imports no package
 - A failure carries an error code, never a sentence; the words are made where they are shown ([ADR 0022](../docs/adr/0022-error-codes-in-the-result-contract.md), "Error Handling" in `coding-standards.md`)
 - Server Actions return `ActionResult<T>`, services return `OperationResult<T>` (`src/lib/action-result.ts`, one discriminated union, [ADR 0021](../docs/adr/0021-result-contract-and-shared-building-blocks.md)), always built with `ok(data)` / `ok()` and `fail(error)`. Expected failures are returned; unexpected ones throw and the entry point catches them
-- Authenticated routes live in `app/(app)/`; widen the matcher in `src/proxy.ts` in the same change
+- Authenticated routes live in `app/(app)/`; widen the matcher in `src/proxy.ts` and add the prefix to `NOINDEX_PATHS` (`lib/noindex-paths.ts`) in the same change (`noindex-paths.test.ts` fails on a matcher prefix the list lacks)
 - The proxy lets a `POST` with a `Next-Action` header through (a Server Action call), so every Server Action checks the session itself: `getSessionUser`, or `auth()` for the actions of `auth` and `account`. An action without that check is open to signed-out callers, and no lint catches it
 - Tests are colocated as `[name].test.ts` and, for components and hooks, `[name].test.tsx` (see "Testing" in `coding-standards.md`)
 

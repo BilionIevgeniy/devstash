@@ -5,10 +5,15 @@ import { I18nProvider } from "@/components/common/I18nProvider";
 import { messagesFor } from "@/i18n/messages";
 
 // The description of every page under this layout, in its language; the
-// title stays the root layout's "DevStash".
+// title stays the root layout's "DevStash". Never indexed (a reset link
+// carries a token): the same rule goes out as the X-Robots-Tag header
+// (next.config.ts), since this dynamic layout's metadata streams into the body.
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("common.meta");
-  return { description: t("description") };
+  return {
+    description: t("description"),
+    robots: { index: false, follow: false },
+  };
 }
 
 // The sign-in, registration and email-link pages, in the locale of the request:

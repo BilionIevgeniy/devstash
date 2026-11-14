@@ -44,7 +44,7 @@ const CREATED: ActionResult = { success: true, data: null, error: null };
 
 async function openAndSubmit(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole("button", { name: "New Snippet" }));
-  await user.type(screen.getByLabelText("Title"), "ls -la");
+  await user.type(await screen.findByLabelText("Title"), "ls -la");
   await user.click(screen.getByRole("button", { name: "Create" }));
 }
 

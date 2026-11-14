@@ -25,6 +25,8 @@ export const proxy = auth((req) => {
   }
 });
 
+// Every prefix here must also be in NOINDEX_PATHS (lib/noindex-paths.ts),
+// which lib/noindex-paths.test.ts checks.
 export const config = {
   matcher: [
     "/dashboard/:path*",

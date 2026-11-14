@@ -46,7 +46,9 @@
   "create": {
     "newItem": "New item",
     "newType": "New {type}",
-    "description": "Save a snippet, prompt, command, note, link, file or image."
+    "description": "Save a snippet, prompt, command, note, link, file or image.",
+    "loading": "Loading the form…",
+    "loadFailed": "The form couldn't load. Check your connection and try again."
   },
   "toasts": {
     "created": "Item created",
