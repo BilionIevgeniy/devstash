@@ -36,6 +36,30 @@ export interface FavoriteItem extends DashboardItem {
   favoritedAt: Date;
 }
 
+// One page of an endless list (/favorites, a group of /pinned): nextCursor is
+// null on the last page. The same shape on the server's first page and in the
+// route's answer, with real Dates once the browser helper has read it.
+export interface ItemListPage<T extends DashboardItem = DashboardItem> {
+  rows: T[];
+  nextCursor: string | null;
+}
+
+// The first page of an endless list as the server read it: for which sort,
+// and when (`Date.now()` there), so the browser cache knows how fresh it is.
+export interface FirstListPage<T extends DashboardItem = DashboardItem> {
+  sort: string;
+  page: ItemListPage<T>;
+  renderedAt: number;
+}
+
+// A group of /pinned: its type, how many pins it has in all, and its first
+// page; the next pages come from GET /api/items/pinned.
+export interface PinnedGroupPage {
+  type: ItemTypeInfo;
+  count: number;
+  first: FirstListPage;
+}
+
 // A row of the sidebar: only what the link shows.
 export interface SidebarItem {
   id: string;

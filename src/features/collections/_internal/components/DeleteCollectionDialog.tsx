@@ -17,6 +17,7 @@ import {
 import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
 import type { CollectionDialogState } from "@/features/collections/_internal/components/hooks/use-collection-dialogs";
 import { deleteCollection } from "@/features/collections/actions/collection";
+import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import type { CollectionSummary } from "@/features/collections/types";
 
 interface DeleteCollectionDialogProps extends CollectionDialogState {
@@ -35,6 +36,7 @@ export function DeleteCollectionDialog({
   const t = useTranslations();
   const router = useRouter();
   const { isPending: isDeleting, run, takeDone } = useSubmitDialog();
+  const syncItems = useSyncItemQueries();
 
   function handleOpenChange(next: boolean) {
     if (!isDeleting) onOpenChange(next);
@@ -55,7 +57,11 @@ export function DeleteCollectionDialog({
     event.preventDefault();
     run(
       () => deleteCollection(collection.id, { refresh: leaveTo === undefined }),
-      { onSuccess: finishDelete, failCode: "collectionDeleteFailed" },
+      {
+        onSuccess: finishDelete,
+        failCode: "collectionDeleteFailed",
+        sync: () => syncItems({ kind: "collections" }),
+      },
     );
   }
 

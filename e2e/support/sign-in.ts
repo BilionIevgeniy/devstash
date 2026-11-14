@@ -10,15 +10,19 @@ function randomTestIp(): string {
   return `203.0.113.${1 + Math.floor(Math.random() * 254)}`;
 }
 
-// Fills the sign-in form with the user of this run and submits it. The caller
-// asserts where it lands. No wait for hydration: React keeps text typed before
-// it, and the form posts to its Server Action without script.
-export async function signInThroughForm(page: Page): Promise<void> {
+// Fills the sign-in form with the user of this run (or another seeded user)
+// and submits it. The caller asserts where it lands. No wait for hydration:
+// React keeps text typed before it, and the form posts to its Server Action
+// without script.
+export async function signInThroughForm(
+  page: Page,
+  email: string = requireE2eUserEmail(),
+): Promise<void> {
   await page
     .context()
     .setExtraHTTPHeaders({ "x-forwarded-for": randomTestIp() });
   await page.goto("/sign-in");
-  await page.getByLabel("Email", { exact: true }).fill(requireE2eUserEmail());
+  await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel("Password", { exact: true }).fill(E2E_USER_PASSWORD);
   // Exact: "Sign in with GitHub" is a button too.
   await page.getByRole("button", { name: "Sign in", exact: true }).click();

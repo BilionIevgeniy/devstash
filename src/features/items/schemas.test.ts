@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+
+import { encodeListCursor } from "@/features/items/domain/list-cursor";
 import {
   COLLECTIONS_MAX,
   CONTENT_MAX,
@@ -18,6 +20,8 @@ import {
   parseItemListParams,
   pinnedItemSortSchema,
   updateItemSchema,
+  favoritePageQuerySchema,
+  pinnedPageQuerySchema,
 } from "@/features/items/schemas";
 
 describe("deleteItemOptionsSchema", () => {
@@ -374,5 +378,38 @@ describe("list sort schemas", () => {
     expect(favoriteItemSortSchema.parse(null)).toBe("newest");
     expect(pinnedItemSortSchema.parse("z-a")).toBe("z-a");
     expect(pinnedItemSortSchema.parse("type")).toBe("newest");
+  });
+});
+
+describe("list page query schemas", () => {
+  const cursor = encodeListCursor("newest", [
+    "2026-03-01T10:00:00.000Z",
+    "item-1",
+  ]);
+
+  it("reads the first page with no cursor and a missing sort as Newest", () => {
+    expect(favoritePageQuerySchema.parse({})).toEqual({
+      sort: "newest",
+      after: null,
+    });
+  });
+
+  it("decodes a cursor made for the sort it is sent with", () => {
+    expect(favoritePageQuerySchema.parse({ sort: "newest", cursor })).toEqual({
+      sort: "newest",
+      after: ["2026-03-01T10:00:00.000Z", "item-1"],
+    });
+  });
+
+  it("refuses a cursor sent with another sort, with a code", () => {
+    const parsed = favoritePageQuerySchema.safeParse({ sort: "a-z", cursor });
+    expect(parsed.success).toBe(false);
+    expect(parsed.error?.issues[0]?.message).toBe("invalidRequest");
+  });
+
+  it("refuses a pinned page with no type", () => {
+    const parsed = pinnedPageQuerySchema.safeParse({ sort: "newest" });
+    expect(parsed.success).toBe(false);
+    expect(parsed.error?.issues[0]?.message).toBe("invalidRequest");
   });
 });

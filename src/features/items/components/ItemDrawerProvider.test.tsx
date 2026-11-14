@@ -5,14 +5,24 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ItemDrawerContent } from "@/features/items/_internal/components/ItemDrawerContent";
 import type { DashboardItem, OpenedItemJson } from "@/features/items/types";
+import { fail } from "@/lib/action-result";
+import { RouteError } from "@/lib/route-error";
 
 const fetchItemDetail = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("sonner", () => ({
   toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }),
 }));
+// The query the hook builds, around the mocked fetch: the same key and the
+// same staleTime (ITEM_DETAIL_STALE_MS) as the real one.
 vi.mock("@/features/items/_internal/components/fetch-item-detail", () => ({
   fetchItemDetail,
+  itemDetailQuery: (id: string) => ({
+    queryKey: ["items", "detail", id],
+    queryFn: ({ signal }: { signal: AbortSignal }) =>
+      fetchItemDetail(id, signal),
+    staleTime: 60 * 1000,
+  }),
 }));
 vi.mock("@/features/items/actions/item", () => ({
   deleteItem: vi.fn(),
@@ -49,7 +59,7 @@ import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvid
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
 
 type Drawer = ReturnType<typeof useItemDrawer>;
-type Answer = PromiseWithResolvers<OpenedItemJson | null>;
+type Answer = PromiseWithResolvers<OpenedItemJson>;
 
 function cardItem(id: string, title: string): DashboardItem {
   return {
@@ -88,7 +98,7 @@ const BETA = cardItem("item-b", "Beta");
 // arrives when.
 function queueAnswers(count: number): Answer[] {
   const answers = Array.from({ length: count }, () =>
-    Promise.withResolvers<OpenedItemJson | null>(),
+    Promise.withResolvers<OpenedItemJson>(),
   );
   for (const answer of answers) {
     fetchItemDetail.mockReturnValueOnce(answer.promise);
@@ -141,27 +151,57 @@ describe("ItemDrawerProvider", () => {
 
     await act(async () => answer.resolve(openedFor(ALPHA)));
 
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent("ready: Alpha");
+    });
+  });
+
+  it("fetches an item opened twice within a minute once", async () => {
+    const [answer] = queueAnswers(1);
+    const { open, user } = setup();
+    await open(ALPHA);
+    await act(async () => answer.resolve(openedFor(ALPHA)));
+    await user.keyboard("{Escape}");
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    await open(ALPHA);
+
     expect(screen.getByRole("status")).toHaveTextContent("ready: Alpha");
+    expect(fetchItemDetail).toHaveBeenCalledOnce();
   });
 
-  it("shows the error state when the detail cannot be read", async () => {
+  it("shows the error state for a refused detail, and does not ask again", async () => {
     const [answer] = queueAnswers(1);
     const { open } = setup();
     await open(ALPHA);
 
-    await act(async () => answer.resolve(null));
+    await act(async () =>
+      answer.reject(new RouteError(404, fail("itemNotFound"))),
+    );
 
-    expect(screen.getByRole("status")).toHaveTextContent("error");
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent("error");
+    });
+    expect(fetchItemDetail).toHaveBeenCalledOnce();
   });
 
-  it("shows the error state when the request fails", async () => {
-    const [answer] = queueAnswers(1);
+  it("asks once more when the request fails, then shows the error", async () => {
+    const [first, second] = queueAnswers(2);
     const { open } = setup();
     await open(ALPHA);
 
-    await act(async () => answer.reject(new TypeError("Failed to fetch")));
+    await act(async () => first.reject(new TypeError("Failed to fetch")));
+    await waitFor(() => expect(fetchItemDetail).toHaveBeenCalledTimes(2), {
+      timeout: 3000,
+    });
+    expect(screen.getByRole("status")).toHaveTextContent("loading");
+    await act(async () => second.reject(new TypeError("Failed to fetch")));
 
-    expect(screen.getByRole("status")).toHaveTextContent("error");
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent("error");
+    });
   });
 
   it("cancels the older request when another item is opened", async () => {
@@ -174,10 +214,14 @@ describe("ItemDrawerProvider", () => {
     expect(screen.getByRole("dialog", { name: "Beta" })).toBeInTheDocument();
 
     await act(async () => alpha.resolve(openedFor(ALPHA)));
-    expect(screen.getByRole("status")).toHaveTextContent("loading");
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent("loading");
+    });
 
     await act(async () => beta.resolve(openedFor(BETA)));
-    expect(screen.getByRole("status")).toHaveTextContent("ready: Beta");
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent("ready: Beta");
+    });
   });
 
   it("does not take the cancelled request for a failure", async () => {
@@ -187,23 +231,33 @@ describe("ItemDrawerProvider", () => {
     await open(BETA);
 
     await act(async () => alpha.reject(new DOMException("", "AbortError")));
-    expect(screen.getByRole("status")).toHaveTextContent("loading");
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent("loading");
+    });
 
     await act(async () => beta.resolve(openedFor(BETA)));
-    expect(screen.getByRole("status")).toHaveTextContent("ready: Beta");
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent("ready: Beta");
+    });
   });
 
-  it("cancels the request when the sheet is closed", async () => {
-    queueAnswers(1);
+  // A detail that arrives after the close is kept under its own id: the next
+  // open of the same item shows it with no request.
+  it("lets the request finish when the sheet is closed, and reuses it", async () => {
+    const [answer] = queueAnswers(1);
     const { open, user } = setup();
     await open(ALPHA);
 
     await user.keyboard("{Escape}");
-
-    expect(signalOfCall(0).aborted).toBe(true);
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
+    expect(signalOfCall(0).aborted).toBe(false);
+    await act(async () => answer.resolve(openedFor(ALPHA)));
+
+    await open(ALPHA);
+    expect(screen.getByRole("status")).toHaveTextContent("ready: Alpha");
+    expect(fetchItemDetail).toHaveBeenCalledOnce();
   });
 
   describe("with unsaved edits", () => {
@@ -249,16 +303,16 @@ describe("ItemDrawerProvider", () => {
       expect(signalOfCall(0).aborted).toBe(false);
     });
 
-    it("closes the sheet and cancels its request on Discard", async () => {
+    it("closes the sheet on Discard, and lets its request finish", async () => {
       const { user } = await openDirty();
       await screen.findByRole("alertdialog");
 
       await user.click(screen.getByRole("button", { name: "Discard" }));
 
-      expect(signalOfCall(0).aborted).toBe(true);
       await waitFor(() => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
       });
+      expect(signalOfCall(0).aborted).toBe(false);
     });
   });
 });

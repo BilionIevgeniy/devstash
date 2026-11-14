@@ -16,6 +16,16 @@
     "nextPage": "Next page",
     "page": "Page {page}"
   },
+  "list": {
+    "loadMore": "Load more",
+    "showMore": "Show more",
+    "loading": "Loading…",
+    "loadFailed": "Couldn't load more items.",
+    "retry": "Try again",
+    "loaded": "{count, plural, one {# more item loaded} other {# more items loaded}}",
+    "firstPageFailed": "Couldn't load the items.",
+    "pageLoading": "Loading items"
+  },
   "language": {
     "label": "Language",
     "en": "English",

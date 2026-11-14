@@ -123,7 +123,9 @@ model Item {
   url         String?
   description String?
   isFavorite  Boolean   @default(false)
-  // When it was starred. A toggle leaves updatedAt alone: favoriting is not an edit.
+  // When it was starred, null when it is not a favorite: the CHECK of the
+  // migration favorited_at_required keeps the two together. A toggle leaves
+  // updatedAt alone: favoriting is not an edit.
   favoritedAt DateTime?
   isPinned    Boolean   @default(false)
   language    String?

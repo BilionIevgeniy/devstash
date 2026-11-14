@@ -6,14 +6,16 @@ import {
   type Tenants,
 } from "../../../test/integration/fixtures";
 import {
-  getAllPinnedItems,
-  getFavoriteItems,
   getItemEditState,
   getItemStats,
   getPinnedItems,
   getRecentItems,
   getSidebarItems,
 } from "@/features/items/queries";
+import {
+  getFavoriteItemPage,
+  getPinnedFirstPages,
+} from "@/features/items/queries/lists";
 import { getRecentSearchableItems } from "@/features/items/queries/search";
 
 // Read-only: one seed for the file. Each list holds the caller's own rows and
@@ -25,14 +27,24 @@ beforeAll(async () => {
 });
 
 describe("item lists show only the caller's items", () => {
-  it.each([
-    ["getPinnedItems", getPinnedItems, "snippet"],
-    ["getAllPinnedItems", getAllPinnedItems, "snippet"],
-    ["getFavoriteItems", getFavoriteItems, "note"],
-  ] as const)("%s", async (_name, read, own) => {
-    const [a, b] = await Promise.all([read(t.a.userId), read(t.b.userId)]);
-    expect(idsOf(a)).toEqual([t.a.items[own]]);
-    expect(idsOf(b)).toEqual([t.b.items[own]]);
+  it.each([["getPinnedItems", getPinnedItems, "snippet"]] as const)(
+    "%s",
+    async (_name, read, own) => {
+      const [a, b] = await Promise.all([read(t.a.userId), read(t.b.userId)]);
+      expect(idsOf(a)).toEqual([t.a.items[own]]);
+      expect(idsOf(b)).toEqual([t.b.items[own]]);
+    },
+  );
+
+  it("getFavoriteItemPage and getPinnedFirstPages", async () => {
+    const [favorites, pins] = await Promise.all([
+      getFavoriteItemPage(t.a.userId, "newest", null),
+      getPinnedFirstPages(t.a.userId, "newest"),
+    ]);
+    expect(idsOf(favorites.rows)).toEqual([t.a.items.note]);
+    expect(pins.flatMap((group) => idsOf(group.first.page.rows))).toEqual([
+      t.a.items.snippet,
+    ]);
   });
 
   it.each([

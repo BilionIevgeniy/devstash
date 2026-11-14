@@ -17,6 +17,8 @@ interface Override {
 interface ToggleConfig {
   /** Shown when the action throws; a refused result shows its own code. */
   failCode: PlainErrorCode;
+  /** The cache follows the saved value, awaited before the transition ends. */
+  sync: (id: string, value: boolean) => Promise<void>;
   /** The provider's own state, updated in a transition of its own. */
   onSaved: (id: string, value: boolean) => void;
   /** The toast of a saved value; `undo` sets it back. */
@@ -30,12 +32,14 @@ interface ToggleConfig {
 
 // A flag of a provider's cards and drawer (the star, the pin). The value shows
 // while the transition runs: on success the action's refresh brings the fresh
-// page before it ends; on failure the override goes and the flag falls back.
-// `onSaved` runs in a transition of its own, because an update after an await
-// is outside the first one and would land after the override has gone.
+// page and `sync` fixes the cached lists (ADR 0025) before it ends, so a row
+// the override hid is gone by then; on failure the override goes and the flag
+// falls back. `onSaved` runs in a transition of its own, because an update
+// after an await is outside the first one and would land after the override
+// has gone. The toast waits for the cache, so it never runs ahead of the list.
 export function useOptimisticToggle(
   action: (id: string, value: boolean) => Promise<ActionResult>,
-  { failCode, onSaved, notify }: ToggleConfig,
+  { failCode, sync, onSaved, notify }: ToggleConfig,
 ) {
   const errorText = useErrorText();
   const [overrides, addOverride] = useOptimistic(
@@ -52,6 +56,7 @@ export function useOptimisticToggle(
           toast.error(errorText(result));
           return;
         }
+        await sync(id, value);
         startTransition(() => onSaved(id, value));
         notify(id, value, options, () => toggle(id, !value));
       } catch (error) {

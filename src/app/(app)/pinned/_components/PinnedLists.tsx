@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { useState } from "react";
@@ -7,27 +8,24 @@ import { useRowFocus } from "@/app/(app)/_components/hooks/use-row-focus";
 import { SortSelect } from "@/app/(app)/_components/SortSelect";
 import { PINNED_SORT_ROW } from "@/app/(app)/pinned/_components/PinnedGroupSkeleton";
 import { PinnedGroup } from "@/app/(app)/pinned/_components/PinnedGroup";
+import { useScrollRestore } from "@/components/common/hooks/use-scroll-restore";
 import { useSearchParam } from "@/components/common/hooks/use-search-param";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
-import { visibleListItems } from "@/features/items/domain/list-rows";
-import {
-  groupPinnedItems,
-  PINNED_ITEM_SORTS,
-  sortPinnedItems,
-} from "@/features/items/domain/pinned-items";
+import { pendingRemovals } from "@/features/items/domain/list-rows";
+import { PINNED_ITEM_SORTS } from "@/features/items/domain/pinned-items";
 import { pinnedItemSortSchema } from "@/features/items/schemas";
-import type { DashboardItem } from "@/features/items/types";
+import type { PinnedGroupPage } from "@/features/items/types";
 
 interface PinnedListsProps {
-  items: DashboardItem[];
+  groups: PinnedGroupPage[];
 }
 
-// One sort for every group, in the URL (?sort=, feature 7), applied here in
-// memory. Which groups are closed lives here, not in the groups, so a group
-// stays closed when its last pin leaves and comes back through the open
-// drawer. An item being deleted or unpinned is left out, so its group and the
-// empty state do not wait for the refresh.
-export function PinnedLists({ items }: PinnedListsProps) {
+// One sort for every group, in the URL (?sort=, feature 7); each group reads
+// its own pages in it (ADR 0025). Which groups are closed lives here, not in
+// the groups, so a group stays closed when its last pin leaves and comes back
+// through the open drawer. The empty state follows every pin, less the ones
+// leaving at once, so it does not wait for the refresh.
+export function PinnedLists({ groups }: PinnedListsProps) {
   const t = useTranslations("pages.pinned");
   const { hiddenIds, pinOverrides } = useItemDrawer();
   const [sortValue, setSortValue] = useSearchParam("sort", "newest");
@@ -44,13 +42,20 @@ export function PinnedLists({ items }: PinnedListsProps) {
     });
   }
 
-  const visibleItems = visibleListItems(items, hiddenIds, pinOverrides);
-  const groups = groupPinnedItems(visibleItems);
-  const { listRef, handleFocus } = useRowFocus(visibleItems.length);
+  const total = groups.reduce((sum, group) => sum + group.count, 0);
+  const leaving = pendingRemovals(
+    [...hiddenIds].map((id) => ({ id })),
+    hiddenIds,
+    pinOverrides,
+  );
+  const isEmpty = total - leaving <= 0;
+  const { listRef, handleFocus } = useRowFocus(total - leaving);
+  const { bfcacheId } = useRouter();
+  useScrollRestore(listRef, `pinned:${bfcacheId}`);
 
   return (
     <div ref={listRef} onFocusCapture={handleFocus} className="space-y-8">
-      {groups.length === 0 && (
+      {isEmpty && (
         <p
           data-list-empty
           tabIndex={-1}
@@ -59,7 +64,7 @@ export function PinnedLists({ items }: PinnedListsProps) {
           {t("empty")}
         </p>
       )}
-      {groups.length > 0 && (
+      {!isEmpty && (
         <div className={PINNED_SORT_ROW}>
           <SortSelect
             sorts={PINNED_ITEM_SORTS}
@@ -69,13 +74,13 @@ export function PinnedLists({ items }: PinnedListsProps) {
           />
         </div>
       )}
-      {groups.map(({ type, items: groupItems }) => (
+      {groups.map((group) => (
         <PinnedGroup
-          key={type.id}
-          type={type}
-          items={sortPinnedItems(groupItems, sort)}
-          isOpen={!closedTypeIds.has(type.id)}
-          onToggle={() => toggleGroup(type.id)}
+          key={group.type.id}
+          group={group}
+          sort={sort}
+          isOpen={!closedTypeIds.has(group.type.id)}
+          onToggle={() => toggleGroup(group.type.id)}
         />
       ))}
     </div>

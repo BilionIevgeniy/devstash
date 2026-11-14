@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 
 import { useLeaveWarning } from "@/components/common/hooks/use-leave-warning";
 import { runImport } from "@/features/import-export/_internal/components/run-import";
+import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import {
   IMPORT_FILE_MAX_BYTES,
   IMPORT_FILE_MAX_MB,
@@ -38,6 +39,7 @@ async function readImportFile(file: File): Promise<ParsedImportFile> {
 // and in the summary agree.
 export function useImport() {
   const router = useRouter();
+  const syncItems = useSyncItemQueries();
   const [state, setState] = useState<ImportState>({ status: "idle" });
   const [isRefreshing, startTransition] = useTransition();
   const isMounted = useRef(true);
@@ -77,6 +79,12 @@ export function useImport() {
       isCancelled: () => !isMounted.current,
     });
     if (!run || !isMounted.current) return;
+    // New items and collections: the cached lists and options are only marked
+    // stale (ADR 0025); none of them is on this page.
+    await Promise.all([
+      syncItems({ kind: "created" }),
+      syncItems({ kind: "collections" }),
+    ]);
     startTransition(() => {
       setState({ status: "done", ...run });
       router.refresh();

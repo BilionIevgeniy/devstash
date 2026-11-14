@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { routeError } from "@/lib/route-error";
+import { readRouteData, RouteError, routeError } from "@/lib/route-error";
 
 describe("routeError", () => {
   it("reads the route's code and params from a JSON answer", async () => {
@@ -44,5 +44,48 @@ describe("routeError", () => {
       "error",
       "generic",
     );
+  });
+});
+
+describe("readRouteData", () => {
+  it("gives the data of a successful answer", async () => {
+    const response = Response.json({
+      success: true,
+      data: [1, 2],
+      error: null,
+    });
+    await expect(readRouteData<number[]>(response)).resolves.toEqual([1, 2]);
+  });
+
+  it("throws a refusal with its status and code", async () => {
+    const response = Response.json(
+      { success: false, data: null, error: "itemNotFound" },
+      { status: 404 },
+    );
+    const error: unknown = await readRouteData(response).catch((e) => e);
+    expect(error).toBeInstanceOf(RouteError);
+    expect(error).toMatchObject({
+      status: 404,
+      failure: { error: "itemNotFound" },
+    });
+  });
+
+  it("throws the generic code for a platform error page", async () => {
+    const response = new Response("<html>502</html>", { status: 502 });
+    await expect(readRouteData(response)).rejects.toMatchObject({
+      status: 502,
+      failure: { error: "generic" },
+    });
+  });
+
+  it("throws for a 200 whose body says it failed", async () => {
+    const response = Response.json({
+      success: false,
+      data: null,
+      error: "generic",
+    });
+    await expect(readRouteData(response)).rejects.toMatchObject({
+      status: 200,
+    });
   });
 });

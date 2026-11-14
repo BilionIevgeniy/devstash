@@ -1,34 +1,56 @@
 import { ChevronDown } from "lucide-react";
-import { typeLabel } from "@/features/item-types/domain/item-type";
 import { useTranslations } from "next-intl";
+import { useRef } from "react";
 
-import { LIST_ROW_WRAPPER, ListRow } from "@/app/(app)/_components/ListRow";
-import { ListRowFrame } from "@/app/(app)/_components/ListRowFrame";
+import { focusListRow } from "@/app/(app)/_components/hooks/use-row-focus";
 import { PINNED_GROUP_HEADER } from "@/app/(app)/pinned/_components/PinnedGroupSkeleton";
-import { TypeIcon } from "@/features/item-types/components/TypeIcon";
-import type { ItemTypeInfo } from "@/features/item-types/types";
-import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
-import { ItemRowActions } from "@/features/items/components/ItemRowActions";
-import type { DashboardItem } from "@/features/items/types";
+import { PinnedGroupRows } from "@/app/(app)/pinned/_components/PinnedGroupRows";
+import { ListPagesFrame } from "@/app/(app)/_components/ListPagesFrame";
+import { ShowMore } from "@/components/common/ShowMore";
+import { typeLabel } from "@/features/item-types/domain/item-type";
+import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
+import { usePinnedGroupPages } from "@/features/items/components/hooks/use-item-list-pages";
+import { visibleListItems } from "@/features/items/domain/list-rows";
+import type { PinnedItemSort } from "@/features/items/domain/pinned-items";
+import type { PinnedGroupPage } from "@/features/items/types";
 import { cn } from "@/lib/utils";
 
 interface PinnedGroupProps {
-  type: ItemTypeInfo;
-  items: DashboardItem[];
+  group: PinnedGroupPage;
+  sort: PinnedItemSort;
   isOpen: boolean;
   onToggle: () => void;
 }
 
-// The panel stays in the DOM while closed, so aria-controls always has a target.
+// One type of /pinned, with its own pages (ADR 0025): the first from the
+// server, more on Show more. A closed group renders no button, so it never
+// loads. The count is the type's, less the pins leaving at once; at zero the
+// group goes. The panel stays in the DOM while closed, so aria-controls always
+// has a target.
 export function PinnedGroup({
-  type,
-  items,
+  group,
+  sort,
   isOpen,
   onToggle,
 }: PinnedGroupProps) {
   const typeName = useTranslations("itemTypes");
-  const label = typeLabel(typeName, type.name, "other");
-  const panelId = `pinned-group-${type.id}`;
+  const { hiddenIds, pinOverrides } = useItemDrawer();
+  const pages = usePinnedGroupPages(group.type.id, sort, group.first);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const label = typeLabel(typeName, group.type.name, "other");
+  const panelId = `pinned-group-${group.type.id}`;
+
+  // The rows of this type that are leaving at once. The server's first page
+  // still names a row the cache sync already took off, until the refresh.
+  const knownIds = new Set(
+    [...group.first.page.rows, ...pages.rows].map(({ id }) => id),
+  );
+  const leaving = [...knownIds].filter(
+    (id) => hiddenIds.has(id) || pinOverrides.get(id) === false,
+  ).length;
+  const count = group.count - leaving;
+  const items = visibleListItems(pages.rows, hiddenIds, pinOverrides);
+  if (count <= 0) return null;
 
   return (
     <section className="space-y-2">
@@ -43,7 +65,7 @@ export function PinnedGroup({
           >
             <span>
               <span>{label}</span>{" "}
-              <span className="text-muted-foreground">({items.length})</span>
+              <span className="text-muted-foreground">({count})</span>
             </span>
             <ChevronDown
               className={cn(
@@ -54,27 +76,29 @@ export function PinnedGroup({
           </button>
         </h2>
       </div>
-      <div id={panelId} hidden={!isOpen}>
-        {items.map((item) => (
-          <ListRowFrame
-            key={item.id}
-            actions={<ItemRowActions item={item} removes="pin" />}
-          >
-            <ItemDrawerTrigger item={item} className={LIST_ROW_WRAPPER}>
-              <ListRow
-                icon={
-                  <TypeIcon
-                    name={item.type.icon}
-                    className="size-4 shrink-0"
-                    style={{ color: item.type.color }}
-                  />
-                }
-                title={item.title}
-                date={item.createdAt}
+      <div id={panelId} ref={panelRef} hidden={!isOpen}>
+        <ListPagesFrame
+          isPlaceholder={pages.isPlaceholder}
+          firstPageFailed={pages.firstPageFailed}
+          onRetry={pages.retryFirstPage}
+          more={
+            isOpen && (
+              <ShowMore
+                label="showMore"
+                rowCount={items.length}
+                hasMore={pages.hasMore}
+                isLoading={pages.isLoadingMore}
+                failed={pages.loadMoreFailed}
+                onLoad={pages.loadMore}
+                onFocusRow={(index) => {
+                  if (panelRef.current) focusListRow(panelRef.current, index);
+                }}
               />
-            </ItemDrawerTrigger>
-          </ListRowFrame>
-        ))}
+            )
+          }
+        >
+          <PinnedGroupRows items={items} />
+        </ListPagesFrame>
       </div>
     </section>
   );

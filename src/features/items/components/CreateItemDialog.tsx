@@ -29,6 +29,7 @@ import { ItemFileField } from "@/features/items/_internal/components/ItemFileFie
 import { ItemFields } from "@/features/items/_internal/components/ItemFields";
 import { ItemTypeSelect } from "@/features/items/_internal/components/ItemTypeSelect";
 import { submitNewItem } from "@/features/items/_internal/components/submit-new-item";
+import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import type { ItemFormValues } from "@/features/items/domain/item-changes";
 import {
   canCreateType,
@@ -149,6 +150,7 @@ function CreateItemForm({
   const [upload, setUpload] = useState<UploadedFile | null>(null);
   const contentRef = useRef<EditorHandle>(null);
   const errorText = useErrorText();
+  const syncItems = useSyncItemQueries();
   const fields = editableFields(typeName);
   const isMissingRequired =
     values.title.trim() === "" ||
@@ -179,6 +181,7 @@ function CreateItemForm({
       contentRef,
       run,
       errorText,
+      syncItems,
       onCreated,
     });
   }

@@ -11,6 +11,8 @@ export interface RunOptions {
   onSuccess: () => void;
   /** Shown when the action throws; a refused result shows its own code. */
   failCode: PlainErrorCode;
+  /** A client cache follows the success, awaited before onSuccess (ADR 0025). */
+  sync?: () => Promise<void>;
 }
 
 /** The `run` of useSubmitDialog, for a helper that submits on its behalf. */
@@ -30,7 +32,7 @@ export function useSubmitDialog() {
   const doneRef = useRef(false);
   const errorText = useErrorText();
 
-  const run: SubmitRun = (action, { onSuccess, failCode }) => {
+  const run: SubmitRun = (action, { onSuccess, failCode, sync }) => {
     startTransition(async () => {
       try {
         const result = await action();
@@ -38,6 +40,7 @@ export function useSubmitDialog() {
           toast.error(errorText(result));
           return;
         }
+        await sync?.();
         doneRef.current = true;
         // After the await this is no longer part of the transition, so it is
         // wrapped again: "…ing" stays until the commit that brings the page.
