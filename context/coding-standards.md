@@ -162,6 +162,7 @@ The lint bans `.issues[0]` outside `lib/validation.ts` and the literal generic t
 
 - No commented-out code unless specified
 - No unused imports or variables
+- markdownlint runs only in the IDE extension, not in `npm run lint` or CI. `context/.markdownlint.jsonc` turns off MD013, MD029 and MD034 for the specs and `context/current-feature.md` (a spec numbers its steps across sections and lists its sources as bare URLs); anywhere else a markdownlint warning is fixed in the file, never with a new config
 
 ## Size limits
 
