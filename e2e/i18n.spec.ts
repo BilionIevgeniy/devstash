@@ -98,15 +98,27 @@ test.describe("the homepage switch, signed in", () => {
     await expect(banner.getByRole("link", { name: "Dashboard" })).toBeVisible();
 
     // A flash lasts a few frames, which a retrying assertion would miss: the
-    // page itself notes whether a sign-in link was ever added to the header.
+    // page itself notes whether a sign-in link was ever visible in the header.
+    // The link is always in the markup (hidden by `visibility`), so a change
+    // of class counts, and `visibilityProperty` makes the check see it.
     await page.evaluate(() => {
       const flags = window as unknown as { sawSignIn: boolean };
       flags.sawSignIn = false;
       new MutationObserver(() => {
-        if (document.querySelector('header a[href="/sign-in"]')) {
+        const links = document.querySelectorAll('header a[href="/sign-in"]');
+        if (
+          Array.from(links).some((link) =>
+            link.checkVisibility({ visibilityProperty: true }),
+          )
+        ) {
           flags.sawSignIn = true;
         }
-      }).observe(document.body, { childList: true, subtree: true });
+      }).observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["class"],
+      });
     });
 
     await expect(async () => {
@@ -122,6 +134,39 @@ test.describe("the homepage switch, signed in", () => {
         () => (window as unknown as { sawSignIn: boolean }).sawSignIn,
       ),
     ).toBe(false);
+  });
+});
+
+// The page is static and learns of the session after mount. The language link
+// must not move when the answer arrives and the guest buttons give way to
+// Dashboard.
+test.describe("the navbar, signed in", () => {
+  test("the language link keeps its place when the session answer arrives", async ({
+    page,
+  }) => {
+    const answer = Promise.withResolvers<void>();
+    await page.route("**/api/auth/session", async (route) => {
+      await answer.promise;
+      await route.continue();
+    });
+    const asked = page.waitForRequest("**/api/auth/session");
+    await page.goto("/");
+    await asked;
+    // A web font that arrives late moves text, and with it the box.
+    await page.evaluate(() => document.fonts.ready);
+
+    const banner = page.getByRole("banner");
+    const language = banner.getByRole("link", {
+      name: "Diese Seite auf Deutsch",
+    });
+    const before = await language.boundingBox();
+
+    answer.resolve();
+    await expect(banner.getByRole("link", { name: "Dashboard" })).toBeVisible();
+    const after = await language.boundingBox();
+
+    expect(before).not.toBeNull();
+    expect(after).toEqual(before);
   });
 });
 
