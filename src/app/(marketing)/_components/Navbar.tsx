@@ -19,20 +19,49 @@ import { MobileNavPanel } from "./MobileNavPanel";
 const PANEL_ID = "mobile-nav";
 const DESKTOP_LINK = "transition-colors hover:text-foreground";
 
+// Sign in and the main action, which depend on the session. Until the answer
+// comes they keep their place unseen, so a signed-in user never sees Sign in
+// flash (the static page renders as a guest).
+function SessionActions({ hasSession }: { hasSession: boolean | null }) {
+  const t = useTranslations("marketing");
+  const pending = hasSession === null ? "invisible" : undefined;
+  const primary = hasSession
+    ? { href: "/dashboard", label: t("nav.dashboard") }
+    : { href: "/register", label: t("nav.getStarted") };
+
+  return (
+    <>
+      {!hasSession && (
+        <Button
+          asChild
+          variant="ghost"
+          size="lg"
+          className={cn(
+            "hidden px-3.5 text-muted-foreground md:inline-flex",
+            pending,
+          )}
+        >
+          <Link href="/sign-in">{t("nav.signIn")}</Link>
+        </Button>
+      )}
+      <Button asChild size="lg" className={cn("px-3.5", pending)}>
+        <Link href={primary.href}>{primary.label}</Link>
+      </Button>
+    </>
+  );
+}
+
 export function Navbar() {
   const t = useTranslations("marketing");
   const home = homePath(useLocale());
   const scrolled = useScrolled();
-  const signedIn = useHasSession();
+  const hasSession = useHasSession();
   const [open, setOpen] = useState(false);
   const toggleRef = useRef<HTMLButtonElement>(null);
 
   useEscapeToClose(open, () => setOpen(false), toggleRef);
 
   const solid = scrolled || open;
-  const primaryAction = signedIn
-    ? { href: "/dashboard", label: t("nav.dashboard") }
-    : { href: "/register", label: t("nav.getStarted") };
 
   return (
     <header
@@ -61,19 +90,7 @@ export function Navbar() {
             variant="code"
             className="hidden px-2 text-sm text-muted-foreground transition-colors hover:text-foreground md:inline"
           />
-          {!signedIn && (
-            <Button
-              asChild
-              variant="ghost"
-              size="lg"
-              className="hidden px-3.5 text-muted-foreground md:inline-flex"
-            >
-              <Link href="/sign-in">{t("nav.signIn")}</Link>
-            </Button>
-          )}
-          <Button asChild size="lg" className="px-3.5">
-            <Link href={primaryAction.href}>{primaryAction.label}</Link>
-          </Button>
+          <SessionActions hasSession={hasSession} />
           <Button
             ref={toggleRef}
             variant="ghost"
@@ -91,7 +108,7 @@ export function Navbar() {
       {open && (
         <MobileNavPanel
           id={PANEL_ID}
-          signedIn={signedIn}
+          signedIn={hasSession === true}
           onClose={() => setOpen(false)}
         />
       )}

@@ -92,6 +92,7 @@ Check every UI change against these before writing it; the plan names which ones
 - Optimistic only where the rollback is cheap and the result is known in advance (hiding a deleted card). Not where the server decides the data (ids, dates, order) or where a failure would lose the user's input (creating)
 - When an action changes the page itself, wait for the result before leaving, and keep the history honest: `router.replace` so Back does not lead to something deleted
 - No layout shift: a skeleton mirrors the size of the content it stands for, and each route segment that loads on its own has its own `loading.tsx`
+- No flash of the wrong state: what a client component learns after mount (the session on a static page) is unknown until it comes, and the parts that depend on it keep their place unseen (`invisible`) instead of showing a guess. A value the tab already knows is reused when the component mounts again (`useHasSession` after the homepage's layouts swap). A browser check of such a component runs signed in and signed out
 - Exit animations finish before the navigation they lead to, so nothing vanishes mid-slide
 - Keyboard and focus: Esc closes, focus returns to the trigger, every dialog and sheet has a title (hidden if need be)
 - Errors in plain words, and the form with the user's input stays open so they can retry

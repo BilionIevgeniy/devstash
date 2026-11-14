@@ -40,13 +40,14 @@ function shownTexts(container: HTMLElement): string[] {
 }
 
 describe("the messages of the marketing pages", () => {
+  // The logo leads to the homepage of the page's own language.
   it.each([
-    ["en", "DevStash home"],
-    ["de", "DevStash-Startseite"],
-  ] as const)("name the logo link in %s", (locale, name) => {
+    ["en", "DevStash home", "/"],
+    ["de", "DevStash-Startseite", "/de"],
+  ] as const)("name the logo link in %s", (locale, name, href) => {
     renderNavbar(locale);
 
-    expect(screen.getByRole("link", { name })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name })).toHaveAttribute("href", href);
   });
 
   it.each(["en", "de"] as const)(

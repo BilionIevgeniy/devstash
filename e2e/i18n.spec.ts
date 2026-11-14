@@ -89,6 +89,42 @@ test.describe("the homepage in two languages", () => {
   });
 });
 
+// The navbar remounts when / and /de swap layouts. A signed-in user must keep
+// the Dashboard link through the switch, never see Sign in flash for a frame.
+test.describe("the homepage switch, signed in", () => {
+  test("keeps the Dashboard link and never shows Sign in", async ({ page }) => {
+    const banner = page.getByRole("banner");
+    await page.goto("/");
+    await expect(banner.getByRole("link", { name: "Dashboard" })).toBeVisible();
+
+    // A flash lasts a few frames, which a retrying assertion would miss: the
+    // page itself notes whether a sign-in link was ever added to the header.
+    await page.evaluate(() => {
+      const flags = window as unknown as { sawSignIn: boolean };
+      flags.sawSignIn = false;
+      new MutationObserver(() => {
+        if (document.querySelector('header a[href="/sign-in"]')) {
+          flags.sawSignIn = true;
+        }
+      }).observe(document.body, { childList: true, subtree: true });
+    });
+
+    await expect(async () => {
+      await banner
+        .getByRole("link", { name: "Diese Seite auf Deutsch" })
+        .click();
+      await expect(page).toHaveURL(/\/de$/, { timeout: 1_000 });
+    }).toPass();
+
+    await expect(banner.getByRole("link", { name: "Dashboard" })).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => (window as unknown as { sawSignIn: boolean }).sawSignIn,
+      ),
+    ).toBe(false);
+  });
+});
+
 // Without a chosen language, the auth pages follow the browser's.
 test.describe("the auth pages", () => {
   test.use({ storageState: SIGNED_OUT });
