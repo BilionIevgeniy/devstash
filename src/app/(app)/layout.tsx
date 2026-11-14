@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { I18nProvider } from "@/components/common/I18nProvider";
+import { QueryProvider } from "@/components/common/QueryProvider";
 import { DashboardShell } from "@/features/app-shell/components/DashboardShell";
 import { Sidebar } from "@/features/app-shell/components/Sidebar";
 import {
@@ -43,30 +44,34 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   // its screens reach into many features (ADR 0024).
   return (
     <I18nProvider locale={locale} messages={messagesFor(locale)}>
-      <EditorPreferencesProvider preferences={editorPreferences}>
-        <DashboardShell
-          defaultSidebarOpen={parseSidebarOpen(
-            cookieStore.get(SIDEBAR_COOKIE)?.value,
-          )}
-          sidebar={
-            <Suspense fallback={<SidebarSkeleton />}>
-              <Sidebar />
-            </Suspense>
-          }
-          upgradeButton={
-            <Suspense>
-              <UpgradeButton />
-            </Suspense>
-          }
-          newItemButton={
-            <Suspense fallback={<NewItemButtonFallback />}>
-              <NewItemButton />
-            </Suspense>
-          }
-        >
-          {children}
-        </DashboardShell>
-      </EditorPreferencesProvider>
+      {/* Around the shell: the top bar's create dialogs read the collection
+          options through it too (ADR 0025). */}
+      <QueryProvider>
+        <EditorPreferencesProvider preferences={editorPreferences}>
+          <DashboardShell
+            defaultSidebarOpen={parseSidebarOpen(
+              cookieStore.get(SIDEBAR_COOKIE)?.value,
+            )}
+            sidebar={
+              <Suspense fallback={<SidebarSkeleton />}>
+                <Sidebar />
+              </Suspense>
+            }
+            upgradeButton={
+              <Suspense>
+                <UpgradeButton />
+              </Suspense>
+            }
+            newItemButton={
+              <Suspense fallback={<NewItemButtonFallback />}>
+                <NewItemButton />
+              </Suspense>
+            }
+          >
+            {children}
+          </DashboardShell>
+        </EditorPreferencesProvider>
+      </QueryProvider>
     </I18nProvider>
   );
 }

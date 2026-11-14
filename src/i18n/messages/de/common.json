@@ -16,6 +16,16 @@
     "nextPage": "Nächste Seite",
     "page": "Seite {page}"
   },
+  "list": {
+    "loadMore": "Mehr laden",
+    "showMore": "Mehr anzeigen",
+    "loading": "Wird geladen…",
+    "loadFailed": "Weitere Einträge konnten nicht geladen werden.",
+    "retry": "Erneut versuchen",
+    "loaded": "{count, plural, one {# weiterer Eintrag geladen} other {# weitere Einträge geladen}}",
+    "firstPageFailed": "Die Einträge konnten nicht geladen werden.",
+    "pageLoading": "Einträge werden geladen"
+  },
   "language": {
     "label": "Sprache",
     "en": "English",

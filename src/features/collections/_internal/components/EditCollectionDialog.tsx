@@ -16,6 +16,7 @@ import {
 import { CollectionFields } from "@/features/collections/_internal/components/CollectionFields";
 import type { CollectionDialogState } from "@/features/collections/_internal/components/hooks/use-collection-dialogs";
 import { updateCollection } from "@/features/collections/actions/collection";
+import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import {
   hasCollectionChanges,
   type CollectionFormValues,
@@ -34,6 +35,7 @@ export function EditCollectionDialog({
 }: EditCollectionDialogProps) {
   const t = useTranslations("collections");
   const { isPending: isSaving, run, takeDone } = useSubmitDialog();
+  const syncItems = useSyncItemQueries();
 
   // Esc, the overlay and the X wait for the result: closing now would lose
   // the input on a failure and let the form be sent twice.
@@ -66,6 +68,7 @@ export function EditCollectionDialog({
             run(() => updateCollection(collection.id, values), {
               onSuccess: () => onOpenChange(false),
               failCode: "collectionSaveFailed",
+              sync: () => syncItems({ kind: "collections" }),
             })
           }
         />

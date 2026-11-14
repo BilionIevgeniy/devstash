@@ -1,6 +1,7 @@
+import { useQuery } from "@tanstack/react-query";
 import { useRef, useState, type RefObject } from "react";
 
-import { fetchItemDetail } from "@/features/items/_internal/components/fetch-item-detail";
+import { itemDetailQuery } from "@/features/items/_internal/components/fetch-item-detail";
 import type {
   DashboardItem,
   ItemDetailJson,
@@ -12,15 +13,30 @@ export type ItemDetailState =
   | { status: "error" }
   | { status: "ready"; detail: ItemDetailJson; canUseAi: boolean };
 
-function openedState(opened: OpenedItemJson | null): ItemDetailState {
-  return opened
-    ? { status: "ready", detail: opened.item, canUseAi: opened.canUseAi }
-    : { status: "error" };
+interface DetailQuery {
+  data: OpenedItemJson | undefined;
+  isError: boolean;
+  isFetching: boolean;
+}
+
+// A failed detail opened again shows the skeleton while it is asked for once
+// more, as a first open does, not the old error.
+function detailState({
+  data,
+  isError,
+  isFetching,
+}: DetailQuery): ItemDetailState {
+  if (data) {
+    return { status: "ready", detail: data.item, canUseAi: data.canUseAi };
+  }
+  return isError && !isFetching ? { status: "error" } : { status: "loading" };
 }
 
 // The item sheet of the pages with no item URL (the dashboard, a collection,
-// the favorites, the pins): the card's item at once, its detail fetched from
-// the API, and the edit mode. Closing aborts a detail still on its way.
+// the favorites, the pins): the card's item at once, its detail from the Query
+// cache (ADR 0025), fetched from the API when it is not fresh, and the edit
+// mode. A detail that arrives after the sheet closed stays in the cache under
+// its own id, so it can never show in the sheet of another item.
 //
 // The sheet has no SheetTrigger, so Radix has nothing to give the focus back
 // to: the hook remembers the opener. A delete or an unpin can take the opener
@@ -28,40 +44,30 @@ function openedState(opened: OpenedItemJson | null): ItemDetailState {
 export function useItemSheet(focusSentinelRef: RefObject<HTMLElement | null>) {
   const [isOpen, setIsOpen] = useState(false);
   const [item, setItem] = useState<DashboardItem | null>(null);
-  const [state, setState] = useState<ItemDetailState>({ status: "loading" });
   const [isEditing, setIsEditing] = useState(false);
-  const requestRef = useRef<AbortController | null>(null);
   const openItemIdRef = useRef<string | null>(null);
   const openerRef = useRef<HTMLElement | null>(null);
 
-  async function openSheet(next: DashboardItem) {
+  const detail = useQuery({
+    ...itemDetailQuery(item?.id ?? ""),
+    enabled: isOpen && item !== null,
+  });
+  const state = detailState(detail);
+
+  function openSheet(next: DashboardItem) {
     const active = document.activeElement;
     openerRef.current =
       active instanceof HTMLElement && active !== document.body ? active : null;
 
-    requestRef.current?.abort();
-    const controller = new AbortController();
-    requestRef.current = controller;
-
     openItemIdRef.current = next.id;
     setItem(next);
-    setState({ status: "loading" });
     setIsEditing(false);
     setIsOpen(true);
-
-    try {
-      const opened = await fetchItemDetail(next.id, controller.signal);
-      if (controller.signal.aborted) return;
-      setState(openedState(opened));
-    } catch {
-      if (!controller.signal.aborted) setState({ status: "error" });
-    }
   }
 
   // The item stays in state after closing so the content does not vanish
   // while the sheet slides out.
   function onOpenChange(nextOpen: boolean) {
-    if (!nextOpen) requestRef.current?.abort();
     setIsOpen(nextOpen);
   }
 
@@ -73,27 +79,21 @@ export function useItemSheet(focusSentinelRef: RefObject<HTMLElement | null>) {
   }
 
   // The header, description and tags come from the card's item, so it is
-  // updated along with the detail; the action's refresh updates the cards
-  // behind. The ref, not the item in this closure, tells whether another card
-  // was opened while the save was running.
-  function handleSaved(detail: ItemDetailJson) {
-    if (openItemIdRef.current !== detail.id) return;
+  // updated along with the detail, which the save already wrote to the cache
+  // (useItemSave), keeping the plan read on open. The ref, not the item in
+  // this closure, tells whether another card was opened while the save ran.
+  function handleSaved(saved: ItemDetailJson) {
+    if (openItemIdRef.current !== saved.id) return;
 
     setItem(
       (current) =>
         current && {
           ...current,
-          title: detail.title,
-          description: detail.description,
-          tags: detail.tags,
+          title: saved.title,
+          description: saved.description,
+          tags: saved.tags,
         },
     );
-    // The saved detail carries no plan, so the one read on open is kept.
-    setState((current) => ({
-      status: "ready",
-      detail,
-      canUseAi: current.status === "ready" && current.canUseAi,
-    }));
     setIsEditing(false);
   }
 

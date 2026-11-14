@@ -7,6 +7,7 @@ import type { EditorHandle } from "@/features/editor/types";
 import { callAction } from "@/features/items/_internal/components/call-action";
 import { rejectInvalidContent } from "@/features/items/_internal/components/reject-invalid-content";
 import { updateItem } from "@/features/items/actions/item";
+import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import {
   typeFieldValues,
   type ItemFormValues,
@@ -39,6 +40,7 @@ export function useItemSave(
 ) {
   const t = useTranslations("items.toasts");
   const errorText = useErrorText();
+  const syncItems = useSyncItemQueries();
   const [isSaving, startSaving] = useTransition();
 
   function save(values: ItemFormValues) {
@@ -53,6 +55,8 @@ export function useItemSave(
       );
       if (!saved) return;
 
+      // The cached detail and rows take the saved text before the form closes.
+      await syncItems({ kind: "saved", detail: saved });
       toast.success(t("saved"));
       // After the await this is no longer part of the transition, so it is
       // wrapped again: the form closes in the commit that brings the refreshed

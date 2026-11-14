@@ -89,6 +89,7 @@ Good to know:
 - It empties the same database as the integration tests, so never run both at once
 - The server starts with an environment built from scratch (`scripts/e2e-server-env.ts`), not from `.env`: no live Stripe, Resend, OpenAI or R2 key can reach it. Next also loads `.env.local`, `.env.production` and `.env.production.local`, which is why the map names every variable of `.env.example`, and a unit test fails when a new one is missing
 - `playwright/.auth/user.json` belongs to the user of one run. After a new seed run the whole suite, not one spec with `--no-deps`: that would reuse the session of a user who no longer exists
+- The seed also creates a second user for the endless lists (`lists-<run email>`, 40 snippets that are starred and pinned, written directly), whose session the setup saves in `playwright/.auth/lists-user.json` for `e2e/infinite-lists.spec.ts`. That spec only reads, so it does not count against the repeat budget
 
 ## Architecture
 

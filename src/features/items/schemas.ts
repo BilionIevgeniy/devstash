@@ -23,6 +23,11 @@ import {
   ITEM_LIST_SORTS,
   type ItemListParams,
 } from "@/features/items/domain/list-params";
+import { decodeListCursor } from "@/features/items/domain/list-cursor";
+import {
+  FAVORITE_CURSOR_KINDS,
+  PINNED_CURSOR_KINDS,
+} from "@/features/items/domain/list-pages";
 import { PINNED_ITEM_SORTS } from "@/features/items/domain/pinned-items";
 import type { ErrorCode } from "@/i18n/error-codes";
 import { parsePage } from "@/lib/pagination";
@@ -204,3 +209,38 @@ export const favoriteItemSortSchema = z
   .catch("newest");
 
 export const pinnedItemSortSchema = z.enum(PINNED_ITEM_SORTS).catch("newest");
+
+// The query of a next page of /favorites or of a /pinned group (ADR 0025).
+// The sort falls back to the default like the page's URL does; a cursor that
+// was not made for that sort is refused (400), never sent to the database.
+const cursorTextSchema = z
+  .string("invalidRequest")
+  .max(2048, "invalidRequest")
+  .optional();
+
+export const favoritePageQuerySchema = z
+  .object({ sort: favoriteItemSortSchema, cursor: cursorTextSchema })
+  .transform(({ sort, cursor }, ctx) => {
+    if (cursor === undefined) return { sort, after: null };
+    const after = decodeListCursor(cursor, sort, FAVORITE_CURSOR_KINDS[sort]);
+    if (after) return { sort, after };
+    ctx.addIssue({ code: "custom", message: "invalidRequest" });
+    return z.NEVER;
+  });
+
+export const pinnedPageQuerySchema = z
+  .object({
+    typeId: z
+      .string("invalidRequest")
+      .min(1, "invalidRequest")
+      .max(64, "invalidRequest"),
+    sort: pinnedItemSortSchema,
+    cursor: cursorTextSchema,
+  })
+  .transform(({ typeId, sort, cursor }, ctx) => {
+    if (cursor === undefined) return { typeId, sort, after: null };
+    const after = decodeListCursor(cursor, sort, PINNED_CURSOR_KINDS[sort]);
+    if (after) return { typeId, sort, after };
+    ctx.addIssue({ code: "custom", message: "invalidRequest" });
+    return z.NEVER;
+  });

@@ -32,6 +32,7 @@ const VALUES: ItemFormValues = {
 const focus = vi.fn();
 const run = vi.fn<NewItemSubmission["run"]>();
 const onCreated = vi.fn();
+const syncItems = vi.fn<NewItemSubmission["syncItems"]>();
 
 function submission(
   overrides: Partial<NewItemSubmission> = {},
@@ -44,6 +45,7 @@ function submission(
     contentRef: { current: { focus } },
     run,
     errorText: createErrorText(),
+    syncItems,
     onCreated,
     ...overrides,
   };
@@ -127,6 +129,16 @@ describe("submitNewItem", () => {
     expect(run).toHaveBeenCalledExactlyOnceWith(expect.any(Function), {
       onSuccess: onCreated,
       failCode: "itemCreateFailed",
+      sync: expect.any(Function),
     });
+  });
+
+  it("makes the cache follow a new item before the dialog closes", async () => {
+    syncItems.mockResolvedValue();
+    submitNewItem(submission());
+    const [, { sync }] = run.mock.calls[0];
+    await sync?.();
+
+    expect(syncItems).toHaveBeenCalledExactlyOnceWith({ kind: "created" });
   });
 });

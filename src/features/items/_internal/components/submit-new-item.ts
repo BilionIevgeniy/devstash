@@ -8,6 +8,7 @@ import type { UploadedFile } from "@/features/files/types";
 import type { ErrorText } from "@/i18n/error-text";
 import { rejectInvalidContent } from "@/features/items/_internal/components/reject-invalid-content";
 import { createItem } from "@/features/items/actions/item";
+import type { ItemChange } from "@/features/items/components/item-queries";
 import {
   typeFieldValues,
   type ItemFormValues,
@@ -26,6 +27,8 @@ export interface NewItemSubmission {
   contentRef: RefObject<EditorHandle | null>;
   run: SubmitRun;
   errorText: ErrorText;
+  /** The cache follows the new item (useSyncItemQueries of the dialog). */
+  syncItems: (change: ItemChange) => Promise<void>;
   /** Called in the commit that brings the refreshed page with the new item. */
   onCreated: () => void;
 }
@@ -60,6 +63,7 @@ export function submitNewItem({
   contentRef,
   run,
   errorText,
+  syncItems,
   onCreated,
 }: NewItemSubmission): void {
   if (rejectInvalidContent(fields, values.content, contentRef, errorText)) {
@@ -69,5 +73,6 @@ export function submitNewItem({
   run(() => createItem(createPayload(typeName, fields, values, upload)), {
     onSuccess: onCreated,
     failCode: "itemCreateFailed",
+    sync: () => syncItems({ kind: "created" }),
   });
 }

@@ -10,6 +10,15 @@ function visibleRows(list: HTMLElement): Element[] {
   );
 }
 
+// After the user asked for more rows with a button, the first new row takes
+// the focus, so the keyboard goes on forward and the focus does not fall to
+// the body when the button leaves after the last page. `index` counts the
+// visible rows inside `container`.
+export function focusListRow(container: HTMLElement, index: number) {
+  const target = visibleRows(container)[index]?.querySelector(ROW_TARGET);
+  if (target instanceof HTMLElement) target.focus();
+}
+
 // A row that removes itself takes the focused control with it, and the focus
 // would fall to the body. It goes to the row now in that place, the last row, or
 // the empty state. `rowCount` is the number of rows the list shows.
@@ -39,5 +48,9 @@ export function useRowFocus(rowCount: number) {
     if (target instanceof HTMLElement) target.focus({ preventScroll: true });
   }, [rowCount]);
 
-  return { listRef, handleFocus };
+  function focusRowAt(index: number) {
+    if (listRef.current) focusListRow(listRef.current, index);
+  }
+
+  return { listRef, handleFocus, focusRowAt };
 }

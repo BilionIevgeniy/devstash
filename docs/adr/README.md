@@ -28,6 +28,7 @@ One short file per decision that shapes the structure of the code, in the [MADR]
 | [0022](0022-error-codes-in-the-result-contract.md) | A failure carries an error code, not a sentence | accepted |
 | [0023](0023-next-intl-outside-lib.md) | next-intl is used outside `lib`, and `src/i18n/` sits below it | accepted |
 | [0024](0024-locale-decision.md) | The locale: a cookie for the app and the auth pages, an explicit locale for static pages | accepted |
+| [0025](0025-client-data-with-tanstack-query.md) | TanStack Query for the data the browser fetches, and cursor pages for /favorites and /pinned | accepted |
 
 ## How to add one
 

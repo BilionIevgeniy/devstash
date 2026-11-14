@@ -10,6 +10,7 @@ import { parseTypeSlug } from "@/features/item-types/domain/item-type";
 import { ItemDrawerSkeleton } from "@/features/items/_internal/components/ItemDrawerSkeleton";
 import { ItemDetailView } from "@/features/items/_internal/components/ItemDetailView";
 import { deleteItem } from "@/features/items/actions/item";
+import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 import { isNavigationError } from "@/lib/navigation-error";
 
@@ -34,6 +35,7 @@ export function ItemDetailPage({
   const t = useTranslations("items.toasts");
   const router = useRouter();
   const errorText = useErrorText();
+  const syncItems = useSyncItemQueries();
 
   async function handleDelete(id: string): Promise<boolean> {
     try {
@@ -50,6 +52,7 @@ export function ItemDetailPage({
       return false;
     }
 
+    await syncItems({ kind: "removed", id });
     toast.success(t("deleted"));
     router.replace(listHref);
     // The shared layout (the sidebar's counts) is not fetched again on a

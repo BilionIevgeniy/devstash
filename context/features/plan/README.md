@@ -21,7 +21,7 @@ Rules that apply to every file:
 | 9 | [Hooks, forms and editor focus](9.hooks-forms-and-editor-focus.md) | SHOULD | [x] |
 | 10 | [Import and export](10.import-export.md) | MUST | [x] |
 | 11 | [English and German (i18n)](11.i18n-en-de.md) | SHOULD | [ ] |
-| 12 | [Client data and infinite lists](12.client-data-and-infinite-lists.md) | SHOULD | [ ] |
+| 12 | [Client data and infinite lists](12.client-data-and-infinite-lists.md) | SHOULD | [x] |
 | 13 | [Performance and SEO](13.performance-and-seo.md) | SHOULD | [ ] |
 | 14 | [Storybook and accessibility](14.storybook-and-a11y.md) | SHOULD | [ ] |
 | 15 | [Full E2E suite](15.e2e-full.md) | MUST before 16 | [ ] |

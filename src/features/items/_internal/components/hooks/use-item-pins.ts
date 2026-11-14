@@ -3,6 +3,7 @@ import { toast } from "sonner";
 
 import { useOptimisticToggle } from "@/features/items/_internal/components/hooks/use-optimistic-toggle";
 import { setItemPin } from "@/features/items/actions/item";
+import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import { UNDO_TOAST_DURATION } from "@/features/items/domain/list-rows";
 
 // The pins of a provider's rows and drawer (useOptimisticToggle). The toast
@@ -11,8 +12,10 @@ import { UNDO_TOAST_DURATION } from "@/features/items/domain/list-rows";
 // unpin offers Undo.
 export function useItemPins(onSaved: (id: string, isPinned: boolean) => void) {
   const t = useTranslations();
+  const syncItems = useSyncItemQueries();
   const { overrides, toggle } = useOptimisticToggle(setItemPin, {
     failCode: "pinFailed",
+    sync: (id, isPinned) => syncItems({ kind: "pin", id, isPinned }),
     onSaved,
     notify: (_id, isPinned, options, undo) => {
       toast.success(

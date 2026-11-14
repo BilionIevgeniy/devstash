@@ -13,7 +13,7 @@ src/
     api/                route handlers: NextAuth, registration; later webhooks, export, AI streaming
   features/             the product, one folder per feature (see Ranks)
   components/ui/        shadcn/ui primitives only
-  components/common/    hand-written UI with no feature knowledge: CheckList, CopyButton, ErrorState, Field, GradientBadge, LinkPendingMark, Logo, PaginationNav; hooks/ (useErrorText, useLeaveWarning, useReportError, useSearchParam, useSubmitDialog); EmptyState (planned)
+  components/common/    hand-written UI with no feature knowledge: CheckList, CopyButton, ErrorState, Field, GradientBadge, LinkPendingMark, ListLoadError, LoadMore, Logo, PaginationNav, QueryProvider (with query-client.ts), ShowMore; hooks/ (useErrorText, useLeaveWarning, useReportError, useScrollRestore, useSearchParam, useSubmitDialog); EmptyState (planned)
   lib/                  feature-neutral infrastructure and vendor clients
   i18n/                 config and messages only: messages/<locale>/*.json, error codes and their words; imports no other layer (ADR 0023)
   proxy.ts              Next.js proxy, stays at the src root; its matcher must cover every authenticated route

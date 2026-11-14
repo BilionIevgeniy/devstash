@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { DeleteItemConfirm } from "@/features/items/_internal/components/DeleteItemConfirm";
 import { deleteItem } from "@/features/items/actions/item";
+import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import { cn } from "@/lib/utils";
 
 interface DeleteLockedItemButtonProps {
@@ -32,12 +33,14 @@ export function DeleteLockedItemButton({
   const t = useTranslations("items");
   const [isOpen, setIsOpen] = useState(false);
   const { isPending: isDeleting, run, takeDone } = useSubmitDialog();
+  const syncItems = useSyncItemQueries();
 
   function handleConfirm(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     run(() => deleteItem(itemId), {
       onSuccess: () => setIsOpen(false),
       failCode: "itemDeleteFailed",
+      sync: () => syncItems({ kind: "removed", id: itemId }),
     });
   }
 

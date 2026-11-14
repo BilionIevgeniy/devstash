@@ -2,6 +2,9 @@
 // the repository, where `npm run test:e2e` runs; the folder is in .gitignore.
 export const AUTH_FILE = "playwright/.auth/user.json";
 
+// The session of the second user, who has the long lists (scripts/seed-e2e.ts).
+export const LISTS_AUTH_FILE = "playwright/.auth/lists-user.json";
+
 // A visitor who has not signed in: a spec uses it with `test.use` instead of
 // the saved session of the setup.
 export const SIGNED_OUT = { cookies: [], origins: [] };
