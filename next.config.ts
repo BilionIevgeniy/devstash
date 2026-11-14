@@ -10,8 +10,8 @@ import { NOINDEX_PATHS } from "./src/lib/noindex-paths";
 const MONACO_PATH = `/monaco/${packageJson.dependencies["monaco-editor"]}`;
 
 // Sent with every response. The CSP covers framing, plugins and <base> only:
-// a script and style policy needs nonces and room for Monaco's workers, R2 and
-// GitHub avatars (deferred, see context/todo.md). HSTS goes out in production
+// a full policy, static-compatible, with room for Monaco's workers, R2 and
+// GitHub avatars, is feature 22 (context/features/plan/22.csp-and-cache-components.md). HSTS goes out in production
 // only and without includeSubDomains, which would bind every subdomain of a
 // custom domain to HTTPS for two years.
 const SECURITY_HEADERS = [

@@ -45,7 +45,7 @@ prisma/                 schema, migrations, seed
 - Not modules: `tags` (stay in `items` until a second feature needs them), `marketing` (`app/(marketing)/`), favorites, pagination, settings, dashboard (pages that compose features)
 - Two features need the same code: move it down to the lowest rank both can import. Never sideways or up; compose in `app/` through props or slots (`items` fills the editor header slot with the `ai` Explain button)
 - A feature writes only the models it owns and reads only its own models: no `prisma.<foreign model>`. Scalar columns through its own relation are fine; other features' data comes through their queries or services
-- Limits and Pro checks read `billing/queries.ts` `getEntitlements`, never the JWT or the session. The Stripe columns live on `Subscription`, owned by `billing`; a user with no row is on the Free plan. The old columns on `User` are read by nothing and wait for their drop (`context/todo.md`)
+- Limits and Pro checks read `billing/queries.ts` `getEntitlements`, never the JWT or the session. The Stripe columns live on `Subscription`, owned by `billing`; a user with no row is on the Free plan. The old columns on `User` are read by nothing and wait for their drop (`@ignore` in feature 17, the drop in feature 18, `context/features/plan/`)
 
 ## Inside a feature
 

@@ -7,10 +7,12 @@ The feature reaches `main` through a PR merged on GitHub after green `ci`, `inte
    - Change H1 back to `# Current Feature`
    - Clear Goals, Notes and Model sections (keep placeholder comments)
    - Add feature summary to the END of context/feature-history.md (not to current-feature.md)
-3. Read context/todo.md and check it against what this feature built:
-   - Delete each item the feature finished
+3. Check context/todo-before-live.md and the specs in context/features/plan/ against what this feature built:
+   - Delete each before-live item the feature finished, and each Scope item of a later spec it already did
    - Shorten an item the feature finished in part, so it says only what is left
    - Keep anything not clearly done, and name the deleted items in the final message
+   - Write nothing new into either for later: work found during the feature is done in it ("Found work" in context/ai-interaction.md); only what cannot be built goes to the before-live file, and what is too large goes into the Scope of the matching spec
+   - Tick the feature in context/features/plan/README.md
 4. Commit on the feature branch (check `git branch --show-current` first):
    - Stage the feature's files by name, not `git add -A`
    - Check `git status`: a change that is not part of the feature stays unstaged, and the final message names it

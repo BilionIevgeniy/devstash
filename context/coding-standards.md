@@ -81,7 +81,7 @@ The interface is English and German ([ADR 0024](../docs/adr/0024-locale-decision
 
 - Tailwind CSS for all styling
 - Use shadcn/ui components where applicable
-- A primitive added with `npx shadcn add` goes through `npm run lint`: the canonical-class rule covers `components/ui` too. Fix a hit with `npx eslint --fix <file>`, not with the editor's format on save, which rewrites the whole file (see the style item in `context/todo.md`)
+- A primitive added with `npx shadcn add` goes through `npm run lint`: the canonical-class rule covers `components/ui` too. Fix a hit with `npx eslint --fix <file>`, not with the editor's format on save, which rewrites the whole file (feature 16 commits the style: `context/features/plan/16.codebase-hygiene.md`)
 - No inline styles. Exception: the Open Graph image (`app/(marketing)/_components/og-image.tsx`) is styled with `style` objects only, since Satori, which draws an `ImageResponse`, reads no classes
 - Dark mode first, light mode as option
 
@@ -243,4 +243,4 @@ Playwright (`@playwright/test`, pinned), Chromium only, in `e2e/` as `[name].spe
 - A test that ends the session (`clearCookies`) waits for `networkidle` first: every answer of a signed-in request sets the session cookie again, and a loaded page fires many prefetches, so one arriving later would sign the browser back in (`endSession` in `e2e/signed-out.spec.ts`)
 - A click before React has hydrated a client component does nothing, so the first interaction on a page that needs one is repeated until it takes (`toPass`, see `createSnippet`)
 - Run it when a page, a route or the sign-in or item flows changed; CI runs it on every PR after `ci`. A failing journey is fixed, never skipped: open its trace (`npx playwright show-trace`, or the HTML report uploaded by the CI job). It empties the same database as the integration tests, so never run both at once. `npx playwright test --repeat-each=8` is the flake check (stay under 9: each repeat creates six items, and the Free plan allows 50). Setup: README, "End-to-end tests"
-- Not asserted on purpose: focus returning after the route drawer closes (a known bug, `context/todo.md`, "Items")
+- Not asserted on purpose: focus returning after the route drawer closes (a known bug, fixed in feature 20: `context/features/plan/20.ux-a11y-and-consent.md`)

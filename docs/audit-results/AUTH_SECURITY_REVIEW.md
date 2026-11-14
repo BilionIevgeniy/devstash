@@ -514,7 +514,7 @@ Optionally reject passwords found in the Have I Been Pwned range API (k-anonymit
 
 #### 11. OAuth access, refresh and ID tokens are stored in plaintext
 
-(Update 2026-11-06: half fixed. New `Account` rows store no tokens; older rows keep theirs until the clean-up in `context/todo.md`.)
+(Update 2026-11-06: half fixed. New `Account` rows store no tokens; older rows keep theirs until the clean-up of feature 17 (`context/features/plan/17.security-auth-retention.md`).)
 
 **Severity**: Low
 **File**: `src/features/auth/auth.ts`, `prisma/schema.prisma`

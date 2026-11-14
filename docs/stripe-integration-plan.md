@@ -30,7 +30,7 @@ The cost argument is weaker than ADR 0005 suggests. `getSessionUser` is wrapped 
 ### Data
 
 - `Subscription` exists: `userId` (unique), `status` (plain string), `stripeCustomerId` (unique), `stripeSubscriptionId` (unique), `currentPeriodEnd`. It cascades when the user is deleted
-- `User.isPro`, `User.stripeCustomerId` and `User.stripeSubscriptionId` are superseded, read by nothing, and wait for the contract migration in `context/todo.md`. This work does not touch them
+- `User.isPro`, `User.stripeCustomerId` and `User.stripeSubscriptionId` are superseded, read by nothing, and wait for the contract migration of features 17 and 18 (`context/features/plan/`). This work does not touch them
 - Migration `20261030135922_demo_user_pro` gives `demo@devstash.io` an `active` row with **no Stripe customer**. In development the row is removed and the seed grants none, so the demo user is on the Free plan
 
 ### Session
@@ -124,7 +124,7 @@ The cost is up to two weeks of unpaid Pro per failed renewal, about $3.70 on the
 
 **This depends on a Dashboard setting.** If subscriptions stay `past_due` after the last retry, Pro never ends without payment. That costs revenue and harms no customer, so no code limit is added, but the live setting must be checked by hand. ADR 0011 names this risk. ADR 0005 is marked superseded, since an accepted record is not edited, and ADR 0011 restates its decision in full.
 
-This is research, not legal advice. Automatic cancellation ends the contract, which is a stronger step than withholding access: whether two weeks of arrears supports it, and whether the terms must state it, is a question for a lawyer (`context/todo.md`). If the answer is to use `unpaid` instead, `paymentIssue` and Manage Billing must also show for non-Pro users, because the UI would otherwise offer only Upgrade.
+This is research, not legal advice. Automatic cancellation ends the contract, which is a stronger step than withholding access: whether two weeks of arrears supports it, and whether the terms must state it, is a question for a lawyer (`context/todo-before-live.md`, "Lawyer"; feature 19 decides the policy in test mode). If the answer is to use `unpaid` instead, `paymentIssue` and Manage Billing must also show for non-Pro users, because the UI would otherwise offer only Upgrade.
 
 ### Which subscription may write
 
@@ -222,7 +222,7 @@ Full steps and code are in the specs.
 | `collections/services/collection.ts` and test | Free limit |
 | `account/_internal/services/delete-account.ts` and test | Cancel first, new messages |
 | `app/(app)/settings/page.tsx`, `loading.tsx` | Panel and its skeleton |
-| `docs/modules.md`, `docs/architecture.md`, `context/todo.md` | What was built, known risks |
+| `docs/modules.md`, `docs/architecture.md`, the deferred list (now `context/features/plan/`) | What was built, known risks |
 
 `item.ts` has to split: it is about two lines under the 250-line limit, so the new code cannot go there.
 
@@ -294,14 +294,14 @@ Mocks cannot prove these.
 
 ## 10. Known risks and open decisions
 
-- **Decide before live mode: unbuilt features are on sale.** `PricingSection` lists Custom item types, AI features and Export under Pro. None exist. Tracked in "Pro features" in `context/todo.md`
-- **Decide before live mode: German tax and consumer law.** VAT, the cancellation button (§ 312k BGB), withdrawal and the other consumer duties are not part of these two phases. Tracked in "Germany: tax and legal" in `context/todo.md`. The cancellation button will probably need code, and `automatic_tax` is one parameter on the session
+- **Decide before live mode: unbuilt features are on sale.** `PricingSection` lists Custom item types, AI features and Export under Pro. None exist. Feature 18 builds custom types (`context/features/plan/18.custom-item-types.md`); the AI features and the export exist
+- **Decide before live mode: German tax and consumer law.** VAT, the cancellation button (§ 312k BGB), withdrawal and the other consumer duties are not part of these two phases. Feature 19 builds them in test mode (`context/features/plan/19.real-shop-in-test-mode.md`); the sign-offs are in `context/todo-before-live.md`. The cancellation button will probably need code, and `automatic_tax` is one parameter on the session
 - **Two open Checkout tabs can still create two subscriptions.** The service refuses a user who is already Pro, and the Dashboard setting redirects existing subscribers, but neither covers two sessions opened before either completes. The second live subscription wins the row and the first keeps billing until cancelled in the Dashboard. Rare, and visible in Stripe
 - **Two open tabs on a dead customer.** Both replace it, and the later save wins the row. A payment on the earlier customer then matches no row, so the user has paid and stays Free until it is fixed by hand. It needs a dead customer and two open tabs, so the risk is accepted
 - **Stripe behaviour not proven by the docs:** see the bold items in section 8
 - **`subscriptionWrite` reuses `isProStatus`** for its live class, so a change to the grace policy also changes which subscription may write. A comment in the code says so
 - **When `ai` lands,** `past_due` users get paid-for usage during the grace period. Decide that together with the quota
-- **Reconciliation:** a webhook lost for longer than Stripe's 3 days of retries leaves the row stale. There is no periodic sync, and at this size the Dashboard's failed deliveries are enough. Goes to `context/todo.md`
+- **Reconciliation:** a webhook lost for longer than Stripe's 3 days of retries leaves the row stale. There is no periodic sync, and at this size the Dashboard's failed deliveries are enough. Feature 19 adds a daily reconciliation
 - **Not in scope:** `cancelAtPeriodEnd` on the row (the portal shows it), trials, coupons, and the contract migration for the `User` columns
 
 ## Sources

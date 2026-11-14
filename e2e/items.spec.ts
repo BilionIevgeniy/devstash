@@ -17,7 +17,7 @@ test("a created snippet shows in the snippets list", async ({ page }) => {
 });
 
 // Focus returning to the card after the route drawer closes is a known open
-// bug (context/todo.md, "Items"): it is not asserted here.
+// bug (fixed in feature 20, context/features/plan/20.ux-a11y-and-consent.md): it is not asserted here.
 test("an item opens in the drawer and Esc closes it", async ({ page }) => {
   const title = uniqueTitle("Drawer snippet");
   await createSnippet(page, title);

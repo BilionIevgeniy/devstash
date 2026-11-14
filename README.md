@@ -37,6 +37,8 @@ The seed creates the system item types and two demo users with the same password
 | `demo@devstash.io` | Free, one short of both Free limits | Every database the seed runs on |
 | `demo-pro@devstash.io` | Pro (active subscription, no Stripe customer, so "Manage billing" does not open) | The development database only |
 
+The development seed differs from production on purpose: there the demo user stays Pro, with the content of the demo migrations. The seed still has the older placeholder content (feature 16 syncs it), and collection pagination cannot be checked with it.
+
 ## Scripts
 
 | Command | What it does |
@@ -80,7 +82,7 @@ A few Playwright journeys (sign in, create a snippet, open it in the drawer and 
 1. **The test database** of the integration tests (steps 1 and 2 above)
 2. **Upstash.** Sign-in is rate-limited and fails closed, so the server needs a real Upstash database. The free plan allows one, so the tests use the app's own. Their keys never meet a user's: the email is new for every run and each sign-in sends a random test IP. Put its REST URL and a read-write token in `.env.test`:
    `E2E_UPSTASH_REDIS_REST_URL=...` and `E2E_UPSTASH_REDIS_REST_TOKEN=...`
-   The `E2E_` prefix is on purpose: nothing from `.env` reaches the tests. A dedicated database later means new values here and in the GitHub secrets, no code ([`context/todo.md`](context/todo.md))
+   The `E2E_` prefix is on purpose: nothing from `.env` reaches the tests. A dedicated database later means new values here and in the GitHub secrets, no code ([feature 21](context/features/plan/21.e2e-full.md))
 3. **The browser, once**: `npx playwright install chromium`
 4. **Run**: `npm run test:e2e`. It builds the app, starts it on port 3100, empties and seeds the test database and runs the journeys (about 15 seconds after the build). A failing test leaves `test-results/<test>/trace.zip`: open it with `npx playwright show-trace <file>`. `npx playwright test --repeat-each=8` is the flake check (each repeat creates six items and the Free plan allows 50, so stay under 9)
 
@@ -113,7 +115,7 @@ The project is built with Claude Code. Its instructions load from [CLAUDE.md](CL
 
 In short: a feature goes `/feature load` → `/feature start` (plan reviewed by `architecture-reviewer`) → code → `/feature test` → `/feature review` (`code-reviewer`, plus `auth-auditor` for auth changes) → `/feature complete`. Browser checks are done by hand; `ui-reviewer` runs only when asked.
 
-Guard rails in `.claude/settings.json`: Claude Code cannot read `.env`. Work deferred on purpose is in `context/todo.md`.
+Guard rails in `.claude/settings.json`: Claude Code cannot read `.env`. Planned work is in `context/features/plan/`; what only a commercial launch needs is in `context/todo-before-live.md`.
 
 ## Deployment
 
