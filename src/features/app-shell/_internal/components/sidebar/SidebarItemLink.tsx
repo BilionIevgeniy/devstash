@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { LinkPendingMark } from "@/components/common/LinkPendingMark";
+import { PENDING_LINK_CLASS } from "@/features/app-shell/_internal/components/sidebar/SidebarNavLink";
 import { LINK_CLASS } from "@/features/app-shell/_internal/components/sidebar/shared";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
@@ -52,9 +54,10 @@ export function SidebarItemLink({ item, isLocked }: SidebarItemLinkProps) {
       href={itemPagePath(item)}
       aria-current={isCurrent ? "page" : undefined}
       onClick={isCurrent ? (event) => event.preventDefault() : undefined}
-      className={LINK_CLASS}
+      className={cn(LINK_CLASS, PENDING_LINK_CLASS)}
     >
       {content}
+      <LinkPendingMark />
     </Link>
   );
 }

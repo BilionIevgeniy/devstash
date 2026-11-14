@@ -1,7 +1,8 @@
 {
   "meta": {
     "title": "DevStash - Store Smarter. Build Faster.",
-    "description": "One fast, searchable hub for your code snippets, AI prompts, commands, notes, files, images and links."
+    "description": "One fast, searchable hub for your code snippets, AI prompts, commands, notes, files, images and links.",
+    "ogAlt": "DevStash: one searchable hub for code snippets, AI prompts, commands, notes, files and links"
   },
   "nav": {
     "main": "Main",

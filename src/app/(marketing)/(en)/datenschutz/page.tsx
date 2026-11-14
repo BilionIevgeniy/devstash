@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   title: "Datenschutzerklärung / Privacy notice - DevStash",
   description:
     "Information nach Art. 13 DSGVO. Information under Art. 13 GDPR for DevStash.",
+  // Both languages on one URL, so no hreflang.
+  alternates: { canonical: "/datenschutz" },
 };
 
 const DE = {
