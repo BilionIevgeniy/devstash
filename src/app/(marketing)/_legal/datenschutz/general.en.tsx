@@ -148,8 +148,8 @@ export const GENERAL_EN: LegalSection[] = [
           <li>
             <code>devstash-locale</code>: the language you chose for the app
             (English or German). Set only when you pick a language in the user
-            menu; 1 year. Without it, the app follows your browser&apos;s
-            language.
+            menu or with the language link of the website; 1 year. Without it,
+            the app follows your browser&apos;s language.
           </li>
         </ul>
         <p>

@@ -153,8 +153,9 @@ export const GENERAL_DE: LegalSection[] = [
           <li>
             <code>devstash-locale</code>: die Sprache, die Sie für die App
             gewählt haben (Deutsch oder Englisch). Wird nur gesetzt, wenn Sie im
-            Nutzermenü eine Sprache auswählen; 1 Jahr. Ohne dieses Cookie folgt
-            die App der Sprache Ihres Browsers.
+            Nutzermenü oder über den Sprachlink der Website eine Sprache
+            auswählen; 1 Jahr. Ohne dieses Cookie folgt die App der Sprache
+            Ihres Browsers.
           </li>
         </ul>
         <p>

@@ -45,6 +45,48 @@ test.describe("the homepage in two languages", () => {
       page.getByRole("heading", { level: 1, name: /Entwicklerwissen/ }),
     ).toBeVisible();
   });
+
+  test.describe("for an English browser", () => {
+    test.use({ locale: "en-US" });
+
+    // The switch keeps the place on the page and remembers the choice for
+    // the auth pages, which would otherwise follow the browser.
+    test("the navbar switch keeps the section and remembers German", async ({
+      page,
+    }) => {
+      const remembered = (url: string) => url.endsWith("/api/locale");
+
+      // A click before hydration is a plain link: no request, no kept
+      // position. Then the whole step runs again.
+      await expect(async () => {
+        await page.goto("/");
+        await page
+          .getByRole("heading", { name: "Simple, Transparent Pricing" })
+          .evaluate((heading) =>
+            heading.scrollIntoView({ block: "center", behavior: "instant" }),
+          );
+        const response = page.waitForResponse(
+          (answer) => remembered(answer.url()) && answer.status() === 204,
+          { timeout: 2_000 },
+        );
+        await page
+          .getByRole("banner")
+          .getByRole("link", { name: "Diese Seite auf Deutsch" })
+          .click();
+        await response;
+      }).toPass();
+
+      await expect(page).toHaveURL(/\/de$/);
+      await expect(
+        page.getByRole("heading", { name: "Einfache, transparente Preise" }),
+      ).toBeInViewport();
+
+      await page.goto("/sign-in");
+      await expect(
+        page.getByRole("heading", { level: 1, name: "Anmelden" }),
+      ).toBeVisible();
+    });
+  });
 });
 
 // Without a chosen language, the auth pages follow the browser's.
