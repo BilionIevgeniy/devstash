@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   title: "Impressum / Imprint - DevStash",
   description:
     "Anbieterkennzeichnung nach § 5 DDG. Provider information for DevStash.",
+  // Both languages on one URL, so no hreflang.
+  alternates: { canonical: "/impressum" },
 };
 
 export default function ImpressumPage() {

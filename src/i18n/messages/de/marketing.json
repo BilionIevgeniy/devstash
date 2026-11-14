@@ -1,7 +1,8 @@
 {
   "meta": {
     "title": "DevStash – Klüger ablegen. Schneller bauen.",
-    "description": "Ein schneller, durchsuchbarer Ort für deine Code-Snippets, KI-Prompts, Befehle, Notizen, Dateien, Bilder und Links."
+    "description": "Ein schneller, durchsuchbarer Ort für deine Code-Snippets, KI-Prompts, Befehle, Notizen, Dateien, Bilder und Links.",
+    "ogAlt": "DevStash: ein durchsuchbarer Ort für Code-Snippets, KI-Prompts, Befehle, Notizen, Dateien und Links"
   },
   "nav": {
     "main": "Hauptmenü",

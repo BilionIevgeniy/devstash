@@ -98,6 +98,7 @@ A modular monolith: one folder per feature in `src/features/`, ranked, and a fea
 - [docs/architecture.md](docs/architecture.md): the guide for newcomers, with examples and the reference (operations, background work, public API, known risks)
 - [context/architecture-rules.md](context/architecture-rules.md): the short rulebook
 - [docs/modules.md](docs/modules.md): what each module owns and exposes
+- [docs/performance.md](docs/performance.md): how bundle size and Web Vitals are measured, and the numbers
 - [docs/adr/](docs/adr/README.md): the decisions behind the rules
 - [context/coding-standards.md](context/coding-standards.md): TypeScript, React, Next.js, UI/UX, size limits, testing
 

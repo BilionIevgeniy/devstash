@@ -82,7 +82,7 @@ The interface is English and German ([ADR 0024](../docs/adr/0024-locale-decision
 - Tailwind CSS for all styling
 - Use shadcn/ui components where applicable
 - A primitive added with `npx shadcn add` goes through `npm run lint`: the canonical-class rule covers `components/ui` too. Fix a hit with `npx eslint --fix <file>`, not with the editor's format on save, which rewrites the whole file (see the style item in `context/todo.md`)
-- No inline styles
+- No inline styles. Exception: the Open Graph image (`app/(marketing)/_components/og-image.tsx`) is styled with `style` objects only, since Satori, which draws an `ImageResponse`, reads no classes
 - Dark mode first, light mode as option
 
 ## UI/UX
@@ -144,7 +144,7 @@ A small helper that more than one file needs has one home ([ADR 0021](../docs/ad
 | The cache key or the cache sync after an action of items or collections | `itemKeys`, `syncItemQueries`, `useSyncItemQueries` | `items/components/item-queries.ts`, `items/components/hooks/use-item-queries.ts` |
 | The Query client with the app's rules (a refusal is never retried) | `createQueryClient()`; `QueryProvider` in the `(app)` layout | `components/common/query-client.ts`, `components/common/QueryProvider.tsx` |
 | A failed route answer thrown from a fetch helper of a Query | `readRouteData(response)`: the data, or a `RouteError` (status and failure) | `lib/route-error.ts` |
-| The end of an endless list, or a group's next page | `LoadMore` (sentinel and button), `ShowMore` (button), `ListLoadError` (a failed first page); around the rows of `/favorites` and a `/pinned` group, `ListPagesFrame` (dimmed while a sort loads, the error in their place) | `components/common/`, `app/(app)/_components/ListPagesFrame.tsx` |
+| The end of an endless list, or a group's next page | `LoadMore` (sentinel and button), `ShowMore` (button), `ListLoadError` (a failed first page, or with `message` anything else the browser could not load: the create dialog's form); around the rows of `/favorites` and a `/pinned` group, `ListPagesFrame` (dimmed while a sort loads, the error in their place) | `components/common/`, `app/(app)/_components/ListPagesFrame.tsx` |
 | The scroll place of a long list on Back (the shell scrolls its `<main>`) | `useScrollRestore(ref, key)` | `components/common/hooks/use-scroll-restore.ts` |
 | An error boundary in a `dom` test | `CatchBoundary` | `test/catch-boundary.tsx` |
 

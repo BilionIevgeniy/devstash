@@ -293,6 +293,17 @@ Errors reach Sentry (EU data region) by four paths. Each ends in `lib/sentry.ts`
 - Two tests run the real SDK (`lib/sentry-integrations.test.ts` pins the default integrations of the Node build, `lib/sentry-client-integrations.test.tsx` the seven that the browser starts), so an upgrade that changes a name turns CI red. Repeat the check of what leaves the app (method in ADR 0016) before a Sentry bump is merged
 - The alert for new issues is set in Sentry, filtered to `environment:production`; the retention is the plan's (30 days on Developer)
 
+### Performance and SEO
+
+How size and speed are measured, the numbers and the decisions are in [docs/performance.md](performance.md). What the code does:
+
+- **Lazy parts.** A heavy part that most visits never open is its own chunk: the create item form (`items/_internal/components/CreateItemForm.tsx`, loaded by `CreateItemDialog` with `import()` once the page is idle, on hover or focus of its button, or on open, with a skeleton and an in-dialog `ListLoadError` with Try again; a failure is shown only for the attempt of the open dialog), the Cmd+K palette (`next/dynamic`) and the Markdown preview (`next/dynamic`). The create form uses a plain `import()` held in state rather than `next/dynamic`, so an open with the chunk loaded renders the form at once and a failed chunk stays inside the dialog
+- **Pending links.** `LinkPendingMark` (`components/common`) inside a `Link` marks it with `data-pending` while its navigation runs; the sidebar links dim through it after 100 ms, pagination and the language link use it too
+- **Metadata.** The root layout sets `metadataBase` from `getSiteOrigin()` (`lib/app-url.ts`, read at build time), so canonical, hreflang and Open Graph URLs are absolute on the site's origin. `/` and `/de` set title, description, canonical and hreflang through `homeMetadata`; the legal pages set a canonical (both languages on one URL, so no hreflang)
+- **Crawlers.** `app/sitemap.ts` lists the public pages (`/`, `/de`, `/impressum`, `/datenschutz`); `app/robots.ts` closes only `/api/`. The app and auth pages are never indexed: `next.config.ts` sends `X-Robots-Tag: noindex, nofollow` for their prefixes (`NOINDEX_PATHS` in `lib/noindex-paths.ts`; `noindex-paths.test.ts` fails on a prefix of the `src/proxy.ts` matcher the list lacks), and their layouts say the same in metadata. A header, because the metadata of a dynamic layout streams into the body. Robots does not close those pages: a crawler that may not fetch a page never sees its noindex
+- **Open Graph.** `opengraph-image.tsx` in `(marketing)/(en)` and `(marketing)/de` draws the card of a shared link with `ImageResponse` at build time (`(marketing)/_components/og-image.tsx`: the logo as inline SVG, the localized title and description; the alt text from `marketing.meta.ogAlt`). The legal pages under `(en)` share the English one
+- Every page of these stays static (`○` in the build output): none reads the request
+
 ### Public API of a feature
 
 The public API of a feature is everything outside its `_internal/` folder. It is defined by a lint rule, not by a barrel file.

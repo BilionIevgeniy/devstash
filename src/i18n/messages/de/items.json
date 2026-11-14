@@ -46,7 +46,9 @@
   "create": {
     "newItem": "Neuer Eintrag",
     "newType": "Neu: {type}",
-    "description": "Speichere ein Snippet, einen Prompt, einen Befehl, eine Notiz, einen Link, eine Datei oder ein Bild."
+    "description": "Speichere ein Snippet, einen Prompt, einen Befehl, eine Notiz, einen Link, eine Datei oder ein Bild.",
+    "loading": "Formular wird geladen…",
+    "loadFailed": "Das Formular konnte nicht geladen werden. Prüfe deine Verbindung und versuche es noch einmal."
   },
   "toasts": {
     "created": "Eintrag erstellt",

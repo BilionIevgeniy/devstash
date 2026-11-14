@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 import packageJson from "./package.json";
+import { NOINDEX_PATHS } from "./src/lib/noindex-paths";
 
 // Where scripts/copy-monaco.mjs puts the editor. The exact version in the path
 // is what lets the files be cached for good.
@@ -44,6 +45,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/:path*", headers: SECURITY_HEADERS },
+      ...NOINDEX_PATHS.map((path) => ({
+        source: `${path}/:path*`,
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      })),
       {
         source: `${MONACO_PATH}/:path*`,
         headers: [
