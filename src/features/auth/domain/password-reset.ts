@@ -10,9 +10,7 @@ export function getPasswordResetIdentifier(email: string): string {
 }
 
 export function getPasswordResetExpiry(now: Date): Date {
-  return new Date(
-    now.getTime() + PASSWORD_RESET_TOKEN_TTL_HOURS * MS_PER_HOUR,
-  );
+  return new Date(now.getTime() + PASSWORD_RESET_TOKEN_TTL_HOURS * MS_PER_HOUR);
 }
 
 export function buildPasswordResetUrl(

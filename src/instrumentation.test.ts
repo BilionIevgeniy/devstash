@@ -1,11 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-// `@/lib/sentry` is the stub of vitest.shared.mts here, in this file and in
+// `@/lib/observability/sentry` is the stub of vitest.shared.mts here, in this file and in
 // instrumentation.ts alike.
-import { onRequestError as libOnRequestError } from "@/lib/sentry";
-import { initSentryServer } from "@/lib/sentry-server";
+import { onRequestError as libOnRequestError } from "@/lib/observability/sentry";
+import { initSentryServer } from "@/lib/observability/sentry-server";
 import { onRequestError, register } from "./instrumentation";
 
-vi.mock("@/lib/sentry-server", () => ({ initSentryServer: vi.fn() }));
+vi.mock("@/lib/observability/sentry-server", () => ({
+  initSentryServer: vi.fn(),
+}));
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -34,7 +36,7 @@ describe("register", () => {
 });
 
 describe("onRequestError", () => {
-  it("is exported under the name Next.js looks for, and is the one of lib/sentry", () => {
+  it("is exported under the name Next.js looks for, and is the one of lib/observability/sentry", () => {
     expect(onRequestError).toBe(libOnRequestError);
   });
 });

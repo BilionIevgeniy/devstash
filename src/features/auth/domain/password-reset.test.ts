@@ -37,7 +37,9 @@ describe("buildPasswordResetUrl", () => {
   const ORIGIN = "https://devstash.example";
 
   it("points at /reset-password with the token and the email", () => {
-    const url = new URL(buildPasswordResetUrl(ORIGIN, "ada@example.com", "abc123"));
+    const url = new URL(
+      buildPasswordResetUrl(ORIGIN, "ada@example.com", "abc123"),
+    );
     expect(url.origin).toBe(ORIGIN);
     expect(url.pathname).toBe("/reset-password");
     expect(url.searchParams.get("token")).toBe("abc123");
@@ -45,9 +47,15 @@ describe("buildPasswordResetUrl", () => {
   });
 
   it("encodes a plus sign in the email", () => {
-    const link = buildPasswordResetUrl(ORIGIN, "ada+test@example.com", "abc123");
+    const link = buildPasswordResetUrl(
+      ORIGIN,
+      "ada+test@example.com",
+      "abc123",
+    );
     expect(link).toContain("email=ada%2Btest%40example.com");
-    expect(new URL(link).searchParams.get("email")).toBe("ada+test@example.com");
+    expect(new URL(link).searchParams.get("email")).toBe(
+      "ada+test@example.com",
+    );
   });
 
   it("encodes characters in the token that would break the query", () => {

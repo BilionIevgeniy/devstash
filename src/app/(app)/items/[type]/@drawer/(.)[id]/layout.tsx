@@ -1,4 +1,4 @@
-import { ItemRouteDrawer } from "@/features/items/components/ItemRouteDrawer";
+import { ItemRouteDrawer } from "@/features/items/components/drawer/ItemRouteDrawer";
 
 export default function ItemDrawerLayout({
   children,

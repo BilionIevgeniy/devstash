@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { I18nProvider } from "@/components/common/I18nProvider";
-import { QueryProvider } from "@/components/common/QueryProvider";
+import { I18nProvider } from "@/components/common/providers/I18nProvider";
+import { QueryProvider } from "@/components/common/providers/QueryProvider";
 import { DashboardShell } from "@/features/app-shell/components/DashboardShell";
 import { Sidebar } from "@/features/app-shell/components/Sidebar";
 import {

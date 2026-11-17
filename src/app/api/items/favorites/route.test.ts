@@ -5,12 +5,12 @@ const getFavoriteItemPage = vi.hoisted(() => vi.fn());
 const logError = vi.hoisted(() => vi.fn());
 vi.mock("@/features/auth/nextauth/auth", () => ({ auth }));
 vi.mock("@/features/items/queries/lists", () => ({ getFavoriteItemPage }));
-vi.mock("@/lib/logger", () => ({
+vi.mock("@/lib/observability/logger", () => ({
   logger: { error: logError, warn: vi.fn(), info: vi.fn() },
 }));
 
 import { GET } from "@/app/api/items/favorites/route";
-import { encodeListCursor } from "@/features/items/domain/list-cursor";
+import { encodeListCursor } from "@/features/items/domain/list/list-cursor";
 
 const NEWEST_CURSOR = encodeListCursor("newest", [
   "2026-03-01T10:00:00.000Z",

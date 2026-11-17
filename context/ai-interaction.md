@@ -16,7 +16,7 @@ This is the common workflow that we will use for every single feature/fix. Each 
 2. **Branch** (`/feature start`) - Create new branch for feature, fix, etc
 3. **Review the plan** (`/feature start`, agent `architecture-reviewer`) - Before any code, send the plan to the agent: the whole feature plan at `/feature start`, and again for every later step that changes structure (new routes, providers, a different data flow, new or changed actions). Cosmetic steps (a color, a text, a spacing) skip it. Give the agent the plan and the file paths only, not your reasoning, so its review stays independent. Settle the findings as described in "Working with review agents", then show me the agreed plan and wait for my go
 4. **Implement** - Implement the feature/fix that I create in @context/current-feature.md
-5. **Test** (`/feature test`) - Add unit tests for new pure logic (see "Testing" in @context/coding-standards.md). Run `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build`, `npm run test:integration` when a query or service changed (a cross-user case for each new one), and `npm run test:e2e` when a page, a route or the sign-in or item flows changed, and fix any errors; every test must be green. I check the feature in the browser myself; the `ui-reviewer` agent runs only when I ask for it
+5. **Test** (`/feature test`) - Add unit tests for new pure logic (see "Testing" in @context/coding-standards.md). Run `npm run format:check`, `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build`, `npm run test:integration` when a query or service changed (a cross-user case for each new one), and `npm run test:e2e` when a page, a route or the sign-in or item flows changed, and fix any errors; every test must be green. I check the feature in the browser myself; the `ui-reviewer` agent runs only when I ask for it
 6. **Review the code** (`/feature review`, agents `code-reviewer` and, when auth code changed, `auth-auditor`) - Both get the diff; settle their findings as described in "Working with review agents". The review also reads the IDE diagnostics and the lint ("Warnings at review" below)
 7. **Iterate** - Iterate and change things if needed
 8. **Commit** (`/feature complete`) - Only after the tests are green, the build passes and everything works. The reset of @context/current-feature.md and the entry in context/feature-history.md go into the feature's own commit
@@ -54,12 +54,12 @@ The plan is where a mistake costs most, so it gets Opus. `/feature start` rates 
 
 ### Agents
 
-| Agent | Model | When | Input |
-| ----- | ----- | ---- | ----- |
-| `architecture-reviewer` | Opus | Before code: the feature plan, and every later step that changes structure | The plan and the file paths |
-| `code-reviewer` | Opus | After code, in `/feature review`; on request over all of `src/` every few features, to find duplication between modules | The diff, or nothing for a full scan |
-| `auth-auditor` | Opus | In `/feature review` when auth code changed (report in chat); on request as a full audit (writes `docs/audit-results/AUTH_SECURITY_REVIEW.md`) | The diff, or "full audit" |
-| `ui-reviewer` | Sonnet | Only when I ask, with the dev server running | The pages or the change, and the demo password from `.env.demo` |
+| Agent                   | Model  | When                                                                                                                                           | Input                                                           |
+| ----------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `architecture-reviewer` | Opus   | Before code: the feature plan, and every later step that changes structure                                                                     | The plan and the file paths                                     |
+| `code-reviewer`         | Opus   | After code, in `/feature review`; on request over all of `src/` every few features, to find duplication between modules                        | The diff, or nothing for a full scan                            |
+| `auth-auditor`          | Opus   | In `/feature review` when auth code changed (report in chat); on request as a full audit (writes `docs/audit-results/AUTH_SECURITY_REVIEW.md`) | The diff, or "full audit"                                       |
+| `ui-reviewer`           | Sonnet | Only when I ask, with the dev server running                                                                                                   | The pages or the change, and the demo password from `.env.demo` |
 
 Where the Model column names a model other than the file's `model:` line, Claude passes it as the `model` of that call.
 

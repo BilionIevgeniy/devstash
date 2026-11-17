@@ -4,8 +4,8 @@ import { toast } from "sonner";
 
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import type { EditorHandle } from "@/features/editor/types";
-import { callAction } from "@/features/items/_internal/components/call-action";
-import { rejectInvalidContent } from "@/features/items/_internal/components/reject-invalid-content";
+import { callAction } from "@/features/items/_internal/components/form/call-action";
+import { rejectInvalidContent } from "@/features/items/_internal/components/form/reject-invalid-content";
 import { updateItem } from "@/features/items/actions/item";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import type { AiGeneratedClaims } from "@/features/items/domain/ai-marks";

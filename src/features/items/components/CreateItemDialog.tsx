@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
-import { ListLoadError } from "@/components/common/ListLoadError";
+import { ListLoadError } from "@/components/common/lists/ListLoadError";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,8 +17,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ProBadge } from "@/features/billing/components/ProBadge";
-import type { CreateItemForm as CreateItemFormComponent } from "@/features/items/_internal/components/CreateItemForm";
-import { CreateItemFormSkeleton } from "@/features/items/_internal/components/CreateItemFormSkeleton";
+import type { CreateItemForm as CreateItemFormComponent } from "@/features/items/_internal/components/form/CreateItemForm";
+import { CreateItemFormSkeleton } from "@/features/items/_internal/components/form/CreateItemFormSkeleton";
 import {
   canCreateType,
   type CreatableTypeName,
@@ -38,15 +38,14 @@ let formPromise: Promise<FormComponent> | null = null;
 let loadedForm: FormComponent | null = null;
 
 function loadForm(): Promise<FormComponent> {
-  formPromise ??= import(
-    "@/features/items/_internal/components/CreateItemForm"
-  ).then(
-    (mod) => (loadedForm = mod.CreateItemForm),
-    (error: unknown) => {
-      formPromise = null;
-      throw error;
-    },
-  );
+  formPromise ??=
+    import("@/features/items/_internal/components/form/CreateItemForm").then(
+      (mod) => (loadedForm = mod.CreateItemForm),
+      (error: unknown) => {
+        formPromise = null;
+        throw error;
+      },
+    );
   return formPromise;
 }
 

@@ -3,9 +3,9 @@
 import { aiItemInputSchema } from "@/features/ai/schemas";
 import { summarizeItem } from "@/features/ai/services/summary";
 import { getSessionUser } from "@/features/auth/nextauth/session";
-import { fail, ok, type ActionResult } from "@/lib/action-result";
-import { logger } from "@/lib/logger";
-import { firstIssue } from "@/lib/validation";
+import { fail, ok, type ActionResult } from "@/lib/errors/action-result";
+import { logger } from "@/lib/observability/logger";
+import { firstIssue } from "@/lib/errors/validation";
 
 // Nothing is written, so there is no refresh: the summary only changes the form.
 export async function generateSummary(

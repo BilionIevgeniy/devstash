@@ -7,7 +7,7 @@ import {
 import type { QueryClient } from "@tanstack/react-query";
 import type { JSXElementConstructor, ReactElement, ReactNode } from "react";
 
-import { createQueryClient } from "@/components/common/query-client";
+import { createQueryClient } from "@/components/common/providers/query-client";
 import type { Locale } from "@/i18n/config";
 
 import { AppProviders } from "./app-providers";

@@ -2,7 +2,7 @@ import { act, renderHook } from "../../../../../../test/intl";
 import { redirect } from "next/navigation";
 import { describe, expect, it, vi } from "vitest";
 
-import type { ActionResult } from "@/lib/action-result";
+import type { ActionResult } from "@/lib/errors/action-result";
 
 const setItemFavorite = vi.hoisted(() => vi.fn());
 const toast = vi.hoisted(() => Object.assign(vi.fn(), { error: vi.fn() }));

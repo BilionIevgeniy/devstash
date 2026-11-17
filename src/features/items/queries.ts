@@ -13,8 +13,8 @@ import {
   itemListOrderBy,
   itemListWhere,
 } from "@/features/items/_internal/queries/type-list";
-import { compareNames } from "@/features/items/domain/favorite-sort";
-import type { ItemListFilter } from "@/features/items/domain/list-params";
+import { compareNames } from "@/features/items/domain/list/favorite-sort";
+import type { ItemListFilter } from "@/features/items/domain/list/list-params";
 import {
   limitSidebarRows,
   SIDEBAR_ITEMS_LIMIT,
@@ -27,7 +27,7 @@ import type {
   SidebarItems,
 } from "@/features/items/types";
 import type { Prisma } from "@/generated/prisma/client";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 const DASHBOARD_RECENT_ITEMS_LIMIT = 10;
 // Matches the planned item limit of the Free plan.

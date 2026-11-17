@@ -16,8 +16,7 @@ import type { FormActionState } from "@/features/auth/types";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-const SIGN_IN_URL = "/sign-in";
+import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
 const FIELD_NAMES = ["password"] as const;
 type State = FormActionState<(typeof FIELD_NAMES)[number]>;
@@ -48,7 +47,7 @@ async function submit(
     }
     toast.success(successText);
     // replace: Back must not lead to the link that was just used.
-    router.replace(SIGN_IN_URL);
+    router.replace(SIGN_IN_PATH);
     return INITIAL_STATE;
   } catch {
     // A rejection left in an action would show the error page.

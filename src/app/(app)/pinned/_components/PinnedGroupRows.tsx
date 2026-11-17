@@ -1,8 +1,8 @@
 import { LIST_ROW_WRAPPER, ListRow } from "@/app/(app)/_components/ListRow";
 import { ListRowFrame } from "@/app/(app)/_components/ListRowFrame";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
-import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
-import { ItemRowActions } from "@/features/items/components/ItemRowActions";
+import { ItemDrawerTrigger } from "@/features/items/components/drawer/ItemDrawerTrigger";
+import { ItemRowActions } from "@/features/items/components/cards/ItemRowActions";
 import type { DashboardItem } from "@/features/items/types";
 
 interface PinnedGroupRowsProps {

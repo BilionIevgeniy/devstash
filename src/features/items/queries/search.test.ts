@@ -4,7 +4,7 @@ const { findMany, rankUserItemIds } = vi.hoisted(() => ({
   findMany: vi.fn(),
   rankUserItemIds: vi.fn(),
 }));
-vi.mock("@/lib/prisma", () => ({ prisma: { item: { findMany } } }));
+vi.mock("@/lib/postgres/prisma", () => ({ prisma: { item: { findMany } } }));
 vi.mock("@/features/items/_internal/queries/search-ranking", () => ({
   rankUserItemIds,
 }));

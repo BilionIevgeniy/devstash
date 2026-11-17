@@ -9,7 +9,7 @@ import type {
   SidebarItemType,
 } from "@/features/item-types/types";
 import type { Prisma } from "@/generated/prisma/client";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 export const itemTypeSelect = {
   id: true,

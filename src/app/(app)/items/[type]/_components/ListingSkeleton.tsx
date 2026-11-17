@@ -1,6 +1,6 @@
-import { FileListSkeleton } from "@/features/items/components/FileListSkeleton";
-import { ImageGallerySkeleton } from "@/features/items/components/ImageGallerySkeleton";
-import { ItemListSkeleton } from "@/features/items/components/ItemListSkeleton";
+import { FileListSkeleton } from "@/features/items/components/lists/FileListSkeleton";
+import { ImageGallerySkeleton } from "@/features/items/components/lists/ImageGallerySkeleton";
+import { ItemListSkeleton } from "@/features/items/components/lists/ItemListSkeleton";
 import type { TypeListing } from "@/features/items/domain/item-fields";
 
 interface ListingSkeletonProps {

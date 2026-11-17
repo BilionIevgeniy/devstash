@@ -1,8 +1,14 @@
-"use client"
+"use client";
 
-import type { CSSProperties } from "react"
-import { Toaster as Sonner, type ToasterProps } from "sonner"
-import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from "lucide-react"
+import type { CSSProperties } from "react";
+import { Toaster as Sonner, type ToasterProps } from "sonner";
+import {
+  CircleCheckIcon,
+  InfoIcon,
+  TriangleAlertIcon,
+  OctagonXIcon,
+  Loader2Icon,
+} from "lucide-react";
 
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
@@ -10,21 +16,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme="dark"
       className="toaster group"
       icons={{
-        success: (
-          <CircleCheckIcon className="size-4" />
-        ),
-        info: (
-          <InfoIcon className="size-4" />
-        ),
-        warning: (
-          <TriangleAlertIcon className="size-4" />
-        ),
-        error: (
-          <OctagonXIcon className="size-4" />
-        ),
-        loading: (
-          <Loader2Icon className="size-4 animate-spin" />
-        ),
+        success: <CircleCheckIcon className="size-4" />,
+        info: <InfoIcon className="size-4" />,
+        warning: <TriangleAlertIcon className="size-4" />,
+        error: <OctagonXIcon className="size-4" />,
+        loading: <Loader2Icon className="size-4 animate-spin" />,
       }}
       style={
         {
@@ -32,11 +28,15 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
           "--border-radius": "var(--radius)",
-          "--success-bg": "color-mix(in oklab, var(--popover) 85%, oklch(0.72 0.19 150))",
-          "--success-border": "color-mix(in oklab, var(--popover) 55%, oklch(0.72 0.19 150))",
+          "--success-bg":
+            "color-mix(in oklab, var(--popover) 85%, oklch(0.72 0.19 150))",
+          "--success-border":
+            "color-mix(in oklab, var(--popover) 55%, oklch(0.72 0.19 150))",
           "--success-text": "oklch(0.85 0.15 150)",
-          "--error-bg": "color-mix(in oklab, var(--popover) 85%, var(--destructive))",
-          "--error-border": "color-mix(in oklab, var(--popover) 55%, var(--destructive))",
+          "--error-bg":
+            "color-mix(in oklab, var(--popover) 85%, var(--destructive))",
+          "--error-border":
+            "color-mix(in oklab, var(--popover) 55%, var(--destructive))",
           "--error-text": "oklch(0.85 0.1 22)",
         } as CSSProperties
       }
@@ -47,7 +47,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       {...props}
     />
-  )
-}
+  );
+};
 
-export { Toaster }
+export { Toaster };

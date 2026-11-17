@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { homePath } from "@/i18n/config";
 
 import { LanguageLink } from "./LanguageLink";
+import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
 const PANEL_LINK = "flex min-h-11 items-center text-muted-foreground";
 
@@ -31,7 +32,7 @@ export function MobileNavPanel({ id, signedIn, onClose }: MobileNavPanelProps) {
           {t("nav.pricing")}
         </Link>
         {!signedIn && (
-          <Link href="/sign-in" className={PANEL_LINK}>
+          <Link href={SIGN_IN_PATH} className={PANEL_LINK}>
             {t("nav.signIn")}
           </Link>
         )}

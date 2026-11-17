@@ -6,18 +6,18 @@ const mocks = vi.hoisted(() => ({
   updateMany: vi.fn(),
 }));
 
-// The real check is pinned in lib/stripe.test.ts; here only this error is one.
+// The real check is pinned in lib/vendors/stripe.test.ts; here only this error is one.
 const NOT_FOUND = vi.hoisted(() => new Error("No such subscription"));
 
-vi.mock("@/lib/advisory-lock", () => ({
+vi.mock("@/lib/postgres/advisory-lock", () => ({
   LOCKED_TRANSACTION: {},
   lockForTransaction: mocks.lock,
 }));
-vi.mock("@/lib/stripe", () => ({
+vi.mock("@/lib/vendors/stripe", () => ({
   getStripe: () => ({ subscriptions: { retrieve: mocks.retrieve } }),
   isStripeNotFound: (error: unknown) => error === NOT_FOUND,
 }));
-vi.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/postgres/prisma", () => ({
   prisma: {
     $transaction: (run: (tx: unknown) => Promise<void>) =>
       run({ subscription: { updateMany: mocks.updateMany } }),

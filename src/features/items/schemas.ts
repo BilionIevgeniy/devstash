@@ -6,7 +6,7 @@ import {
   type FileKind,
 } from "@/features/files/domain/file-rules";
 import { NO_AI_CLAIMS } from "@/features/items/domain/ai-marks";
-import { FAVORITE_ITEM_SORTS } from "@/features/items/domain/favorite-sort";
+import { FAVORITE_ITEM_SORTS } from "@/features/items/domain/list/favorite-sort";
 import {
   COLLECTIONS_MAX,
   CONTENT_MAX,
@@ -23,13 +23,13 @@ import {
   DEFAULT_ITEM_LIST_PARAMS,
   ITEM_LIST_SORTS,
   type ItemListParams,
-} from "@/features/items/domain/list-params";
-import { decodeListCursor } from "@/features/items/domain/list-cursor";
+} from "@/features/items/domain/list/list-params";
+import { decodeListCursor } from "@/features/items/domain/list/list-cursor";
 import {
   FAVORITE_CURSOR_KINDS,
   PINNED_CURSOR_KINDS,
-} from "@/features/items/domain/list-pages";
-import { PINNED_ITEM_SORTS } from "@/features/items/domain/pinned-items";
+} from "@/features/items/domain/list/list-pages";
+import { PINNED_ITEM_SORTS } from "@/features/items/domain/list/pinned-items";
 import type { ErrorCode } from "@/i18n/error-codes";
 import { parsePage } from "@/lib/pagination";
 

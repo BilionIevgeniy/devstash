@@ -29,9 +29,12 @@ const FEATURE_RANKS = {
 };
 const FEATURE_NAMES = Object.keys(FEATURE_RANKS);
 
-const existingFeatures = readdirSync(new URL("./src/features", import.meta.url), {
-  withFileTypes: true,
-})
+const existingFeatures = readdirSync(
+  new URL("./src/features", import.meta.url),
+  {
+    withFileTypes: true,
+  },
+)
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name);
 const unlistedFeatures = existingFeatures.filter(
@@ -63,12 +66,14 @@ const layerZones = [
     // (ADR 0023).
     target: "./src/i18n",
     from: ["./src/lib", "./src/components", ...features(...FEATURE_NAMES), APP],
-    message: "src/i18n holds config and messages only and imports no other layer.",
+    message:
+      "src/i18n holds config and messages only and imports no other layer.",
   },
   {
     target: ["./src/lib", "./src/components"],
     from: [...features(...FEATURE_NAMES), APP],
-    message: "lib and components/ui are the lowest layer and cannot import features or app.",
+    message:
+      "lib and components/ui are the lowest layer and cannot import features or app.",
   },
   ...FEATURE_NAMES.map((name) => ({
     target: features(name),
@@ -124,7 +129,8 @@ const intraFeatureZones = FEATURE_NAMES.flatMap((name) => {
         `${dir}/_internal/queries`,
         ...roleFolders(name, "services", "actions", "components"),
       ],
-      message: "schemas.ts cannot import queries, services, actions or components.",
+      message:
+        "schemas.ts cannot import queries, services, actions or components.",
     },
     {
       target: roleFolders(name, "services"),
@@ -139,14 +145,16 @@ const intraFeatureZones = FEATURE_NAMES.flatMap((name) => {
     {
       target: roleFolders(name, "components"),
       from: roleFolders(name, "services"),
-      message: "components cannot import services: read data through queries in a server component or call an action.",
+      message:
+        "components cannot import services: read data through queries in a server component or call an action.",
     },
     {
       // A hook feeds components, so it points down to them, never up: a type
       // they share lives in the hook's file or types.ts (ADR 0007).
       target: roleFolders(name, "components/hooks"),
       from: ["./src/**/*.tsx"],
-      message: "Hooks cannot import components (.tsx): a type they share lives in the hook's file or types.ts.",
+      message:
+        "Hooks cannot import components (.tsx): a type they share lives in the hook's file or types.ts.",
     },
   ];
 });
@@ -169,10 +177,11 @@ const domainZone = {
 };
 
 // Vendor SDKs are reached only through a client in src/lib. Anchored, because a
-// bare "stripe" pattern would also match our own wrapper @/lib/stripe.
+// bare "stripe" pattern would also match our own wrapper @/lib/vendors/stripe.
 const VENDOR_SDKS = {
   regex: "^(resend|stripe|openai)(/|$)|^(@upstash|@aws-sdk|@sentry)/",
-  message: "Vendor SDKs are used only inside src/lib: call the client from there.",
+  message:
+    "Vendor SDKs are used only inside src/lib: call the client from there.",
 };
 
 const restrictImports = ({ paths = [], patterns = [] } = {}) => [
@@ -206,7 +215,7 @@ const SHARED_SYNTAX_BANS = [
     selector:
       "MemberExpression[computed=true][property.value=0][object.type='MemberExpression'][object.property.name='issues']",
     message:
-      "Read the failure of a refused input with firstIssue from @/lib/validation.",
+      "Read the failure of a refused input with firstIssue from @/lib/errors/validation.",
   },
   {
     selector: "Literal[value='Something went wrong. Please try again.']",
@@ -218,7 +227,7 @@ const SHARED_SYNTAX_BANS = [
     selector:
       "CallExpression[callee.object.name='toast'][arguments.0.type=/^(Literal|TemplateLiteral)$/], CallExpression[callee.name='toast'][arguments.0.type=/^(Literal|TemplateLiteral)$/]",
     message:
-      "Toast text comes from the messages: toast.success(t(\"items.toasts.saved\")) (ADR 0024).",
+      'Toast text comes from the messages: toast.success(t("items.toasts.saved")) (ADR 0024).',
   },
 ];
 
@@ -323,7 +332,10 @@ const eslintConfig = defineConfig([
     // needs type information.
     files: ["src/**/*.{ts,tsx}"],
     languageOptions: {
-      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     rules: { "@typescript-eslint/no-deprecated": "error" },
   },
@@ -349,7 +361,11 @@ const eslintConfig = defineConfig([
   // no-restricted-imports: a later block replaces an earlier one for the files
   // it matches, so every block repeats the vendor SDK ban through restrictImports.
   {
-    files: ["src/features/**/*.{ts,tsx}", "src/app/**/*.{ts,tsx}", "src/proxy.ts"],
+    files: [
+      "src/features/**/*.{ts,tsx}",
+      "src/app/**/*.{ts,tsx}",
+      "src/proxy.ts",
+    ],
     rules: { "no-restricted-imports": restrictImports() },
   },
   {
@@ -361,7 +377,7 @@ const eslintConfig = defineConfig([
     ],
     rules: {
       "no-restricted-imports": restrictImports({
-        paths: [{ name: "@/lib/prisma", message: NO_PRISMA_MESSAGE }],
+        paths: [{ name: "@/lib/postgres/prisma", message: NO_PRISMA_MESSAGE }],
         patterns: [
           {
             group: ["@/generated/prisma", "@/generated/prisma/*"],
@@ -375,11 +391,13 @@ const eslintConfig = defineConfig([
     files: ["src/features/**/services/**/*.{ts,tsx}"],
     rules: {
       "no-restricted-imports": restrictImports({
-        paths: ["next/headers", "next/cache", "next/navigation"].map((name) => ({
-          name,
-          message:
-            "Services take userId, ip and origin as parameters: read the request in the action, route or page.",
-        })),
+        paths: ["next/headers", "next/cache", "next/navigation"].map(
+          (name) => ({
+            name,
+            message:
+              "Services take userId, ip and origin as parameters: read the request in the action, route or page.",
+          }),
+        ),
       }),
     },
   },
@@ -387,10 +405,7 @@ const eslintConfig = defineConfig([
     // The shared bans for all of src. Comes before the blocks below, which
     // set the rule again for their files with their own selectors added.
     files: ["src/**/*.{ts,tsx}"],
-    ignores: [
-      "src/**/*.test.{ts,tsx}",
-      "src/lib/validation.ts",
-    ],
+    ignores: ["src/**/*.test.{ts,tsx}", "src/lib/errors/validation.ts"],
     rules: {
       "no-restricted-syntax": restrictSyntax(),
     },
@@ -487,10 +502,10 @@ const eslintConfig = defineConfig([
     rules: { "max-lines-per-function": maxFunctionLines(80) },
   },
   {
-    // One place writes a log line, src/lib/logger.ts: it keeps an email, a title
+    // One place writes a log line, src/lib/observability/logger.ts: it keeps an email, a title
     // or a raw error out of the logs and sends the caught errors to Sentry.
     files: ["src/**/*.{ts,tsx}"],
-    ignores: ["src/lib/logger.ts", "src/**/*.test.{ts,tsx}"],
+    ignores: ["src/lib/observability/logger.ts", "src/**/*.test.{ts,tsx}"],
     rules: { "no-console": "error" },
   },
   {
@@ -500,7 +515,10 @@ const eslintConfig = defineConfig([
     files: ["src/**/*.{ts,tsx}"],
     ignores: ["src/**/*.test.{ts,tsx}", "src/generated/**"],
     languageOptions: {
-      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     rules: { "@typescript-eslint/no-floating-promises": "error" },
   },
@@ -512,7 +530,10 @@ const eslintConfig = defineConfig([
     // rules above cover src/ only.
     files: ["e2e/**/*.ts", "playwright.config.ts", ".storybook/**/*.{ts,tsx}"],
     languageOptions: {
-      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
     },
     rules: { "@typescript-eslint/no-floating-promises": "error" },
   },
@@ -528,7 +549,7 @@ const eslintConfig = defineConfig([
       "src/**/*.stories.tsx",
       "src/components/ui/**",
       "src/app/(marketing)/_legal/**",
-      "src/app/(marketing)/_components/LegalPage.tsx",
+      "src/app/(marketing)/_components/legal/LegalPage.tsx",
       "src/components/common/BilingualErrorText.tsx",
       "src/app/global-error.tsx",
     ],

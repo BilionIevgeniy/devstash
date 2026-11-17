@@ -3,8 +3,8 @@ import { useState, type ReactNode } from "react";
 import { sb } from "storybook/test";
 
 import { geistMono, geistSans } from "@/app/fonts";
-import { AppToaster } from "@/components/common/AppToaster";
-import { createQueryClient } from "@/components/common/query-client";
+import { AppToaster } from "@/components/common/providers/AppToaster";
+import { createQueryClient } from "@/components/common/providers/query-client";
 import { DEFAULT_LOCALE, isLocale, LOCALES, type Locale } from "@/i18n/config";
 
 import { AppProviders } from "../test/app-providers";

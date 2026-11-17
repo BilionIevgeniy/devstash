@@ -3,9 +3,9 @@
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { saveEditorPreferences } from "@/features/editor/_internal/services/preferences";
 import { editorPreferencesSchema } from "@/features/editor/schemas";
-import { fail, ok, type ActionResult } from "@/lib/action-result";
-import { logger } from "@/lib/logger";
-import { firstIssue } from "@/lib/validation";
+import { fail, ok, type ActionResult } from "@/lib/errors/action-result";
+import { logger } from "@/lib/observability/logger";
+import { firstIssue } from "@/lib/errors/validation";
 
 export async function updateEditorPreferences(
   data: unknown,

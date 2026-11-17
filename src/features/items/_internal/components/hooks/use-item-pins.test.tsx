@@ -1,7 +1,7 @@
 import { act, renderHook } from "../../../../../../test/intl";
 import { describe, expect, it, vi } from "vitest";
 
-import type { ActionResult } from "@/lib/action-result";
+import type { ActionResult } from "@/lib/errors/action-result";
 
 const setItemPin = vi.hoisted(() => vi.fn());
 const toast = vi.hoisted(() =>

@@ -1,4 +1,4 @@
-/** The same names as the kinds `lib/openai` gives a failed call. */
+/** The same names as the kinds `lib/vendors/openai` gives a failed call. */
 export type AiFailureKind =
   "busy" | "unavailable" | "timeout" | "refused" | "failed";
 

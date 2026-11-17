@@ -1,6 +1,6 @@
 import "client-only";
-import { fail, type Failure } from "@/lib/action-result";
-import { routeError } from "@/lib/route-error";
+import { fail, type Failure } from "@/lib/errors/action-result";
+import { routeError } from "@/lib/errors/route-error";
 
 export type RegisterResult = { success: true } | Failure;
 

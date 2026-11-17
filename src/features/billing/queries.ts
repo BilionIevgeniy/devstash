@@ -7,7 +7,7 @@ import {
   type Entitlements,
 } from "@/features/billing/domain/limits";
 import type { BillingOverview } from "@/features/billing/types";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // The one source of the plan: limits and Pro checks read it here, never from
 // the session or the JWT. cache() shares one read per request.

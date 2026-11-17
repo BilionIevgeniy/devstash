@@ -1,8 +1,8 @@
 import { localeBodySchema } from "@/features/app-shell/schemas";
-import { fail } from "@/lib/action-result";
-import { jsonError, NO_STORE } from "@/lib/api-response";
-import { setLocaleCookie } from "@/lib/locale-cookie";
-import { firstIssue } from "@/lib/validation";
+import { fail } from "@/lib/errors/action-result";
+import { jsonError, NO_STORE } from "@/lib/http/api-response";
+import { setLocaleCookie } from "@/lib/locale/locale-cookie";
+import { firstIssue } from "@/lib/errors/validation";
 
 // The language picked on the static homepage, remembered for the auth pages
 // and the app (ADR 0024). A route, not a Server Action: an action that sets a

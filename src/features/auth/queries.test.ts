@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { findUnique } = vi.hoisted(() => ({ findUnique: vi.fn() }));
-vi.mock("@/lib/prisma", () => ({ prisma: { user: { findUnique } } }));
+vi.mock("@/lib/postgres/prisma", () => ({ prisma: { user: { findUnique } } }));
 
 import { getSessionVersion } from "@/features/auth/queries";
 

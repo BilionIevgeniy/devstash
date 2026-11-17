@@ -6,8 +6,10 @@ import { AuthCard } from "@/features/auth/components/AuthCard";
 import { GitHubAuthSection } from "@/features/auth/components/GitHubAuthSection";
 import { RegisterForm } from "@/features/auth/components/RegisterForm";
 import { auth } from "@/features/auth/nextauth/auth";
-
-const DASHBOARD_PATH = "/dashboard";
+import {
+  DASHBOARD_PATH,
+  SIGN_IN_PATH,
+} from "@/features/auth/domain/auth-paths";
 
 // A signed-in user goes to the dashboard. Checked here and not in the proxy:
 // auth() also checks the session version, so a revoked session reads as signed
@@ -26,7 +28,7 @@ export default async function RegisterPage() {
       <p className="text-center text-sm text-muted-foreground">
         {t("haveAccount")}{" "}
         <Link
-          href="/sign-in"
+          href={SIGN_IN_PATH}
           className="text-foreground underline-offset-4 hover:underline"
         >
           {t("signIn")}

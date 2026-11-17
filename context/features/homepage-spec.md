@@ -39,15 +39,15 @@ The homepage is one route, so its components live next to it in `src/app/(market
 
 ## Links & Navigation
 
-| Element | Destination |
-|---------|-------------|
-| Logo | `/` |
-| Features link | `#features` (anchor scroll) |
-| Pricing link | `#pricing` (anchor scroll) |
-| Sign In | `/sign-in` |
-| Get Started / Get Started Free | `/register` |
-| Go Pro (Pro card) `[changed: no trial exists, course: Start Free Trial]` | `/register` |
-| See Features (hero) | `#features` (anchor scroll) |
+| Element                                                                  | Destination                 |
+| ------------------------------------------------------------------------ | --------------------------- |
+| Logo                                                                     | `/`                         |
+| Features link                                                            | `#features` (anchor scroll) |
+| Pricing link                                                             | `#pricing` (anchor scroll)  |
+| Sign In                                                                  | `/sign-in`                  |
+| Get Started / Get Started Free                                           | `/register`                 |
+| Go Pro (Pro card) `[changed: no trial exists, course: Start Free Trial]` | `/register`                 |
+| See Features (hero)                                                      | `#features` (anchor scroll) |
 
 ## Technical Notes
 

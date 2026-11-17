@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvider";
+import { ItemDrawerProvider } from "@/features/items/components/drawer/ItemDrawerProvider";
 import { PaletteResults } from "@/features/search/_internal/components/PaletteResults";
 
 interface PaletteDialogProps {

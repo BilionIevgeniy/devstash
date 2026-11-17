@@ -4,7 +4,7 @@ import {
   type Tenants,
 } from "../../../../test/integration/fixtures";
 import { getItemIdentities } from "@/features/items/queries/import";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 let t: Tenants;
 

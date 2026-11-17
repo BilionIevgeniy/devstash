@@ -4,7 +4,7 @@ import { hashToken } from "@/features/auth/_internal/token";
 import { getPasswordResetIdentifier } from "@/features/auth/domain/password-reset";
 import { isTokenExpired } from "@/features/auth/domain/verification-token";
 import type { AccountState, UserProfile } from "@/features/auth/types";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 export async function getUserProfile(
   userId: string,

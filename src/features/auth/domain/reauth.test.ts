@@ -40,7 +40,9 @@ describe("isRecentlyAuthenticated", () => {
   });
 
   it("is false one millisecond after the window", () => {
-    expect(isRecentlyAuthenticated(NOW - REAUTH_WINDOW_MS - 1, NOW)).toBe(false);
+    expect(isRecentlyAuthenticated(NOW - REAUTH_WINDOW_MS - 1, NOW)).toBe(
+      false,
+    );
   });
 
   it("reads a timestamp of 0 as a real time, not as missing", () => {
@@ -52,9 +54,9 @@ describe("isRecentlyAuthenticated", () => {
 describe("requiresReauthentication", () => {
   it("never asks an account with a password", () => {
     expect(requiresReauthentication(true, undefined, NOW)).toBe(false);
-    expect(requiresReauthentication(true, NOW - 10 * REAUTH_WINDOW_MS, NOW)).toBe(
-      false,
-    );
+    expect(
+      requiresReauthentication(true, NOW - 10 * REAUTH_WINDOW_MS, NOW),
+    ).toBe(false);
     expect(requiresReauthentication(true, NOW, NOW)).toBe(false);
   });
 

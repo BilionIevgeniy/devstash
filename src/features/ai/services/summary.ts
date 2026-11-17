@@ -15,8 +15,13 @@ import {
   SUMMARY_INSTRUCTIONS,
 } from "@/features/ai/domain/summary";
 import { summarySchema, type AiItemInput } from "@/features/ai/schemas";
-import { fail, failFrom, ok, type OperationResult } from "@/lib/action-result";
-import { generateStructured } from "@/lib/openai";
+import {
+  fail,
+  failFrom,
+  ok,
+  type OperationResult,
+} from "@/lib/errors/action-result";
+import { generateStructured } from "@/lib/vendors/openai";
 
 export type SummarizeItemResult = OperationResult<string>;
 

@@ -7,7 +7,8 @@ import { ResendVerificationButton } from "@/features/auth/components/ResendVerif
 import { Button } from "@/components/ui/button";
 import { isVerificationTokenValid } from "@/features/auth/queries";
 import { emailLinkParamsSchema } from "@/features/auth/schemas";
-import { getErrorText } from "@/lib/error-text";
+import { getErrorText } from "@/lib/errors/error-text";
+import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
 export default async function VerifyEmailPage({
   searchParams,
@@ -34,7 +35,7 @@ export default async function VerifyEmailPage({
     >
       {parsed.success && <ResendVerificationButton email={parsed.data.email} />}
       <Button asChild variant="outline" size="lg" className="w-full">
-        <Link href="/sign-in">{t("backToSignIn")}</Link>
+        <Link href={SIGN_IN_PATH}>{t("backToSignIn")}</Link>
       </Button>
     </AuthCard>
   );

@@ -278,28 +278,28 @@ Remove `STRIPE_PUBLISHABLE_KEY`: hosted Checkout needs no Stripe.js. Add a comme
 
 ## New Files
 
-| File | Purpose |
-| ---- | ------- |
-| `docs/adr/0011-past-due-grace-and-no-event-table.md` | Supersedes ADR 0005 |
-| `src/lib/stripe.ts` | Stripe client, event verification, error checks, types |
-| `src/lib/stripe.test.ts` | The error checks against real `Stripe.errors` instances |
-| `src/features/billing/schemas.ts` | `planSchema`, `checkoutSessionIdSchema` |
-| `src/features/billing/types.ts` | `BillingOverview` |
-| `src/features/billing/_internal/queries.ts` | `getStripeCustomerId` |
-| `src/features/billing/services/checkout.ts` | Checkout and portal sessions |
-| `src/features/billing/services/checkout.test.ts` | See Testing |
-| `src/features/billing/actions/checkout.ts` | `startCheckout`, `openBillingPortal` |
+| File                                                 | Purpose                                                 |
+| ---------------------------------------------------- | ------------------------------------------------------- |
+| `docs/adr/0011-past-due-grace-and-no-event-table.md` | Supersedes ADR 0005                                     |
+| `src/lib/stripe.ts`                                  | Stripe client, event verification, error checks, types  |
+| `src/lib/stripe.test.ts`                             | The error checks against real `Stripe.errors` instances |
+| `src/features/billing/schemas.ts`                    | `planSchema`, `checkoutSessionIdSchema`                 |
+| `src/features/billing/types.ts`                      | `BillingOverview`                                       |
+| `src/features/billing/_internal/queries.ts`          | `getStripeCustomerId`                                   |
+| `src/features/billing/services/checkout.ts`          | Checkout and portal sessions                            |
+| `src/features/billing/services/checkout.test.ts`     | See Testing                                             |
+| `src/features/billing/actions/checkout.ts`           | `startCheckout`, `openBillingPortal`                    |
 
 ## Modified Files
 
-| File | Changes |
-| ---- | ------- |
-| `src/features/billing/domain/limits.ts`, `limits.test.ts` | `past_due`, limit functions, `billingOverviewFor` |
-| `src/features/billing/queries.ts` | `getBillingOverview` |
-| `eslint.config.mjs` | `VENDOR_SDKS` as an anchored regex |
-| `.env.example` | Remove `STRIPE_PUBLISHABLE_KEY`, add comments |
-| `docs/adr/0005-…`, `docs/adr/README.md` | Status only |
-| `context/architecture-rules.md`, `docs/modules.md`, `docs/architecture.md`, `docs/arc42-lite.md` | See step 11 |
+| File                                                                                             | Changes                                           |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| `src/features/billing/domain/limits.ts`, `limits.test.ts`                                        | `past_due`, limit functions, `billingOverviewFor` |
+| `src/features/billing/queries.ts`                                                                | `getBillingOverview`                              |
+| `eslint.config.mjs`                                                                              | `VENDOR_SDKS` as an anchored regex                |
+| `.env.example`                                                                                   | Remove `STRIPE_PUBLISHABLE_KEY`, add comments     |
+| `docs/adr/0005-…`, `docs/adr/README.md`                                                          | Status only                                       |
+| `context/architecture-rules.md`, `docs/modules.md`, `docs/architecture.md`, `docs/arc42-lite.md` | See step 11                                       |
 
 ## Testing
 

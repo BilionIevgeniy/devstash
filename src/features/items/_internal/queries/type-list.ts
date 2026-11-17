@@ -8,10 +8,10 @@ import {
 import type {
   ItemListFilter,
   ItemListSort,
-} from "@/features/items/domain/list-params";
+} from "@/features/items/domain/list/list-params";
 import type { UploadItemRecord } from "@/features/items/types";
 import type { Prisma } from "@/generated/prisma/client";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // The rows of a type page (ADR 0017): the where and the order its count, its
 // cards and its uploads share, and the read of the uploads, which returns the

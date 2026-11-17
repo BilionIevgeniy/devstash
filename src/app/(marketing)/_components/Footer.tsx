@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { Logo } from "@/components/common/Logo";
 import { homePath, type Locale } from "@/i18n/config";
-import { IMPRINT_PATH, PRIVACY_PATH } from "@/lib/legal-paths";
+import { IMPRINT_PATH, PRIVACY_PATH } from "@/lib/http/legal-paths";
 
 import { LanguageLink } from "./LanguageLink";
 

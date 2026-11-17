@@ -3,13 +3,13 @@ import { getTranslations } from "next-intl/server";
 
 import { TestModeHint } from "@/features/billing/components/TestModeHint";
 import { homePath, LOCALES, type Locale } from "@/i18n/config";
-import { isStripeTestMode } from "@/lib/stripe";
+import { isStripeTestMode } from "@/lib/vendors/stripe";
 
-import { AISection } from "./AISection";
-import { CTASection } from "./CTASection";
-import { FeaturesSection } from "./FeaturesSection";
-import { HeroSection } from "./HeroSection";
-import { PricingSection } from "./PricingSection";
+import { AISection } from "./sections/AISection";
+import { CTASection } from "./sections/CTASection";
+import { FeaturesSection } from "./sections/FeaturesSection";
+import { HeroSection } from "./sections/HeroSection";
+import { PricingSection } from "./sections/PricingSection";
 
 // The homepage of `/` and `/de`: the same sections in the locale the page
 // passes, never one read from the request (ADR 0024).

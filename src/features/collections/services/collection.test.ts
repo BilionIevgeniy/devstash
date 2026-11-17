@@ -21,7 +21,7 @@ const {
   lock: vi.fn(),
   getEntitlements: vi.fn(),
 }));
-vi.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/postgres/prisma", () => ({
   prisma: {
     $executeRaw: executeRaw,
     $transaction: transaction,
@@ -29,7 +29,7 @@ vi.mock("@/lib/prisma", () => ({
     item: { deleteMany: deleteItems },
   },
 }));
-vi.mock("@/lib/advisory-lock", () => ({
+vi.mock("@/lib/postgres/advisory-lock", () => ({
   LOCKED_TRANSACTION: {},
   lockForTransaction: lock,
 }));

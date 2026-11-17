@@ -5,12 +5,12 @@ const getPinnedGroupPage = vi.hoisted(() => vi.fn());
 const logError = vi.hoisted(() => vi.fn());
 vi.mock("@/features/auth/nextauth/auth", () => ({ auth }));
 vi.mock("@/features/items/queries/lists", () => ({ getPinnedGroupPage }));
-vi.mock("@/lib/logger", () => ({
+vi.mock("@/lib/observability/logger", () => ({
   logger: { error: logError, warn: vi.fn(), info: vi.fn() },
 }));
 
 import { GET } from "@/app/api/items/pinned/route";
-import { encodeListCursor } from "@/features/items/domain/list-cursor";
+import { encodeListCursor } from "@/features/items/domain/list/list-cursor";
 
 function callGet(query: string) {
   return GET(new Request(`http://localhost/api/items/pinned${query}`));

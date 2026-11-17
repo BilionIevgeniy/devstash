@@ -1,8 +1,8 @@
 import "server-only";
 
 import type { EditorPreferencesInput } from "@/features/editor/schemas";
-import { ok, type OperationResult } from "@/lib/action-result";
-import { prisma } from "@/lib/prisma";
+import { ok, type OperationResult } from "@/lib/errors/action-result";
+import { prisma } from "@/lib/postgres/prisma";
 
 export async function saveEditorPreferences(
   userId: string,

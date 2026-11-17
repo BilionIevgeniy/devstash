@@ -6,7 +6,7 @@ import {
   getPasswordHash,
 } from "@/features/auth/_internal/queries";
 import { getSessionVersion, getUserProfile } from "@/features/auth/queries";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // The reads of `auth` keyed by a user id, public and `_internal` together: each
 // answers with the caller's own row. The reads keyed by email or a one-time

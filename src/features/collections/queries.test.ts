@@ -6,7 +6,7 @@ const { count, findFirst, findMany, findTypes } = vi.hoisted(() => ({
   findMany: vi.fn(),
   findTypes: vi.fn(),
 }));
-vi.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/postgres/prisma", () => ({
   prisma: {
     collection: { count, findFirst, findMany },
     itemType: { findMany: findTypes },

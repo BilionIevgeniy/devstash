@@ -18,7 +18,7 @@ import {
 } from "@/features/items/domain/sidebar-items";
 import type { Prisma } from "@/generated/prisma/client";
 import { type Paginated, readPage } from "@/lib/pagination";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 const DASHBOARD_COLLECTIONS_LIMIT = 6;
 

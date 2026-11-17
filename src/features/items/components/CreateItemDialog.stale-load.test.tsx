@@ -10,18 +10,21 @@ const { gates } = vi.hoisted(() => ({
 vi.mock("@/features/items/actions/item", () => ({ createItem: vi.fn() }));
 vi.mock("next/navigation", () => ({ unstable_rethrow: vi.fn() }));
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
-vi.mock("@/features/items/_internal/components/ItemFields", () => ({
+vi.mock("@/features/items/_internal/components/fields/ItemFields", () => ({
   ItemFields: () => null,
 }));
-vi.mock("@/features/items/_internal/components/CollectionSelect", () => ({
-  CollectionSelect: () => null,
-}));
-vi.mock("@/features/items/_internal/components/ItemFileField", () => ({
+vi.mock(
+  "@/features/items/_internal/components/fields/CollectionSelect",
+  () => ({
+    CollectionSelect: () => null,
+  }),
+);
+vi.mock("@/features/items/_internal/components/fields/ItemFileField", () => ({
   ItemFileField: () => null,
 }));
 // Each load of the chunk waits until the test settles it.
 vi.mock(
-  "@/features/items/_internal/components/CreateItemForm",
+  "@/features/items/_internal/components/form/CreateItemForm",
   async (importActual) => {
     const gate = Promise.withResolvers<void>();
     gates.push(gate);

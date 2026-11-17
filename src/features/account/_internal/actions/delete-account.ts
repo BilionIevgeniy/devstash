@@ -5,9 +5,9 @@ import { redirect, RedirectType } from "next/navigation";
 import { deleteAccountSchema } from "@/features/account/schemas";
 import { deleteAccount as deleteUserAccount } from "@/features/account/_internal/services/delete-account";
 import { auth, signOut } from "@/features/auth/nextauth/auth";
-import { fail, type ActionResult } from "@/lib/action-result";
-import { logger } from "@/lib/logger";
-import { firstIssue } from "@/lib/validation";
+import { fail, type ActionResult } from "@/lib/errors/action-result";
+import { logger } from "@/lib/observability/logger";
+import { firstIssue } from "@/lib/errors/validation";
 
 const HOME_URL = "/";
 

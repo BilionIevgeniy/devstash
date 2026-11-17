@@ -7,8 +7,8 @@ import {
 } from "../../../../../test/integration/fixtures";
 import { snapshotTenant } from "../../../../../test/integration/snapshot";
 import { deleteAccount } from "@/features/account/_internal/services/delete-account";
-import { prisma } from "@/lib/prisma";
-import { deletePrefix } from "@/lib/r2";
+import { prisma } from "@/lib/postgres/prisma";
+import { deletePrefix } from "@/lib/vendors/r2";
 
 // The whole delete flow of A, with the cascades of the real schema: nothing of
 // B goes with it, in the database or in R2.

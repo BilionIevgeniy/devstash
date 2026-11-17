@@ -1,7 +1,7 @@
 import { act, renderHook } from "../../../../test/intl";
 import { describe, expect, it, vi } from "vitest";
 
-import type { OperationResult } from "@/lib/action-result";
+import type { OperationResult } from "@/lib/errors/action-result";
 
 const { toast, rethrow } = vi.hoisted(() => ({
   toast: { error: vi.fn() },

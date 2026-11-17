@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 
 import CollectionsLoading from "@/app/(app)/collections/(list)/loading";
-import { PaginationNav } from "@/components/common/PaginationNav";
+import { PaginationNav } from "@/components/common/lists/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { CollectionCard } from "@/features/collections/components/CollectionCard";
 import { getUserCollections } from "@/features/collections/queries";

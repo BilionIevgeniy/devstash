@@ -5,7 +5,7 @@ import {
   TooManyAttemptsError,
 } from "@/features/auth/_internal/errors";
 import { authLogger } from "@/features/auth/nextauth/auth-logger";
-import { logger } from "@/lib/logger";
+import { logger } from "@/lib/observability/logger";
 
 // `next-auth` does not load under Vitest ("Testing" in
 // context/coding-standards.md). The class is all that is used of it: the
@@ -16,7 +16,7 @@ vi.mock("next-auth", () => ({
   },
 }));
 
-vi.mock("@/lib/logger", () => ({
+vi.mock("@/lib/observability/logger", () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));
 

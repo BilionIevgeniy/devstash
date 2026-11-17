@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { LegalPage } from "../../_components/LegalPage";
+import { LegalPage } from "../../_components/legal/LegalPage";
 import { GENERAL_DE } from "../../_legal/datenschutz/general.de";
 import { GENERAL_EN } from "../../_legal/datenschutz/general.en";
 import { RIGHTS_DE } from "../../_legal/datenschutz/rights.de";

@@ -2,32 +2,14 @@ import { BarChart3, FolderOpen, Package } from "lucide-react";
 import { typeLabel } from "@/features/item-types/domain/item-type";
 import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
-import type { LucideIcon } from "lucide-react";
 
+import { StatCard } from "@/app/(app)/_components/StatCard";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { getCollectionStats } from "@/features/collections/queries";
 import { getItemStats } from "@/features/items/queries";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { getSidebarItemTypes } from "@/features/item-types/queries";
 import type { SidebarItemType } from "@/features/item-types/types";
-
-interface TotalCardProps {
-  label: string;
-  value: number;
-  icon: LucideIcon;
-}
-
-function TotalCard({ label, value, icon: Icon }: TotalCardProps) {
-  return (
-    <div className="flex items-center justify-between rounded-lg border bg-card p-4">
-      <div>
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="mt-1 text-2xl font-semibold">{value}</p>
-      </div>
-      <Icon className="size-5 text-muted-foreground" />
-    </div>
-  );
-}
 
 function TypeCount({ type }: { type: SidebarItemType }) {
   const typeName = useTranslations("itemTypes");
@@ -62,8 +44,8 @@ export async function UsageStats() {
         {t("usage")}
       </h2>
       <div className="grid grid-cols-2 gap-4">
-        <TotalCard label={t("items")} value={itemStats.total} icon={Package} />
-        <TotalCard
+        <StatCard label={t("items")} value={itemStats.total} icon={Package} />
+        <StatCard
           label={t("collections")}
           value={collectionStats.total}
           icon={FolderOpen}

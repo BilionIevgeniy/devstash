@@ -3,7 +3,7 @@ import "server-only";
 import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
 import { itemTypeSelect } from "@/features/item-types/queries";
 import { copyValueOf } from "@/features/items/domain/item-fields";
-import { ITEMS_PER_PAGE } from "@/features/items/domain/pagination";
+import { ITEMS_PER_PAGE } from "@/features/items/domain/list/pagination";
 import type {
   CollectionItemRecord,
   DashboardItem,
@@ -13,7 +13,7 @@ import type {
 } from "@/features/items/types";
 import type { Prisma } from "@/generated/prisma/client";
 import { type Paginated, readPage } from "@/lib/pagination";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // The reads that hand out the object key, which never leaves the server, and
 // the selects and mappers they share with the public queries. The type counts

@@ -4,8 +4,8 @@ import {
   toEditorPreferences,
   type EditorPreferences,
 } from "@/features/editor/_internal/domain/preferences";
-import { logger } from "@/lib/logger";
-import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/observability/logger";
+import { prisma } from "@/lib/postgres/prisma";
 
 // Read by the app layout for every editor, including those in the top bar, which
 // sits above (app)/error.tsx: a failed read gives the defaults, because an error

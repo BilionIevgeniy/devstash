@@ -1,0 +1,8 @@
+# Commits that only reformat code; `git blame` skips them.
+# GitHub reads this file by itself; locally run once:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# The hashes stay valid because PRs are merged with `--merge`: a squash or
+# rebase merge would give the commit a new hash and this list would miss it.
+
+# style: format the repository with Prettier (feature 16)
+b26281463d64f93658106eadb63d79ea7754730e

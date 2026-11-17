@@ -3,9 +3,9 @@
 import { aiItemInputSchema } from "@/features/ai/schemas";
 import { suggestTags } from "@/features/ai/services/auto-tags";
 import { getSessionUser } from "@/features/auth/nextauth/session";
-import { fail, ok, type ActionResult } from "@/lib/action-result";
-import { logger } from "@/lib/logger";
-import { firstIssue } from "@/lib/validation";
+import { fail, ok, type ActionResult } from "@/lib/errors/action-result";
+import { logger } from "@/lib/observability/logger";
+import { firstIssue } from "@/lib/errors/validation";
 
 // Nothing is written, so there is no refresh: the tags only change the form.
 export async function generateAutoTags(

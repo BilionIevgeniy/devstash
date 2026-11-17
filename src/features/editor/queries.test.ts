@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { findUnique } = vi.hoisted(() => ({ findUnique: vi.fn() }));
 
-vi.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/postgres/prisma", () => ({
   prisma: { userPreference: { findUnique } },
 }));
 

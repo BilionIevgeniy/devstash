@@ -2,7 +2,7 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { isUserKey } from "../src/features/files/domain/file-rules";
 import { PrismaClient } from "../src/generated/prisma/client";
-import { deleteObject } from "../src/lib/r2";
+import { deleteObject } from "../src/lib/vendors/r2";
 import { DEMO_USER_EMAIL } from "../prisma/demo-user";
 import { requireDevDatabase } from "./require-dev-database";
 

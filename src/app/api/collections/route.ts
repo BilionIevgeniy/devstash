@@ -1,8 +1,8 @@
 import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { getCollectionOptions } from "@/features/collections/queries";
-import { fail } from "@/lib/action-result";
-import { jsonError, jsonOk } from "@/lib/api-response";
-import { logger } from "@/lib/logger";
+import { fail } from "@/lib/errors/action-result";
+import { jsonError, jsonOk } from "@/lib/http/api-response";
+import { logger } from "@/lib/observability/logger";
 
 // The options of the item forms' Collections input, which read this JSON as
 // ItemCollectionRef (ADR 0008). Answers 401 instead of redirecting to sign-in:

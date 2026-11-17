@@ -1,7 +1,7 @@
 import "server-only";
 
 import { CredentialsSignin, type NextAuthConfig } from "next-auth";
-import { logger } from "@/lib/logger";
+import { logger } from "@/lib/observability/logger";
 
 // Auth.js catches the errors of its own flows (the adapter's reads and writes
 // during a GitHub sign-in, a bad configuration) and writes them with

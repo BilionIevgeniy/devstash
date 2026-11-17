@@ -8,7 +8,7 @@ const { headObject, deleteObject, deletePrefix, signGetUrl } = vi.hoisted(
     signGetUrl: vi.fn(),
   }),
 );
-vi.mock("@/lib/r2", () => ({
+vi.mock("@/lib/vendors/r2", () => ({
   headObject,
   deleteObject,
   deletePrefix,

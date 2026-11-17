@@ -7,8 +7,8 @@ import {
 } from "@/features/auth/services/account";
 import { deleteBillingCustomer } from "@/features/billing/services/customer";
 import { purgeUserObjects } from "@/features/files/services/objects";
-import { fail, ok, type OperationResult } from "@/lib/action-result";
-import { logger } from "@/lib/logger";
+import { fail, ok, type OperationResult } from "@/lib/errors/action-result";
+import { logger } from "@/lib/observability/logger";
 
 // Verify, stop the billing, purge the files, then delete the rows (ADR 0004).
 // The billing goes first, so nobody pays for a deleted account. The files go

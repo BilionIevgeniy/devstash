@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { ExportedCollection } from "@/features/collections/types";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // Every collection of the caller for the export, in one read: a row is small,
 // so the collections are not paged like the items.

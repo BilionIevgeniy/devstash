@@ -1,8 +1,8 @@
 import "server-only";
 
 import { getStripeCustomerId } from "@/features/billing/_internal/queries";
-import { prisma } from "@/lib/prisma";
-import { getStripe, isStripeNotFound } from "@/lib/stripe";
+import { prisma } from "@/lib/postgres/prisma";
+import { getStripe, isStripeNotFound } from "@/lib/vendors/stripe";
 
 // Deleting the customer cancels its subscriptions at once. No customer: the
 // demo user keeps its row. updateMany: a delete from another tab can have

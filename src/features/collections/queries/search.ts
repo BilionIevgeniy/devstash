@@ -7,8 +7,8 @@ import {
   toSearchMatch,
 } from "@/features/items/domain/search-text";
 import type { Prisma } from "@/generated/prisma/client";
-import { orderByIds } from "@/lib/order-by-ids";
-import { prisma } from "@/lib/prisma";
+import { orderByIds } from "@/lib/postgres/order-by-ids";
+import { prisma } from "@/lib/postgres/prisma";
 
 // The collections of the command palette (ADR 0018).
 

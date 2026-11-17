@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { revokeGitHubGrant } from "@/features/auth/_internal/services/github-grant";
-import { logger } from "@/lib/logger";
+import { logger } from "@/lib/observability/logger";
 
-vi.mock("@/lib/logger", () => ({
+vi.mock("@/lib/observability/logger", () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));
 

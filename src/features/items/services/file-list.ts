@@ -2,7 +2,7 @@ import "server-only";
 
 import { getUploadItemsOfType } from "@/features/items/_internal/queries/type-list";
 import { signItemFile } from "@/features/items/_internal/services/file-urls";
-import type { ItemListFilter } from "@/features/items/domain/list-params";
+import type { ItemListFilter } from "@/features/items/domain/list/list-params";
 import type { FileListItem, UploadItemRecord } from "@/features/items/types";
 
 // The records come from a query scoped by userId, so every key is the caller's

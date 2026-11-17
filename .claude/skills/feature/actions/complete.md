@@ -2,7 +2,7 @@
 
 The feature reaches `main` through a PR merged on GitHub after green `ci`, `integration` and `e2e` checks, never through a local merge and a push of `main`: branch protection rejects a direct push, and the merge commit would land without a CI result.
 
-1. Run `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build`, `npm run test:integration` when a query or service changed, and `npm run test:e2e` when a page, a route or the sign-in or item flows changed; stop and fix if anything is not green
+1. Run `npm run format:check`, `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build`, `npm run test:integration` when a query or service changed, and `npm run test:e2e` when a page, a route or the sign-in or item flows changed; stop and fix if anything is not green
 2. Reset current-feature.md:
    - Change H1 back to `# Current Feature`
    - Clear Goals, Notes and Model sections (keep placeholder comments)
@@ -25,7 +25,7 @@ The feature reaches `main` through a PR merged on GitHub after green `ci`, `inte
 8. Do not ask before merging: once all three checks are green, the merge is the natural end of the task and goes ahead. It deploys production and runs its migrations (ADR 0013), so a red, pending or missing check means no merge
 9. Merge on GitHub and delete the branch there: `gh pr merge <number> --merge --delete-branch`
 10. Update the local `main` and remove the local branch:
-   - `git switch main` and `git pull --ff-only`
-   - If the feature branch still exists locally, check `git merge-base --is-ancestor <branch> main`, then `git branch -D <branch>`
+    - `git switch main` and `git pull --ff-only`
+    - If the feature branch still exists locally, check `git merge-base --is-ancestor <branch> main`, then `git branch -D <branch>`
 11. Confirm the deploy: on the merge commit, `ci`, `integration`, `e2e` and the Vercel status are green (`gh api repos/{owner}/{repo}/commits/<sha>/check-runs` and `.../status`). A failed Vercel build keeps the previous deployment live; report it with the reason
 12. If the feature changed `package.json`, `package-lock.json` or `.github/dependabot.yml`, comment `@dependabot recreate` on every Dependabot PR still open

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { encodeListCursor } from "@/features/items/domain/list-cursor";
+import { encodeListCursor } from "@/features/items/domain/list/list-cursor";
 import {
   COLLECTIONS_MAX,
   CONTENT_MAX,

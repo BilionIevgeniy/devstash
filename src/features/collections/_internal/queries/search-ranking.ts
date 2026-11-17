@@ -2,8 +2,11 @@ import "server-only";
 
 import type { SearchMatch } from "@/features/items/domain/search-text";
 import { Prisma } from "@/generated/prisma/client";
-import { fullTextMatchSql, fullTextRankSql } from "@/lib/full-text-search";
-import { prisma } from "@/lib/prisma";
+import {
+  fullTextMatchSql,
+  fullTextRankSql,
+} from "@/lib/postgres/full-text-search";
+import { prisma } from "@/lib/postgres/prisma";
 
 // The one raw read of collections (ADR 0018), allowed by the same lint
 // exception as items/_internal/queries/search-ranking.ts: a tagged template,

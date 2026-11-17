@@ -14,7 +14,7 @@ import { RecentItems } from "@/app/(app)/dashboard/_components/RecentItems";
 import { StatsCards } from "@/app/(app)/dashboard/_components/StatsCards";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { getEntitlements } from "@/features/billing/queries";
-import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvider";
+import { ItemDrawerProvider } from "@/features/items/components/drawer/ItemDrawerProvider";
 
 export default async function DashboardPage() {
   const t = await getTranslations("pages.dashboard");

@@ -28,9 +28,12 @@ import {
   ok,
   type Failure,
   type OperationResult,
-} from "@/lib/action-result";
-import { LOCKED_TRANSACTION, lockForTransaction } from "@/lib/advisory-lock";
-import { prisma } from "@/lib/prisma";
+} from "@/lib/errors/action-result";
+import {
+  LOCKED_TRANSACTION,
+  lockForTransaction,
+} from "@/lib/postgres/advisory-lock";
+import { prisma } from "@/lib/postgres/prisma";
 
 export type CreateItemResult = OperationResult<{ id: string }>;
 

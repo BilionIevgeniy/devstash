@@ -3,13 +3,13 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { PaginationNav } from "@/components/common/PaginationNav";
+import { PaginationNav } from "@/components/common/lists/PaginationNav";
 import { Button } from "@/components/ui/button";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import { getEntitlements } from "@/features/billing/queries";
-import { LockedFileList } from "@/features/items/components/LockedFileList";
-import { LockedFileListSkeleton } from "@/features/items/components/LockedFileListSkeleton";
+import { LockedFileList } from "@/features/items/components/lists/LockedFileList";
+import { LockedFileListSkeleton } from "@/features/items/components/lists/LockedFileListSkeleton";
 import { LOCKED_FILES_PATH } from "@/features/items/domain/item-fields";
 import { getUserLockedFiles } from "@/features/items/services/locked-files";
 import { parsePage } from "@/lib/pagination";

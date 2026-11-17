@@ -8,11 +8,11 @@ import {
   resetPasswordWithToken,
 } from "@/features/auth/services/password-reset";
 import type { AuthActionState } from "@/features/auth/types";
-import { getAppOrigin } from "@/lib/app-url";
-import { getClientIp } from "@/lib/client-ip";
-import { logger } from "@/lib/logger";
-import { fail, ok } from "@/lib/action-result";
-import { firstIssue } from "@/lib/validation";
+import { getAppOrigin } from "@/lib/http/app-url";
+import { getClientIp } from "@/lib/http/client-ip";
+import { logger } from "@/lib/observability/logger";
+import { fail, ok } from "@/lib/errors/action-result";
+import { firstIssue } from "@/lib/errors/validation";
 
 const SUCCESS: AuthActionState = ok();
 

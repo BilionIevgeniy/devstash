@@ -13,7 +13,7 @@ import {
 } from "@/features/import-export/services/import";
 import type { CollectionImportData } from "@/features/import-export/types";
 import { setUserItemAiContent } from "@/features/items/services/item";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // B is on Pro, so B imports. A holds rows that look like B's import, and they
 // must neither stop B's records nor receive them.

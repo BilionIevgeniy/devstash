@@ -15,7 +15,7 @@ import { useFavoritePages } from "@/features/items/components/hooks/use-item-lis
 import {
   pendingRemovals,
   visibleListItems,
-} from "@/features/items/domain/list-rows";
+} from "@/features/items/domain/list/list-rows";
 import { favoriteItemSortSchema } from "@/features/items/schemas";
 import type { FavoriteItem, FirstListPage } from "@/features/items/types";
 

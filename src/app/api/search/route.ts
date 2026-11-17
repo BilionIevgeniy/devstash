@@ -2,10 +2,10 @@ import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { getRetryAfterSeconds } from "@/features/auth/domain/rate-limits";
 import { parseSearchParams } from "@/features/search/schemas";
 import { searchPalette } from "@/features/search/services/search";
-import { fail } from "@/lib/action-result";
-import { jsonError, jsonOk } from "@/lib/api-response";
-import { logger } from "@/lib/logger";
-import { RateLimitUnavailableError } from "@/lib/rate-limit";
+import { fail } from "@/lib/errors/action-result";
+import { jsonError, jsonOk } from "@/lib/http/api-response";
+import { logger } from "@/lib/observability/logger";
+import { RateLimitUnavailableError } from "@/lib/vendors/rate-limit";
 
 // Not a standard status: the client closed the request and reads no answer.
 const CLIENT_CLOSED_REQUEST = 499;

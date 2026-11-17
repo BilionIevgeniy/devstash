@@ -5,11 +5,11 @@ import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { changePasswordSchema } from "@/features/auth/schemas";
 import { changeUserPassword } from "@/features/auth/services/account";
 import type { AuthActionState } from "@/features/auth/types";
-import { logger } from "@/lib/logger";
-import { fail, ok } from "@/lib/action-result";
-import { firstIssue } from "@/lib/validation";
+import { logger } from "@/lib/observability/logger";
+import { fail, ok } from "@/lib/errors/action-result";
+import { firstIssue } from "@/lib/errors/validation";
+import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
-const SIGN_IN_URL = "/sign-in";
 const SUCCESS: AuthActionState = ok();
 
 interface ChangePasswordInput {
@@ -43,5 +43,5 @@ export async function changePassword(
 // Not the homepage, as a plain sign-out: the user signs in again right away
 // with the new password.
 export async function signOutAfterPasswordChange(): Promise<void> {
-  await signOut({ redirectTo: SIGN_IN_URL });
+  await signOut({ redirectTo: SIGN_IN_PATH });
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { act, renderHook, waitFor } from "../../../../../test/intl";
-import { createQueryClient } from "@/components/common/query-client";
+import { createQueryClient } from "@/components/common/providers/query-client";
 import type { FavoriteItem, FirstListPage } from "@/features/items/types";
 
 const { fetchFavoritePage, router } = vi.hoisted(() => ({
@@ -9,10 +9,13 @@ const { fetchFavoritePage, router } = vi.hoisted(() => ({
   router: { bfcacheId: "bf-1" },
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
-vi.mock("@/features/items/_internal/components/fetch-item-list-page", () => ({
-  fetchFavoritePage,
-  fetchPinnedPage: vi.fn(),
-}));
+vi.mock(
+  "@/features/items/_internal/components/fetch/fetch-item-list-page",
+  () => ({
+    fetchFavoritePage,
+    fetchPinnedPage: vi.fn(),
+  }),
+);
 
 import { useFavoritePages } from "@/features/items/components/hooks/use-item-list-pages";
 

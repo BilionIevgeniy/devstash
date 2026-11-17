@@ -9,7 +9,7 @@ import {
   getItemTypesById,
   getSidebarItemTypes,
 } from "@/features/item-types/queries";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 let t: Tenants;
 let customTypeOfB: string;

@@ -54,6 +54,7 @@ const result = await sendVerificationLink(parsed.data, origin);
 **Problem**: None of the following is throttled by IP or by account: credentials sign-in, registration, resend verification, forgot password and the change-password current-password check. NextAuth does not provide rate limiting. The `/api/auth/callback/credentials` route handler is also exposed directly, so any limit placed only in the `signInWithCredentials` Server Action can be bypassed. The 60-second email cooldown is a read-then-write sequence: `wasLinkSentRecently` / `wasResetLinkSentRecently` only read, and the token row that starts the cooldown is written later in `createVerificationToken` / `createPasswordResetToken`. Parallel requests therefore all pass the check before the first token exists.
 
 **Attack Scenario**:
+
 1. Password guessing and credential stuffing: an attacker sends unlimited POSTs to `/api/auth/callback/credentials`. bcrypt cost slows each check on the server but nothing limits the attacker. Accounts with weak passwords (the only rule is 8 characters) fall.
 2. Email bombing: fire 50 parallel `resendVerificationEmail` or `requestPasswordReset` calls for the same victim. All 50 pass the cooldown read and 50 emails are sent (each new token replaces the previous one). Beyond the race, the cooldown still allows one email per minute per address indefinitely, and registration lets the attacker send a first email to any number of different addresses.
 3. Reputation and cost: registration sends a branded email from the verified Resend domain to any address and also runs `bcrypt.hash` at 12 rounds per request, so it can burn the Resend quota, damage the sending domain reputation, and consume CPU.
@@ -61,7 +62,7 @@ const result = await sendVerificationLink(parsed.data, origin);
 **Fix**: Add a shared limiter (the stack already lists Redis as optional; Upstash works on Vercel) and apply it in `authorize` (using the `request` argument, which covers both the Server Action and the raw NextAuth route), in the register route and in each action. Use the limiter itself as the atomic cooldown so the race disappears. On Vercel, `x-forwarded-for` is overwritten by the platform, so it is a safe IP source there ([Vercel request headers](https://vercel.com/docs/headers/request-headers)).
 
 ```typescript
-// src/lib/rate-limit.ts
+// src/lib/vendors/rate-limit.ts
 import "server-only";
 
 import { Ratelimit } from "@upstash/ratelimit";
@@ -69,13 +70,37 @@ import { Redis } from "@upstash/redis";
 
 const redis = Redis.fromEnv();
 
-export const loginByIp = new Ratelimit({ redis, prefix: "rl:login:ip", limiter: Ratelimit.slidingWindow(20, "15 m") });
-export const loginByEmail = new Ratelimit({ redis, prefix: "rl:login:email", limiter: Ratelimit.slidingWindow(5, "15 m") });
-export const registerByIp = new Ratelimit({ redis, prefix: "rl:register:ip", limiter: Ratelimit.slidingWindow(5, "1 h") });
+export const loginByIp = new Ratelimit({
+  redis,
+  prefix: "rl:login:ip",
+  limiter: Ratelimit.slidingWindow(20, "15 m"),
+});
+export const loginByEmail = new Ratelimit({
+  redis,
+  prefix: "rl:login:email",
+  limiter: Ratelimit.slidingWindow(5, "15 m"),
+});
+export const registerByIp = new Ratelimit({
+  redis,
+  prefix: "rl:register:ip",
+  limiter: Ratelimit.slidingWindow(5, "1 h"),
+});
 // One email per address per 60 s, enforced atomically (replaces the read-then-write cooldown)
-export const emailActionByAddress = new Ratelimit({ redis, prefix: "rl:email:addr", limiter: Ratelimit.fixedWindow(1, "60 s") });
-export const emailActionByIp = new Ratelimit({ redis, prefix: "rl:email:ip", limiter: Ratelimit.slidingWindow(10, "1 h") });
-export const passwordCheckByUser = new Ratelimit({ redis, prefix: "rl:pwcheck:user", limiter: Ratelimit.slidingWindow(5, "15 m") });
+export const emailActionByAddress = new Ratelimit({
+  redis,
+  prefix: "rl:email:addr",
+  limiter: Ratelimit.fixedWindow(1, "60 s"),
+});
+export const emailActionByIp = new Ratelimit({
+  redis,
+  prefix: "rl:email:ip",
+  limiter: Ratelimit.slidingWindow(10, "1 h"),
+});
+export const passwordCheckByUser = new Ratelimit({
+  redis,
+  prefix: "rl:pwcheck:user",
+  limiter: Ratelimit.slidingWindow(5, "15 m"),
+});
 
 export function getClientIp(headers: Headers): string {
   return (
@@ -104,7 +129,7 @@ authorize: async (credentials, request) => {
   ]);
   if (!byIp.success || !byEmail.success) throw new TooManyAttemptsError();
   // ...existing lookup and bcrypt.compare
-}
+};
 ```
 
 Then map `TOO_MANY_ATTEMPTS_CODE` to a "Too many attempts, try again later" message in `signInWithCredentials`. For the email actions, call `emailActionByAddress.limit(email)` before the user lookup and return the same neutral success when it is exhausted. Apply `registerByIp`, `emailActionByIp` and `passwordCheckByUser` (key: user id) in the register route, the email actions, `changePassword` and the account-deletion password check from finding 6. The per-email login limiter allows an attacker to lock a victim out for 15 minutes; if that matters, key it on email plus a coarse IP bucket and add a CAPTCHA step after repeated failures.
@@ -188,7 +213,8 @@ Add `sv?: number` to the `JWT` interface in `src/features/auth/next-auth.d.ts`. 
 
 ```typescript
 // src/features/auth/_internal/request-origin.ts
-const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+const host =
+  requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
 if (!host) return null;
 const protocol = requestHeaders.get("x-forwarded-proto") ?? "http";
 return `${protocol}://${host}`;
@@ -196,7 +222,10 @@ return `${protocol}://${host}`;
 
 ```typescript
 // src/app/api/auth/register/route.ts:71-74
-const emailResult = await sendVerificationLink(user.email, new URL(request.url).origin);
+const emailResult = await sendVerificationLink(
+  user.email,
+  new URL(request.url).origin,
+);
 ```
 
 **Problem**: The origin placed in the emailed link comes from headers the client may control. The same applies to `request.url`, which Next.js derives from the host header. The link contains the secret token, so if the origin is attacker-controlled the token is sent to the attacker's server. The protocol also silently falls back to `http`.
@@ -206,7 +235,7 @@ const emailResult = await sendVerificationLink(user.email, new URL(request.url).
 **Fix**: Build links from a configured, trusted base URL. Put the helper in `src/lib` so both the register route and the actions can import it (the route cannot import from `_internal/`).
 
 ```typescript
-// src/lib/app-url.ts
+// src/lib/http/app-url.ts
 import "server-only";
 
 export function getAppOrigin(): string {
@@ -258,7 +287,11 @@ return (
 
 ```typescript
 // src/features/auth/_internal/actions/email-verification.ts
-export async function confirmEmail(input: { email: string; token: string; password: string }) {
+export async function confirmEmail(input: {
+  email: string;
+  token: string;
+  password: string;
+}) {
   const parsed = confirmSchema.safeParse(input);
   if (!parsed.success) return failure("Invalid request");
 
@@ -266,8 +299,13 @@ export async function confirmEmail(input: { email: string; token: string; passwo
     where: { email: parsed.data.email },
     select: { password: true },
   });
-  if (!user?.password || !(await bcrypt.compare(parsed.data.password, user.password))) {
-    return failure("Wrong password. If you did not create this account, use Forgot password instead.");
+  if (
+    !user?.password ||
+    !(await bcrypt.compare(parsed.data.password, user.password))
+  ) {
+    return failure(
+      "Wrong password. If you did not create this account, use Forgot password instead.",
+    );
   }
   const result = await verifyEmailToken(parsed.data.email, parsed.data.token);
   return result.success ? SUCCESS : failure(result.error ?? GENERIC_ERROR);
@@ -313,7 +351,10 @@ if (existing) {
     await sendVerificationLink(email, getAppOrigin()); // subject to the atomic cooldown from finding 1
   }
   // verified or GitHub-only owner: optionally send a "someone tried to register with your address" email
-  return Response.json({ success: true, data: null, error: null }, { status: 201 });
+  return Response.json(
+    { success: true, data: null, error: null },
+    { status: 201 },
+  );
 }
 // ...create user as today, but return data: null and map P2002 to the same 201 response
 ```
@@ -344,7 +385,10 @@ export async function deleteAccount(): Promise<AuthActionState> {
 
 ```typescript
 // src/features/auth/account.ts
-export async function deleteUserAccount(userId: string, password?: string): Promise<DeleteAccountResult> {
+export async function deleteUserAccount(
+  userId: string,
+  password?: string,
+): Promise<DeleteAccountResult> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { email: true, password: true },
@@ -355,7 +399,7 @@ export async function deleteUserAccount(userId: string, password?: string): Prom
       return { success: false, error: "Password is incorrect" };
     }
   }
-  await prisma.$transaction([ /* existing token cleanup and user.delete */ ]);
+  await prisma.$transaction([/* existing token cleanup and user.delete */]);
   return { success: true, error: null };
 }
 ```
@@ -387,9 +431,12 @@ const isValid = await bcrypt.compare(parsed.data.password, user.password);
 ```typescript
 // auth.ts (import { randomBytes } from "node:crypto")
 let dummyHash: Promise<string> | undefined;
-const getDummyHash = () => (dummyHash ??= bcrypt.hash(randomBytes(16).toString("hex"), 12));
+const getDummyHash = () =>
+  (dummyHash ??= bcrypt.hash(randomBytes(16).toString("hex"), 12));
 
-const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+const user = await prisma.user.findUnique({
+  where: { email: parsed.data.email },
+});
 const hash = user?.password ?? (await getDummyHash());
 const isValid = await bcrypt.compare(parsed.data.password, hash);
 if (!user?.password || !isValid) return null;
@@ -450,8 +497,15 @@ return { success: true, data: null, error: null };
 
 ```typescript
 // prisma/seed.ts:41-49: verified, password-enabled account whose password comes from env
-const password = await bcrypt.hash(requireEnv("SEED_DEMO_PASSWORD"), BCRYPT_ROUNDS);
-return prisma.user.upsert({ where: { email: demoUser.email }, update: {}, create: { ...demoUser, password, emailVerified: new Date() } });
+const password = await bcrypt.hash(
+  requireEnv("SEED_DEMO_PASSWORD"),
+  BCRYPT_ROUNDS,
+);
+return prisma.user.upsert({
+  where: { email: demoUser.email },
+  update: {},
+  create: { ...demoUser, password, emailVerified: new Date() },
+});
 ```
 
 **Problem**: `deleteUserAccount` and `changeUserPassword` apply to `demo@devstash.io` like any other user. The seed marks the demo user as verified with a password taken from `SEED_DEMO_PASSWORD`, whose example value is `change-me`. If the production database was ever seeded with the example value, anyone can sign in as the demo user. Whether production was seeded this way cannot be determined from the repository.
@@ -487,6 +541,7 @@ password: z.string().min(8, ...).max(72, ...),                  // 72 characters
 ```
 
 **Problem**:
+
 - `name` and `email` have no maximum length. An oversized value is stored in the database (the account is created before the email is sent) and only the platform body limit applies.
 - bcryptjs hashes at most 72 bytes and silently truncates the rest (documented in its README and exposed as `bcrypt.truncates`). Zod's `.max(72)` counts characters, so a password containing multi-byte characters can be longer than 72 bytes and be truncated without the user knowing.
 - The only strength rule is 8 characters, with no check against common or breached passwords. Length 8 meets the NIST minimum, but combined with finding 1 weak passwords are directly guessable.

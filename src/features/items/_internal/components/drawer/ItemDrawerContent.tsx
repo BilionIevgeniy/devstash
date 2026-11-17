@@ -1,0 +1,143 @@
+import { Tag } from "lucide-react";
+import { useTranslations } from "next-intl";
+
+import type { ItemDeleteHandler } from "@/features/items/_internal/components/delete/DeleteItemDialog";
+import { DrawerSection } from "@/features/items/_internal/components/drawer/DrawerSection";
+import { ItemTagBadges } from "@/features/items/_internal/components/cards/ItemTagBadges";
+import { ItemActionBar } from "@/features/items/_internal/components/drawer/ItemActionBar";
+import { ItemBody } from "@/features/items/_internal/components/drawer/ItemBody";
+import { ItemDrawerHeader } from "@/features/items/_internal/components/drawer/ItemDrawerHeader";
+import { ItemDrawerSkeleton } from "@/features/items/_internal/components/drawer/ItemDrawerSkeleton";
+import { ItemEditForm } from "@/features/items/_internal/components/form/ItemEditForm";
+import { ItemMeta } from "@/features/items/_internal/components/drawer/ItemMeta";
+import type { ItemDetailState } from "@/features/items/_internal/components/hooks/use-item-sheet";
+import { copyValueOf } from "@/features/items/domain/item-fields";
+import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
+
+// For the SheetContent around this content, in both sheets that draw it. Full
+// width on a phone, where the default three quarters squeeze the action bar.
+export const ITEM_SHEET_CLASS =
+  "gap-0 data-[side=right]:w-full data-[side=right]:sm:w-3/4 data-[side=right]:sm:max-w-xl";
+
+interface ItemDrawerContentProps {
+  item: DashboardItem;
+  state: ItemDetailState;
+  isEditing: boolean;
+  onEdit: () => void;
+  onCancelEdit: () => void;
+  onSaved: (detail: ItemDetailJson) => void;
+  onDelete: ItemDeleteHandler;
+  /** Whether the edit form holds unsaved edits (see ItemEditForm). */
+  onDirtyChange?: (isDirty: boolean) => void;
+  /** "page" renders outside a Sheet, where SheetTitle cannot be used. */
+  variant?: "sheet" | "page";
+}
+
+// The header and tags come from the card the user clicked, so they show at
+// once; the rest waits for GET /api/items/[id]. On the item routes the server
+// passes the detail in, so the state starts ready.
+export function ItemDrawerContent({
+  item,
+  state,
+  isEditing,
+  onEdit,
+  onCancelEdit,
+  onSaved,
+  onDelete,
+  onDirtyChange,
+  variant = "sheet",
+}: ItemDrawerContentProps) {
+  const t = useTranslations("items");
+  const detail = state.status === "ready" ? state.detail : null;
+  const canUseAi = state.status === "ready" && state.canUseAi;
+
+  if (isEditing && detail) {
+    return (
+      <>
+        <ItemDrawerHeader
+          item={item}
+          language={detail.language}
+          variant={variant}
+        />
+        <ItemEditForm
+          item={item}
+          detail={detail}
+          canUseAi={canUseAi}
+          onCancel={onCancelEdit}
+          onSaved={onSaved}
+          onDirtyChange={onDirtyChange}
+        >
+          <ItemMeta detail={detail} showCollections={false} />
+        </ItemEditForm>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <ItemDrawerHeader
+        item={item}
+        language={detail?.language ?? null}
+        variant={variant}
+      />
+      <ItemActionBar
+        item={item}
+        canEdit={detail !== null}
+        copyValue={detail && copyValueOf(detail)}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+      <div className="flex-1 space-y-6 overflow-y-auto p-6">
+        {item.description && (
+          <ItemDescription
+            text={item.description}
+            aiGenerated={item.descriptionAiGenerated}
+          />
+        )}
+        {state.status === "loading" && (
+          <ItemDrawerSkeleton typeName={item.type.name} />
+        )}
+        {state.status === "error" && (
+          <p className="text-destructive">{t("drawer.loadFailed")}</p>
+        )}
+        {detail && (
+          <ItemBody
+            typeName={item.type.name}
+            title={item.title}
+            detail={detail}
+            canUseAi={canUseAi}
+            onSaved={onSaved}
+          />
+        )}
+        {item.tags.length > 0 && (
+          <ItemTagList tags={item.tags} aiTags={item.aiTags} />
+        )}
+        {detail && <ItemMeta detail={detail} />}
+      </div>
+    </>
+  );
+}
+
+function ItemDescription({
+  text,
+  aiGenerated,
+}: {
+  text: string;
+  aiGenerated: boolean;
+}) {
+  const t = useTranslations("items.fields");
+  return (
+    <DrawerSection title={t("description")} aiGenerated={aiGenerated}>
+      <p>{text}</p>
+    </DrawerSection>
+  );
+}
+
+function ItemTagList({ tags, aiTags }: { tags: string[]; aiTags: string[] }) {
+  const t = useTranslations("items.fields");
+  return (
+    <DrawerSection title={t("tags")} icon={Tag}>
+      <ItemTagBadges tags={tags} aiTags={aiTags} spoken />
+    </DrawerSection>
+  );
+}

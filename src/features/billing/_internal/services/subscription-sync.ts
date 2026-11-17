@@ -4,14 +4,17 @@ import {
   subscriptionWrite,
   type SubscriptionSnapshot,
 } from "@/features/billing/domain/subscription";
-import { LOCKED_TRANSACTION, lockForTransaction } from "@/lib/advisory-lock";
-import { logger } from "@/lib/logger";
-import { prisma } from "@/lib/prisma";
+import {
+  LOCKED_TRANSACTION,
+  lockForTransaction,
+} from "@/lib/postgres/advisory-lock";
+import { logger } from "@/lib/observability/logger";
+import { prisma } from "@/lib/postgres/prisma";
 import {
   getStripe,
   isStripeNotFound,
   type StripeSubscription,
-} from "@/lib/stripe";
+} from "@/lib/vendors/stripe";
 
 function toSnapshot(subscription: StripeSubscription): SubscriptionSnapshot {
   const periodEnd = subscription.items.data[0]?.current_period_end;

@@ -1,4 +1,4 @@
-import { VendorList } from "../../_components/VendorList";
+import { VendorList } from "../../_components/legal/VendorList";
 import type { LegalSection } from "../types";
 import type { VendorId } from "../vendors";
 

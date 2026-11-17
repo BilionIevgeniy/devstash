@@ -7,10 +7,10 @@ const { consumeRateLimit, generateStructured, getEntitlements } = vi.hoisted(
     getEntitlements: vi.fn(),
   }),
 );
-vi.mock("@/lib/rate-limit", () => ({ consumeRateLimit }));
+vi.mock("@/lib/vendors/rate-limit", () => ({ consumeRateLimit }));
 vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
-vi.mock("@/lib/openai", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/openai")>()),
+vi.mock("@/lib/vendors/openai", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/vendors/openai")>()),
   generateStructured,
 }));
 
@@ -20,7 +20,7 @@ import {
 } from "@/features/ai/domain/input";
 import { AI_FAILURE_CODES } from "@/features/ai/domain/messages";
 import { suggestTags } from "@/features/ai/services/auto-tags";
-import { AiOutputError } from "@/lib/openai";
+import { AiOutputError } from "@/lib/vendors/openai";
 
 const allowed = { success: true, remaining: 10, reset: Date.now() };
 const input = {

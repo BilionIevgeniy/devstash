@@ -5,15 +5,15 @@ import { ItemListFilters } from "@/app/(app)/items/[type]/_components/ItemListFi
 import { ItemsHeader } from "@/app/(app)/items/[type]/_components/ItemsHeader";
 import { ItemsListing } from "@/app/(app)/items/[type]/_components/ItemsListing";
 import { ListingSkeleton } from "@/app/(app)/items/[type]/_components/ListingSkeleton";
-import { PaginationNav } from "@/components/common/PaginationNav";
+import { PaginationNav } from "@/components/common/lists/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import { getEntitlements } from "@/features/billing/queries";
 import { parseTypeSlug } from "@/features/item-types/domain/item-type";
 import { getItemTypeByName } from "@/features/item-types/queries";
 import { typeListing } from "@/features/items/domain/item-fields";
-import { itemListHref } from "@/features/items/domain/list-params";
-import { ITEMS_PER_PAGE } from "@/features/items/domain/pagination";
+import { itemListHref } from "@/features/items/domain/list/list-params";
+import { ITEMS_PER_PAGE } from "@/features/items/domain/list/pagination";
 import { countItemsOfType, getTypeTagNames } from "@/features/items/queries";
 import { parseItemListParams } from "@/features/items/schemas";
 import { userCanUseType } from "@/features/items/services/type-access";

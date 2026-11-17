@@ -7,13 +7,13 @@ import {
 } from "@/features/auth/domain/rate-limits";
 import { registerSchema } from "@/features/auth/schemas";
 import { registerAccount } from "@/features/auth/services/registration";
-import { fail } from "@/lib/action-result";
-import { jsonError, jsonOk } from "@/lib/api-response";
-import { getAppOrigin } from "@/lib/app-url";
-import { getClientIp } from "@/lib/client-ip";
-import { logger } from "@/lib/logger";
-import { consumeIpRateLimit } from "@/lib/rate-limit";
-import { firstIssue } from "@/lib/validation";
+import { fail } from "@/lib/errors/action-result";
+import { jsonError, jsonOk } from "@/lib/http/api-response";
+import { getAppOrigin } from "@/lib/http/app-url";
+import { getClientIp } from "@/lib/http/client-ip";
+import { logger } from "@/lib/observability/logger";
+import { consumeIpRateLimit } from "@/lib/vendors/rate-limit";
+import { firstIssue } from "@/lib/errors/validation";
 
 // New and already registered addresses get this same response, so the route
 // cannot be used to find out who has an account.

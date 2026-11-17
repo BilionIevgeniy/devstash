@@ -9,5 +9,5 @@
   // A spec numbers its steps across its sections (1-10), not from 1 in each.
   "MD029": false,
   // A spec lists its sources ("Read first") as bare URLs.
-  "MD034": false
+  "MD034": false,
 }

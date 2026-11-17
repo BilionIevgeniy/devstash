@@ -8,15 +8,15 @@ vi.mock("@/features/auth/nextauth/auth", () => ({ auth }));
 vi.mock("@/features/import-export/services/export", () => ({
   exportUserData,
 }));
-vi.mock("@/lib/logger", () => ({
+vi.mock("@/lib/observability/logger", () => ({
   logger: { error: vi.fn(async () => {}), warn: vi.fn(), info: vi.fn() },
 }));
-vi.mock("@/lib/rate-limit", () => ({
+vi.mock("@/lib/vendors/rate-limit", () => ({
   RateLimitUnavailableError: class RateLimitUnavailableError extends Error {},
 }));
 
 import { GET } from "@/app/api/export/route";
-import { RateLimitUnavailableError } from "@/lib/rate-limit";
+import { RateLimitUnavailableError } from "@/lib/vendors/rate-limit";
 
 describe("GET /api/export", () => {
   beforeEach(() => {

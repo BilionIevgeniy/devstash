@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 import packageJson from "./package.json";
-import { NOINDEX_PATHS } from "./src/lib/noindex-paths";
+import { NOINDEX_PATHS } from "./src/lib/http/noindex-paths";
 
 // Where scripts/copy-monaco.mjs puts the editor. The exact version in the path
 // is what lets the files be cached for good.
@@ -64,10 +64,10 @@ const nextConfig: NextConfig = {
 
 // The build side of Sentry. It reads SENTRY_ORG, SENTRY_PROJECT and
 // SENTRY_AUTH_TOKEN from the environment, and uploads the source maps of the
-// Vercel build when the token is there. The runtime side is src/lib/sentry.ts.
+// Vercel build when the token is there. The runtime side is src/lib/observability/sentry.ts.
 // next-intl reads the request config from lib (ADR 0024): the locale of a
 // render, its messages, formats and time zone.
-const withNextIntl = createNextIntlPlugin("./src/lib/i18n-request.ts");
+const withNextIntl = createNextIntlPlugin("./src/lib/locale/i18n-request.ts");
 
 export default withSentryConfig(withNextIntl(nextConfig), {
   telemetry: false,

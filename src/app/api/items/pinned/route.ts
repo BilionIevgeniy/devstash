@@ -1,10 +1,10 @@
 import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { getPinnedGroupPage } from "@/features/items/queries/lists";
 import { pinnedPageQuerySchema } from "@/features/items/schemas";
-import { fail } from "@/lib/action-result";
-import { jsonError, jsonOk } from "@/lib/api-response";
-import { logger } from "@/lib/logger";
-import { firstIssue } from "@/lib/validation";
+import { fail } from "@/lib/errors/action-result";
+import { jsonError, jsonOk } from "@/lib/http/api-response";
+import { logger } from "@/lib/observability/logger";
+import { firstIssue } from "@/lib/errors/validation";
 
 // The next page of one group of /pinned (?typeId=&sort=&cursor=), fetched by
 // its Show more button (ADR 0025). The read is scoped by the signed-in user,

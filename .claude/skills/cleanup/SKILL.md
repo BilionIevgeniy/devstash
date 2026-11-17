@@ -7,7 +7,7 @@ argument-hint: run|check
 Review the codebase for cleanup tasks. Start with `git status` and `npm run lint`: several checks below read the lint output. Name the files with uncommitted changes in the report, since a finding there may be work in progress.
 
 1. **History order:** `context/feature-history.md` goes from oldest to newest. The entries have no dates, so compare them with the merge order in `git log main`
-2. **Debug logs:** find `console.*` in `src/`. The project logs through `@/lib/logger`, and `no-console` fails the lint for any call outside it and the tests, so a hit is a leftover to remove
+2. **Debug logs:** find `console.*` in `src/`. The project logs through `@/lib/observability/logger`, and `no-console` fails the lint for any call outside it and the tests, so a hit is a leftover to remove
 3. **Unused imports and variables:** read the `no-unused-vars` warnings in the lint output
 4. **Stale comments:** find `TODO`, `FIXME` and `HACK` comments in `src/` whose work is done or no longer planned. Such a comment names the spec in `context/features/plan/` or the item in `context/todo-before-live.md` that holds the work ("Found work" in `context/ai-interaction.md`)
 5. **Orphaned files:** find files in `src/` that nothing imports. Skip what is used without an import: Next.js files (`page`, `layout`, `loading`, `error`, `global-error`, `not-found`, `route`, `default`), `src/proxy.ts`, `components/ui`, `src/generated` and tests
@@ -22,6 +22,7 @@ Review the codebase for cleanup tasks. Start with `git status` and `npm run lint
    - Foreign models: a feature uses `prisma.<model>` or `tx.<model>` for a model it does not own in the rank table
    - `import "server-only"` missing from a `queries.ts` or a file in `services/`, `import "client-only"` missing from a browser helper, `"use client"` on a hook or a helper
    - An `index.ts` barrel in `src/`
+   - A folder in `src/` with more than 12 files, not counting tests, stories and subfolders (`components/ui` and `i18n/messages/<locale>` are exempt): split it by topic ("Rules" in `context/architecture-rules.md`, ADR 0029)
    - An authenticated route in `app/(app)/` that the matcher in `src/proxy.ts` does not cover
 9. **Duplication:** run `npm run lint:dup` (jscpd, a report, never a gate) and judge each clone. Parallel shapes on purpose (thin entry points, the Radix dialog markup) are 🟢; a repeated helper, constant or block of logic is 🔴 with the shared home to use ("Shared building blocks" in `context/coding-standards.md`)
 
@@ -49,6 +50,6 @@ If the argument is "run" or "fix":
 - Before fixing, follow the branch rule in `context/ai-interaction.md`: on `main`, create a `fix/` branch; with unrelated uncommitted work, ask first
 - An architecture finding that needs more than a local edit gets its own plan: don't fix it inside the cleanup. If the rule itself should change, that needs a record in `docs/adr/`
 - Confirm each file deletion by name, even with 'all'
-- After the fixes, run `npm run typecheck`, `npm run lint`, `npm run test` and `npm run build`, and report the results. A failure is fixed or reported, never skipped
+- After the fixes, run `npm run format` (the fixes are formatted like the rest of the repository), then `npm run format:check`, `npm run typecheck`, `npm run lint`, `npm run test` and `npm run build`, and report the results. A failure is fixed or reported, never skipped
 - Do not commit: ask first
 - Report what you changed

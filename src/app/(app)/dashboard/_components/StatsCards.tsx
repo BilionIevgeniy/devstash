@@ -1,28 +1,10 @@
 import { FolderHeart, FolderOpen, Package, Star } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import type { LucideIcon } from "lucide-react";
 
 import { getCollectionStats } from "@/features/collections/queries";
 import { getItemStats } from "@/features/items/queries";
 import { getSessionUser } from "@/features/auth/nextauth/session";
-
-interface StatCardProps {
-  label: string;
-  value: number;
-  icon: LucideIcon;
-}
-
-function StatCard({ label, value, icon: Icon }: StatCardProps) {
-  return (
-    <div className="flex items-center justify-between rounded-lg border bg-card p-4">
-      <div>
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="mt-1 text-2xl font-semibold">{value}</p>
-      </div>
-      <Icon className="size-5 text-muted-foreground" />
-    </div>
-  );
-}
+import { StatCard } from "@/app/(app)/_components/StatCard";
 
 export async function StatsCards() {
   const t = await getTranslations("pages.dashboard");

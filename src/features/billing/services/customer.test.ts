@@ -6,14 +6,14 @@ const mocks = vi.hoisted(() => ({
   getStripeCustomerId: vi.fn(),
 }));
 
-// The real check is pinned in lib/stripe.test.ts; here only this error is one.
+// The real check is pinned in lib/vendors/stripe.test.ts; here only this error is one.
 const MISSING_CUSTOMER = vi.hoisted(() => new Error("No such customer"));
 
-vi.mock("@/lib/stripe", () => ({
+vi.mock("@/lib/vendors/stripe", () => ({
   getStripe: () => ({ customers: { del: mocks.del } }),
   isStripeNotFound: (error: unknown) => error === MISSING_CUSTOMER,
 }));
-vi.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/postgres/prisma", () => ({
   prisma: { subscription: { updateMany: mocks.updateMany } },
 }));
 vi.mock("@/features/billing/_internal/queries", () => ({

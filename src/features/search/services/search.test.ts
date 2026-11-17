@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
   searchUserItems: vi.fn(),
   searchUserCollections: vi.fn(),
 }));
-vi.mock("@/lib/rate-limit", () => ({
+vi.mock("@/lib/vendors/rate-limit", () => ({
   consumeRateLimit: mocks.consumeRateLimit,
 }));
 vi.mock("@/features/billing/queries", () => ({

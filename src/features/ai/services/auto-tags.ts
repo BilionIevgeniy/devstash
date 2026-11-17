@@ -14,8 +14,8 @@ import {
   normalizeTags,
 } from "@/features/ai/domain/tags";
 import { tagSuggestionsSchema, type AiItemInput } from "@/features/ai/schemas";
-import { failFrom, ok, type OperationResult } from "@/lib/action-result";
-import { generateStructured } from "@/lib/openai";
+import { failFrom, ok, type OperationResult } from "@/lib/errors/action-result";
+import { generateStructured } from "@/lib/vendors/openai";
 
 export type SuggestTagsResult = OperationResult<string[]>;
 

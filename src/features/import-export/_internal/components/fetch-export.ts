@@ -2,7 +2,7 @@ import "client-only";
 
 import { EXPORT_CLOSING } from "@/features/import-export/domain/export-format";
 import type { ErrorRef } from "@/i18n/error-codes";
-import { routeError } from "@/lib/route-error";
+import { routeError } from "@/lib/errors/route-error";
 
 const EXPORT_PATH = "/api/export";
 const FALLBACK_FILE_NAME = "devstash-export.json";

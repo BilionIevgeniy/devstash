@@ -12,9 +12,9 @@ import {
 import { AI_FAILURE_CODES } from "@/features/ai/domain/messages";
 import { AI_MODEL, type AiStreamSettings } from "@/features/ai/domain/model";
 import { STREAM_END_MARK } from "@/features/ai/domain/text-stream";
-import { fail, type Failure } from "@/lib/action-result";
-import { logger } from "@/lib/logger";
-import { AiOutputError, streamText } from "@/lib/openai";
+import { fail, type Failure } from "@/lib/errors/action-result";
+import { logger } from "@/lib/observability/logger";
+import { AiOutputError, streamText } from "@/lib/vendors/openai";
 
 export type TextStreamStart =
   | { status: "refused"; reason: AiRefusalReason; failure: Failure }

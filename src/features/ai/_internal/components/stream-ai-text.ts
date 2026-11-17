@@ -1,7 +1,7 @@
 import "client-only";
 
-import type { Failure } from "@/lib/action-result";
-import { routeError } from "@/lib/route-error";
+import type { Failure } from "@/lib/errors/action-result";
+import { routeError } from "@/lib/errors/route-error";
 
 // A refusal or failure the route answered before any text, with its code.
 // The route answers refusals as JSON; anything else (the platform's own error

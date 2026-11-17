@@ -4,7 +4,7 @@ const { consumeRateLimit, getEntitlements } = vi.hoisted(() => ({
   consumeRateLimit: vi.fn(),
   getEntitlements: vi.fn(),
 }));
-vi.mock("@/lib/rate-limit", () => ({ consumeRateLimit }));
+vi.mock("@/lib/vendors/rate-limit", () => ({ consumeRateLimit }));
 vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
 
 import { checkAiAccess } from "@/features/ai/_internal/services/access";

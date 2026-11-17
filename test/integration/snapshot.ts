@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // Every row a user owns, in a stable order, so a test can compare B before and
 // after A's call with `toEqual`. Timestamps are included: a write that touches

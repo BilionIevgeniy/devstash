@@ -6,7 +6,7 @@ const { presignUpload, getSessionUser } = vi.hoisted(() => ({
 }));
 vi.mock("@/features/files/services/presign-upload", () => ({ presignUpload }));
 vi.mock("@/features/auth/nextauth/session", () => ({ getSessionUser }));
-vi.mock("@/lib/logger", () => ({
+vi.mock("@/lib/observability/logger", () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));
 

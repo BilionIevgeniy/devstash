@@ -1,6 +1,6 @@
 import "server-only";
 
-import { logger } from "@/lib/logger";
+import { logger } from "@/lib/observability/logger";
 
 const GITHUB_API_URL = "https://api.github.com";
 const GITHUB_API_VERSION = "2022-11-28";

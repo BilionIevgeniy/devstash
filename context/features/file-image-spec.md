@@ -24,14 +24,15 @@ Add file and image upload functionality using Cloudflare R2 storage.
 
 ## File Constraints
 
-| Type   | Max Size | Extensions                                            |
-| ------ | -------- | ----------------------------------------------------- |
-| Images | 5 MB     | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg`      |
+| Type   | Max Size | Extensions                                                                       |
+| ------ | -------- | -------------------------------------------------------------------------------- |
+| Images | 5 MB     | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg`                                 |
 | Files  | 10 MB    | `.pdf`, `.txt`, `.md`, `.json`, `.yaml`, `.yml`, `.xml`, `.csv`, `.toml`, `.ini` |
 
 ## MIME Types
 
 **Images:**
+
 - `image/png`
 - `image/jpeg`
 - `image/gif`
@@ -39,6 +40,7 @@ Add file and image upload functionality using Cloudflare R2 storage.
 - `image/svg+xml`
 
 **Files:**
+
 - `application/pdf`
 - `text/plain`
 - `text/markdown`

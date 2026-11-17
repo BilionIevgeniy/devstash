@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { ListLoadError } from "@/components/common/ListLoadError";
+import { ListLoadError } from "@/components/common/lists/ListLoadError";
 
 interface ListPagesFrameProps {
   /** The rows are the old sort's, shown dimmed while the new one loads. */

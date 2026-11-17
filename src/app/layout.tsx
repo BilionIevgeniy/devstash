@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { AppToaster } from "@/components/common/AppToaster";
-import { getSiteOrigin } from "@/lib/app-url";
+import { AppToaster } from "@/components/common/providers/AppToaster";
+import { getSiteOrigin } from "@/lib/http/app-url";
 import { geistMono, geistSans } from "./fonts";
 import "./globals.css";
 
@@ -10,7 +10,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteOrigin()),
   title: "DevStash",
-  description: "A developer knowledge hub for snippets, commands, prompts, notes, files, images, links and custom types.",
+  description:
+    "A developer knowledge hub for snippets, commands, prompts, notes, files, images, links and custom types.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

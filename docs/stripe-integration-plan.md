@@ -11,15 +11,15 @@ This document holds the analysis and the reasons. Checked on 2026-11-06 against 
 
 The research prompt's Notes suggest reading `User.isPro` in the `jwt` callback on every session validation. We already read the plan through `billing/queries.ts` `getEntitlements` (ADR 0005). Both were compared.
 
-| Question | `isPro` in the JWT (the Notes) | `getEntitlements` (ours) |
-| -------- | ------------------------------ | ------------------------ |
-| Fresh after a webhook? | Yes. `@auth/core/lib/actions/session.js` runs `callbacks.jwt` on every session read | Yes. It reads the row on each request |
-| Works as written today? | No. Nothing writes `User.isPro`, so every customer stays Free | Yes |
-| Allowed by the ranks? | No. `auth` (rank 1) cannot read `Subscription`, owned by `billing` (rank 2) | Yes |
-| Allowed by the lint? | No. `prisma` reads are blocked in `nextauth/` | Yes |
-| Reaches services? | No. `presignUpload(userId)` and `createUserItem(userId)` take an id, and services may not read the request. A webhook, an import or the future public API has no session | Yes. It needs only the `userId` |
-| What happens on a database error? | The `jwt` catch keeps the old token, so a stale `isPro` keeps passing | The read fails and the action answers with its generic error |
-| Queries on routes that need no plan? | One more on every `auth()` call, including each `/api/search` keystroke | None |
+| Question                             | `isPro` in the JWT (the Notes)                                                                                                                                           | `getEntitlements` (ours)                                     |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| Fresh after a webhook?               | Yes. `@auth/core/lib/actions/session.js` runs `callbacks.jwt` on every session read                                                                                      | Yes. It reads the row on each request                        |
+| Works as written today?              | No. Nothing writes `User.isPro`, so every customer stays Free                                                                                                            | Yes                                                          |
+| Allowed by the ranks?                | No. `auth` (rank 1) cannot read `Subscription`, owned by `billing` (rank 2)                                                                                              | Yes                                                          |
+| Allowed by the lint?                 | No. `prisma` reads are blocked in `nextauth/`                                                                                                                            | Yes                                                          |
+| Reaches services?                    | No. `presignUpload(userId)` and `createUserItem(userId)` take an id, and services may not read the request. A webhook, an import or the future public API has no session | Yes. It needs only the `userId`                              |
+| What happens on a database error?    | The `jwt` catch keeps the old token, so a stale `isPro` keeps passing                                                                                                    | The read fails and the action answers with its generic error |
+| Queries on routes that need no plan? | One more on every `auth()` call, including each `/api/search` keystroke                                                                                                  | None                                                         |
 
 **The decision stays: `getEntitlements`.** The Notes are right about two things: `trigger === "update"` does not help here (it only fires from a client `useSession().update()`, and this app has no `SessionProvider`), and a page reload is enough. A reload is also enough with `getEntitlements`, so the workaround solves a problem we do not have.
 
@@ -41,24 +41,24 @@ The cost argument is weaker than ADR 0005 suggests. `getSessionUser` is wrapped 
 
 ### Billing code
 
-| Exists | Missing |
-| ------ | ------- |
-| `billing/domain/limits.ts`: limits, prices, `isProStatus`, `entitlementsFor`, with tests | `stripe` package, `lib/stripe.ts` |
-| `billing/queries.ts` `getEntitlements` | Checkout, portal, webhook |
-| `billing/components/ProBadge` | `BillingSection` |
-| Homepage pricing built from the constants | Enforcement of the Free limits |
-| | Stripe cancellation on account deletion |
+| Exists                                                                                   | Missing                                   |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `billing/domain/limits.ts`: limits, prices, `isProStatus`, `entitlementsFor`, with tests | `stripe` package, `lib/vendors/stripe.ts` |
+| `billing/queries.ts` `getEntitlements`                                                   | Checkout, portal, webhook                 |
+| `billing/components/ProBadge`                                                            | `BillingSection`                          |
+| Homepage pricing built from the constants                                                | Enforcement of the Free limits            |
+|                                                                                          | Stripe cancellation on account deletion   |
 
 ## 3. Feature gating
 
-| Feature | State | Where |
-| ------- | ----- | ----- |
-| File and image upload | **Enforced** | `files/services/presign-upload.ts` |
-| File and image items | **Enforced** | `confirmFileColumns` in `items/services/item.ts` |
-| File and image in the UI | **Done** | `ItemTypeSelect` (disabled, `ProBadge`), the sidebar, the type page |
-| 50 items | Not enforced | `createUserItem`, the only `item.create` |
-| 3 collections | Not enforced | `createUserCollection`, the only `collection.create` |
-| Custom types, AI, export | **Not built** | Each gates itself when built (`docs/modules.md`) |
+| Feature                  | State         | Where                                                               |
+| ------------------------ | ------------- | ------------------------------------------------------------------- |
+| File and image upload    | **Enforced**  | `files/services/presign-upload.ts`                                  |
+| File and image items     | **Enforced**  | `confirmFileColumns` in `items/services/item.ts`                    |
+| File and image in the UI | **Done**      | `ItemTypeSelect` (disabled, `ProBadge`), the sidebar, the type page |
+| 50 items                 | Not enforced  | `createUserItem`, the only `item.create`                            |
+| 3 collections            | Not enforced  | `createUserCollection`, the only `collection.create`                |
+| Custom types, AI, export | **Not built** | Each gates itself when built (`docs/modules.md`)                    |
 
 Counts for the UI come from `getItemStats` and `getCollectionStats`, which already exist.
 
@@ -71,8 +71,8 @@ The settings page (`app/(app)/settings/page.tsx`) composes `EditorPreferencesSec
 - **Routes:** thin. `failure()` helper, `{ success, data, error }`, `try/catch` with `await logger.error`, see `api/auth/register/route.ts`. The proxy matcher covers pages only, so `/api/webhooks/stripe` needs no change there
 - **Actions:** parse with a schema, `getSessionUser()` outside the `try`, one service call, `refresh()`, a local `failure()`. `redirect()` stays outside the `try` (`delete-account.ts`). `getAppOrigin()` is read in the action inside the `try` and passed in (`password-reset.ts`)
 - **Client:** `useTransition` with `try` and `unstable_rethrow(error)` first in the catch (`CreateItemDialog.tsx`)
-- **Env:** read lazily where used, never at module load; `.env.example` documents each one. `lib/r2.ts` is the model for a vendor client
-- **Vendors:** the lint rule `VENDOR_SDKS` has no type exception, so `import type Stripe from "stripe"` fails outside `lib`. `lib/stripe.ts` re-exports the types `billing` needs
+- **Env:** read lazily where used, never at module load; `.env.example` documents each one. `lib/vendors/r2.ts` is the model for a vendor client
+- **Vendors:** the lint rule `VENDOR_SDKS` has no type exception, so `import type Stripe from "stripe"` fails outside `lib`. `lib/vendors/stripe.ts` re-exports the types `billing` needs
 - **Next.js:** `redirect()` accepts absolute URLs and works from a Server Action (`node_modules/next/dist/docs/01-app/03-api-reference/04-functions/redirect.md`)
 
 ## 5. Design decisions
@@ -107,12 +107,12 @@ The draft contradicts itself ("don't downgrade" against "else Free"), and `limit
 
 The rule for DevStash, sold from Germany mainly to consumers:
 
-| Step | What happens |
-| ---- | ------------ |
-| Renewal fails | Status `past_due`. Pro stays, `BillingSection` shows a warning, and Stripe sends its email |
-| Up to 2 weeks | Stripe retries, 8 tries (its recommended default) |
-| Payment succeeds | Status `active`, and the warning clears by itself |
-| Last try fails | Status `canceled`. The user is on Free, with all data kept |
+| Step             | What happens                                                                               |
+| ---------------- | ------------------------------------------------------------------------------------------ |
+| Renewal fails    | Status `past_due`. Pro stays, `BillingSection` shows a warning, and Stripe sends its email |
+| Up to 2 weeks    | Stripe retries, 8 tries (its recommended default)                                          |
+| Payment succeeds | Status `active`, and the warning clears by itself                                          |
+| Last try fails   | Status `canceled`. The user is on Free, with all data kept                                 |
 
 Why this fits:
 
@@ -130,11 +130,11 @@ This is research, not legal advice. Automatic cancellation ends the contract, wh
 
 `subscriptionWrite` in `billing/domain/subscription.ts`:
 
-| Stripe status | Class | Effect |
-| ------------- | ----- | ------ |
-| `active`, `trialing`, `past_due` | live (`isProStatus`) | Overwrites the row found by `stripeCustomerId` |
-| `incomplete`, `unpaid`, `paused` | not live | Writes only if its id equals the stored `stripeSubscriptionId` |
-| `canceled`, `incomplete_expired` | ended | Same, and clears `stripeSubscriptionId` |
+| Stripe status                    | Class                | Effect                                                         |
+| -------------------------------- | -------------------- | -------------------------------------------------------------- |
+| `active`, `trialing`, `past_due` | live (`isProStatus`) | Overwrites the row found by `stripeCustomerId`                 |
+| `incomplete`, `unpaid`, `paused` | not live             | Writes only if its id equals the stored `stripeSubscriptionId` |
+| `canceled`, `incomplete_expired` | ended                | Same, and clears `stripeSubscriptionId`                        |
 
 So the end of an old subscription cannot overwrite a newer one. The row is found by customer id because the row is created before Checkout. A write by customer id has no `userId`: the signed event is the authority for it, the one exception to scoping by user.
 
@@ -144,11 +144,11 @@ Stripe recommends the webhook plus a trigger on the landing page, safe to run co
 
 The return URL is `/settings?session_id={CHECKOUT_SESSION_ID}`.
 
-| On return | What happens |
-| --------- | ------------ |
-| Already Pro (the usual case) | Skip the action, toast "Welcome to DevStash Pro!", `router.replace("/settings")` |
-| Not Pro yet | Show "Confirming your payment…" instead of the Upgrade buttons, call `confirmCheckout` |
-| Confirmed | `refresh()` brings `isPro`, and the first row applies, so the toast never runs ahead of the screen |
+| On return                                                    | What happens                                                                                                            |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Already Pro (the usual case)                                 | Skip the action, toast "Welcome to DevStash Pro!", `router.replace("/settings")`                                        |
+| Not Pro yet                                                  | Show "Confirming your payment…" instead of the Upgrade buttons, call `confirmCheckout`                                  |
+| Confirmed                                                    | `refresh()` brings `isPro`, and the first row applies, so the toast never runs ahead of the screen                      |
 | Foreign session, not complete, Stripe down, or still not Pro | "We couldn't confirm your payment yet. If you paid, your plan will update shortly.", then `router.replace("/settings")` |
 
 ### Upgrade buttons
@@ -157,7 +157,7 @@ A successful external redirect from a Server Action reaches the client as a reje
 
 ### Free limits under parallel requests
 
-Count and insert in one transaction does not stop two parallel requests at Postgres's default isolation. `lib/advisory-lock.ts` takes `pg_advisory_xact_lock(hashtextextended(key, 0))`, which is released at commit and safe through Neon's transaction-mode pooler. It is called with `$executeRaw`, since the function returns `void`. Pro users skip the lock and the count.
+Count and insert in one transaction does not stop two parallel requests at Postgres's default isolation. `lib/postgres/advisory-lock.ts` takes `pg_advisory_xact_lock(hashtextextended(key, 0))`, which is released at commit and safe through Neon's transaction-mode pooler. It is called with `$executeRaw`, since the function returns `void`. Pro users skip the lock and the count.
 
 ### Stale Stripe customer
 
@@ -178,51 +178,51 @@ Full steps and code are in the specs.
 
 ### Phase 1
 
-| Create | Purpose |
-| ------ | ------- |
-| `src/lib/stripe.ts` | Client, event verification, error checks, type re-exports |
-| `src/lib/stripe.test.ts` | The error checks against real `Stripe.errors` instances |
-| `src/features/billing/schemas.ts` | `planSchema`, `checkoutSessionIdSchema` |
-| `src/features/billing/types.ts` | `BillingOverview` |
-| `src/features/billing/_internal/queries.ts` | `getStripeCustomerId` |
-| `src/features/billing/services/checkout.ts` | Checkout and portal sessions |
-| `src/features/billing/actions/checkout.ts` | `startCheckout`, `openBillingPortal` |
-| `docs/adr/0011-past-due-grace-and-no-event-table.md` | Supersedes ADR 0005 |
+| Create                                               | Purpose                                                   |
+| ---------------------------------------------------- | --------------------------------------------------------- |
+| `src/lib/vendors/stripe.ts`                          | Client, event verification, error checks, type re-exports |
+| `src/lib/vendors/stripe.test.ts`                     | The error checks against real `Stripe.errors` instances   |
+| `src/features/billing/schemas.ts`                    | `planSchema`, `checkoutSessionIdSchema`                   |
+| `src/features/billing/types.ts`                      | `BillingOverview`                                         |
+| `src/features/billing/_internal/queries.ts`          | `getStripeCustomerId`                                     |
+| `src/features/billing/services/checkout.ts`          | Checkout and portal sessions                              |
+| `src/features/billing/actions/checkout.ts`           | `startCheckout`, `openBillingPortal`                      |
+| `docs/adr/0011-past-due-grace-and-no-event-table.md` | Supersedes ADR 0005                                       |
 
-| Modify | Change |
-| ------ | ------ |
-| `billing/domain/limits.ts` and test | `past_due` is Pro, Free limit functions, `billingOverviewFor` |
-| `billing/queries.ts` | `getBillingOverview` |
-| `eslint.config.mjs` | `VENDOR_SDKS` as an anchored regex, so it does not match `@/lib/stripe` |
-| `.env.example` | Remove `STRIPE_PUBLISHABLE_KEY` |
-| `docs/adr/0005-…`, `docs/adr/README.md` | Status only |
-| `context/architecture-rules.md`, `docs/modules.md`, `docs/architecture.md`, `docs/arc42-lite.md` | No `StripeEvent`; `past_due`; Stripe client exists |
+| Modify                                                                                           | Change                                                                          |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| `billing/domain/limits.ts` and test                                                              | `past_due` is Pro, Free limit functions, `billingOverviewFor`                   |
+| `billing/queries.ts`                                                                             | `getBillingOverview`                                                            |
+| `eslint.config.mjs`                                                                              | `VENDOR_SDKS` as an anchored regex, so it does not match `@/lib/vendors/stripe` |
+| `.env.example`                                                                                   | Remove `STRIPE_PUBLISHABLE_KEY`                                                 |
+| `docs/adr/0005-…`, `docs/adr/README.md`                                                          | Status only                                                                     |
+| `context/architecture-rules.md`, `docs/modules.md`, `docs/architecture.md`, `docs/arc42-lite.md` | No `StripeEvent`; `past_due`; Stripe client exists                              |
 
 ### Phase 2
 
-| Create | Purpose |
-| ------ | ------- |
-| `src/lib/advisory-lock.ts` | Transaction lock |
-| `src/app/api/webhooks/stripe/route.ts` | Verify, one service call |
-| `billing/domain/subscription.ts` and test | `subscriptionWrite`, status classes |
-| `billing/services/webhook.ts` | Event to subscription |
-| `billing/_internal/services/subscription-sync.ts` | Lock, read, write |
-| `billing/services/customer.ts` | `deleteBillingCustomer` |
-| `billing/components/BillingSection.tsx` | Billing UI |
-| `billing/_internal/components/hooks/use-checkout-return.ts` | Return from Checkout |
-| `billing/_internal/components/hooks/use-billing-redirect.ts` | Upgrade and portal transition |
-| `app/(app)/settings/_components/BillingPanel.tsx` | Reads session, plan and counts |
-| `items/services/create-item.ts` | `createUserItem`, moved out of `item.ts` |
-| `items/_internal/services/item-writes.ts` | Helpers shared by create and update |
+| Create                                                       | Purpose                                  |
+| ------------------------------------------------------------ | ---------------------------------------- |
+| `src/lib/postgres/advisory-lock.ts`                          | Transaction lock                         |
+| `src/app/api/webhooks/stripe/route.ts`                       | Verify, one service call                 |
+| `billing/domain/subscription.ts` and test                    | `subscriptionWrite`, status classes      |
+| `billing/services/webhook.ts`                                | Event to subscription                    |
+| `billing/_internal/services/subscription-sync.ts`            | Lock, read, write                        |
+| `billing/services/customer.ts`                               | `deleteBillingCustomer`                  |
+| `billing/components/BillingSection.tsx`                      | Billing UI                               |
+| `billing/_internal/components/hooks/use-checkout-return.ts`  | Return from Checkout                     |
+| `billing/_internal/components/hooks/use-billing-redirect.ts` | Upgrade and portal transition            |
+| `app/(app)/settings/_components/BillingPanel.tsx`            | Reads session, plan and counts           |
+| `items/services/create-item.ts`                              | `createUserItem`, moved out of `item.ts` |
+| `items/_internal/services/item-writes.ts`                    | Helpers shared by create and update      |
 
-| Modify | Change |
-| ------ | ------ |
-| `billing/services/checkout.ts`, `billing/actions/checkout.ts` | `confirmCheckoutSession`, `confirmCheckout` |
-| `items/services/item.ts` and tests | Split out the create path |
-| `collections/services/collection.ts` and test | Free limit |
-| `account/_internal/services/delete-account.ts` and test | Cancel first, new messages |
-| `app/(app)/settings/page.tsx`, `loading.tsx` | Panel and its skeleton |
-| `docs/modules.md`, `docs/architecture.md`, the deferred list (now `context/features/plan/`) | What was built, known risks |
+| Modify                                                                                      | Change                                      |
+| ------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `billing/services/checkout.ts`, `billing/actions/checkout.ts`                               | `confirmCheckoutSession`, `confirmCheckout` |
+| `items/services/item.ts` and tests                                                          | Split out the create path                   |
+| `collections/services/collection.ts` and test                                               | Free limit                                  |
+| `account/_internal/services/delete-account.ts` and test                                     | Cancel first, new messages                  |
+| `app/(app)/settings/page.tsx`, `loading.tsx`                                                | Panel and its skeleton                      |
+| `docs/modules.md`, `docs/architecture.md`, the deferred list (now `context/features/plan/`) | What was built, known risks                 |
 
 `item.ts` has to split: it is about two lines under the 250-line limit, so the new code cannot go there.
 

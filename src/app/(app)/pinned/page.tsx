@@ -2,7 +2,7 @@ import { PinnedLists } from "@/app/(app)/pinned/_components/PinnedLists";
 import { getTranslations } from "next-intl/server";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { getEntitlements } from "@/features/billing/queries";
-import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvider";
+import { ItemDrawerProvider } from "@/features/items/components/drawer/ItemDrawerProvider";
 import { getPinnedFirstPages } from "@/features/items/queries/lists";
 import { pinnedItemSortSchema } from "@/features/items/schemas";
 

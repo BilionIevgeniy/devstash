@@ -21,7 +21,7 @@ import {
 } from "@/features/editor/_internal/domain/preference-save";
 import type { EditorPreferences } from "@/features/editor/_internal/domain/preferences";
 import type { ErrorRef } from "@/i18n/error-codes";
-import { isNavigationError } from "@/lib/navigation-error";
+import { isNavigationError } from "@/lib/errors/navigation-error";
 
 const SAVE_FAILED: ErrorRef = { error: "preferencesSaveFailed" };
 

@@ -1,10 +1,10 @@
 import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { getFavoriteItemPage } from "@/features/items/queries/lists";
 import { favoritePageQuerySchema } from "@/features/items/schemas";
-import { fail } from "@/lib/action-result";
-import { jsonError, jsonOk } from "@/lib/api-response";
-import { logger } from "@/lib/logger";
-import { firstIssue } from "@/lib/validation";
+import { fail } from "@/lib/errors/action-result";
+import { jsonError, jsonOk } from "@/lib/http/api-response";
+import { logger } from "@/lib/observability/logger";
+import { firstIssue } from "@/lib/errors/validation";
 
 // The next page of /favorites (?sort=&cursor=), fetched by the endless list
 // in the browser (ADR 0025). A route, not a Server Action: the browser may

@@ -4,7 +4,7 @@ const { findUnique, findMany } = vi.hoisted(() => ({
   findUnique: vi.fn(),
   findMany: vi.fn(),
 }));
-vi.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/postgres/prisma", () => ({
   prisma: { user: { findUnique }, account: { findMany } },
 }));
 

@@ -2,7 +2,7 @@ import "server-only";
 
 import { syncSubscription } from "@/features/billing/_internal/services/subscription-sync";
 import { stripeIdOf } from "@/features/billing/domain/subscription";
-import type { StripeEvent } from "@/lib/stripe";
+import type { StripeEvent } from "@/lib/vendors/stripe";
 
 // Each event only names a subscription: the state comes from Stripe, because
 // events arrive out of order and their payloads can be stale.

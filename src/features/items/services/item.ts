@@ -18,9 +18,9 @@ import type { UpdateItemInput } from "@/features/items/schemas";
 import { getUserItemDetail } from "@/features/items/services/item-detail";
 import { userCanUseType } from "@/features/items/services/type-access";
 import type { ItemDetail } from "@/features/items/types";
-import { fail, ok, type OperationResult } from "@/lib/action-result";
-import { logger } from "@/lib/logger";
-import { prisma } from "@/lib/prisma";
+import { fail, ok, type OperationResult } from "@/lib/errors/action-result";
+import { logger } from "@/lib/observability/logger";
+import { prisma } from "@/lib/postgres/prisma";
 
 export type UpdateItemResult = OperationResult<ItemDetail>;
 

@@ -21,7 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { IMPRINT_PATH, PRIVACY_PATH } from "@/lib/legal-paths";
+import { IMPRINT_PATH, PRIVACY_PATH } from "@/lib/http/legal-paths";
 
 interface UserAreaProps {
   user: {

@@ -14,6 +14,7 @@ import { getSidebarCollections } from "@/features/collections/queries";
 import { getSidebarItemTypes } from "@/features/item-types/queries";
 import { getSidebarItems } from "@/features/items/queries";
 import { getSessionUser } from "@/features/auth/nextauth/session";
+import { DASHBOARD_PATH } from "@/features/auth/domain/auth-paths";
 
 export async function Sidebar() {
   const user = await getSessionUser();
@@ -30,7 +31,7 @@ export async function Sidebar() {
     <div className="flex h-full flex-col">
       <div className="flex h-16 shrink-0 items-center gap-2 px-4">
         <Link
-          href="/dashboard"
+          href={DASHBOARD_PATH}
           className="flex items-center gap-2 rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <Layers className="size-6 text-primary" />

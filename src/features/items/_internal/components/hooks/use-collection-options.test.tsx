@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { act, renderHook, waitFor } from "../../../../../../test/intl";
-import { createQueryClient } from "@/components/common/query-client";
+import { createQueryClient } from "@/components/common/providers/query-client";
 import type { ItemCollectionRef } from "@/features/items/types";
-import { fail } from "@/lib/action-result";
-import { RouteError } from "@/lib/route-error";
+import { fail } from "@/lib/errors/action-result";
+import { RouteError } from "@/lib/errors/route-error";
 
 const fetchCollectionOptions = vi.hoisted(() => vi.fn());
 vi.mock(
-  "@/features/items/_internal/components/fetch-collection-options",
+  "@/features/items/_internal/components/fetch/fetch-collection-options",
   () => ({
     fetchCollectionOptions,
   }),

@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useOptimisticToggle } from "@/features/items/_internal/components/hooks/use-optimistic-toggle";
 import { setItemPin } from "@/features/items/actions/item";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
-import { UNDO_TOAST_DURATION } from "@/features/items/domain/list-rows";
+import { UNDO_TOAST_DURATION } from "@/features/items/domain/list/list-rows";
 
 // The pins of a provider's rows and drawer (useOptimisticToggle). The toast
 // confirms the button, which already shows the value; the lists follow with

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // Reads that hand a secret (a password hash, an OAuth token) to their caller.
 // They live here and not in auth/queries.ts so that nothing outside auth can

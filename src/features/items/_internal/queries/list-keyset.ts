@@ -1,7 +1,7 @@
 import "server-only";
 
-import type { FavoriteItemSort } from "@/features/items/domain/favorite-sort";
-import type { PinnedItemSort } from "@/features/items/domain/pinned-items";
+import type { FavoriteItemSort } from "@/features/items/domain/list/favorite-sort";
+import type { PinnedItemSort } from "@/features/items/domain/list/pinned-items";
 import type { Prisma } from "@/generated/prisma/client";
 
 // The order and the "after this row" condition of the endless lists (ADR

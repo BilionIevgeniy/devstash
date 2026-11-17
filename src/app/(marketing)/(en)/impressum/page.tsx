@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { LegalPage } from "../../_components/LegalPage";
+import { LegalPage } from "../../_components/legal/LegalPage";
 import { IMPRESSUM_DE } from "../../_legal/impressum.de";
 import { IMPRESSUM_EN } from "../../_legal/impressum.en";
 

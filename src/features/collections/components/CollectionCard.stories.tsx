@@ -5,7 +5,7 @@ import { expect, mocked, userEvent, waitFor, within } from "storybook/test";
 import { setCollectionFavorite } from "@/features/collections/actions/collection";
 import { CollectionCard } from "@/features/collections/components/CollectionCard";
 import type { DashboardCollection } from "@/features/collections/types";
-import { fail, ok } from "@/lib/action-result";
+import { fail, ok } from "@/lib/errors/action-result";
 
 // The action is the mock of actions/__mocks__/collection.ts (sb.mock in
 // .storybook/preview.tsx), so nothing is sent anywhere.

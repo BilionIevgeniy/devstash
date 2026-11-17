@@ -92,11 +92,11 @@ export function subscriptionWrite(
 }
 ```
 
-| Status | Class |
-| ------ | ----- |
+| Status                           | Class                        |
+| -------------------------------- | ---------------------------- |
 | `active`, `trialing`, `past_due` | Live: overwrites by customer |
-| `incomplete`, `unpaid`, `paused` | Writes only over its own id |
-| `canceled`, `incomplete_expired` | Same, and clears the id |
+| `incomplete`, `unpaid`, `paused` | Writes only over its own id  |
+| `canceled`, `incomplete_expired` | Same, and clears the id      |
 
 Test every status in this table.
 
@@ -481,33 +481,33 @@ The `customer.subscription.deleted` event that follows finds no row, or a row wi
 
 ## New Files
 
-| File | Purpose |
-| ---- | ------- |
-| `src/lib/advisory-lock.ts` | Transaction lock |
-| `src/app/api/webhooks/stripe/route.ts` | Verify, one service call |
-| `src/features/billing/domain/subscription.ts`, test | `subscriptionWrite` |
-| `src/features/billing/services/webhook.ts`, test | Event to subscription |
-| `src/features/billing/_internal/services/subscription-sync.ts`, test | Lock, read, write |
-| `src/features/billing/services/customer.ts`, test | `deleteBillingCustomer` |
-| `src/features/billing/components/BillingSection.tsx` | Billing UI |
-| `src/features/billing/_internal/components/hooks/use-billing-redirect.ts` | Upgrade and portal transition |
-| `src/features/billing/_internal/components/hooks/use-checkout-return.ts` | Return from Checkout |
-| `src/app/(app)/settings/_components/BillingPanel.tsx` | Session, plan, counts |
-| `src/features/items/services/create-item.ts`, test | Moved from `item.ts`, plus the limit |
-| `src/features/items/_internal/services/item-writes.ts` | Shared write helpers |
+| File                                                                      | Purpose                              |
+| ------------------------------------------------------------------------- | ------------------------------------ |
+| `src/lib/advisory-lock.ts`                                                | Transaction lock                     |
+| `src/app/api/webhooks/stripe/route.ts`                                    | Verify, one service call             |
+| `src/features/billing/domain/subscription.ts`, test                       | `subscriptionWrite`                  |
+| `src/features/billing/services/webhook.ts`, test                          | Event to subscription                |
+| `src/features/billing/_internal/services/subscription-sync.ts`, test      | Lock, read, write                    |
+| `src/features/billing/services/customer.ts`, test                         | `deleteBillingCustomer`              |
+| `src/features/billing/components/BillingSection.tsx`                      | Billing UI                           |
+| `src/features/billing/_internal/components/hooks/use-billing-redirect.ts` | Upgrade and portal transition        |
+| `src/features/billing/_internal/components/hooks/use-checkout-return.ts`  | Return from Checkout                 |
+| `src/app/(app)/settings/_components/BillingPanel.tsx`                     | Session, plan, counts                |
+| `src/features/items/services/create-item.ts`, test                        | Moved from `item.ts`, plus the limit |
+| `src/features/items/_internal/services/item-writes.ts`                    | Shared write helpers                 |
 
 ## Modified Files
 
-| File | Changes |
-| ---- | ------- |
-| `src/features/billing/services/checkout.ts`, test | `confirmCheckoutSession` |
-| `src/features/billing/actions/checkout.ts` | `confirmCheckout` |
-| `src/features/items/services/item.ts`, `item.test.ts` | Create path moved out |
-| `src/features/items/actions/*` | Import from `create-item` |
-| `src/features/collections/services/collection.ts`, test | Free limit |
-| `src/features/account/_internal/services/delete-account.ts`, test | Cancel first, new messages |
-| `src/app/(app)/settings/page.tsx`, `loading.tsx` | Panel and skeleton |
-| `docs/modules.md`, `docs/architecture.md`, `context/architecture-rules.md`, `context/todo.md` | See step 10 |
+| File                                                                                          | Changes                    |
+| --------------------------------------------------------------------------------------------- | -------------------------- |
+| `src/features/billing/services/checkout.ts`, test                                             | `confirmCheckoutSession`   |
+| `src/features/billing/actions/checkout.ts`                                                    | `confirmCheckout`          |
+| `src/features/items/services/item.ts`, `item.test.ts`                                         | Create path moved out      |
+| `src/features/items/actions/*`                                                                | Import from `create-item`  |
+| `src/features/collections/services/collection.ts`, test                                       | Free limit                 |
+| `src/features/account/_internal/services/delete-account.ts`, test                             | Cancel first, new messages |
+| `src/app/(app)/settings/page.tsx`, `loading.tsx`                                              | Panel and skeleton         |
+| `docs/modules.md`, `docs/architecture.md`, `context/architecture-rules.md`, `context/todo.md` | See step 10                |
 
 There is no migration in this phase: `StripeEvent` was dropped by ADR 0011.
 

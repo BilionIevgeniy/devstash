@@ -1,10 +1,10 @@
 import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { openUserItem } from "@/features/items/services/item-detail";
 import { itemIdSchema } from "@/features/items/schemas";
-import { fail } from "@/lib/action-result";
-import { jsonError, jsonOk } from "@/lib/api-response";
-import { logger } from "@/lib/logger";
-import { firstIssue } from "@/lib/validation";
+import { fail } from "@/lib/errors/action-result";
+import { jsonError, jsonOk } from "@/lib/http/api-response";
+import { logger } from "@/lib/observability/logger";
+import { firstIssue } from "@/lib/errors/validation";
 
 // Answers 401 instead of redirecting to sign-in: the drawer and the cards'
 // copy buttons call this with fetch and expect JSON back.

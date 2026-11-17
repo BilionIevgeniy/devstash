@@ -67,7 +67,8 @@ describe("registerSchema", () => {
 
   it("bounds the name", () => {
     expect(
-      registerSchema.safeParse({ ...valid, name: "n".repeat(NAME_MAX) }).success,
+      registerSchema.safeParse({ ...valid, name: "n".repeat(NAME_MAX) })
+        .success,
     ).toBe(true);
     expect(
       registerSchema.safeParse({ ...valid, name: "n".repeat(NAME_MAX + 1) })
