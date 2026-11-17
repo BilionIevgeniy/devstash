@@ -17,7 +17,7 @@ Code is grouped by feature and, inside a feature, by role (ADR 0001, the role ta
 
 Option 2. The threshold is exact so it can be checked: more than 12 files directly in the folder, not counting `*.test.*`, `*.stories.*` and subfolders. `/cleanup` reports a folder past it. `components/ui` (shadcn writes there) and `i18n/messages/<locale>` (one file per namespace) are exempt. The role of a file does not change with its folder: a subfolder of `components/` is still `components/`, of `domain/` still `domain/`, and `components/hooks/` stays where the lint expects it.
 
-`src/lib` is split into `errors/`, `http/`, `observability/`, `postgres/`, `vendors/` and `locale/`. The Prisma folder is `postgres/`, not `db/`: the course specs name `src/lib/db/*.ts` for the reads and writes of items and collections, which belong in the features ("Old paths in specs"), and a real `lib/db/` would make that path look right.
+`src/lib` is split into `errors/`, `http/`, `observability/`, `postgres/`, `vendors/` and `locale/`; `utils.ts`, `hash.ts` and `pagination.ts` (page arithmetic and URLs, no SQL) stay at the root. The Prisma folder is `postgres/`, not `db/`: the course specs name `src/lib/db/*.ts` for the reads and writes of items and collections, which belong in the features ("Old paths in specs"), and a real `lib/db/` would make that path look right.
 
 ### Tests do not count, and the editor nests them
 

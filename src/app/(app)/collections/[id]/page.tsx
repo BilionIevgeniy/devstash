@@ -12,7 +12,7 @@ import { getCollectionById } from "@/features/collections/queries";
 import { collectionIdSchema } from "@/features/collections/schemas";
 import { ItemDrawerProvider } from "@/features/items/components/drawer/ItemDrawerProvider";
 import { getUserCollectionListing } from "@/features/items/services/collection-listing";
-import { parsePage } from "@/lib/postgres/pagination";
+import { parsePage } from "@/lib/pagination";
 
 interface CollectionContentProps {
   id: string;

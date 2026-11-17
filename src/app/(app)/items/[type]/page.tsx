@@ -17,7 +17,7 @@ import { ITEMS_PER_PAGE } from "@/features/items/domain/list/pagination";
 import { countItemsOfType, getTypeTagNames } from "@/features/items/queries";
 import { parseItemListParams } from "@/features/items/schemas";
 import { userCanUseType } from "@/features/items/services/type-access";
-import { pagePosition } from "@/lib/postgres/pagination";
+import { pagePosition } from "@/lib/pagination";
 
 // The URL holds the view: ?sort=&tag=&page= (feature 7). The header, the
 // filters and the pagination read the count and stay outside the Suspense, so

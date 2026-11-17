@@ -12,7 +12,7 @@ import type {
   LockedFileRecord,
 } from "@/features/items/types";
 import type { Prisma } from "@/generated/prisma/client";
-import { type Paginated, readPage } from "@/lib/postgres/pagination";
+import { type Paginated, readPage } from "@/lib/pagination";
 import { prisma } from "@/lib/postgres/prisma";
 
 // The reads that hand out the object key, which never leaves the server, and

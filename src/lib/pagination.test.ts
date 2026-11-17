@@ -9,7 +9,7 @@ import {
   parsePage,
   readPage,
   totalPages,
-} from "@/lib/postgres/pagination";
+} from "@/lib/pagination";
 
 describe("parsePage", () => {
   it("reads a positive integer", () => {

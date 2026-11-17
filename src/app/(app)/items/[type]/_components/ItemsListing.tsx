@@ -15,7 +15,7 @@ import { ITEMS_PER_PAGE } from "@/features/items/domain/list/pagination";
 import { getItemsOfType } from "@/features/items/queries";
 import { getUserFileListItems } from "@/features/items/services/file-list";
 import { getUserGalleryItems } from "@/features/items/services/gallery";
-import { pageSkip } from "@/lib/postgres/pagination";
+import { pageSkip } from "@/lib/pagination";
 
 interface ItemsListingProps {
   userId: string;

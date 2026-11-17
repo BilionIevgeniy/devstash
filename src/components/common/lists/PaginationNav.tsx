@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 import { LinkPendingMark } from "@/components/common/LinkPendingMark";
 import { buttonVariants } from "@/components/ui/button";
-import { pageHref, pageNumbers } from "@/lib/postgres/pagination";
+import { pageHref, pageNumbers } from "@/lib/pagination";
 import { cn } from "@/lib/utils";
 
 interface PageStepProps {

@@ -14,7 +14,7 @@ src/
   features/             the product, one folder per feature (see Ranks)
   components/ui/        shadcn/ui primitives only, and their stories (ADR 0026)
   components/common/    hand-written UI with no feature knowledge: BilingualErrorText, CheckList, CopyButton, ErrorState, Field, GradientBadge, LinkPendingMark, Logo; providers/ (AppToaster, I18nProvider, QueryProvider with query-client.ts); lists/ (ListLoadError, LoadMore, PaginationNav, ShowMore); hooks/ (useErrorText, useLeaveWarning, useReportError, useScrollRestore, useSearchParam, useSubmitDialog); EmptyState (planned)
-  lib/                  feature-neutral infrastructure and vendor clients, by topic: errors/ (result contract, error words), http/ (route answers, URLs, the client IP), observability/ (logger, Sentry), postgres/ (the Prisma client and SQL helpers), vendors/ (Resend, OpenAI, R2, Upstash, Stripe), locale/ (next-intl request config, locale cookie); utils.ts and hash.ts at the root
+  lib/                  feature-neutral infrastructure and vendor clients, by topic: errors/ (result contract, error words), http/ (route answers, URLs, the client IP), observability/ (logger, Sentry), postgres/ (the Prisma client and SQL helpers), vendors/ (Resend, OpenAI, R2, Upstash, Stripe), locale/ (next-intl request config, locale cookie); utils.ts, hash.ts and pagination.ts (page numbers and their URLs) at the root
   i18n/                 config and messages only: messages/<locale>/*.json, error codes and their words; imports no other layer (ADR 0023)
   proxy.ts              Next.js proxy, stays at the src root; its matcher must cover every authenticated route
 prisma/                 schema, migrations, seed
