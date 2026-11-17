@@ -37,7 +37,7 @@ The seed creates the system item types and two demo users with the same password
 | `demo@devstash.io`     | Free, one short of both Free limits                                              | Every database the seed runs on |
 | `demo-pro@devstash.io` | Pro (active subscription, no Stripe customer, so "Manage billing" does not open) | The development database only   |
 
-The development seed differs from production on purpose: there the demo user stays Pro, with the content of the demo migrations. The seed still has the older placeholder content (feature 16 syncs it), and collection pagination cannot be checked with it.
+The development seed differs from production on purpose: there the demo user stays Pro, with all 20 items and 7 collections of the demo migrations. The seed takes 12 of those items (their content, tags, favorites and pins as in migration `20261030120000_demo_items_content`) and the `React Patterns` collection, and adds the 37 items of `Pagination Test` (`prisma/seed-pagination-data.ts`), so the Free demo user has 49 items and 2 collections, one short of both limits. Collection pagination cannot be checked with it. A second run creates only what is missing and leaves existing items as they are: to get the seed's content on a database that has older demo items, run `npm run db:reset-demo` first.
 
 ## Scripts
 
