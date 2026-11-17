@@ -285,6 +285,8 @@ const restrictSyntax = (selectors = [], message = "") => [
 const SIZE_IGNORES = [
   "src/**/*.test.ts",
   "src/**/*.test.tsx",
+  // Demo data and states, like the tests (ADR 0026)
+  "src/**/*.stories.tsx",
   "src/components/ui/**",
   "src/generated/**",
 ];
@@ -504,9 +506,11 @@ const eslintConfig = defineConfig([
   },
   {
     // Playwright's `expect(...)` and page calls return promises: one that is
-    // not awaited passes the test without checking anything. Needs type
-    // information. The architecture rules above cover src/ only.
-    files: ["e2e/**/*.ts", "playwright.config.ts"],
+    // not awaited passes the test without checking anything; so do the
+    // `play` steps of a story (the src/ block above covers the stories, this
+    // one the Storybook config). Needs type information. The architecture
+    // rules above cover src/ only.
+    files: ["e2e/**/*.ts", "playwright.config.ts", ".storybook/**/*.{ts,tsx}"],
     languageOptions: {
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
     },
@@ -514,12 +518,14 @@ const eslintConfig = defineConfig([
   },
   {
     // No literal UI text in JSX (I18N_LITERALS). Left out: the shadcn
-    // primitives, the tests, and what is bilingual by design (ADR 0024): the
+    // primitives, the tests and the stories, whose text is demo content
+    // (ADR 0026), and what is bilingual by design (ADR 0024): the
     // legal pages with their link between the two languages, and the root
     // error pages, which no provider reaches.
     files: ["src/**/*.tsx"],
     ignores: [
       "src/**/*.test.tsx",
+      "src/**/*.stories.tsx",
       "src/components/ui/**",
       "src/app/(marketing)/_legal/**",
       "src/app/(marketing)/_components/LegalPage.tsx",
@@ -541,6 +547,8 @@ const eslintConfig = defineConfig([
     // Written by Playwright (the HTML report ships .js viewer files):
     "playwright-report/**",
     "test-results/**",
+    // Written by `npm run build-storybook`:
+    "storybook-static/**",
   ]),
 ]);
 

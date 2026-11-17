@@ -29,7 +29,7 @@ src/
     collections/  collection cards and queries
     account/      the delete-account flow: verify, purge the files, delete the rows
     app-shell/    dashboard shell, top bar, sidebar
-  components/ui/  shadcn/ui primitives only
+  components/ui/  shadcn/ui primitives only, and their stories
   components/common/  hand-written UI with no feature knowledge, used by several features (CopyButton, PaginationNav)
   lib/            feature-neutral infrastructure and vendor clients (prisma, email, rate-limit, hash, logger, sentry, ...)
   i18n/           config and messages only, the lowest layer: messages/<locale>/*.json, the error codes and their words (ADR 0023)
@@ -37,6 +37,8 @@ src/
   instrumentation*.ts  start Sentry on the server and in the browser; Next.js reads them from the src root
 prisma/           schema, migrations, seed
 scripts/          one-off database scripts
+.storybook/       Storybook: main.ts (framework, React Compiler pass), preview.tsx (theme on <html>, providers, a11y check, mocks of Server Actions); ADR 0026
+test/             shared test helpers: the providers of the app (app-providers.tsx), the test wrapper (intl.tsx), stubs
 context/          the rulebooks (architecture-rules.md, coding-standards.md), the current feature and the history
 docs/             this guide and audit reports
 ```
@@ -171,6 +173,8 @@ Adding an operation to an existing feature is the same without steps 1 to 5: inp
 - a service imports `next/headers`, `next/cache` or `next/navigation`;
 - an SDK of a vendor (Resend, Upstash, Stripe, OpenAI, AWS) is imported outside `lib/`;
 - two files import each other in a loop.
+
+`npm run test` also renders every story (`*.stories.tsx`) in Chromium and fails on an axe violation, so a component with a story cannot lose its accessible name or its contrast unnoticed ([ADR 0026](adr/0026-storybook-and-story-tests.md)).
 
 What lint cannot see (one call into a service per entry point, `userId` in every query, with the one exception in [ADR 0012](adr/0012-webhook-writes-scoped-by-customer.md)) is on the author and the reviewer. The exact list is "What the lint enforces" in the Reference below.
 

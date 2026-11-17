@@ -29,10 +29,11 @@ One short file per decision that shapes the structure of the code, in the [MADR]
 | [0023](0023-next-intl-outside-lib.md) | next-intl is used outside `lib`, and `src/i18n/` sits below it | accepted |
 | [0024](0024-locale-decision.md) | The locale: a cookie for the app and the auth pages, an explicit locale for static pages | accepted |
 | [0025](0025-client-data-with-tanstack-query.md) | TanStack Query for the data the browser fetches, and cursor pages for /favorites and /pinned | accepted |
+| [0026](0026-storybook-and-story-tests.md) | Storybook for the hard-to-reach states, with every story run as a test | accepted |
 
-## How to add one
 Records up to 0026 that name `context/todo.md` mean the deferred list that was split on 2026-11-14 into the specs of `context/features/plan/` and `context/todo-before-live.md`; the table "Where the former `context/todo.md` went" in `context/features/plan/README.md` says where each item is now.
 
+## How to add one
 
 1. Copy the shape of an existing record and use the next number: `NNNN-short-title.md`.
 2. Write it when a rule in the architecture rules changes or a new one is added, before the change lands. If a rule blocks you, write a record that changes the rule; do not work around it.

@@ -51,7 +51,9 @@ The development seed differs from production on purpose: there the demo user sta
 | `npm run typecheck` | `next typegen && tsc --noEmit`: route types, then the type check |
 | `npm run db:migrate:deploy` | `prisma migrate deploy`: applies pending migrations without creating any. **It has no guard**: it migrates whatever database `DIRECT_URL` in `.env` names, so check it first |
 | `npm run vercel-build` | The Vercel Build Command (`vercel.json`): migrates the environment's own database through a guard, then builds. Refuses to run outside Vercel |
-| `npm run test` / `npm run test:watch` | Vitest, one run / watch mode. Needs no database |
+| `npm run test` / `npm run test:watch` | Vitest, one run / watch mode: the unit, component and story tests. Needs no database; the story tests need Chromium (`npx playwright install chromium`, once) |
+| `npm run test:storybook` | Only the story tests: every story in Chromium, with its `play` steps and the axe check |
+| `npm run storybook` / `npm run build-storybook` | Storybook on port 6006 / the static build in `storybook-static/`: see [ADR 0026](docs/adr/0026-storybook-and-story-tests.md) |
 | `npm run test:integration` | The integration tests (`*.int.test.ts`) on the test database: see [Integration tests](#integration-tests) |
 | `npm run test:e2e` | The end-to-end tests (`e2e/`, Playwright) against the production build on the test database: see [End-to-end tests](#end-to-end-tests) |
 | `npm run db:seed-test` | Empty the test database and seed the system types, a Free and a Pro user. Reads `TEST_DATABASE_URL` only |
@@ -127,7 +129,7 @@ Sentry, in its EU data region ([ADR 0016](docs/adr/0016-error-monitoring-with-se
 
 ### CI and branch protection
 
-`.github/workflows/ci.yml` runs three jobs on every PR and every push to `main`: `ci` (lint, typecheck, tests and the build, with dummy env values and no database), `integration` (the integration tests on a `postgres:18` service container, created empty for the run; no secret) and `e2e` (the end-to-end tests, after `ci`, on a `postgres:18` container of its own with Chromium installed in the job; the HTML report with the traces is uploaded when it fails). `e2e` is the only job with secrets, `E2E_UPSTASH_REDIS_REST_URL` and `E2E_UPSTASH_REDIS_REST_TOKEN`: add them under **Settings > Secrets and variables > Actions** and again under **Dependabot**, because GitHub gives a Dependabot PR only its own secrets. A PR from a fork gets none, and `e2e` fails with the message of the config. Dependabot (`.github/dependabot.yml`) opens weekly PRs for npm, minor and patch grouped, and for GitHub Actions.
+`.github/workflows/ci.yml` runs three jobs on every PR and every push to `main`: `ci` (lint, typecheck, the tests with the story tests in Chromium, the build and the Storybook build, with dummy env values and no database), `integration` (the integration tests on a `postgres:18` service container, created empty for the run; no secret) and `e2e` (the end-to-end tests, after `ci`, on a `postgres:18` container of its own with Chromium installed in the job; the HTML report with the traces is uploaded when it fails). `e2e` is the only job with secrets, `E2E_UPSTASH_REDIS_REST_URL` and `E2E_UPSTASH_REDIS_REST_TOKEN`: add them under **Settings > Secrets and variables > Actions** and again under **Dependabot**, because GitHub gives a Dependabot PR only its own secrets. A PR from a fork gets none, and `e2e` fails with the message of the config. Dependabot (`.github/dependabot.yml`) opens weekly PRs for npm, minor and patch grouped, and for GitHub Actions. Storybook, Vitest and Playwright each move as one group, majors included, because their packages require each other's exact version.
 
 Branch protection on `main` is set in GitHub, not in code:
 

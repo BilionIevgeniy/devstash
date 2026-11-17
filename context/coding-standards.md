@@ -199,10 +199,11 @@ How to split when a unit grows past its limit, or has more than one job before i
 
 ## Testing
 
-Vitest, run with `npm run test` (one run) or `npm run test:watch`. Tests are colocated with the file they test and import `describe`, `it` and `expect` from `vitest` explicitly. The file extension picks the Vitest project; `npm run test` runs `unit` and `dom`, `npm run test:integration` runs `integration`:
+Vitest, run with `npm run test` (one run) or `npm run test:watch`. Tests are colocated with the file they test and import `describe`, `it` and `expect` from `vitest` explicitly. The file extension picks the Vitest project; `npm run test` runs `unit`, `dom` and `storybook`, `npm run test:integration` runs `integration`:
 
 - `unit`: `[name].test.ts` (also under `scripts/`), node environment. Domain rules, schemas, services, routes
 - `dom`: `[name].test.tsx`, jsdom, with React Testing Library. Components and hooks (`renderHook`). A hook test named `.test.ts` runs in node and fails with "document is not defined"
+- `storybook`: `[name].stories.tsx`, every story run as a test in Chromium (Vitest Browser Mode, the Chromium of the e2e tests: `npx playwright install chromium` once), with its `play` steps and the axe check. See "Stories" below and [ADR 0026](../docs/adr/0026-storybook-and-story-tests.md). `npm run test:storybook` runs it alone
 - `integration`: `[name].int.test.ts`, node, the app's real Prisma on a test database. A config of its own (`vitest.integration.config.mts`), not a project of `vitest.config.mts`: `npm run test` and `test:watch` run every project of the root config and would fail where there is no database. Run with `npm run test:integration`; setup in the README, "Integration tests"
 
 - **Every test must be green, and `npm run test` must be run before every commit**, together with `npm run typecheck`, `npm run lint` and `npm run build`, `npm run test:integration` when a query or service changed, and `npm run test:e2e` when a page, a route or the sign-in or item flows changed (CI runs all of them on every PR). A failing test is fixed, or corrected on purpose when the rule changed; it is never skipped, disabled or deleted to get a commit through
@@ -214,9 +215,21 @@ Vitest, run with `npm run test` (one run) or `npm run test:watch`. Tests are col
 - A race or an abort is tested with `Promise.withResolvers()`: the test decides which answer arrives when and lets it through with `await act(async () => …)`. Test the rules of a hook through its own `renderHook` test, and the wiring that only a provider or form owns through that component
 - `test/dom-setup.ts` loads the jest-dom matchers, runs `cleanup` after each test and sets `IS_REACT_ACT_ENVIRONMENT` (Vitest globals are off, so Testing Library cannot do either). It also holds the jsdom polyfills Radix needs; add one only when a test fails without it, with a comment naming the test
 - The `dom` project runs through the React Compiler like the app does (`reactCompiler` in `next.config.ts`; `@vitejs/plugin-react` and `@rolldown/plugin-babel` with `reactCompilerPreset()`), so a test sees the memoized functions that ship. The test files themselves stay out of the Babel pass. The cost is three more dev dependencies and a Babel pass per run. `src/lib/react-compiler.test.tsx` fails if the compiler stops running in tests (it checks the helper `test/compiler-canary.ts`, because test files are not compiled), so a Dependabot bump of either plugin is caught. The `dom` project also sets `mockReset: true`: a test sets up every mock it uses, and none carries over to the next
-- Not unit-tested: layer and import rules and domain purity (ESLint enforces them), thin `actions/`, pages and `components/ui`. Vitest cannot render async Server Components, so pages are covered by the end-to-end smoke tests (`e2e/`, see "End-to-end tests" below)
+- Not unit-tested: layer and import rules and domain purity (ESLint enforces them), thin `actions/`, pages and `components/ui` (its primitives get stories, which run the axe check). Vitest cannot render async Server Components, so pages are covered by the end-to-end smoke tests (`e2e/`, see "End-to-end tests" below)
 - A `*.test.ts` file inside `domain/` may import `vitest`: the package allowlist of the domain core applies to the rules, not to their tests
 - Each test pins a rule or an edge case that would hurt if it broke; do not write tests just to have them
+
+### Stories
+
+Storybook (`npm run storybook`, `npm run build-storybook`) shows the states of a component that are hard to reach in the app; each story is also a test ([ADR 0026](../docs/adr/0026-storybook-and-story-tests.md)).
+
+- A component gets a story when it has a state the app shows only with the right data or the right failure (loading, empty, failed, locked, a refused save). Not every component, and no coverage target
+- A story shows a client or presentational component. When the state comes from a hook that fetches, the story shows the component that takes that state as props (`PaletteBody`, not `PaletteResults`)
+- `[Name].stories.tsx` next to the component, CSF 3 with `satisfies Meta<typeof X>`; demo data shared by two stories in `_internal/components/*-story-data.ts`. The text of a story is demo content, so stories are exempt from `i18next/no-literal-string` and the size limits; every other lint rule applies
+- A `play` step finds by role and name like a `dom` test, `await`s every step, and waits with `waitFor` for what animates in (a sheet, a toast); a portal is found in `canvasElement.ownerDocument.body`. The axe check scans the screen as `play` leaves it, so what stays on screen must have finished its animation (a toast: `data-mounted` and no `getAnimations()`), or the contrast check fails by timing
+- An axe violation fails the test. A violation whose fix would change what the user sees is turned off for that one rule in that story, with the reason in a comment and the fix in the Scope of the matching spec in `context/features/plan/`; never `a11y.test: "todo"` or `"off"` for a whole story
+- A module with server imports (a Server Action) is replaced by a mock file next to it in `__mocks__/`, registered with `sb.mock("…/module.ts")` in `.storybook/preview.tsx`. It imports only the module's types and exports each function as `fn()` resolving with `ok()`; a story sets another answer with `mocked(fn).mockResolvedValue(…)` in `beforeEach`. Never an automock: it still evaluates the module and its server imports. `next/navigation` comes from the framework's mock
+- `src/lib/react-compiler.stories.tsx` fails when the stories stop running through the React Compiler (the twin of `react-compiler.test.tsx`)
 
 ### Integration tests
 
