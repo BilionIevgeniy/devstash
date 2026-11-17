@@ -1,15 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { expect, fn, userEvent, within } from "storybook/test";
 
-import { Command, CommandInput, CommandList } from "@/components/ui/command";
+import { Command, CommandInput } from "@/components/ui/command";
 import type { PaletteSearch } from "@/features/search/_internal/components/hooks/use-palette-search";
 import { PaletteBody } from "@/features/search/_internal/components/PaletteBody";
 import type { PaletteResults } from "@/features/search/types";
 
 // The states of the command palette's list. PaletteResults reads them from
 // usePaletteSearch, which fetches; PaletteBody takes the same state as its
-// `search` prop, so each state is plain args (ADR 0026). Wrapped as
-// PaletteResults wraps it.
+// `search` prop, so each state is plain args (ADR 0026). Wrapped in the
+// Command and input of PaletteResults.
 const RESULTS: PaletteResults = {
   items: [
     {
@@ -58,20 +58,6 @@ const SETTLED: PaletteSearch = {
   retry: fn(),
 };
 
-// Known violations, left in the component on purpose: fixing them changes what
-// the user sees (fixed in feature 20, context/features/plan/20.ux-a11y-and-consent.md). Each story turns off only
-// these rules, and only where it breaks them; every other check stays on.
-// - aria-required-children: the loading skeleton, the empty and the failure
-//   messages and the dimmed previous results sit inside cmdk's listbox, which
-//   may own options and groups only.
-// - color-contrast: the previous results are dimmed (opacity-50) while the
-//   next answer is pending, which takes their headings under 4.5:1.
-const REQUIRED_CHILDREN = { id: "aria-required-children", enabled: false };
-const CONTRAST = { id: "color-contrast", enabled: false };
-const NOT_IN_LISTBOX = {
-  a11y: { config: { rules: [REQUIRED_CHILDREN] } },
-};
-
 const meta = {
   component: PaletteBody,
   decorators: [
@@ -82,9 +68,7 @@ const meta = {
         className="max-w-lg rounded-lg border"
       >
         <CommandInput value="react" readOnly />
-        <CommandList className="h-72">
-          <Story />
-        </CommandList>
+        <Story />
       </Command>
     ),
   ],
@@ -103,15 +87,12 @@ export const Results: Story = {};
 // The skeleton of the first answer.
 export const Loading: Story = {
   args: { search: { ...SETTLED, outcome: null, isPending: true } },
-  parameters: NOT_IN_LISTBOX,
 };
 
-// The next answer is pending: the last results stay, dimmed and not selectable.
+// The next answer is pending: the last results stay, their options dimmed and
+// not selectable; the group headings keep their contrast.
 export const PendingWithPrevious: Story = {
   args: { search: { ...SETTLED, isPending: true, previous: RESULTS } },
-  parameters: {
-    a11y: { config: { rules: [REQUIRED_CHILDREN, CONTRAST] } },
-  },
 };
 
 export const Empty: Story = {
@@ -124,7 +105,6 @@ export const Empty: Story = {
       },
     },
   },
-  parameters: NOT_IN_LISTBOX,
 };
 
 export const MorePages: Story = {
@@ -139,7 +119,6 @@ export const MorePages: Story = {
 // A failure in plain words, with a way to try again from the keyboard.
 export const Failed: Story = {
   args: { search: { ...SETTLED, outcome: { status: "error" } } },
-  parameters: NOT_IN_LISTBOX,
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByRole("alert")).toBeVisible();
@@ -150,5 +129,4 @@ export const Failed: Story = {
 
 export const RateLimited: Story = {
   args: { search: { ...SETTLED, outcome: { status: "rate-limited" } } },
-  parameters: NOT_IN_LISTBOX,
 };

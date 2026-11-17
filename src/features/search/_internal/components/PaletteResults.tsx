@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePathname, useRouter } from "next/navigation";
 
-import { Command, CommandInput, CommandList } from "@/components/ui/command";
+import { Command, CommandInput } from "@/components/ui/command";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import type { SearchableCollection } from "@/features/collections/types";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
@@ -52,13 +52,11 @@ export function PaletteResults({ onClose, onDrawerOpen }: PaletteResultsProps) {
         onValueChange={setQuery}
         placeholder={t("placeholder")}
       />
-      <CommandList className="h-72">
-        <PaletteBody
-          search={search}
-          onSelectItem={selectItem}
-          onSelectCollection={selectCollection}
-        />
-      </CommandList>
+      <PaletteBody
+        search={search}
+        onSelectItem={selectItem}
+        onSelectCollection={selectCollection}
+      />
     </Command>
   );
 }
