@@ -549,7 +549,7 @@ const eslintConfig = defineConfig([
       "src/**/*.stories.tsx",
       "src/components/ui/**",
       "src/app/(marketing)/_legal/**",
-      "src/app/(marketing)/_components/LegalPage.tsx",
+      "src/app/(marketing)/_components/legal/LegalPage.tsx",
       "src/components/common/BilingualErrorText.tsx",
       "src/app/global-error.tsx",
     ],

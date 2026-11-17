@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import type { Locale } from "@/i18n/config";
 
-import { ChaosAnimation } from "./ChaosAnimation";
+import { ChaosAnimation } from "../chaos/ChaosAnimation";
 import { DashboardPreview } from "./DashboardPreview";
 
 const PANEL_LABEL =

@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 
 import { ScrollFadeIn } from "./ScrollFadeIn";
 import { SectionHead } from "./SectionHead";
-import { TYPE_ACCENTS } from "./type-accents";
+import { TYPE_ACCENTS } from "../type-accents";
 
 type FeatureId =
   "snippets" | "prompts" | "search" | "commands" | "files" | "collections";

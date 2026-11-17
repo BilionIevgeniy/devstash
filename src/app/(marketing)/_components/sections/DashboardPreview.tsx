@@ -15,7 +15,7 @@ import type { Locale } from "@/i18n/config";
 
 import { cn } from "@/lib/utils";
 
-import { TYPE_ACCENTS } from "./type-accents";
+import { TYPE_ACCENTS } from "../type-accents";
 
 type Translate = Awaited<
   ReturnType<typeof getTranslations<"marketing.preview">>

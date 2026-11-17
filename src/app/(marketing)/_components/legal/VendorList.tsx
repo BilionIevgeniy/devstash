@@ -1,4 +1,4 @@
-import { VENDOR_IDS, VENDORS, type VendorId } from "../_legal/vendors";
+import { VENDOR_IDS, VENDORS, type VendorId } from "../../_legal/vendors";
 
 interface VendorListProps {
   /** One text per vendor: the type fails when a vendor has none. */

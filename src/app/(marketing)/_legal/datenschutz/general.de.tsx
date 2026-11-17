@@ -1,4 +1,4 @@
-import { OperatorContact } from "../../_components/OperatorContact";
+import { OperatorContact } from "../../_components/legal/OperatorContact";
 import type { LegalSection } from "../types";
 
 export const GENERAL_DE: LegalSection[] = [

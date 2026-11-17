@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-import type { LegalContent, LegalLang } from "../_legal/types";
+import type { LegalContent, LegalLang } from "../../_legal/types";
 
 // Only the document itself is a landmark (a region named by its title). The
 // sections inside carry no name: about twenty more regions would only clutter

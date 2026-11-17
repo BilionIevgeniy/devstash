@@ -1,4 +1,4 @@
-import type { LegalContent } from "../_legal/types";
+import type { LegalContent } from "../../_legal/types";
 import { LegalDocument } from "./LegalDocument";
 
 interface LegalPageProps {
