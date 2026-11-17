@@ -15,6 +15,7 @@ import {
   tagLinks,
   UNIQUE_VIOLATION_CODE,
 } from "@/features/items/_internal/services/item-writes";
+import { nextAiMarks } from "@/features/items/domain/ai-marks";
 import {
   contentTypeFor,
   editableFields,
@@ -63,7 +64,8 @@ async function confirmFileColumns(
 }
 
 // Only the fields its type has are stored, so a stray language on a note, or a
-// file on a snippet, never lands in the row.
+// file on a snippet, never lands in the row. An AI claim counts only on a
+// stored value (ADR 0027).
 function itemData(
   userId: string,
   typeId: string,
@@ -72,6 +74,15 @@ function itemData(
 ): Prisma.ItemUncheckedCreateInput {
   const { typeName, title, description, content, language, url } = input;
   const fields = editableFields(typeName);
+  const { aiTags, ...marks } = nextAiMarks(
+    null,
+    {
+      description,
+      content: fields.content ? content : undefined,
+      tags: input.tags,
+    },
+    input.aiGenerated,
+  );
   return {
     userId,
     typeId,
@@ -81,8 +92,9 @@ function itemData(
     ...(fields.content && { content }),
     ...(fields.language && { language }),
     ...(fields.url && { url }),
+    ...marks,
     ...fileColumns,
-    tags: { create: tagLinks(userId, input.tags) },
+    tags: { create: tagLinks(userId, input.tags, aiTags) },
     searchTags: toSearchTags(input.tags),
     collections: { create: collectionLinks(userId, input.collectionIds) },
   };

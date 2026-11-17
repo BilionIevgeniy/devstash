@@ -44,6 +44,8 @@ function pin(n: number): DashboardItem {
     description: null,
     isFavorite: false,
     isPinned: true,
+    descriptionAiGenerated: false,
+    aiTags: [],
     createdAt: new Date(Date.UTC(2026, 0, 1) - n * 60_000),
     tags: [],
     type: TYPE,

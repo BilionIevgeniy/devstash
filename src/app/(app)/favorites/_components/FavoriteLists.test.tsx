@@ -57,6 +57,8 @@ function favorite(n: number): FavoriteItem {
     description: null,
     isFavorite: true,
     isPinned: false,
+    descriptionAiGenerated: false,
+    aiTags: [],
     createdAt: new Date("2026-01-01T00:00:00Z"),
     favoritedAt: new Date(Date.UTC(2026, 2, 1) - n * 60_000),
     tags: [],

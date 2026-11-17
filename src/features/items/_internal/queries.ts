@@ -31,18 +31,38 @@ export const PINNED_FIRST = [
   ...NEWEST_FIRST,
 ] satisfies Prisma.ItemOrderByWithRelationInput[];
 
+// An item's tags by name, each with its AI mark (ADR 0027).
+export const itemTagsSelect = {
+  select: { aiGenerated: true, tag: { select: { name: true } } },
+  orderBy: { tag: { name: "asc" } },
+} satisfies Prisma.Item$tagsArgs;
+
+interface RawTagLink {
+  aiGenerated: boolean;
+  tag: { name: string };
+}
+
+// The one place the tag links become the names and the AI-marked names.
+export function toTagFields(links: RawTagLink[]): {
+  tags: string[];
+  aiTags: string[];
+} {
+  return {
+    tags: links.map(({ tag }) => tag.name),
+    aiTags: links.filter((link) => link.aiGenerated).map(({ tag }) => tag.name),
+  };
+}
+
 export const dashboardItemSelect = {
   id: true,
   title: true,
   description: true,
+  descriptionAiGenerated: true,
   isFavorite: true,
   isPinned: true,
   createdAt: true,
   type: { select: itemTypeSelect },
-  tags: {
-    select: { tag: { select: { name: true } } },
-    orderBy: { tag: { name: "asc" } },
-  },
+  tags: itemTagsSelect,
 } satisfies Prisma.ItemSelect;
 
 type RawItem = Prisma.ItemGetPayload<{ select: typeof dashboardItemSelect }>;
@@ -55,7 +75,7 @@ export function toDashboardItem({
   return {
     ...item,
     type: toItemTypeInfo(type),
-    tags: tags.map(({ tag }) => tag.name),
+    ...toTagFields(tags),
   };
 }
 
@@ -111,6 +131,7 @@ const itemDetailSelect = {
   fileName: true,
   fileSize: true,
   language: true,
+  contentAiGenerated: true,
   updatedAt: true,
   collections: {
     select: { collection: { select: { id: true, name: true } } },
@@ -131,7 +152,7 @@ function toItemDetail({
   return {
     ...item,
     type: toItemTypeInfo(type),
-    tags: tags.map(({ tag }) => tag.name),
+    ...toTagFields(tags),
     collections: collections.map(({ collection }) => collection),
   };
 }

@@ -8,6 +8,7 @@ import { callAction } from "@/features/items/_internal/components/call-action";
 import { rejectInvalidContent } from "@/features/items/_internal/components/reject-invalid-content";
 import { updateItem } from "@/features/items/actions/item";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
+import type { AiGeneratedClaims } from "@/features/items/domain/ai-marks";
 import {
   typeFieldValues,
   type ItemFormValues,
@@ -19,13 +20,18 @@ import {
 import type { ItemDetailJson } from "@/features/items/types";
 
 // Only the fields of this type are sent, so a hidden field is never cleared.
-function updatePayload(fields: EditableFields, values: ItemFormValues) {
+function updatePayload(
+  fields: EditableFields,
+  values: ItemFormValues,
+  aiGenerated: AiGeneratedClaims,
+) {
   return {
     title: values.title,
     description: values.description,
     tags: parseTagInput(values.tags),
     collectionIds: values.collectionIds,
     ...typeFieldValues(fields, values),
+    aiGenerated,
   };
 }
 
@@ -43,13 +49,14 @@ export function useItemSave(
   const syncItems = useSyncItemQueries();
   const [isSaving, startSaving] = useTransition();
 
-  function save(values: ItemFormValues) {
+  /** aiGenerated: what the form claims came from the AI unchanged (ADR 0027). */
+  function save(values: ItemFormValues, aiGenerated: AiGeneratedClaims) {
     if (rejectInvalidContent(fields, values.content, contentRef, errorText)) {
       return;
     }
     startSaving(async () => {
       const saved = await callAction(
-        () => updateItem(itemId, updatePayload(fields, values)),
+        () => updateItem(itemId, updatePayload(fields, values, aiGenerated)),
         "itemSaveFailed",
         errorText,
       );

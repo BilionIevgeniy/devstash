@@ -194,7 +194,12 @@ describe("updateItemSchema", () => {
 
   it("leaves out the fields that were not sent", () => {
     const { data } = parse({});
-    expect(data).toEqual({ title: "Title", tags: [], collectionIds: [] });
+    expect(data).toEqual({
+      title: "Title",
+      tags: [],
+      collectionIds: [],
+      aiGenerated: { description: false, content: false, tags: [] },
+    });
   });
 
   describe("limits", () => {

@@ -23,6 +23,8 @@ interface TagsFieldProps {
   /** What the suggestions are made from. */
   title: string;
   content: string;
+  /** Told each suggestion accepted into the field (ADR 0027). */
+  onAcceptTag?: (tag: string) => void;
 }
 
 // The comma-separated tags of both forms. An accepted suggestion only changes
@@ -33,6 +35,7 @@ export function TagsField({
   canUseAi,
   title,
   content,
+  onAcceptTag,
 }: TagsFieldProps) {
   const t = useTranslations("items.fields");
   const errorText = useErrorText();
@@ -43,6 +46,7 @@ export function TagsField({
       return false;
     }
     onChange(next);
+    onAcceptTag?.(tag.trim());
     return true;
   }
 

@@ -1,3 +1,5 @@
+import { FAKE_OPENAI_PORT } from "./fake-openai";
+
 // The environment of the server the end-to-end tests start (`npm run build`,
 // then `npm run start`). Playwright puts it over the environment of the test
 // run, and Next reads .env, .env.local, .env.production and
@@ -53,6 +55,10 @@ export function buildE2eServerEnv({
     STRIPE_PRICE_ID_MONTHLY: DUMMY,
     STRIPE_PRICE_ID_YEARLY: DUMMY,
     OPENAI_API_KEY: DUMMY,
+    // Read by the OpenAI SDK itself: the AI calls go to the local fake
+    // (scripts/fake-openai.ts), never to the real API. Not in .env.example,
+    // since the app never reads it.
+    OPENAI_BASE_URL: `http://localhost:${FAKE_OPENAI_PORT}/v1`,
     // Empty on purpose: no DSN keeps the SDK off, and no token means the build
     // uploads nothing and generates no source maps.
     NEXT_PUBLIC_SENTRY_DSN: "",

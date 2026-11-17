@@ -16,7 +16,7 @@ import {
 import { createUserItem } from "@/features/items/services/create-item";
 import {
   deleteUserItem,
-  setUserItemContent,
+  setUserItemAiContent,
   setUserItemFavorite,
   setUserItemPin,
   updateUserItem,
@@ -91,7 +91,11 @@ export async function replaceItemContent(
   const { id: userId } = await getSessionUser();
 
   try {
-    const result = await setUserItemContent(userId, parsedId.data, parsed.data);
+    const result = await setUserItemAiContent(
+      userId,
+      parsedId.data,
+      parsed.data,
+    );
     if (!result.success) return result;
 
     refresh();

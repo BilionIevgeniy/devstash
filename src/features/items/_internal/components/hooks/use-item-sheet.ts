@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRef, useState, type RefObject } from "react";
 
 import { itemDetailQuery } from "@/features/items/_internal/components/fetch-item-detail";
+import { savedRowFields } from "@/features/items/domain/item-detail";
 import type {
   DashboardItem,
   ItemDetailJson,
@@ -85,15 +86,7 @@ export function useItemSheet(focusSentinelRef: RefObject<HTMLElement | null>) {
   function handleSaved(saved: ItemDetailJson) {
     if (openItemIdRef.current !== saved.id) return;
 
-    setItem(
-      (current) =>
-        current && {
-          ...current,
-          title: saved.title,
-          description: saved.description,
-          tags: saved.tags,
-        },
-    );
+    setItem((current) => current && { ...current, ...savedRowFields(saved) });
     setIsEditing(false);
   }
 

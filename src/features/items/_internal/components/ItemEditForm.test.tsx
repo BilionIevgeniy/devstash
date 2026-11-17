@@ -8,6 +8,7 @@ import type {
   ItemFormValues,
   ItemTextField,
 } from "@/features/items/domain/item-changes";
+import type { AcceptedAiHandlers } from "@/features/items/_internal/components/hooks/use-accepted-ai";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
 const { updateItem, toastError, toastSuccess, contentFocus } = vi.hoisted(
@@ -37,10 +38,12 @@ vi.mock("@/features/items/_internal/components/ItemFields", () => ({
     values,
     onChange,
     contentRef,
+    acceptedAi,
   }: {
     values: ItemFormValues;
     onChange: (name: ItemTextField, value: string) => void;
     contentRef: RefObject<EditorHandle | null>;
+    acceptedAi: AcceptedAiHandlers;
   }) {
     useImperativeHandle(contentRef, () => ({ focus: contentFocus }));
     return (
@@ -50,6 +53,29 @@ vi.mock("@/features/items/_internal/components/ItemFields", () => ({
           value={values.title}
           onChange={(event) => onChange("title", event.target.value)}
         />
+        <textarea
+          aria-label="Description"
+          value={values.description}
+          onChange={(event) => onChange("description", event.target.value)}
+        />
+        <button
+          type="button"
+          onClick={() => {
+            onChange("description", "A summary.");
+            acceptedAi.acceptDescription("A summary.");
+          }}
+        >
+          Accept summary
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            onChange("tags", "mine, react");
+            acceptedAi.acceptTag("react");
+          }}
+        >
+          Accept tag
+        </button>
         <textarea
           aria-label="Content"
           value={values.content}
@@ -71,6 +97,8 @@ const ITEM: DashboardItem = {
   description: null,
   isFavorite: false,
   isPinned: false,
+  descriptionAiGenerated: false,
+  aiTags: [],
   createdAt: new Date("2026-11-01T10:00:00Z"),
   tags: [],
   type: TYPE,
@@ -81,6 +109,7 @@ const DETAIL: ItemDetailJson = {
   createdAt: "2026-11-01T10:00:00.000Z",
   updatedAt: "2026-11-02T10:00:00.000Z",
   contentType: "TEXT",
+  contentAiGenerated: false,
   content: "const a = 1;",
   url: null,
   language: "typescript",
@@ -140,5 +169,49 @@ describe("ItemEditForm submit", () => {
     renderForm();
 
     expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+  });
+});
+
+// The marks of ADR 0027: the form claims only what still holds the AI's text.
+describe("ItemEditForm AI claims", () => {
+  async function saveAfter(
+    steps: (user: ReturnType<typeof userEvent.setup>) => Promise<void>,
+  ) {
+    updateItem.mockResolvedValue({ success: true, data: DETAIL, error: null });
+    const user = userEvent.setup();
+    const { onSaved } = renderForm();
+    await steps(user);
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    return updateItem.mock.calls[0][1].aiGenerated;
+  }
+
+  it("claims an accepted summary that was left as it is", async () => {
+    const claims = await saveAfter((user) =>
+      user.click(screen.getByRole("button", { name: "Accept summary" })),
+    );
+    expect(claims).toEqual({ description: true, content: false, tags: [] });
+  });
+
+  it("does not claim a summary edited after it was accepted", async () => {
+    const claims = await saveAfter(async (user) => {
+      await user.click(screen.getByRole("button", { name: "Accept summary" }));
+      await user.type(screen.getByLabelText("Description"), " Mine.");
+    });
+    expect(claims.description).toBe(false);
+  });
+
+  it("claims the accepted tags, not the ones typed", async () => {
+    const claims = await saveAfter((user) =>
+      user.click(screen.getByRole("button", { name: "Accept tag" })),
+    );
+    expect(claims.tags).toEqual(["react"]);
+  });
+
+  it("claims nothing for an ordinary edit", async () => {
+    const claims = await saveAfter((user) =>
+      user.type(screen.getByLabelText("Title"), " v2"),
+    );
+    expect(claims).toEqual({ description: false, content: false, tags: [] });
   });
 });

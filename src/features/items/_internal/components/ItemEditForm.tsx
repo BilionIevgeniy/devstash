@@ -9,10 +9,12 @@ import type { EditorHandle } from "@/features/editor/types";
 import { CollectionSelect } from "@/features/items/_internal/components/CollectionSelect";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
 import { ItemFields } from "@/features/items/_internal/components/ItemFields";
+import { useAcceptedAi } from "@/features/items/_internal/components/hooks/use-accepted-ai";
 import { useItemSave } from "@/features/items/_internal/components/hooks/use-item-save";
 import { useUnsavedChanges } from "@/features/items/_internal/components/hooks/use-unsaved-changes";
 import {
   hasItemChanges,
+  isMissingRequired,
   type ItemFormValues,
 } from "@/features/items/domain/item-changes";
 import {
@@ -66,10 +68,9 @@ export function ItemEditForm({
   const [values, setValues] = useState(initial);
   const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
   const contentRef = useRef<EditorHandle>(null);
+  const acceptedAi = useAcceptedAi();
   const { isSaving, save } = useItemSave(item.id, fields, contentRef, onSaved);
   const isChanged = hasItemChanges(fields, initial, values);
-  const isMissingRequired =
-    values.title.trim() === "" || (fields.url && values.url.trim() === "");
   useUnsavedChanges(isChanged, onDirtyChange);
 
   function setField<K extends keyof ItemFormValues>(
@@ -86,14 +87,14 @@ export function ItemEditForm({
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isChanged) save(values);
+    if (isChanged) save(values, acceptedAi.claims(values));
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
       <EditToolbar
         isSaving={isSaving}
-        canSave={isChanged && !isMissingRequired}
+        canSave={isChanged && !isMissingRequired(fields, values, true)}
         onCancel={handleCancel}
       >
         <DiscardChangesDialog
@@ -110,6 +111,7 @@ export function ItemEditForm({
           canUseAi={canUseAi}
           fileName={detail.file?.name}
           contentRef={contentRef}
+          acceptedAi={acceptedAi}
         />
         <CollectionSelect
           value={values.collectionIds}

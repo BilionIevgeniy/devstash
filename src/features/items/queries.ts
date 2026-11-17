@@ -4,8 +4,10 @@ import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
 import { itemTypeSelect } from "@/features/item-types/queries";
 import {
   cardItemSelect,
+  itemTagsSelect,
   NEWEST_FIRST,
   toItemCardData,
+  toTagFields,
 } from "@/features/items/_internal/queries";
 import {
   itemListOrderBy,
@@ -146,8 +148,13 @@ export async function getItemEditState(
   const item = await prisma.item.findFirst({
     where: { id, userId },
     select: {
+      description: true,
+      content: true,
+      descriptionAiGenerated: true,
+      contentAiGenerated: true,
       type: { select: { name: true } },
       collections: { select: { collectionId: true } },
+      tags: itemTagsSelect,
     },
   });
   if (!item) return null;
@@ -155,6 +162,13 @@ export async function getItemEditState(
   return {
     typeName: item.type.name,
     collectionIds: item.collections.map((row) => row.collectionId),
+    ai: {
+      description: item.description,
+      content: item.content,
+      descriptionAiGenerated: item.descriptionAiGenerated,
+      contentAiGenerated: item.contentAiGenerated,
+      aiTags: toTagFields(item.tags).aiTags,
+    },
   };
 }
 

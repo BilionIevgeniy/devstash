@@ -5,6 +5,7 @@ import type { RefObject } from "react";
 import { Loader2, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { AI_ICON_CLASS } from "@/features/ai/_internal/components/suggestion-classes";
 
 interface GenerateWithAiButtonProps {
   /** What it generates, heard only by a screen reader: "for tags". */
@@ -44,10 +45,7 @@ export function GenerateWithAiButton({
       {isPending ? (
         <Loader2 className="animate-spin" aria-hidden />
       ) : (
-        <Sparkles
-          className="text-violet-500 dark:text-violet-400"
-          aria-hidden
-        />
+        <Sparkles className={AI_ICON_CLASS} aria-hidden />
       )}
       {isPending ? t("pending") : t("idle")}
       <span className="sr-only"> {target}</span>

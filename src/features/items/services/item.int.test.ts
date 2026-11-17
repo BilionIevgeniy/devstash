@@ -8,7 +8,7 @@ import { snapshotTenant } from "../../../../test/integration/snapshot";
 import { updateItemSchema } from "@/features/items/schemas";
 import {
   deleteUserItem,
-  setUserItemContent,
+  setUserItemAiContent,
   setUserItemFavorite,
   setUserItemPin,
   updateUserItem,
@@ -94,10 +94,10 @@ describe("updateUserItem", () => {
   });
 });
 
-describe("setUserItemContent", () => {
+describe("setUserItemAiContent", () => {
   it("refuses B's item for A", async () => {
     const before = await snapshotTenant(t.b.userId);
-    const result = await setUserItemContent(t.a.userId, t.b.items.note, "x");
+    const result = await setUserItemAiContent(t.a.userId, t.b.items.note, "x");
     expect(result).toMatchObject({
       success: false,
       data: null,
@@ -105,8 +105,92 @@ describe("setUserItemContent", () => {
     });
     expect(await snapshotTenant(t.b.userId)).toEqual(before);
 
-    const own = await setUserItemContent(t.b.userId, t.b.items.note, "new");
+    const own = await setUserItemAiContent(t.b.userId, t.b.items.note, "new");
     expect(own.data?.content).toBe("new");
+  });
+});
+
+// ADR 0027: the marks are written with the values they describe, by the
+// owner only.
+describe("the AI marks", () => {
+  const marksOf = async (id: string) => {
+    const item = await prisma.item.findUniqueOrThrow({
+      where: { id },
+      select: {
+        descriptionAiGenerated: true,
+        contentAiGenerated: true,
+        tags: {
+          select: { aiGenerated: true, tag: { select: { name: true } } },
+        },
+      },
+    });
+    return {
+      description: item.descriptionAiGenerated,
+      content: item.contentAiGenerated,
+      tags: item.tags.filter((t) => t.aiGenerated).map((t) => t.tag.name),
+    };
+  };
+  const summaryEdit = updateItemSchema.parse({
+    title: "Meeting notes",
+    description: "A summary.",
+    content: "Notes",
+    tags: ["shared", "mine"],
+    collectionIds: [],
+    aiGenerated: { description: true, tags: ["shared"] },
+  });
+
+  it("sets B's marks for B, and A's call with B's id changes nothing", async () => {
+    const own = await updateUserItem(t.b.userId, t.b.items.note, summaryEdit);
+    expect(own.data).toMatchObject({
+      descriptionAiGenerated: true,
+      aiTags: ["shared"],
+    });
+    expect(await marksOf(t.b.items.note)).toEqual({
+      description: true,
+      content: false,
+      tags: ["shared"],
+    });
+
+    const before = await snapshotTenant(t.b.userId);
+    const result = await updateUserItem(
+      t.a.userId,
+      t.b.items.note,
+      updateItemSchema.parse({ title: "Taken", tags: [], collectionIds: [] }),
+    );
+    expect(result).toMatchObject({ success: false, error: "itemNotFound" });
+    expect(await snapshotTenant(t.b.userId)).toEqual(before);
+  });
+
+  it("keeps the marks of an unchanged value and clears an edited one", async () => {
+    await updateUserItem(t.b.userId, t.b.items.note, summaryEdit);
+    await setUserItemAiContent(t.b.userId, t.b.items.note, "Better notes");
+
+    await updateUserItem(
+      t.b.userId,
+      t.b.items.note,
+      updateItemSchema.parse({
+        title: "Renamed",
+        description: "My own words.",
+        content: "Better notes",
+        tags: ["shared", "mine"],
+        collectionIds: [],
+      }),
+    );
+
+    expect(await marksOf(t.b.items.note)).toEqual({
+      description: false,
+      content: true,
+      tags: ["shared"],
+    });
+  });
+
+  it("marks the content B accepted, and A's call with B's id marks nothing", async () => {
+    const before = await snapshotTenant(t.b.userId);
+    await setUserItemAiContent(t.a.userId, t.b.items.note, "x");
+    expect(await snapshotTenant(t.b.userId)).toEqual(before);
+
+    await setUserItemAiContent(t.b.userId, t.b.items.note, "Better notes");
+    expect((await marksOf(t.b.items.note)).content).toBe(true);
   });
 });
 

@@ -16,8 +16,14 @@ export function isRecordNotFound(error: unknown): boolean {
 }
 
 // Links to the caller's tags, creating the ones the caller does not have yet.
-export function tagLinks(userId: string, tags: string[]) {
+// A link to a name in aiTags is marked as an accepted AI suggestion.
+export function tagLinks(
+  userId: string,
+  tags: string[],
+  aiTags: readonly string[] = [],
+) {
   return tags.map((name) => ({
+    aiGenerated: aiTags.includes(name),
     tag: {
       connectOrCreate: {
         where: { userId_name: { userId, name } },

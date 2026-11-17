@@ -10,3 +10,7 @@ export const DISMISS_CLASS =
 // The dashed frame of a suggestion that is not in the form yet.
 export const SUGGESTION_FRAME_CLASS =
   "rounded-md border border-dashed bg-muted/50";
+
+// The violet of every AI icon: the Generate and stream buttons, the
+// suggestions, and the AI-generated label (ADR 0027).
+export const AI_ICON_CLASS = "text-violet-500 dark:text-violet-400";

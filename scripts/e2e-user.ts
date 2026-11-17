@@ -23,3 +23,9 @@ export function requireE2eUserEmail(): string {
   }
   return email;
 }
+
+// A third user on the Pro plan, for the AI journey (e2e/ai-marking.spec.ts):
+// the run's own user stays Free, so the Free limits keep applying to it.
+export function proUserEmail(runEmail: string): string {
+  return `pro-${runEmail}`;
+}

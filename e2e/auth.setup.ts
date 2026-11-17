@@ -1,8 +1,16 @@
 import { mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 import { expect, test as setup } from "@playwright/test";
-import { listsUserEmail, requireE2eUserEmail } from "../scripts/e2e-user";
-import { AUTH_FILE, LISTS_AUTH_FILE } from "./support/storage-state";
+import {
+  listsUserEmail,
+  proUserEmail,
+  requireE2eUserEmail,
+} from "../scripts/e2e-user";
+import {
+  AUTH_FILE,
+  LISTS_AUTH_FILE,
+  PRO_AUTH_FILE,
+} from "./support/storage-state";
 import { signInThroughForm } from "./support/sign-in";
 
 // Signs in once through the form and saves the session for the other tests.
@@ -21,4 +29,12 @@ setup("sign in the user with the long lists", async ({ page }) => {
 
   await mkdir(dirname(LISTS_AUTH_FILE), { recursive: true });
   await page.context().storageState({ path: LISTS_AUTH_FILE });
+});
+
+setup("sign in the Pro user", async ({ page }) => {
+  await signInThroughForm(page, proUserEmail(requireE2eUserEmail()));
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  await mkdir(dirname(PRO_AUTH_FILE), { recursive: true });
+  await page.context().storageState({ path: PRO_AUTH_FILE });
 });

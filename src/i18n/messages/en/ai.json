@@ -49,5 +49,8 @@
     "add": "Add tag {tag}",
     "dismiss": "Dismiss tag {tag}"
   },
-  "view": "View"
+  "view": "View",
+  "marking": {
+    "label": "AI-generated"
+  }
 }

@@ -28,7 +28,7 @@ Rules that apply to every file:
 | 12 | [Client data and infinite lists](../12.client-data-and-infinite-lists.md) | SHOULD | [x] |
 | 13 | [Performance and SEO](../13.performance-and-seo.md) | SHOULD | [x] |
 | 14 | [Storybook and accessibility](../14.storybook-and-a11y.md) | SHOULD | [x] |
-| 15 | [AI output marking](15.ai-output-marking.md) | MUST, by 2026-12-02 | [ ] |
+| 15 | [AI output marking](../15.ai-output-marking.md) | MUST, by 2026-12-02 | [x] |
 | 16 | [Codebase hygiene](16.codebase-hygiene.md) | SHOULD | [ ] |
 | 17 | [Security, auth and data retention](17.security-auth-retention.md) | MUST | [ ] |
 | 18 | [Custom item types](18.custom-item-types.md) | MUST | [ ] |

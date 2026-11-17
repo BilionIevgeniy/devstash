@@ -6,7 +6,7 @@ Nothing new is written here unless it cannot be built at all (the rule is "Found
 
 ## Dated
 
-- **AI Act Art. 50 (2) by 2026-12-02.** Decided without a lawyer: the AI outputs are marked (feature 15, ADR 0014 addendum). What stays here is the lawyer's check of that decision before live.
+- **AI Act Art. 50 (2) by 2026-12-02.** Decided without a lawyer and built in feature 15 ([ADR 0027](../docs/adr/0027-marking-ai-generated-output.md)): every saved AI output is flagged per field, marked in the markup and carried in the export. What stays here is the lawyer's check of that decision before live, including the two departures from the Code of Practice the ADR records: no watermark on long text (the optimized prompt, the Explain answer), and the export's marks not digitally signed (Sub-measure 1.1.1).
 
 ## Tax adviser
 

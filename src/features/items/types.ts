@@ -1,5 +1,9 @@
 import type { FileUrls } from "@/features/files/types";
 import type { ItemTypeInfo } from "@/features/item-types/types";
+import type {
+  AiGeneratedClaims,
+  StoredAiFields,
+} from "@/features/items/domain/ai-marks";
 
 export interface DashboardItem {
   id: string;
@@ -10,6 +14,10 @@ export interface DashboardItem {
   createdAt: Date;
   tags: string[];
   type: ItemTypeInfo;
+  /** The description is an accepted AI summary (ADR 0027). */
+  descriptionAiGenerated: boolean;
+  /** The tags that are accepted AI suggestions. */
+  aiTags: string[];
 }
 
 // What the item cards and rows get: whether their copy button has something
@@ -23,6 +31,8 @@ export interface ItemCardData extends DashboardItem {
 // never the content itself.
 export interface SearchableItem extends DashboardItem {
   preview: string | null;
+  /** The preview is taken from AI-generated content (ADR 0027). */
+  previewAiGenerated: boolean;
 }
 
 // One page of search results; nextOffset is null on the last page.
@@ -82,6 +92,8 @@ export interface ItemCollectionRef {
 interface ItemDetailFields extends DashboardItem {
   contentType: string;
   content: string | null;
+  /** The content is an accepted optimized prompt (ADR 0027). */
+  contentAiGenerated: boolean;
   url: string | null;
   language: string | null;
   updatedAt: Date;
@@ -187,9 +199,11 @@ export interface OpenedItemJson {
 
 // What the update service reads before it writes: the type decides the editable
 // fields, and only collections not yet linked are checked and added.
+// The stored values and AI marks feed nextAiMarks (ADR 0027).
 export interface ItemEditState {
   typeName: string;
   collectionIds: string[];
+  ai: StoredAiFields;
 }
 
 export interface ItemStats {
@@ -220,6 +234,8 @@ export interface ExportedItem {
   isPinned: boolean;
   createdAt: Date;
   updatedAt: Date;
+  /** Which values are accepted AI outputs (ADR 0027); the import reads it back. */
+  aiGenerated: AiGeneratedClaims;
   file: ExportedItemFile | null;
 }
 

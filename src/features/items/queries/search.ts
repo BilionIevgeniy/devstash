@@ -24,18 +24,30 @@ import { prisma } from "@/lib/prisma";
 
 const RECENT_SEARCHABLE_ITEMS_LIMIT = 8;
 
-type RawCardItem = Prisma.ItemGetPayload<{ select: typeof cardItemSelect }>;
+const searchItemSelect = {
+  ...cardItemSelect,
+  contentAiGenerated: true,
+} satisfies Prisma.ItemSelect;
 
-// The content is read only to build the preview; it stays on the server.
+type RawSearchItem = Prisma.ItemGetPayload<{
+  select: typeof searchItemSelect;
+}>;
+
+// The content is read only to build the preview; it stays on the server. A
+// preview of AI content says so (ADR 0027); a link's preview is its URL.
 function toSearchableItem({
   contentType,
   content,
   url,
+  contentAiGenerated,
   ...item
-}: RawCardItem): SearchableItem {
+}: RawSearchItem): SearchableItem {
+  const preview = copyValueOf({ contentType, content, url });
   return {
     ...toDashboardItem(item),
-    preview: toSearchPreview(copyValueOf({ contentType, content, url })),
+    preview: toSearchPreview(preview),
+    previewAiGenerated:
+      contentAiGenerated && preview !== null && preview === content,
   };
 }
 
@@ -47,7 +59,7 @@ export async function getRecentSearchableItems(
     where: { userId },
     orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
     take: RECENT_SEARCHABLE_ITEMS_LIMIT,
-    select: cardItemSelect,
+    select: searchItemSelect,
   });
   return items.map(toSearchableItem);
 }
@@ -74,7 +86,7 @@ export async function searchUserItems(
   // simply left out.
   const rows = await prisma.item.findMany({
     where: { userId, id: { in: pageIds } },
-    select: cardItemSelect,
+    select: searchItemSelect,
   });
 
   return {

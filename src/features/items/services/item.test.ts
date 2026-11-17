@@ -31,10 +31,11 @@ vi.mock("@/features/files/services/objects", () => ({
   signFileUrls,
 }));
 
+import { NO_AI_CLAIMS } from "@/features/items/domain/ai-marks";
 import { Prisma } from "@/generated/prisma/client";
 import {
   deleteUserItem,
-  setUserItemContent,
+  setUserItemAiContent,
   setUserItemFavorite,
   setUserItemPin,
   updateUserItem,
@@ -132,7 +133,9 @@ const rawItem = {
   fileSize: null,
   language: "bash",
   type: { id: "type-1", name: "command", icon: "Terminal", color: "#f97316" },
-  tags: [{ tag: { name: "shell" } }],
+  descriptionAiGenerated: false,
+  contentAiGenerated: false,
+  tags: [{ aiGenerated: false, tag: { name: "shell" } }],
   collections: [],
 };
 
@@ -143,7 +146,7 @@ function prismaError(code: string) {
   });
 }
 
-describe("setUserItemContent", () => {
+describe("setUserItemAiContent", () => {
   beforeEach(() => {
     update.mockReset().mockResolvedValue({ id: "item-1" });
     findFirst.mockReset().mockResolvedValue({
@@ -153,7 +156,7 @@ describe("setUserItemContent", () => {
   });
 
   it("writes only the content, through the caller's id", async () => {
-    const result = await setUserItemContent("user-1", "item-1", "Better");
+    const result = await setUserItemAiContent("user-1", "item-1", "Better");
 
     expect(result.success).toBe(true);
     expect(findFirst.mock.calls[0][0].where).toEqual({
@@ -163,7 +166,7 @@ describe("setUserItemContent", () => {
     expect(update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: "item-1", userId: "user-1" },
-        data: { content: "Better" },
+        data: { content: "Better", contentAiGenerated: true },
       }),
     );
   });
@@ -171,7 +174,7 @@ describe("setUserItemContent", () => {
   it("refuses a type without content, without writing", async () => {
     findFirst.mockResolvedValue({ ...rawItem, type: { name: "link" } });
 
-    const result = await setUserItemContent("user-1", "item-1", "Better");
+    const result = await setUserItemAiContent("user-1", "item-1", "Better");
 
     expect(result).toEqual({
       success: false,
@@ -185,7 +188,7 @@ describe("setUserItemContent", () => {
     findFirst.mockResolvedValue(null);
 
     await expect(
-      setUserItemContent("user-1", "item-1", "Better"),
+      setUserItemAiContent("user-1", "item-1", "Better"),
     ).resolves.toMatchObject({
       success: false,
       data: null,
@@ -198,7 +201,7 @@ describe("setUserItemContent", () => {
     update.mockRejectedValue(prismaError("P2025"));
 
     await expect(
-      setUserItemContent("user-1", "item-1", "Better"),
+      setUserItemAiContent("user-1", "item-1", "Better"),
     ).resolves.toMatchObject({
       success: false,
       data: null,
@@ -208,7 +211,12 @@ describe("setUserItemContent", () => {
 });
 
 describe("updateUserItem", () => {
-  const renamed = { title: "Renamed", tags: [], collectionIds: [] };
+  const renamed = {
+    title: "Renamed",
+    tags: [],
+    collectionIds: [],
+    aiGenerated: NO_AI_CLAIMS,
+  };
 
   beforeEach(() => {
     update.mockReset().mockResolvedValue({ id: "item-1" });
@@ -251,6 +259,7 @@ describe("updateUserItem", () => {
       title: "Renamed",
       tags: [],
       collectionIds: [],
+      aiGenerated: NO_AI_CLAIMS,
     });
 
     expect(result).toEqual({
@@ -283,6 +292,7 @@ describe("updateUserItem", () => {
       url: "https://react.dev",
       tags: [],
       collectionIds: [],
+      aiGenerated: NO_AI_CLAIMS,
     });
 
     const { data } = update.mock.calls[0][0];
@@ -299,6 +309,7 @@ describe("updateUserItem", () => {
       url: null,
       tags: [],
       collectionIds: [],
+      aiGenerated: NO_AI_CLAIMS,
     });
 
     expect(result).toEqual({
@@ -325,6 +336,7 @@ describe("updateUserItem", () => {
       title: "Renamed",
       tags: [],
       collectionIds: [],
+      aiGenerated: NO_AI_CLAIMS,
     });
 
     expect(result.success).toBe(true);
@@ -335,12 +347,14 @@ describe("updateUserItem", () => {
       title: "Renamed",
       tags: ["shell"],
       collectionIds: [],
+      aiGenerated: NO_AI_CLAIMS,
     });
 
     expect(update.mock.calls[0][0].data.tags).toEqual({
       deleteMany: {},
       create: [
         {
+          aiGenerated: false,
           tag: {
             connectOrCreate: {
               where: { userId_name: { userId: "user-1", name: "shell" } },
@@ -352,6 +366,28 @@ describe("updateUserItem", () => {
     });
   });
 
+  it("clears the mark of an edited description and keeps the others", async () => {
+    findFirst.mockResolvedValue({
+      ...rawItem,
+      description: "A summary",
+      descriptionAiGenerated: true,
+      contentAiGenerated: true,
+      tags: [{ aiGenerated: true, tag: { name: "shell" } }],
+    });
+
+    await updateUserItem("user-1", "item-1", {
+      ...renamed,
+      description: "My words",
+      content: "echo hi",
+      tags: ["shell"],
+    });
+
+    const { data } = update.mock.calls[0][0];
+    expect(data.descriptionAiGenerated).toBe(false);
+    expect(data.contentAiGenerated).toBe(true);
+    expect(data.tags.create[0].aiGenerated).toBe(true);
+  });
+
   it("keeps the links that stay, so their addedAt survives the save", async () => {
     findFirst.mockResolvedValue({
       ...rawItem,
@@ -361,6 +397,7 @@ describe("updateUserItem", () => {
     await updateUserItem("user-1", "item-1", {
       ...renamed,
       collectionIds: ["col-1", "col-3"],
+      aiGenerated: NO_AI_CLAIMS,
     });
 
     expect(update.mock.calls[0][0].data.collections).toEqual({
@@ -375,6 +412,7 @@ describe("updateUserItem", () => {
       description: null,
       tags: [],
       collectionIds: [],
+      aiGenerated: NO_AI_CLAIMS,
     });
 
     const { data } = update.mock.calls[0][0];
@@ -388,6 +426,7 @@ describe("updateUserItem", () => {
       title: "Renamed",
       tags: ["shell"],
       collectionIds: [],
+      aiGenerated: NO_AI_CLAIMS,
     });
 
     expect(result.success).toBe(true);
@@ -401,6 +440,7 @@ describe("updateUserItem", () => {
       title: "Renamed",
       tags: [],
       collectionIds: [],
+      aiGenerated: NO_AI_CLAIMS,
     });
 
     expect(result).toEqual({

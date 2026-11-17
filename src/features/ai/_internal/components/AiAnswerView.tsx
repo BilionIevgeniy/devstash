@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { Loader2 } from "lucide-react";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { aiMarkProps } from "@/features/ai/domain/marking";
 
 // Loaded on its own, as MarkdownEditor does: the Markdown parser is fetched
 // only when an answer first renders, not with every drawer.
@@ -51,7 +52,9 @@ export function AiAnswerView({
       {inputCutMessage && (
         <p className="text-xs text-muted-foreground">{inputCutMessage}</p>
       )}
-      <MarkdownPreview value={text} images="drop" />
+      <div {...aiMarkProps(true)}>
+        <MarkdownPreview value={text} images="drop" />
+      </div>
       {isCutShort && (
         <p className="text-xs text-destructive">{cutShortMessage}</p>
       )}

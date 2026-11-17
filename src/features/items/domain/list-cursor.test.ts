@@ -81,6 +81,8 @@ describe("list pages", () => {
     description: null,
     isFavorite: true,
     isPinned: false,
+    descriptionAiGenerated: false,
+    aiTags: [],
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     favoritedAt: new Date("2026-03-01T10:00:00.000Z"),
     tags: [],

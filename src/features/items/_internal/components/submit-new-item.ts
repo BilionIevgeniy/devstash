@@ -9,6 +9,7 @@ import type { ErrorText } from "@/i18n/error-text";
 import { rejectInvalidContent } from "@/features/items/_internal/components/reject-invalid-content";
 import { createItem } from "@/features/items/actions/item";
 import type { ItemChange } from "@/features/items/components/item-queries";
+import type { AiGeneratedClaims } from "@/features/items/domain/ai-marks";
 import {
   typeFieldValues,
   type ItemFormValues,
@@ -23,6 +24,8 @@ export interface NewItemSubmission {
   typeName: CreatableTypeName;
   fields: EditableFields;
   values: ItemFormValues;
+  /** What the form claims came from the AI unchanged (ADR 0027). */
+  aiGenerated: AiGeneratedClaims;
   upload: UploadedFile | null;
   contentRef: RefObject<EditorHandle | null>;
   run: SubmitRun;
@@ -35,12 +38,16 @@ export interface NewItemSubmission {
 
 // Only the fields of the chosen type are sent; the others keep their input in
 // case the type is switched back.
-function createPayload(
-  typeName: CreatableTypeName,
-  fields: EditableFields,
-  values: ItemFormValues,
-  upload: UploadedFile | null,
-) {
+function createPayload({
+  typeName,
+  fields,
+  values,
+  aiGenerated,
+  upload,
+}: Pick<
+  NewItemSubmission,
+  "typeName" | "fields" | "values" | "aiGenerated" | "upload"
+>) {
   return {
     typeName,
     title: values.title,
@@ -50,27 +57,20 @@ function createPayload(
     ...typeFieldValues(fields, values),
     ...(fields.file &&
       upload && { file: { key: upload.key, name: upload.fileName } }),
+    aiGenerated,
   };
 }
 
 // The create dialog's submit: content the server would refuse stops here, the
 // rest goes to the action through the dialog's run (useSubmitDialog).
-export function submitNewItem({
-  typeName,
-  fields,
-  values,
-  upload,
-  contentRef,
-  run,
-  errorText,
-  syncItems,
-  onCreated,
-}: NewItemSubmission): void {
+export function submitNewItem(submission: NewItemSubmission): void {
+  const { fields, values, contentRef, run, errorText, syncItems, onCreated } =
+    submission;
   if (rejectInvalidContent(fields, values.content, contentRef, errorText)) {
     return;
   }
 
-  run(() => createItem(createPayload(typeName, fields, values, upload)), {
+  run(() => createItem(createPayload(submission)), {
     onSuccess: onCreated,
     failCode: "itemCreateFailed",
     sync: () => syncItems({ kind: "created" }),

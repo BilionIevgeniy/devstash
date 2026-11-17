@@ -70,6 +70,13 @@ describe("getItemEditState", () => {
     ).resolves.toEqual({
       typeName: "snippet",
       collectionIds: [t.b.collections.main],
+      ai: {
+        description: null,
+        content: "export function useDebounce() {}",
+        descriptionAiGenerated: false,
+        contentAiGenerated: false,
+        aiTags: [],
+      },
     });
     await expect(
       getItemEditState(t.a.userId, t.b.items.snippet),

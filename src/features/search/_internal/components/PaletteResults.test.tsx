@@ -30,10 +30,13 @@ function item(title: string): PaletteItem {
     description: null,
     isFavorite: false,
     isPinned: false,
+    descriptionAiGenerated: false,
+    aiTags: [],
     createdAt: new Date("2026-01-15T00:00:00Z"),
     type: { id: "type-1", name: "snippet", icon: "Code" },
     tags: [],
     preview: null,
+    previewAiGenerated: false,
     isLocked: false,
   };
 }
