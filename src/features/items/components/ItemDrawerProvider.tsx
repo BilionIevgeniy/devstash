@@ -4,11 +4,11 @@ import { useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
+import { DiscardChangesDialog } from "@/features/items/_internal/components/form/DiscardChangesDialog";
 import {
   ITEM_SHEET_CLASS,
   ItemDrawerContent,
-} from "@/features/items/_internal/components/ItemDrawerContent";
+} from "@/features/items/_internal/components/drawer/ItemDrawerContent";
 import { useDirtyCloseGuard } from "@/features/items/_internal/components/hooks/use-dirty-close-guard";
 import { useItemFavorites } from "@/features/items/_internal/components/hooks/use-item-favorites";
 import { useItemPins } from "@/features/items/_internal/components/hooks/use-item-pins";

@@ -9,10 +9,13 @@ const { fetchFavoritePage, router } = vi.hoisted(() => ({
   router: { bfcacheId: "bf-1" },
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => router }));
-vi.mock("@/features/items/_internal/components/fetch-item-list-page", () => ({
-  fetchFavoritePage,
-  fetchPinnedPage: vi.fn(),
-}));
+vi.mock(
+  "@/features/items/_internal/components/fetch/fetch-item-list-page",
+  () => ({
+    fetchFavoritePage,
+    fetchPinnedPage: vi.fn(),
+  }),
+);
 
 import { useFavoritePages } from "@/features/items/components/hooks/use-item-list-pages";
 

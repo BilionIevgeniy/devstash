@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchCollectionOptions } from "@/features/items/_internal/components/fetch-collection-options";
+import { fetchCollectionOptions } from "@/features/items/_internal/components/fetch/fetch-collection-options";
 import { itemKeys } from "@/features/items/components/item-queries";
 import type { ItemCollectionRef } from "@/features/items/types";
 

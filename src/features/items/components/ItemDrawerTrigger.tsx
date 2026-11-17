@@ -2,8 +2,8 @@
 
 import type { KeyboardEvent, ReactNode } from "react";
 
-import { LockedItemCard } from "@/features/items/_internal/components/LockedItemCard";
-import { LockedItemRow } from "@/features/items/_internal/components/LockedItemRow";
+import { LockedItemCard } from "@/features/items/_internal/components/locked/LockedItemCard";
+import { LockedItemRow } from "@/features/items/_internal/components/locked/LockedItemRow";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
 import type { DashboardItem } from "@/features/items/types";
 import { cn } from "@/lib/utils";

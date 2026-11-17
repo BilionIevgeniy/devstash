@@ -17,8 +17,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ProBadge } from "@/features/billing/components/ProBadge";
-import type { CreateItemForm as CreateItemFormComponent } from "@/features/items/_internal/components/CreateItemForm";
-import { CreateItemFormSkeleton } from "@/features/items/_internal/components/CreateItemFormSkeleton";
+import type { CreateItemForm as CreateItemFormComponent } from "@/features/items/_internal/components/form/CreateItemForm";
+import { CreateItemFormSkeleton } from "@/features/items/_internal/components/form/CreateItemFormSkeleton";
 import {
   canCreateType,
   type CreatableTypeName,
@@ -39,7 +39,7 @@ let loadedForm: FormComponent | null = null;
 
 function loadForm(): Promise<FormComponent> {
   formPromise ??=
-    import("@/features/items/_internal/components/CreateItemForm").then(
+    import("@/features/items/_internal/components/form/CreateItemForm").then(
       (mod) => (loadedForm = mod.CreateItemForm),
       (error: unknown) => {
         formPromise = null;

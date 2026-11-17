@@ -2,8 +2,8 @@ import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { useFormatter } from "next-intl";
 import { AiGeneratedLabel } from "@/features/ai/components/AiGeneratedLabel";
 import { aiMarkProps } from "@/features/ai/domain/marking";
-import { ItemTagBadges } from "@/features/items/_internal/components/ItemTagBadges";
-import { PinMark } from "@/features/items/_internal/components/PinMark";
+import { ItemTagBadges } from "@/features/items/_internal/components/cards/ItemTagBadges";
+import { PinMark } from "@/features/items/_internal/components/toggles/PinMark";
 import { cn } from "@/lib/utils";
 import type { ItemCardData } from "@/features/items/types";
 

@@ -1,5 +1,5 @@
-import { ImageCard } from "@/features/items/_internal/components/ImageCard";
-import { ItemFavoriteButton } from "@/features/items/_internal/components/ItemFavoriteButton";
+import { ImageCard } from "@/features/items/_internal/components/cards/ImageCard";
+import { ItemFavoriteButton } from "@/features/items/_internal/components/toggles/ItemFavoriteButton";
 import { IMAGE_GALLERY_GRID } from "@/features/items/components/ImageGallerySkeleton";
 import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
 import type { GalleryItem } from "@/features/items/types";

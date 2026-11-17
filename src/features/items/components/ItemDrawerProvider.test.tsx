@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { useEffect, type ComponentProps } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import type { ItemDrawerContent } from "@/features/items/_internal/components/ItemDrawerContent";
+import type { ItemDrawerContent } from "@/features/items/_internal/components/drawer/ItemDrawerContent";
 import type { DashboardItem, OpenedItemJson } from "@/features/items/types";
 import { fail } from "@/lib/errors/action-result";
 import { RouteError } from "@/lib/errors/route-error";
@@ -15,15 +15,18 @@ vi.mock("sonner", () => ({
 }));
 // The query the hook builds, around the mocked fetch: the same key and the
 // same staleTime (ITEM_DETAIL_STALE_MS) as the real one.
-vi.mock("@/features/items/_internal/components/fetch-item-detail", () => ({
-  fetchItemDetail,
-  itemDetailQuery: (id: string) => ({
-    queryKey: ["items", "detail", id],
-    queryFn: ({ signal }: { signal: AbortSignal }) =>
-      fetchItemDetail(id, signal),
-    staleTime: 60 * 1000,
+vi.mock(
+  "@/features/items/_internal/components/fetch/fetch-item-detail",
+  () => ({
+    fetchItemDetail,
+    itemDetailQuery: (id: string) => ({
+      queryKey: ["items", "detail", id],
+      queryFn: ({ signal }: { signal: AbortSignal }) =>
+        fetchItemDetail(id, signal),
+      staleTime: 60 * 1000,
+    }),
   }),
-}));
+);
 vi.mock("@/features/items/actions/item", () => ({
   deleteItem: vi.fn(),
   setItemFavorite: vi.fn(),
@@ -31,29 +34,32 @@ vi.mock("@/features/items/actions/item", () => ({
 }));
 // The real content pulls in the editors. The probe shows what the provider
 // hands it: the state it got, and a way to report unsaved edits.
-vi.mock("@/features/items/_internal/components/ItemDrawerContent", async () => {
-  const { SheetTitle } = await import("@/components/ui/sheet");
-  return {
-    ITEM_SHEET_CLASS: "",
-    ItemDrawerContent: ({
-      item,
-      state,
-      onDirtyChange,
-    }: ComponentProps<typeof ItemDrawerContent>) => (
-      <>
-        <SheetTitle>{item.title}</SheetTitle>
-        <p role="status">
-          {state.status === "ready"
-            ? `ready: ${state.detail.title}`
-            : state.status}
-        </p>
-        <button type="button" onClick={() => onDirtyChange?.(true)}>
-          Edit something
-        </button>
-      </>
-    ),
-  };
-});
+vi.mock(
+  "@/features/items/_internal/components/drawer/ItemDrawerContent",
+  async () => {
+    const { SheetTitle } = await import("@/components/ui/sheet");
+    return {
+      ITEM_SHEET_CLASS: "",
+      ItemDrawerContent: ({
+        item,
+        state,
+        onDirtyChange,
+      }: ComponentProps<typeof ItemDrawerContent>) => (
+        <>
+          <SheetTitle>{item.title}</SheetTitle>
+          <p role="status">
+            {state.status === "ready"
+              ? `ready: ${state.detail.title}`
+              : state.status}
+          </p>
+          <button type="button" onClick={() => onDirtyChange?.(true)}>
+            Edit something
+          </button>
+        </>
+      ),
+    };
+  },
+);
 
 import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvider";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";

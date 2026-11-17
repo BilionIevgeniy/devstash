@@ -1,6 +1,6 @@
-import { DeleteLockedItemButton } from "@/features/items/_internal/components/DeleteLockedItemButton";
-import { ItemFavoriteButton } from "@/features/items/_internal/components/ItemFavoriteButton";
-import { ItemPinButton } from "@/features/items/_internal/components/ItemPinButton";
+import { DeleteLockedItemButton } from "@/features/items/_internal/components/delete/DeleteLockedItemButton";
+import { ItemFavoriteButton } from "@/features/items/_internal/components/toggles/ItemFavoriteButton";
+import { ItemPinButton } from "@/features/items/_internal/components/toggles/ItemPinButton";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
 import type { DashboardItem } from "@/features/items/types";
 

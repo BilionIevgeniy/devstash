@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl";
 
 import { useRef } from "react";
 
-import { LockedFileRow } from "@/features/items/_internal/components/LockedFileRow";
+import { LockedFileRow } from "@/features/items/_internal/components/locked/LockedFileRow";
 import type { LockedFile } from "@/features/items/types";
 
 interface LockedFileListProps {

@@ -12,10 +12,10 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { parseTypeSlug } from "@/features/item-types/domain/item-type";
-import { DiscardChangesDialog } from "@/features/items/_internal/components/DiscardChangesDialog";
-import { ItemDetailView } from "@/features/items/_internal/components/ItemDetailView";
-import { ITEM_SHEET_CLASS } from "@/features/items/_internal/components/ItemDrawerContent";
-import { ItemDrawerSkeleton } from "@/features/items/_internal/components/ItemDrawerSkeleton";
+import { DiscardChangesDialog } from "@/features/items/_internal/components/form/DiscardChangesDialog";
+import { ItemDetailView } from "@/features/items/_internal/components/drawer/ItemDetailView";
+import { ITEM_SHEET_CLASS } from "@/features/items/_internal/components/drawer/ItemDrawerContent";
+import { ItemDrawerSkeleton } from "@/features/items/_internal/components/drawer/ItemDrawerSkeleton";
 import { useDirtyCloseGuard } from "@/features/items/_internal/components/hooks/use-dirty-close-guard";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";

@@ -1,4 +1,4 @@
-import { FileRow } from "@/features/items/_internal/components/FileRow";
+import { FileRow } from "@/features/items/_internal/components/cards/FileRow";
 import { FILE_LIST } from "@/features/items/components/FileListSkeleton";
 import type { FileListItem } from "@/features/items/types";
 

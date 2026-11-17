@@ -11,26 +11,35 @@ vi.mock("next/navigation", () => ({
 vi.mock("sonner", () => ({
   toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }),
 }));
-vi.mock("@/features/items/_internal/components/fetch-item-list-page", () => ({
-  fetchFavoritePage: vi.fn(),
-  fetchPinnedPage,
-}));
-vi.mock("@/features/items/_internal/components/fetch-item-detail", () => ({
-  fetchItemDetail: vi.fn(),
-  itemDetailQuery: (id: string) => ({
-    queryKey: ["items", "detail", id],
-    queryFn: vi.fn(),
+vi.mock(
+  "@/features/items/_internal/components/fetch/fetch-item-list-page",
+  () => ({
+    fetchFavoritePage: vi.fn(),
+    fetchPinnedPage,
   }),
-}));
+);
+vi.mock(
+  "@/features/items/_internal/components/fetch/fetch-item-detail",
+  () => ({
+    fetchItemDetail: vi.fn(),
+    itemDetailQuery: (id: string) => ({
+      queryKey: ["items", "detail", id],
+      queryFn: vi.fn(),
+    }),
+  }),
+);
 vi.mock("@/features/items/actions/item", () => ({
   deleteItem: vi.fn(),
   setItemFavorite: vi.fn(),
   setItemPin: vi.fn(),
 }));
-vi.mock("@/features/items/_internal/components/ItemDrawerContent", () => ({
-  ITEM_SHEET_CLASS: "",
-  ItemDrawerContent: () => null,
-}));
+vi.mock(
+  "@/features/items/_internal/components/drawer/ItemDrawerContent",
+  () => ({
+    ITEM_SHEET_CLASS: "",
+    ItemDrawerContent: () => null,
+  }),
+);
 
 import { PinnedGroup } from "@/app/(app)/pinned/_components/PinnedGroup";
 import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvider";

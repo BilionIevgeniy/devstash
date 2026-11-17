@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import type { ComponentProps } from "react";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
-import type { ItemFields } from "@/features/items/_internal/components/ItemFields";
+import type { ItemFields } from "@/features/items/_internal/components/fields/ItemFields";
 import type { ActionResult } from "@/lib/errors/action-result";
 
 import { CatchBoundary } from "../../../../test/catch-boundary";
@@ -19,7 +19,7 @@ vi.mock("sonner", () => ({ toast }));
 // The real fields pull in the editors. The probe keeps only the title, which
 // is all a snippet needs to be sent, and an accepted AI summary, which hands
 // the form what ItemFields would (ADR 0027).
-vi.mock("@/features/items/_internal/components/ItemFields", () => ({
+vi.mock("@/features/items/_internal/components/fields/ItemFields", () => ({
   ItemFields: ({
     values,
     onChange,
@@ -49,10 +49,13 @@ vi.mock("@/features/items/_internal/components/ItemFields", () => ({
 }));
 // The real select fetches the user's collections, and the file field loads
 // the upload action and its session chain; a snippet has no file.
-vi.mock("@/features/items/_internal/components/CollectionSelect", () => ({
-  CollectionSelect: () => null,
-}));
-vi.mock("@/features/items/_internal/components/ItemFileField", () => ({
+vi.mock(
+  "@/features/items/_internal/components/fields/CollectionSelect",
+  () => ({
+    CollectionSelect: () => null,
+  }),
+);
+vi.mock("@/features/items/_internal/components/fields/ItemFileField", () => ({
   ItemFileField: () => null,
 }));
 
@@ -64,7 +67,7 @@ import { CreateItemDialog } from "@/features/items/components/CreateItemDialog";
 // where the hook has time; the dialog's own import() then finds it in the
 // module cache. The lazy load itself is tested in CreateItemDialog.load.test.tsx.
 beforeAll(async () => {
-  await import("@/features/items/_internal/components/CreateItemForm");
+  await import("@/features/items/_internal/components/form/CreateItemForm");
 });
 
 const CREATED: ActionResult = { success: true, data: null, error: null };

@@ -8,7 +8,7 @@ import { RouteError } from "@/lib/errors/route-error";
 
 const fetchCollectionOptions = vi.hoisted(() => vi.fn());
 vi.mock(
-  "@/features/items/_internal/components/fetch-collection-options",
+  "@/features/items/_internal/components/fetch/fetch-collection-options",
   () => ({
     fetchCollectionOptions,
   }),

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRef, useState, type RefObject } from "react";
 
-import { itemDetailQuery } from "@/features/items/_internal/components/fetch-item-detail";
+import { itemDetailQuery } from "@/features/items/_internal/components/fetch/fetch-item-detail";
 import { savedRowFields } from "@/features/items/domain/item-detail";
 import type {
   DashboardItem,
