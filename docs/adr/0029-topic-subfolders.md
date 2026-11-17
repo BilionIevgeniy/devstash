@@ -19,6 +19,10 @@ Option 2. The threshold is exact so it can be checked: more than 12 files direct
 
 `src/lib` is split into `errors/`, `http/`, `observability/`, `postgres/`, `vendors/` and `locale/`. The Prisma folder is `postgres/`, not `db/`: the course specs name `src/lib/db/*.ts` for the reads and writes of items and collections, which belong in the features ("Old paths in specs"), and a real `lib/db/` would make that path look right.
 
+### Tests do not count, and the editor nests them
+
+A folder's tests and stories stay beside their unit and are not counted: `items/services` holds 9 services and 12 test files. Counting them would make the structure follow the test count (one new `.int.test.ts` could force a split of code that did not change). A folder per unit with its companions (`services/create-item/create-item.ts`) was rejected too: `page.tsx`, `route.ts`, `schemas.ts` and `queries.ts` cannot move (Next.js and the lint zones expect them by name), imports would stutter without barrels, and a unit's first test would become a refactor of its importers. The rows a test adds in the editor are folded instead: `explorer.fileNesting` in `.vscode/settings.json` nests `x.test.ts`, `x.*.test.ts`, `x.test.tsx` and `x.stories.tsx` under `x.ts` or `x.tsx`. Other editors and the GitHub tree stay flat.
+
 ## Consequences
 
 - A move is a commit of its own: `git mv` with the colocated tests, the imports, the `vi.mock` and `sb.mock` paths, and the exact paths in `eslint.config.mjs` and `vitest.shared.mts`. Lint and typecheck do not see a stale string path (an exact-name import ban, a mock of a path that no longer exists), so each move ends with a search for the old paths and one deliberate violation per moved lint path.
