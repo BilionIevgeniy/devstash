@@ -4,7 +4,7 @@
 2. If empty, error: "Run /feature load first"
 3. Compare the model of this session with `Plan:` under `## Model`. If they differ, say so in one line and wait: the user switches with `/model` or says to go on
 4. Set Status to "In Progress"
-5. Create and checkout the feature branch (derive name from H1 heading)
+5. Handle the open Dependabot PRs first, as "Dependency updates (Dependabot)" in `context/ai-interaction.md` says, so the branch starts from a `main` that has them. Then `git switch main`, `git pull --ff-only`, and create and checkout the feature branch (derive name from H1 heading)
 6. Decide which module the code goes in, before planning any file:
    - Read `docs/modules.md`: find the module whose **First code** names this spec, and the module whose **Owns** lists what the spec builds (a component, a model, a flow)
    - Say in the plan which module each new file goes in and which line of `docs/modules.md` decides it. If no module claims it, say so, then place it by "Where does this go" in `context/architecture-rules.md` (rule 9, `_internal/`, applies only then)

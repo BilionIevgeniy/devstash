@@ -23,7 +23,7 @@ This is the common workflow that we will use for every single feature/fix. Each 
 9. **PR and CI** (`/feature complete`) - Push the branch, open the PR with `gh`, wait for the `ci`, `integration` and `e2e` checks to be green
 10. **Merge** (`/feature complete`) - Once the `ci`, `integration` and `e2e` checks are green, merge the PR on GitHub (`gh pr merge --merge --delete-branch`) without asking: it is the natural end of the task. The branch is deleted there; then update the local `main` and delete the local branch. A red or missing check means no merge
 
-Do NOT commit without permission, and not until `npm run test` is green and the build passes. Run the tests again right before the commit, not only earlier in the feature. If a test or the build fails, fix the issues first; never skip, disable or delete a test to get a commit through. `git commit` and `git merge` run without a permission prompt, so this rule holds only because it is followed; `git push` asks first. `main` changes only through a PR merged on GitHub. That merge deploys and migrates production, so it happens only when every required check (`ci`, `integration`, `e2e`) is green; then it runs without asking me.
+Do NOT commit without permission, and not until `npm run test` is green and the build passes. Run the tests again right before the commit, not only earlier in the feature. If a test or the build fails, fix the issues first; never skip, disable or delete a test to get a commit through. `git commit`, `git merge` and `git push` run without a permission prompt, so this rule holds only because it is followed. `main` changes only through a PR merged on GitHub. That merge deploys and migrates production, so it happens only when every required check (`ci`, `integration`, `e2e`) is green; then it runs without asking me.
 
 ### Working with review agents
 
@@ -104,6 +104,17 @@ Nothing new is written down for later. A bug, a warning, a gap in a test or a do
 2. **It is too large or off-topic**: its own functionality, a migration, or a change that would make the PR hard to review. It goes into the Scope of the matching spec in `context/features/plan/`, with what was found and the fix idea; if no spec fits, a new numbered spec there and a row in its README.
 
 A code comment that points at deferred work names the spec or the before-live file that holds it.
+
+## Dependency updates (Dependabot)
+
+Dependabot (`.github/dependabot.yml`) opens PRs every week: Storybook, Vitest and Playwright each as a group of its own (majors too, since their packages require each other's exact version), every other minor and patch update as one group, and every other major in a PR of its own. They are handled before our own work reaches GitHub, so the lock file of a branch and the bot's never drift apart and neither PR ends in a conflict:
+
+- **When**: `/feature start` before it creates the branch, and `/feature complete` before it pushes. The list: `gh pr list --author app/dependabot --state open --json number,title,mergeable,statusCheckRollup`
+- **A group** (minor and patch, or Storybook, Vitest, Playwright): merged on GitHub once `ci`, `integration` and `e2e` are green, like a feature and with no separate go (`gh pr merge <number> --merge --delete-branch`). A feature branch then takes the new `main` (`git merge main`), and the checks of `/feature complete` run again before the push
+- **A major outside a group**: a small task of its own, never merged in passing. Its changelog and the peer ranges of what depends on it are read, a needed fix goes on its branch, and it is merged on green checks; the final message names what it changed
+- **Out of date or in conflict**: `@dependabot rebase` as a comment on the PR. **Built by an older config** (its group no longer matches `.github/dependabot.yml`): `@dependabot recreate`. Then its checks are waited for
+- **A red check**: no merge. The cause is read in the run and fixed on the bot's branch, or named in the final message
+- A change to `package.json`, `package-lock.json` or `.github/dependabot.yml` comments `@dependabot recreate` on every bot PR still open once it is merged
 
 ## Production standard
 
