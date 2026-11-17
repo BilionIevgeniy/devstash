@@ -57,6 +57,18 @@ jobs:
       # project of vitest.config.mts, ADR 0026); the same browser as e2e.
       - run: npx playwright install --with-deps chromium
       - run: npm run test
+      # The Next.js build cache (.next/cache), as in the Next.js guide on CI build
+      # caching: a run whose sources changed restores the latest entry of the
+      # same lockfile and recompiles only what changed. A key per job, since the
+      # e2e build has its own environment and two jobs must not race for one key.
+      # The hash covers the repository's own sources, not node_modules or the
+      # Monaco copy that postinstall writes to public/monaco.
+      - uses: actions/cache@v6
+        with:
+          path: ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-nextjs-ci-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'next.config.ts', 'tsconfig.json', 'public/**', '!public/monaco/**') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-ci-${{ hashFiles('package-lock.json') }}-
       - run: npm run build
       - run: npm run build-storybook
 
@@ -157,6 +169,18 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      # The Next.js build cache (.next/cache), as in the Next.js guide on CI build
+      # caching: a run whose sources changed restores the latest entry of the
+      # same lockfile and recompiles only what changed. A key per job, since the
+      # e2e build has its own environment and two jobs must not race for one key.
+      # The hash covers the repository's own sources, not node_modules or the
+      # Monaco copy that postinstall writes to public/monaco.
+      - uses: actions/cache@v6
+        with:
+          path: ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-nextjs-e2e-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**', 'next.config.ts', 'tsconfig.json', 'public/**', '!public/monaco/**') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-e2e-${{ hashFiles('package-lock.json') }}-
       - run: npm run test:e2e
         env:
           E2E_UPSTASH_REDIS_REST_URL: ${{ secrets.E2E_UPSTASH_REDIS_REST_URL }}
