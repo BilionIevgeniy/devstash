@@ -23,6 +23,7 @@ Planned work is in `context/features/plan/` (its README gives the order). What o
 - `npm run dev` — start the dev server (Turbopack, Next.js 16 default)
 - `npm run build` — production build (Turbopack by default); touches no database
 - `npm run typecheck` — `next typegen && tsc --noEmit`
+- `npm run db:check-migrations` — applies the migrations to the test database and fails when `schema.prisma` differs from them (a schema change without its migration); the first step of the `integration` job (ADR 0028)
 - `npm run db:migrate:deploy` — `prisma migrate deploy`; on Vercel migrations run in `npm run vercel-build` through a guard (ADR 0013)
 - `npm run start` — run the production build
 - `npm run lint` — ESLint via flat config

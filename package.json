@@ -19,6 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "db:migrate:deploy": "prisma migrate deploy",
+    "db:check-migrations": "tsx scripts/check-migrations.ts",
     "db:seed": "prisma db seed",
     "db:seed-test": "tsx scripts/seed-test.ts",
     "db:test": "tsx scripts/test-db.ts",

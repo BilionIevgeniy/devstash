@@ -115,6 +115,9 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # A schema change without its migration fails here: the migrations are
+      # applied to the empty Postgres and compared with schema.prisma (ADR 0028).
+      - run: npm run db:check-migrations
       - run: npm run test:integration
 
   # The end-to-end tests: Playwright drives Chromium against the production
