@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { useState } from "react";
 import { expect, mocked, userEvent, waitFor, within } from "storybook/test";
 
 import { setCollectionFavorite } from "@/features/collections/actions/collection";
@@ -7,7 +8,7 @@ import type { DashboardCollection } from "@/features/collections/types";
 import { fail, ok } from "@/lib/action-result";
 
 // The action is the mock of actions/__mocks__/collection.ts (sb.mock in
-// .storybook/preview.tsx).
+// .storybook/preview.tsx), so nothing is sent anywhere.
 const COLLECTION: DashboardCollection = {
   id: "collection-react",
   name: "React patterns",
@@ -21,6 +22,18 @@ const COLLECTION: DashboardCollection = {
   ],
 };
 
+// In the app a saved star stays lit because the action's refresh brings the
+// page with the new value. Here a saved star keeps the value in state instead,
+// so clicking the star works as in the app.
+function SavedStar({ collection }: { collection: DashboardCollection }) {
+  const [isFavorite, setIsFavorite] = useState(collection.isFavorite);
+  mocked(setCollectionFavorite).mockImplementation(async (_id, value) => {
+    setIsFavorite(value);
+    return ok();
+  });
+  return <CollectionCard collection={{ ...collection, isFavorite }} />;
+}
+
 const meta = {
   component: CollectionCard,
   decorators: [
@@ -31,9 +44,10 @@ const meta = {
     ),
   ],
   args: { collection: COLLECTION },
-  beforeEach: () => {
-    mocked(setCollectionFavorite).mockResolvedValue(ok());
-  },
+  // A control that changes the star starts the card again from that value.
+  render: (args) => (
+    <SavedStar key={String(args.collection.isFavorite)} {...args} />
+  ),
 } satisfies Meta<typeof CollectionCard>;
 
 export default meta;
@@ -69,11 +83,19 @@ export const StarIt: Story = {
       COLLECTION.id,
       true,
     );
+    // Saved: the star stays lit, and a second click takes it back.
+    await waitFor(() => expect(star).toHaveAttribute("aria-pressed", "true"));
+    await userEvent.click(star);
+    await waitFor(() => expect(star).toHaveAttribute("aria-pressed", "false"));
   },
 };
 
-// A refused save: the star falls back and the error is said in words.
+// A refused save, on purpose: the server says no, the star falls back and
+// the error is said in words. The `play` steps click the star as soon as the
+// story opens, so the error toast shows at once.
 export const StarFails: Story = {
+  name: "Star fails (refused save)",
+  render: (args) => <CollectionCard {...args} />,
   beforeEach: () => {
     mocked(setCollectionFavorite).mockResolvedValue(fail("favoriteFailed"));
   },
