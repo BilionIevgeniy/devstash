@@ -63,7 +63,9 @@ describe("rate limit policies", () => {
   );
 
   it("puts the per-email ceiling above the lockout a user meets", () => {
-    expect(LOGIN_BY_EMAIL_GLOBAL.limit).toBeGreaterThan(LOGIN_BY_EMAIL_IP.limit);
+    expect(LOGIN_BY_EMAIL_GLOBAL.limit).toBeGreaterThan(
+      LOGIN_BY_EMAIL_IP.limit,
+    );
   });
 });
 
@@ -98,7 +100,9 @@ describe("getRetryAfterSeconds", () => {
 // The words, singular and plural, are the message's: error-text.test.ts.
 describe("tooManyAttemptsParams", () => {
   it("says 1 minute for anything up to a minute", () => {
-    expect(tooManyAttemptsParams(NOW + 1 * SECOND, NOW)).toEqual({ minutes: 1 });
+    expect(tooManyAttemptsParams(NOW + 1 * SECOND, NOW)).toEqual({
+      minutes: 1,
+    });
     expect(tooManyAttemptsParams(NOW + MINUTE, NOW)).toEqual({ minutes: 1 });
   });
 

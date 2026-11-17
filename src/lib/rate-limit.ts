@@ -138,7 +138,9 @@ export async function consumeIpRateLimit(
   if (!ip) {
     if (!hasWarnedAboutMissingIp) {
       hasWarnedAboutMissingIp = true;
-      logger.warn("No client IP in the request headers; IP rate limits are skipped");
+      logger.warn(
+        "No client IP in the request headers; IP rate limits are skipped",
+      );
     }
     return { success: true, remaining: policy.limit, reset: Date.now() };
   }

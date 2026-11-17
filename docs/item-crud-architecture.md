@@ -18,11 +18,11 @@ A design for create, read, update and delete of items, one system for all seven 
 
 Recap of [item-types.md](item-types.md). The class decides the shape of the data; the type decides the label, icon, color and how the content is rendered.
 
-| Class | Types                          | `Item` columns used                   | `contentType` column |
-| ----- | ------------------------------ | ------------------------------------- | -------------------- |
-| text  | snippet, prompt, command, note | `content`, `language` (optional)      | `TEXT`               |
-| url   | link                           | `url`                                 | `URL`                |
-| file  | file, image                    | `fileUrl`, `fileName`, `fileSize`     | `FILE` (proposed)    |
+| Class | Types                          | `Item` columns used               | `contentType` column |
+| ----- | ------------------------------ | --------------------------------- | -------------------- |
+| text  | snippet, prompt, command, note | `content`, `language` (optional)  | `TEXT`               |
+| url   | link                           | `url`                             | `URL`                |
+| file  | file, image                    | `fileUrl`, `fileName`, `fileSize` | `FILE` (proposed)    |
 
 `FILE` is not defined anywhere today; see "Open decisions". The mapping type to class is pure data and lives in `item-types/domain/item-type.ts`, next to `SYSTEM_TYPE_ORDER`, because both `items` (rank 6) and its schemas need it and `item-types` (rank 4) is the lowest feature that can own it.
 
@@ -70,11 +70,11 @@ src/
 
 ## Routing: `/items/[type]`
 
-| URL                             | Shows                                                    |
-| ------------------------------- | -------------------------------------------------------- |
-| `/items/snippets`               | the user's snippets                                      |
-| `/items/snippets?item=<id>`     | the same list with the drawer open on that item          |
-| `/items/widgets`                | 404 (`notFound()`): not a known type                     |
+| URL                         | Shows                                           |
+| --------------------------- | ----------------------------------------------- |
+| `/items/snippets`           | the user's snippets                             |
+| `/items/snippets?item=<id>` | the same list with the drawer open on that item |
+| `/items/widgets`            | 404 (`notFound()`): not a known type            |
 
 The segment is the **plural slug**, because `TypesSection` already links to `/items/${type.name}s`. One function builds the slug and one parses it, both in `item-types/domain/item-type.ts`, so the sidebar and the page cannot drift apart (`TypesSection` should switch to `typeSlug(name)` in the same change).
 
@@ -108,11 +108,11 @@ export default async function ItemsPage({
 
 Data is fetched in server components through `queries.ts`; nothing is fetched from the client.
 
-| Query                                | Feature      | Returns                          | Used by                          |
-| ------------------------------------ | ------------ | -------------------------------- | -------------------------------- |
-| `getItemTypeByName(name)`            | `item-types` | `ItemTypeInfo \| null`           | the page (slug to type)          |
-| `getItemsByType(userId, typeId)`     | `items`      | `DashboardItem[]`                | `ItemList`                       |
-| `getItemDetail(userId, id)`          | `items`      | `ItemDetail \| null`             | `ItemDrawer`                     |
+| Query                            | Feature      | Returns                | Used by                 |
+| -------------------------------- | ------------ | ---------------------- | ----------------------- |
+| `getItemTypeByName(name)`        | `item-types` | `ItemTypeInfo \| null` | the page (slug to type) |
+| `getItemsByType(userId, typeId)` | `items`      | `DashboardItem[]`      | `ItemList`              |
+| `getItemDetail(userId, id)`      | `items`      | `ItemDetail \| null`   | `ItemDrawer`            |
 
 - The list reuses the existing `dashboardItemSelect` and `toDashboardItem`, so a row carries no `content`. Only the detail query loads content, which keeps lists light.
 - `ItemDetail` carries `contentType`, `content`, `language`, `url`, the file columns, both flags, both dates, `type: ItemTypeInfo`, `tags: string[]` and `collections: { id; name }[]`. The collections come from a relation `select` on `ItemCollection`, a read, not an import of the `collections` feature.
@@ -136,11 +136,11 @@ ItemForm / ItemActions / DeleteItemDialog          client components
      -> revalidatePath("/", "layout")              the action, not the service
 ```
 
-| Action                  | Input                                             | Result                       | Service work |
-| ----------------------- | ------------------------------------------------- | ---------------------------- | ------------ |
-| `createItem(input)`     | `typeId` + form fields of the type's class        | `ActionResult<{ id: string }>` | load the type (system or the user's own); check the class matches; (limit check goes here); insert the item with `connectOrCreate` tags in one transaction |
-| `updateItem(id, input)` | the form fields, **or** `{ isFavorite?, isPinned? }` | `ActionResult`            | prove ownership with `findFirst({ id, userId })` in the transaction; write the columns of the class; replace the tag set. The flags variant is a single `updateMany({ id, userId })` and `count === 0` means not found |
-| `deleteItem(id)`        | `id`                                              | `ActionResult`               | `deleteMany({ id, userId })`; `count === 0` means not found. `ItemTag` and `ItemCollection` rows go through `onDelete: Cascade` |
+| Action                  | Input                                                | Result                         | Service work                                                                                                                                                                                                           |
+| ----------------------- | ---------------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createItem(input)`     | `typeId` + form fields of the type's class           | `ActionResult<{ id: string }>` | load the type (system or the user's own); check the class matches; (limit check goes here); insert the item with `connectOrCreate` tags in one transaction                                                             |
+| `updateItem(id, input)` | the form fields, **or** `{ isFavorite?, isPinned? }` | `ActionResult`                 | prove ownership with `findFirst({ id, userId })` in the transaction; write the columns of the class; replace the tag set. The flags variant is a single `updateMany({ id, userId })` and `count === 0` means not found |
+| `deleteItem(id)`        | `id`                                                 | `ActionResult`                 | `deleteMany({ id, userId })`; `count === 0` means not found. `ItemTag` and `ItemCollection` rows go through `onDelete: Cascade`                                                                                        |
 
 Rules that follow from the standard:
 
@@ -160,13 +160,24 @@ const baseFields = {
 };
 
 export const itemFormSchema = z.discriminatedUnion("contentClass", [
-  z.object({ ...baseFields, contentClass: z.literal("text"),
+  z.object({
+    ...baseFields,
+    contentClass: z.literal("text"),
     content: z.string().min(1).max(CONTENT_MAX_LENGTH),
-    language: z.string().trim().max(LANGUAGE_MAX_LENGTH).optional() }),
-  z.object({ ...baseFields, contentClass: z.literal("url"),
-    url: z.url({ protocol: /^https?$/ }) }),
-  z.object({ ...baseFields, contentClass: z.literal("file"),
-    fileUrl: z.string().min(1), fileName: z.string().min(1), fileSize: z.number().int().nonnegative() }),
+    language: z.string().trim().max(LANGUAGE_MAX_LENGTH).optional(),
+  }),
+  z.object({
+    ...baseFields,
+    contentClass: z.literal("url"),
+    url: z.url({ protocol: /^https?$/ }),
+  }),
+  z.object({
+    ...baseFields,
+    contentClass: z.literal("file"),
+    fileUrl: z.string().min(1),
+    fileName: z.string().min(1),
+    fileSize: z.number().int().nonnegative(),
+  }),
 ]);
 ```
 
@@ -174,15 +185,15 @@ The client sends the class its form rendered; it is not trusted. The service der
 
 ## Where type-specific logic lives
 
-| Concern                                              | Lives in                                         | Not in                |
-| ---------------------------------------------------- | ------------------------------------------------ | --------------------- |
-| icon, color, label, order                            | `ItemType` row, `TypeIcon`, `SYSTEM_TYPE_ORDER`   | actions               |
-| type name to class (`getContentClass`), slug parsing | `item-types/domain/item-type.ts`                  | components, actions   |
-| which columns a class stores                         | `items/domain/item-fields.ts`                     | actions               |
-| shape of the input per class                         | `items/schemas.ts`                                | components            |
-| which fields the form asks for                       | `_internal/components/fields/*`                   | actions, services     |
-| how the content is displayed                         | `_internal/components/content/*`                  | actions, services     |
-| ownership, limits, writes                            | `items/services/item.ts`                          | components            |
+| Concern                                              | Lives in                                        | Not in              |
+| ---------------------------------------------------- | ----------------------------------------------- | ------------------- |
+| icon, color, label, order                            | `ItemType` row, `TypeIcon`, `SYSTEM_TYPE_ORDER` | actions             |
+| type name to class (`getContentClass`), slug parsing | `item-types/domain/item-type.ts`                | components, actions |
+| which columns a class stores                         | `items/domain/item-fields.ts`                   | actions             |
+| shape of the input per class                         | `items/schemas.ts`                              | components          |
+| which fields the form asks for                       | `_internal/components/fields/*`                 | actions, services   |
+| how the content is displayed                         | `_internal/components/content/*`                | actions, services   |
+| ownership, limits, writes                            | `items/services/item.ts`                        | components          |
 
 How the components adapt: `ItemForm` and `ItemDetail` call `getContentClass(type.name)` and render one field set or one content view.
 
@@ -196,18 +207,18 @@ Adding things:
 
 ## Component responsibilities
 
-| Component             | Kind   | Job                                                                                                  | Data in            | Calls                          |
-| --------------------- | ------ | ---------------------------------------------------------------------------------------------------- | ------------------ | ------------------------------ |
-| `ItemList`            | server | renders a list of `ItemRow`, or an empty state                                                       | `DashboardItem[]`  | none                           |
-| `ItemRow` (existing)  | server | one row: type icon and color, title, flags, tags, date; a link to `?item=<id>`                       | `DashboardItem`    | none                           |
-| `ItemDrawer`          | server | reads the item for `?item`; renders nothing if there is none                                         | `itemId`           | `getItemDetail`                |
-| `ItemDrawerShell`     | client | the `Sheet`; closing removes `?item` from the URL                                                    | children           | router                         |
-| `ItemDetail`          | server | header with icon and type chip, content by class, tags, collections, created and updated dates       | `ItemDetail`       | none                           |
-| `ItemActions`         | client | favorite and pin toggles, copy (clipboard, no server), edit (switches to the form), delete (opens the dialog) | `ItemDetail` | `updateItem`            |
-| `ItemForm`            | client | create and edit; type select (create only), common fields, then the fields of the class; toasts errors | `ItemFormValues`, `types` | `createItem`, `updateItem` |
-| `TextFields` / `UrlFields` / `FileFields` | client | the inputs of one class                                                    | form state         | none                           |
-| `DeleteItemDialog`    | client | confirmation; on success closes the drawer                                                           | `id`, title        | `deleteItem`                   |
-| `NewItemSheet`        | client | hosts `ItemForm` in create mode; opened by the top bar's "New Item" button                           | system types       | none (the form calls)          |
+| Component                                 | Kind   | Job                                                                                                           | Data in                   | Calls                      |
+| ----------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------- | ------------------------- | -------------------------- |
+| `ItemList`                                | server | renders a list of `ItemRow`, or an empty state                                                                | `DashboardItem[]`         | none                       |
+| `ItemRow` (existing)                      | server | one row: type icon and color, title, flags, tags, date; a link to `?item=<id>`                                | `DashboardItem`           | none                       |
+| `ItemDrawer`                              | server | reads the item for `?item`; renders nothing if there is none                                                  | `itemId`                  | `getItemDetail`            |
+| `ItemDrawerShell`                         | client | the `Sheet`; closing removes `?item` from the URL                                                             | children                  | router                     |
+| `ItemDetail`                              | server | header with icon and type chip, content by class, tags, collections, created and updated dates                | `ItemDetail`              | none                       |
+| `ItemActions`                             | client | favorite and pin toggles, copy (clipboard, no server), edit (switches to the form), delete (opens the dialog) | `ItemDetail`              | `updateItem`               |
+| `ItemForm`                                | client | create and edit; type select (create only), common fields, then the fields of the class; toasts errors        | `ItemFormValues`, `types` | `createItem`, `updateItem` |
+| `TextFields` / `UrlFields` / `FileFields` | client | the inputs of one class                                                                                       | form state                | none                       |
+| `DeleteItemDialog`                        | client | confirmation; on success closes the drawer                                                                    | `id`, title               | `deleteItem`               |
+| `NewItemSheet`                            | client | hosts `ItemForm` in create mode; opened by the top bar's "New Item" button                                    | system types              | none (the form calls)      |
 
 - Server components call queries; client components call actions through `useTransition` and report failures with `toast`, as `ItemEditForm` does.
 - Data passed to the form is plain strings and arrays (`ItemFormValues`), mapped from `ItemDetail` by a pure function, so no `Date` or Prisma shape crosses into a client component.

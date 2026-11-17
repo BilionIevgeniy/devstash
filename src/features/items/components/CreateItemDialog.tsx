@@ -38,15 +38,14 @@ let formPromise: Promise<FormComponent> | null = null;
 let loadedForm: FormComponent | null = null;
 
 function loadForm(): Promise<FormComponent> {
-  formPromise ??= import(
-    "@/features/items/_internal/components/CreateItemForm"
-  ).then(
-    (mod) => (loadedForm = mod.CreateItemForm),
-    (error: unknown) => {
-      formPromise = null;
-      throw error;
-    },
-  );
+  formPromise ??=
+    import("@/features/items/_internal/components/CreateItemForm").then(
+      (mod) => (loadedForm = mod.CreateItemForm),
+      (error: unknown) => {
+        formPromise = null;
+        throw error;
+      },
+    );
   return formPromise;
 }
 

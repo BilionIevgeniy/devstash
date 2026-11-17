@@ -54,12 +54,12 @@ The plan is where a mistake costs most, so it gets Opus. `/feature start` rates 
 
 ### Agents
 
-| Agent | Model | When | Input |
-| ----- | ----- | ---- | ----- |
-| `architecture-reviewer` | Opus | Before code: the feature plan, and every later step that changes structure | The plan and the file paths |
-| `code-reviewer` | Opus | After code, in `/feature review`; on request over all of `src/` every few features, to find duplication between modules | The diff, or nothing for a full scan |
-| `auth-auditor` | Opus | In `/feature review` when auth code changed (report in chat); on request as a full audit (writes `docs/audit-results/AUTH_SECURITY_REVIEW.md`) | The diff, or "full audit" |
-| `ui-reviewer` | Sonnet | Only when I ask, with the dev server running | The pages or the change, and the demo password from `.env.demo` |
+| Agent                   | Model  | When                                                                                                                                           | Input                                                           |
+| ----------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `architecture-reviewer` | Opus   | Before code: the feature plan, and every later step that changes structure                                                                     | The plan and the file paths                                     |
+| `code-reviewer`         | Opus   | After code, in `/feature review`; on request over all of `src/` every few features, to find duplication between modules                        | The diff, or nothing for a full scan                            |
+| `auth-auditor`          | Opus   | In `/feature review` when auth code changed (report in chat); on request as a full audit (writes `docs/audit-results/AUTH_SECURITY_REVIEW.md`) | The diff, or "full audit"                                       |
+| `ui-reviewer`           | Sonnet | Only when I ask, with the dev server running                                                                                                   | The pages or the change, and the demo password from `.env.demo` |
 
 Where the Model column names a model other than the file's `model:` line, Claude passes it as the `model` of that call.
 

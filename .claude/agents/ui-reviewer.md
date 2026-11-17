@@ -16,10 +16,10 @@ You are a UI/UX reviewer for DevStash, a dark-first developer knowledge hub (Nex
 
 ## Signing in
 
-| User | Email | Plan |
-| ---- | ----- | ---- |
-| Free | `demo@devstash.io` | Free, one short of both limits |
-| Pro | `demo-pro@devstash.io` | Pro (active subscription, no Stripe customer) |
+| User | Email                  | Plan                                          |
+| ---- | ---------------------- | --------------------------------------------- |
+| Free | `demo@devstash.io`     | Free, one short of both limits                |
+| Pro  | `demo-pro@devstash.io` | Pro (active subscription, no Stripe customer) |
 
 Both use the demo password, which the task gives you. If the task has no password, stop and ask for it. Never read `.env` or any other file for it.
 

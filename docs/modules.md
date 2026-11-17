@@ -6,14 +6,14 @@ A module gets its section here in the commit with its first real code, together 
 
 ## Who owns which model
 
-| Model | Owner | Note |
-| ----- | ----- | ---- |
-| User, Account, Session, VerificationToken | `auth` | |
-| ItemType | `item-types` | |
-| Item, Tag, ItemTag, ItemCollection | `items` | `Tag` becomes its own module only when a second feature needs it; the link to collections is written with the item ([ADR 0008](adr/0008-items-own-the-collection-link.md)) |
-| Collection | `collections` | |
-| Subscription | `billing` | `isPro` is derived from the subscription status; no row means the Free plan |
-| UserPreference | `editor` | One row per user, typed columns, an absent row means defaults, created by upsert |
+| Model                                     | Owner         | Note                                                                                                                                                                       |
+| ----------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| User, Account, Session, VerificationToken | `auth`        |                                                                                                                                                                            |
+| ItemType                                  | `item-types`  |                                                                                                                                                                            |
+| Item, Tag, ItemTag, ItemCollection        | `items`       | `Tag` becomes its own module only when a second feature needs it; the link to collections is written with the item ([ADR 0008](adr/0008-items-own-the-collection-link.md)) |
+| Collection                                | `collections` |                                                                                                                                                                            |
+| Subscription                              | `billing`     | `isPro` is derived from the subscription status; no row means the Free plan                                                                                                |
+| UserPreference                            | `editor`      | One row per user, typed columns, an absent row means defaults, created by upsert                                                                                           |
 
 A module writes only the models it owns and reads only its own models. A relation `select` of scalar columns through its own relation is fine (`items` selects the type name, icon and color through `Item.type`, and the id and name of each collection through `Item.collections`). Everything else goes through the owner's queries or services.
 

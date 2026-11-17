@@ -30,7 +30,10 @@ describe("rankTypesByUsage", () => {
 
   it("orders types with the same count by name", () => {
     const typesById = indexById(PROMPT, COMMAND, NOTE);
-    const ranked = rankTypesByUsage(["t-prompt", "t-command", "t-note"], typesById);
+    const ranked = rankTypesByUsage(
+      ["t-prompt", "t-command", "t-note"],
+      typesById,
+    );
     expect(names(ranked)).toEqual(["command", "note", "prompt"]);
   });
 

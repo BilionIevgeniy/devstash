@@ -340,16 +340,16 @@ Only for items of type prompt, with the same stream. Since the output would repl
 
 ### The foundation (with the first feature)
 
-| File                                                 | What                                                                          |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `src/lib/openai.ts`, test                            | Client, `generateStructured`, `streamText`, `AiOutputError` |
-| `eslint.config.mjs`                                  | `ai: 4` in `FEATURE_RANKS`                                                    |
-| `docs/modules.md`, `context/architecture-rules.md`   | Move `ai` from planned to built, and correct its status                       |
-| `src/features/ai/domain/model.ts`                    | `AI_MODEL`, the per-operation settings                                        |
-| `src/features/ai/domain/rate-limits.ts`              | `AI_BY_USER_HOUR`, `AI_BY_USER_DAY`                                           |
-| `src/features/ai/domain/input.ts`, test              | `AI_INPUT_MAX`, the per-operation limits, `truncateForModel`                  |
-| `src/features/ai/schemas.ts`, test                   | Input and output schemas                                                      |
-| `src/features/ai/_internal/services/access.ts`, test | Pro and limit checks                                                          |
+| File                                                 | What                                                         |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| `src/lib/openai.ts`, test                            | Client, `generateStructured`, `streamText`, `AiOutputError`  |
+| `eslint.config.mjs`                                  | `ai: 4` in `FEATURE_RANKS`                                   |
+| `docs/modules.md`, `context/architecture-rules.md`   | Move `ai` from planned to built, and correct its status      |
+| `src/features/ai/domain/model.ts`                    | `AI_MODEL`, the per-operation settings                       |
+| `src/features/ai/domain/rate-limits.ts`              | `AI_BY_USER_HOUR`, `AI_BY_USER_DAY`                          |
+| `src/features/ai/domain/input.ts`, test              | `AI_INPUT_MAX`, the per-operation limits, `truncateForModel` |
+| `src/features/ai/schemas.ts`, test                   | Input and output schemas                                     |
+| `src/features/ai/_internal/services/access.ts`, test | Pro and limit checks                                         |
 
 ### Per feature
 

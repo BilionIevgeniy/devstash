@@ -10,7 +10,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteOrigin()),
   title: "DevStash",
-  description: "A developer knowledge hub for snippets, commands, prompts, notes, files, images, links and custom types.",
+  description:
+    "A developer knowledge hub for snippets, commands, prompts, notes, files, images, links and custom types.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

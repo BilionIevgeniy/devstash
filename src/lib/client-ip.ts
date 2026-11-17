@@ -42,7 +42,12 @@ function normalizeIpv6(address: string): string {
     groups[5] === IPV4_MAPPED_GROUP;
   if (isMappedIpv4) {
     const [high, low] = groups.slice(6);
-    return [high >> BYTE_BITS, high & BYTE_MASK, low >> BYTE_BITS, low & BYTE_MASK].join(".");
+    return [
+      high >> BYTE_BITS,
+      high & BYTE_MASK,
+      low >> BYTE_BITS,
+      low & BYTE_MASK,
+    ].join(".");
   }
 
   const prefix = groups.slice(0, IPV6_PREFIX_GROUPS);

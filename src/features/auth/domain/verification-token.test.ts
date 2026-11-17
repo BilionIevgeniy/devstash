@@ -38,9 +38,9 @@ describe("isTokenExpired", () => {
     expect(isTokenExpired(expires, new Date(NOW.getTime() + 24 * HOUR))).toBe(
       false,
     );
-    expect(isTokenExpired(expires, new Date(NOW.getTime() + 24 * HOUR + 1))).toBe(
-      true,
-    );
+    expect(
+      isTokenExpired(expires, new Date(NOW.getTime() + 24 * HOUR + 1)),
+    ).toBe(true);
   });
 });
 
@@ -48,7 +48,9 @@ describe("buildVerificationUrl", () => {
   const ORIGIN = "https://devstash.example";
 
   it("points at /verify-email with the token and the email", () => {
-    const url = new URL(buildVerificationUrl(ORIGIN, "ada@example.com", "abc123"));
+    const url = new URL(
+      buildVerificationUrl(ORIGIN, "ada@example.com", "abc123"),
+    );
     expect(url.origin).toBe(ORIGIN);
     expect(url.pathname).toBe("/verify-email");
     expect(url.searchParams.get("token")).toBe("abc123");
@@ -59,7 +61,9 @@ describe("buildVerificationUrl", () => {
   it("encodes a plus sign in the email", () => {
     const link = buildVerificationUrl(ORIGIN, "ada+test@example.com", "abc123");
     expect(link).toContain("email=ada%2Btest%40example.com");
-    expect(new URL(link).searchParams.get("email")).toBe("ada+test@example.com");
+    expect(new URL(link).searchParams.get("email")).toBe(
+      "ada+test@example.com",
+    );
   });
 
   it("encodes characters in the token that would break the query", () => {

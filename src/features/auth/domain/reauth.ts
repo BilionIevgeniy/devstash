@@ -17,7 +17,9 @@ export function isRecentlyAuthenticated(
   authenticatedAt: number | undefined,
   now: number,
 ): boolean {
-  return authenticatedAt !== undefined && now - authenticatedAt <= REAUTH_WINDOW_MS;
+  return (
+    authenticatedAt !== undefined && now - authenticatedAt <= REAUTH_WINDOW_MS
+  );
 }
 
 export function requiresReauthentication(

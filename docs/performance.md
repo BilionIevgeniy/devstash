@@ -36,17 +36,17 @@ DevStash does not report Web Vitals from visitors' browsers (no `useReportWebVit
 
 ### Client JavaScript per route (compressed, kB)
 
-| Route | Baseline | After the dialog split | Change |
-| ----- | -------: | ---------------------: | -----: |
-| `/`, `/de` | 359.6 | 359.7 | 0 |
-| `/impressum` | 344.2 | 344.3 | 0 |
-| `/sign-in` | 342.8 | 342.8 | 0 |
-| `/dashboard` | 499.9 | 437.7 | −62.2 |
-| `/items/[type]` | 502.7 | 440.7 | −62.0 |
-| `/collections/[id]` | 503.6 | 441.3 | −62.3 |
-| `/favorites` | 540.9 | 479.2 | −61.7 |
-| `/settings` | 537.3 | 485.2 | −52.1 |
-| Shared by app routes | 481.9 | 428.1 | **−53.8 (−11%)** |
+| Route                | Baseline | After the dialog split |           Change |
+| -------------------- | -------: | ---------------------: | ---------------: |
+| `/`, `/de`           |    359.6 |                  359.7 |                0 |
+| `/impressum`         |    344.2 |                  344.3 |                0 |
+| `/sign-in`           |    342.8 |                  342.8 |                0 |
+| `/dashboard`         |    499.9 |                  437.7 |            −62.2 |
+| `/items/[type]`      |    502.7 |                  440.7 |            −62.0 |
+| `/collections/[id]`  |    503.6 |                  441.3 |            −62.3 |
+| `/favorites`         |    540.9 |                  479.2 |            −61.7 |
+| `/settings`          |    537.3 |                  485.2 |            −52.1 |
+| Shared by app routes |    481.9 |                  428.1 | **−53.8 (−11%)** |
 
 The largest parts of the shared app JavaScript after the split: Next.js and React (about 216 kB), the Sentry browser SDK (about 41 kB), the global CSS module (18 kB), TanStack Query (12 kB).
 
@@ -59,10 +59,10 @@ The largest parts of the shared app JavaScript after the split: Next.js and Reac
 
 ### Lab results
 
-| Page | Performance | Accessibility | Best Practices | SEO | LCP | CLS | TBT |
-| ---- | ----------: | ------------: | -------------: | --: | --: | --: | --: |
-| `/` | 100 | 100 | 100 | 100 | 1.2 s | 0 | 60 ms |
-| `/de` | 100 | 100 | 100 | 100 | 1.2 s | 0 | 20 ms |
+| Page  | Performance | Accessibility | Best Practices | SEO |   LCP | CLS |   TBT |
+| ----- | ----------: | ------------: | -------------: | --: | ----: | --: | ----: |
+| `/`   |         100 |           100 |            100 | 100 | 1.2 s |   0 | 60 ms |
+| `/de` |         100 |           100 |            100 | 100 | 1.2 s |   0 | 20 ms |
 
 Layout shift on `/dashboard`, `/items/snippets`, `/items/images` and `/favorites` after load: 0.0013 each (good is below 0.1). The item images need no change: `ImageCard` draws its image in an `aspect-video` frame and the drawer in a fixed-height frame (`FILE_PREVIEW_HEIGHT`), so an image that arrives cannot move anything. The end-to-end user has no uploads (R2 is a dummy there), so no real image was loaded in this measurement; the frames hold by their CSS.
 

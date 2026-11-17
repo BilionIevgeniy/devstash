@@ -15,15 +15,15 @@ A type is a row in `ItemType` (`name`, `icon`, `color`, `isSystem`, `userId`). T
 
 ## The seven types
 
-| Type    | Icon (lucide) | Color     | Content class | Purpose                                                       | Key fields                                         |
-| ------- | ------------- | --------- | ------------- | ------------------------------------------------------------- | -------------------------------------------------- |
-| snippet | `Code`        | `#3b82f6` | text          | Reusable code, with syntax highlighting                       | `content`, `language`                              |
-| prompt  | `Sparkles`    | `#8b5cf6` | text          | AI prompts and workflows                                      | `content`                                          |
-| command | `Terminal`    | `#f97316` | text          | Shell and CLI commands                                        | `content`, `language` (`bash` in the seed)         |
-| note    | `StickyNote`  | `#fde047` | text          | Free-form notes, templates and docs; markdown                 | `content`, `language` (`markdown` in the seed)     |
-| file    | `File`        | `#6b7280` | file          | Uploaded documents, context files, templates (Pro)            | `fileUrl`, `fileName`, `fileSize`                  |
-| image   | `Image`       | `#ec4899` | file          | Uploaded images (Pro)                                         | `fileUrl`, `fileName`, `fileSize`                  |
-| link    | `Link`        | `#10b981` | URL           | Bookmarks and references to web pages                         | `url`                                              |
+| Type    | Icon (lucide) | Color     | Content class | Purpose                                            | Key fields                                     |
+| ------- | ------------- | --------- | ------------- | -------------------------------------------------- | ---------------------------------------------- |
+| snippet | `Code`        | `#3b82f6` | text          | Reusable code, with syntax highlighting            | `content`, `language`                          |
+| prompt  | `Sparkles`    | `#8b5cf6` | text          | AI prompts and workflows                           | `content`                                      |
+| command | `Terminal`    | `#f97316` | text          | Shell and CLI commands                             | `content`, `language` (`bash` in the seed)     |
+| note    | `StickyNote`  | `#fde047` | text          | Free-form notes, templates and docs; markdown      | `content`, `language` (`markdown` in the seed) |
+| file    | `File`        | `#6b7280` | file          | Uploaded documents, context files, templates (Pro) | `fileUrl`, `fileName`, `fileSize`              |
+| image   | `Image`       | `#ec4899` | file          | Uploaded images (Pro)                              | `fileUrl`, `fileName`, `fileSize`              |
+| link    | `Link`        | `#10b981` | URL           | Bookmarks and references to web pages              | `url`                                          |
 
 Notes per type:
 
@@ -40,11 +40,11 @@ Item counts in the development database at the time of writing: snippet 5, comma
 
 `Item.contentType` is a plain `String`. The schema has no enum and no constraint, and the project overview draft describes it as `text | file`.
 
-| Class | `contentType` in use | Types                                 | Fields filled                                | Fields empty                       |
-| ----- | -------------------- | ------------------------------------- | -------------------------------------------- | ---------------------------------- |
-| text  | `TEXT`               | snippet, prompt, command, note        | `content`, optionally `language`             | `url`, `fileUrl`, `fileName`, `fileSize` |
-| URL   | `URL`                | link                                  | `url`                                        | `content`, file fields             |
-| file  | none yet             | file, image                           | `fileUrl`, `fileName`, `fileSize`            | `content`, `url`                   |
+| Class | `contentType` in use | Types                          | Fields filled                     | Fields empty                             |
+| ----- | -------------------- | ------------------------------ | --------------------------------- | ---------------------------------------- |
+| text  | `TEXT`               | snippet, prompt, command, note | `content`, optionally `language`  | `url`, `fileUrl`, `fileName`, `fileSize` |
+| URL   | `URL`                | link                           | `url`                             | `content`, file fields                   |
+| file  | none yet             | file, image                    | `fileUrl`, `fileName`, `fileSize` | `content`, `url`                         |
 
 `TEXT` and `URL` are the only values that exist in the seed and the database. The value for the file class is not defined anywhere: neither the schema, the seed type (`"TEXT" | "URL"` in `SeedItem`) nor any code mentions it. See "Planned" below.
 

@@ -6,20 +6,20 @@ What the product is and who it is for: [context/project-overview.md](context/pro
 
 ## Stack
 
-| Area | Choice |
-| ---- | ------ |
-| Framework | Next.js 16 (App Router, Turbopack, React 19 with the React Compiler) |
-| Language | TypeScript, strict |
-| Database | Neon PostgreSQL with Prisma ORM |
-| Auth | NextAuth v5: email and password, GitHub OAuth |
-| Styling | Tailwind CSS v4 (configured in CSS, no `tailwind.config`) and shadcn/ui |
-| Files | Cloudflare R2, uploaded by the browser through presigned URLs |
-| Billing | Stripe subscriptions, synced by webhook |
-| AI | OpenAI |
-| Languages | English and German with next-intl: `/` and `/de` for the homepage, a cookie or the browser's language for the app ([ADR 0024](docs/adr/0024-locale-decision.md)) |
-| Email, rate limits | Resend, Upstash Redis |
-| Tests | Vitest, React Testing Library, Playwright |
-| Hosting | Vercel |
+| Area               | Choice                                                                                                                                                           |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework          | Next.js 16 (App Router, Turbopack, React 19 with the React Compiler)                                                                                             |
+| Language           | TypeScript, strict                                                                                                                                               |
+| Database           | Neon PostgreSQL with Prisma ORM                                                                                                                                  |
+| Auth               | NextAuth v5: email and password, GitHub OAuth                                                                                                                    |
+| Styling            | Tailwind CSS v4 (configured in CSS, no `tailwind.config`) and shadcn/ui                                                                                          |
+| Files              | Cloudflare R2, uploaded by the browser through presigned URLs                                                                                                    |
+| Billing            | Stripe subscriptions, synced by webhook                                                                                                                          |
+| AI                 | OpenAI                                                                                                                                                           |
+| Languages          | English and German with next-intl: `/` and `/de` for the homepage, a cookie or the browser's language for the app ([ADR 0024](docs/adr/0024-locale-decision.md)) |
+| Email, rate limits | Resend, Upstash Redis                                                                                                                                            |
+| Tests              | Vitest, React Testing Library, Playwright                                                                                                                        |
+| Hosting            | Vercel                                                                                                                                                           |
 
 ## Getting started
 
@@ -32,36 +32,36 @@ What the product is and who it is for: [context/project-overview.md](context/pro
 
 The seed creates the system item types and two demo users with the same password and content:
 
-| User | Plan | Where |
-| ---- | ---- | ----- |
-| `demo@devstash.io` | Free, one short of both Free limits | Every database the seed runs on |
-| `demo-pro@devstash.io` | Pro (active subscription, no Stripe customer, so "Manage billing" does not open) | The development database only |
+| User                   | Plan                                                                             | Where                           |
+| ---------------------- | -------------------------------------------------------------------------------- | ------------------------------- |
+| `demo@devstash.io`     | Free, one short of both Free limits                                              | Every database the seed runs on |
+| `demo-pro@devstash.io` | Pro (active subscription, no Stripe customer, so "Manage billing" does not open) | The development database only   |
 
 The development seed differs from production on purpose: there the demo user stays Pro, with the content of the demo migrations. The seed still has the older placeholder content (feature 16 syncs it), and collection pagination cannot be checked with it.
 
 ## Scripts
 
-| Command | What it does |
-| ------- | ------------ |
-| `npm run dev` | Dev server |
-| `npm run build` | Production build. Touches no database |
-| `npm run start` | Run the production build |
-| `npm run lint` | ESLint, including the architecture boundaries and size limits |
-| `npm run lint:dup` | jscpd copy-paste report over `src/` (a report for `/cleanup`, not a CI check) |
-| `npm run typecheck` | `next typegen && tsc --noEmit`: route types, then the type check |
-| `npm run db:migrate:deploy` | `prisma migrate deploy`: applies pending migrations without creating any. **It has no guard**: it migrates whatever database `DIRECT_URL` in `.env` names, so check it first |
-| `npm run vercel-build` | The Vercel Build Command (`vercel.json`): migrates the environment's own database through a guard, then builds. Refuses to run outside Vercel |
-| `npm run test` / `npm run test:watch` | Vitest, one run / watch mode: the unit, component and story tests. Needs no database; the story tests need Chromium (`npx playwright install chromium`, once) |
-| `npm run test:storybook` | Only the story tests: every story in Chromium, with its `play` steps and the axe check |
-| `npm run storybook` / `npm run build-storybook` | Storybook on port 6006 / the static build in `storybook-static/`: see [ADR 0026](docs/adr/0026-storybook-and-story-tests.md) |
-| `npm run test:integration` | The integration tests (`*.int.test.ts`) on the test database: see [Integration tests](#integration-tests) |
-| `npm run test:e2e` | The end-to-end tests (`e2e/`, Playwright) against the production build on the test database: see [End-to-end tests](#end-to-end-tests) |
-| `npm run db:seed-test` | Empty the test database and seed the system types, a Free and a Pro user. Reads `TEST_DATABASE_URL` only |
-| `npm run db:seed` | Seed system types and demo users (safe to run again) |
-| `npm run db:reset-demo` | Remove the Free demo user's items, collections, tags, files and subscription; run `db:seed` next |
-| `npm run db:delete-users` | Delete every user except the two demo users (development database only) |
-| `npm run db:test` | Check the database connection and the demo data |
-| `npm run db:studio` | Prisma Studio |
+| Command                                         | What it does                                                                                                                                                                 |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                                   | Dev server                                                                                                                                                                   |
+| `npm run build`                                 | Production build. Touches no database                                                                                                                                        |
+| `npm run start`                                 | Run the production build                                                                                                                                                     |
+| `npm run lint`                                  | ESLint, including the architecture boundaries and size limits                                                                                                                |
+| `npm run lint:dup`                              | jscpd copy-paste report over `src/` (a report for `/cleanup`, not a CI check)                                                                                                |
+| `npm run typecheck`                             | `next typegen && tsc --noEmit`: route types, then the type check                                                                                                             |
+| `npm run db:migrate:deploy`                     | `prisma migrate deploy`: applies pending migrations without creating any. **It has no guard**: it migrates whatever database `DIRECT_URL` in `.env` names, so check it first |
+| `npm run vercel-build`                          | The Vercel Build Command (`vercel.json`): migrates the environment's own database through a guard, then builds. Refuses to run outside Vercel                                |
+| `npm run test` / `npm run test:watch`           | Vitest, one run / watch mode: the unit, component and story tests. Needs no database; the story tests need Chromium (`npx playwright install chromium`, once)                |
+| `npm run test:storybook`                        | Only the story tests: every story in Chromium, with its `play` steps and the axe check                                                                                       |
+| `npm run storybook` / `npm run build-storybook` | Storybook on port 6006 / the static build in `storybook-static/`: see [ADR 0026](docs/adr/0026-storybook-and-story-tests.md)                                                 |
+| `npm run test:integration`                      | The integration tests (`*.int.test.ts`) on the test database: see [Integration tests](#integration-tests)                                                                    |
+| `npm run test:e2e`                              | The end-to-end tests (`e2e/`, Playwright) against the production build on the test database: see [End-to-end tests](#end-to-end-tests)                                       |
+| `npm run db:seed-test`                          | Empty the test database and seed the system types, a Free and a Pro user. Reads `TEST_DATABASE_URL` only                                                                     |
+| `npm run db:seed`                               | Seed system types and demo users (safe to run again)                                                                                                                         |
+| `npm run db:reset-demo`                         | Remove the Free demo user's items, collections, tags, files and subscription; run `db:seed` next                                                                             |
+| `npm run db:delete-users`                       | Delete every user except the two demo users (development database only)                                                                                                      |
+| `npm run db:test`                               | Check the database connection and the demo data                                                                                                                              |
+| `npm run db:studio`                             | Prisma Studio                                                                                                                                                                |
 
 Before every commit: `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build` must all pass, `npm run test:integration` when a query or service changed, and `npm run test:e2e` when a page, a route or the sign-in or item flows changed. CI runs all six on every PR and every push to `main`. Schema changes go through `prisma migrate dev`, never `db push`.
 

@@ -24,20 +24,20 @@ prisma/                 schema, migrations, seed
 
 `i18n` < `lib` and `components/ui` < features by rank < `app`. A feature imports only features of a lower rank; features of the same rank never import each other. `features/**` never imports `@/app/**`; `lib` and `components/ui` never import a feature.
 
-| Rank | Feature | Owns (Prisma models) | Status (planned: created by) |
-| ---- | ------- | -------------------- | ---------------------------- |
-| 1 | `auth` | User, Account, Session, VerificationToken | exists |
-| 2 | `billing` | Subscription | exists (Subscription, `getEntitlements`, checkout and portal, the webhook, the billing section) |
-| 3 | `item-types` | ItemType | exists |
-| 3 | `files` | none (objects in R2 under `users/<userId>/`) | exists |
-| 3 | `editor` | UserPreference | exists |
-| 4 | `ai` | none | exists (auto-tagging: `SuggestTagsButton`, `generateAutoTags`, the access check and limits; `lib/openai.ts`) |
-| 5 | `items` | Item, Tag, ItemTag, ItemCollection ([ADR 0008](../docs/adr/0008-items-own-the-collection-link.md)) | exists |
-| 6 | `collections` | Collection | exists |
-| 7 | `search`, `import-export` | none | `search` exists; `import-export` exists (JSON export and import, [ADR 0019](../docs/adr/0019-export-without-file-bytes.md), [ADR 0020](../docs/adr/0020-import-as-batched-data-input.md)) |
-| 8 | `account` | none (delete-account flow: cancel Stripe, purge files, delete rows) | exists |
-| 9 | `app-shell` | none | exists |
-| 10 | `app` | routes only | exists |
+| Rank | Feature                   | Owns (Prisma models)                                                                               | Status (planned: created by)                                                                                                                                                              |
+| ---- | ------------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | `auth`                    | User, Account, Session, VerificationToken                                                          | exists                                                                                                                                                                                    |
+| 2    | `billing`                 | Subscription                                                                                       | exists (Subscription, `getEntitlements`, checkout and portal, the webhook, the billing section)                                                                                           |
+| 3    | `item-types`              | ItemType                                                                                           | exists                                                                                                                                                                                    |
+| 3    | `files`                   | none (objects in R2 under `users/<userId>/`)                                                       | exists                                                                                                                                                                                    |
+| 3    | `editor`                  | UserPreference                                                                                     | exists                                                                                                                                                                                    |
+| 4    | `ai`                      | none                                                                                               | exists (auto-tagging: `SuggestTagsButton`, `generateAutoTags`, the access check and limits; `lib/openai.ts`)                                                                              |
+| 5    | `items`                   | Item, Tag, ItemTag, ItemCollection ([ADR 0008](../docs/adr/0008-items-own-the-collection-link.md)) | exists                                                                                                                                                                                    |
+| 6    | `collections`             | Collection                                                                                         | exists                                                                                                                                                                                    |
+| 7    | `search`, `import-export` | none                                                                                               | `search` exists; `import-export` exists (JSON export and import, [ADR 0019](../docs/adr/0019-export-without-file-bytes.md), [ADR 0020](../docs/adr/0020-import-as-batched-data-input.md)) |
+| 8    | `account`                 | none (delete-account flow: cancel Stripe, purge files, delete rows)                                | exists                                                                                                                                                                                    |
+| 9    | `app-shell`               | none                                                                                               | exists                                                                                                                                                                                    |
+| 10   | `app`                     | routes only                                                                                        | exists                                                                                                                                                                                    |
 
 - Before placing a new file, check [docs/modules.md](../docs/modules.md): what each module **Owns** there (components and flows, not only models) decides where the file goes. "Where does this go" below applies when no module claims it
 
@@ -63,14 +63,14 @@ features/<name>/
   nextauth/              (auth only) NextAuth setup and the signed-in user
 ```
 
-| Role | Does | Never imports |
-| ---- | ---- | ------------- |
-| `domain/` | Pure functions and constants; `now` is passed in | any package, Prisma, I/O, clock, env (lint); only `domain/`, `types.ts`, `lib/utils` |
-| `schemas.ts` | Zod input shapes; composes the constants of `domain/` | queries, services, actions, components (lint) |
-| `queries.ts` | Reads of own models: `userId` first, a DTO out, no writes | services, actions, components (lint) |
-| `services/` | Writes, vendor/Redis/email/`fetch` calls, other features' data, limit checks, flows; `userId`, `ip`, `origin` come in as parameters | actions, components, `next/headers`, `next/cache`, `next/navigation` (lint) |
-| `actions/`, `route.ts`, pages | Entry points: read the request, parse with a schema, make one call, shape the result, revalidate or redirect | Prisma, components (lint) |
-| `components/` | UI, including hooks in `components/hooks/use-*.ts` and browser-only helpers (`fetch-item-detail`, `put-file`, which start with `import "client-only"`); data through props or server-component queries, changes through actions ([ADR 0007](../docs/adr/0007-client-hooks-in-the-components-role.md)) | Prisma, services (lint); a hook never imports a `.tsx` (lint) |
+| Role                          | Does                                                                                                                                                                                                                                                                                                  | Never imports                                                                        |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `domain/`                     | Pure functions and constants; `now` is passed in                                                                                                                                                                                                                                                      | any package, Prisma, I/O, clock, env (lint); only `domain/`, `types.ts`, `lib/utils` |
+| `schemas.ts`                  | Zod input shapes; composes the constants of `domain/`                                                                                                                                                                                                                                                 | queries, services, actions, components (lint)                                        |
+| `queries.ts`                  | Reads of own models: `userId` first, a DTO out, no writes                                                                                                                                                                                                                                             | services, actions, components (lint)                                                 |
+| `services/`                   | Writes, vendor/Redis/email/`fetch` calls, other features' data, limit checks, flows; `userId`, `ip`, `origin` come in as parameters                                                                                                                                                                   | actions, components, `next/headers`, `next/cache`, `next/navigation` (lint)          |
+| `actions/`, `route.ts`, pages | Entry points: read the request, parse with a schema, make one call, shape the result, revalidate or redirect                                                                                                                                                                                          | Prisma, components (lint)                                                            |
+| `components/`                 | UI, including hooks in `components/hooks/use-*.ts` and browser-only helpers (`fetch-item-detail`, `put-file`, which start with `import "client-only"`); data through props or server-component queries, changes through actions ([ADR 0007](../docs/adr/0007-client-hooks-in-the-components-role.md)) | Prisma, services (lint); a hook never imports a `.tsx` (lint)                        |
 
 ## Where does this go
 
@@ -89,13 +89,13 @@ features/<name>/
 
 A type lives with the value it comes from.
 
-| Type | Where | Examples |
-| ---- | ----- | -------- |
-| What a query or service hands to pages and components (view, DTO, action state), or the state of a form whose action runs in the browser | `types.ts` | `ItemDetail` (items), `UserProfile` (auth), `DashboardCollection` (collections), `FormActionState` (auth) |
-| The handle a component hands to the one that holds it through `ref`, shared by the component, the code under it and its callers | `types.ts` | `EditorHandle` (editor) |
-| An input | `schemas.ts`, as `z.infer` next to its schema | `CreateItemInput` (items) |
-| Derived from a constant, or the arguments or result of one function | the file of that constant or function | `CreatableTypeName`, `EditableFields` (items/domain), `ItemTypeRow` (item-types/domain), `EmailSendCheck` (auth/services), `ActionEmailCopy` (auth/_internal/emails) |
-| Used by one file only | that file, not exported | `UpdateItemActionResult` (items/actions) |
+| Type                                                                                                                                     | Where                                         | Examples                                                                                                                                                             |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| What a query or service hands to pages and components (view, DTO, action state), or the state of a form whose action runs in the browser | `types.ts`                                    | `ItemDetail` (items), `UserProfile` (auth), `DashboardCollection` (collections), `FormActionState` (auth)                                                            |
+| The handle a component hands to the one that holds it through `ref`, shared by the component, the code under it and its callers          | `types.ts`                                    | `EditorHandle` (editor)                                                                                                                                              |
+| An input                                                                                                                                 | `schemas.ts`, as `z.infer` next to its schema | `CreateItemInput` (items)                                                                                                                                            |
+| Derived from a constant, or the arguments or result of one function                                                                      | the file of that constant or function         | `CreatableTypeName`, `EditableFields` (items/domain), `ItemTypeRow` (item-types/domain), `EmailSendCheck` (auth/services), `ActionEmailCopy` (auth/_internal/emails) |
+| Used by one file only                                                                                                                    | that file, not exported                       | `UpdateItemActionResult` (items/actions)                                                                                                                             |
 
 There is no `types/` folder; `types.ts` splits into `types/<topic>.ts` only when it grows. `queries.ts` and `_internal/queries.ts` split the same way into `queries/<topic>.ts`, and every file there keeps the query role and its lint ([ADR 0017](../docs/adr/0017-queries-split-by-topic.md)).
 

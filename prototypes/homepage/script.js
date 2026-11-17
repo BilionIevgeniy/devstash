@@ -22,7 +22,8 @@
     const nav = document.querySelector("[data-nav]");
     if (!nav) return;
 
-    const update = () => nav.classList.toggle("is-scrolled", window.scrollY > 16);
+    const update = () =>
+      nav.classList.toggle("is-scrolled", window.scrollY > 16);
     window.addEventListener("scroll", update, { passive: true });
     // A reload in the middle of the page restores the scroll without a scroll event.
     update();
@@ -40,7 +41,8 @@
       { threshold: 0 },
     );
 
-    for (const element of document.querySelectorAll(".reveal")) observer.observe(element);
+    for (const element of document.querySelectorAll(".reveal"))
+      observer.observe(element);
   }
 
   function initPricing() {
@@ -60,7 +62,10 @@
     let fadeTimer = 0;
 
     const render = () => {
-      const plan = toggle.getAttribute("aria-checked") === "true" ? PLANS.yearly : PLANS.monthly;
+      const plan =
+        toggle.getAttribute("aria-checked") === "true"
+          ? PLANS.yearly
+          : PLANS.monthly;
       price.textContent = plan.price;
       period.textContent = plan.period;
       note.textContent = plan.note;
@@ -113,7 +118,9 @@
     let lastFrame = 0;
     let clock = 0;
 
-    const icons = [...box.querySelectorAll("[data-chaos-icon]")].map(createIcon);
+    const icons = [...box.querySelectorAll("[data-chaos-icon]")].map(
+      createIcon,
+    );
 
     function createIcon(element, index) {
       const size = element.offsetWidth;
@@ -130,7 +137,9 @@
         cruise,
         // Seeded on a jittered grid, so the icons never start in a clump.
         x: clamp(
-          (column + 0.5) * cellWidth - size / 2 + between(-0.2, 0.2) * cellWidth,
+          (column + 0.5) * cellWidth -
+            size / 2 +
+            between(-0.2, 0.2) * cellWidth,
           0,
           width - size,
         ),
@@ -165,7 +174,8 @@
       const speed = Math.hypot(icon.vx, icon.vy);
       if (speed === 0) return;
       const capped = Math.min(speed, MAX_SPEED);
-      const next = capped + (icon.cruise - capped) * Math.min(1, SPEED_RECOVERY * step);
+      const next =
+        capped + (icon.cruise - capped) * Math.min(1, SPEED_RECOVERY * step);
       icon.vx *= next / speed;
       icon.vy *= next / speed;
     }
@@ -183,10 +193,13 @@
 
     function draw(icon) {
       const rotation =
-        MAX_ROTATION * Math.sin((TWO_PI * clock) / icon.rotationPeriod + icon.rotationPhase);
+        MAX_ROTATION *
+        Math.sin((TWO_PI * clock) / icon.rotationPeriod + icon.rotationPhase);
       const scale = reducedMotion.matches
         ? 1
-        : 1 + MAX_SCALE_CHANGE * Math.sin((TWO_PI * clock) / icon.scalePeriod + icon.scalePhase);
+        : 1 +
+          MAX_SCALE_CHANGE *
+            Math.sin((TWO_PI * clock) / icon.scalePeriod + icon.scalePhase);
       icon.element.style.transform = `translate(${icon.x}px, ${icon.y}px) rotate(${rotation}deg) scale(${scale})`;
     }
 

@@ -13,7 +13,9 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is not set");
 }
 
-const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+const prisma = new PrismaClient({
+  adapter: new PrismaPg({ connectionString }),
+});
 
 let failures = 0;
 
@@ -79,7 +81,9 @@ async function checkSystemItemTypes() {
 }
 
 async function checkDemoUser() {
-  const user = await prisma.user.findUnique({ where: { email: DEMO_USER_EMAIL } });
+  const user = await prisma.user.findUnique({
+    where: { email: DEMO_USER_EMAIL },
+  });
   assert(user !== null, `demo user ${DEMO_USER_EMAIL} not found`);
   assert(
     user.password?.startsWith("$2") === true,
@@ -131,7 +135,9 @@ async function checkCascadeDeletes() {
 
       const leftovers = {
         items: await tx.item.count({ where: { id: item.id } }),
-        collections: await tx.collection.count({ where: { id: collection.id } }),
+        collections: await tx.collection.count({
+          where: { id: collection.id },
+        }),
         tags: await tx.tag.count({ where: { id: tag.id } }),
         itemCollections: await tx.itemCollection.count({
           where: { itemId: item.id },
@@ -163,7 +169,9 @@ async function main() {
   await check("relations", checkRelations);
   await check("cascade deletes", checkCascadeDeletes);
 
-  console.log(failures === 0 ? "\nAll checks passed" : `\n${failures} check(s) failed`);
+  console.log(
+    failures === 0 ? "\nAll checks passed" : `\n${failures} check(s) failed`,
+  );
   process.exitCode = failures === 0 ? 0 : 1;
 }
 

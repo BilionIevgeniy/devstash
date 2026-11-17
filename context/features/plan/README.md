@@ -12,31 +12,31 @@ Rules that apply to every file:
 - Work found during a feature is done in that feature ("Found work" in `context/ai-interaction.md`); work too large or off-topic goes into the Scope of the matching spec below, or a new spec.
 - When a feature is merged, tick it in the table below and add it to `context/feature-history.md` as usual.
 
-| # | Feature | Priority | Status |
-| --- | --- | --- | --- |
-| 1 | [CI and safe migrations](../1.ci-and-safe-migrations.md) | MUST | [x] |
-| 2 | [Legal pages and privacy](../2.legal-pages-and-privacy.md) | MUST | [x] |
-| 3 | [Component tests with React Testing Library](../3.component-tests-rtl.md) | MUST | [x] |
-| 4 | [Tenant isolation integration tests](../4.tenant-isolation-integration-tests.md) | MUST | [x] |
-| 5 | [E2E smoke tests](../5.e2e-smoke.md) | MUST | [x] |
-| 6 | [Observability](../6.observability.md) | MUST | [x] |
-| 7 | [URL filters and sort](../7.url-filters-and-sort.md) | MUST | [x] |
-| 8 | [Server search with debounce](../8.server-search-with-debounce.md) | MUST | [x] |
-| 9 | [Hooks, forms and editor focus](../9.hooks-forms-and-editor-focus.md) | SHOULD | [x] |
-| 10 | [Import and export](../10.import-export.md) | MUST | [x] |
-| 11 | [English and German (i18n)](../11.i18n-en-de.md) | SHOULD | [x] |
-| 12 | [Client data and infinite lists](../12.client-data-and-infinite-lists.md) | SHOULD | [x] |
-| 13 | [Performance and SEO](../13.performance-and-seo.md) | SHOULD | [x] |
-| 14 | [Storybook and accessibility](../14.storybook-and-a11y.md) | SHOULD | [x] |
-| 15 | [AI output marking](../15.ai-output-marking.md) | MUST, by 2026-12-02 | [x] |
-| 16 | [Codebase hygiene](16.codebase-hygiene.md) | SHOULD | [ ] |
-| 17 | [Security, auth and data retention](17.security-auth-retention.md) | MUST | [ ] |
-| 18 | [Custom item types](18.custom-item-types.md) | MUST | [ ] |
-| 19 | [A real shop in test mode](19.real-shop-in-test-mode.md) | MUST | [ ] |
-| 20 | [UX, accessibility and consent](20.ux-a11y-and-consent.md) | SHOULD | [ ] |
-| 21 | [Full E2E suite](21.e2e-full.md) | MUST before 22 | [ ] |
-| 22 | [CSP and Cache Components](22.csp-and-cache-components.md) | SHOULD | [ ] |
-| 23 | [Final review pass](23.final-review-pass.md) | SHOULD, last | [ ] |
+| #   | Feature                                                                          | Priority            | Status |
+| --- | -------------------------------------------------------------------------------- | ------------------- | ------ |
+| 1   | [CI and safe migrations](../1.ci-and-safe-migrations.md)                         | MUST                | [x]    |
+| 2   | [Legal pages and privacy](../2.legal-pages-and-privacy.md)                       | MUST                | [x]    |
+| 3   | [Component tests with React Testing Library](../3.component-tests-rtl.md)        | MUST                | [x]    |
+| 4   | [Tenant isolation integration tests](../4.tenant-isolation-integration-tests.md) | MUST                | [x]    |
+| 5   | [E2E smoke tests](../5.e2e-smoke.md)                                             | MUST                | [x]    |
+| 6   | [Observability](../6.observability.md)                                           | MUST                | [x]    |
+| 7   | [URL filters and sort](../7.url-filters-and-sort.md)                             | MUST                | [x]    |
+| 8   | [Server search with debounce](../8.server-search-with-debounce.md)               | MUST                | [x]    |
+| 9   | [Hooks, forms and editor focus](../9.hooks-forms-and-editor-focus.md)            | SHOULD              | [x]    |
+| 10  | [Import and export](../10.import-export.md)                                      | MUST                | [x]    |
+| 11  | [English and German (i18n)](../11.i18n-en-de.md)                                 | SHOULD              | [x]    |
+| 12  | [Client data and infinite lists](../12.client-data-and-infinite-lists.md)        | SHOULD              | [x]    |
+| 13  | [Performance and SEO](../13.performance-and-seo.md)                              | SHOULD              | [x]    |
+| 14  | [Storybook and accessibility](../14.storybook-and-a11y.md)                       | SHOULD              | [x]    |
+| 15  | [AI output marking](../15.ai-output-marking.md)                                  | MUST, by 2026-12-02 | [x]    |
+| 16  | [Codebase hygiene](16.codebase-hygiene.md)                                       | SHOULD              | [ ]    |
+| 17  | [Security, auth and data retention](17.security-auth-retention.md)               | MUST                | [ ]    |
+| 18  | [Custom item types](18.custom-item-types.md)                                     | MUST                | [ ]    |
+| 19  | [A real shop in test mode](19.real-shop-in-test-mode.md)                         | MUST                | [ ]    |
+| 20  | [UX, accessibility and consent](20.ux-a11y-and-consent.md)                       | SHOULD              | [ ]    |
+| 21  | [Full E2E suite](21.e2e-full.md)                                                 | MUST before 22      | [ ]    |
+| 22  | [CSP and Cache Components](22.csp-and-cache-components.md)                       | SHOULD              | [ ]    |
+| 23  | [Final review pass](23.final-review-pass.md)                                     | SHOULD, last        | [ ]    |
 
 **Dependencies:** 4 defines the test database used by 5 and 21 · 5 needs 2 and 4 · 6 needs 2 · 7 needs 3 · 12 needs 7 and 8 · 14 needs 3 and 11 · 16 runs with no other branch open · 18 needs 17 live (the drop of the `@ignore`d columns) · 19 needs 17 (cron dispatcher, HMAC rate limits) and 18 (downgrade of custom types) · 20 needs 16 (one stats component) · 21 needs 15–20 (UI before the baselines) · 22 needs 21 · 23 needs all.
 
@@ -63,33 +63,33 @@ Rules that apply to every file:
 
 The deferred list was split on 2026-11-14. Accepted ADRs and historical specs that still name `context/todo.md` mean this split.
 
-| Former section | Now |
-| --- | --- |
-| Pro features: custom item types | 18 |
-| Billing: Stripe phase 2 checks, webhook reconciliation | 19 |
-| Germany: tax and legal | the code in test mode in 19; the adviser's and lawyer's sign-off, vendor facts, live key and live payment methods in `todo-before-live.md`; the AI Act in 15 |
-| Auth (bcrypt bytes, old GitHub tokens, GitHub-only delete, expired tokens and unverified accounts) | 17 |
-| Security: resend enumeration, HMAC identifiers, unclaimed uploads | 17 |
-| Security: CSP | 22 |
-| Security: `dompurify`, `glob` | Watch in `todo-before-live.md` |
-| Observability: egress check, Next.js log messages | 22 |
-| Observability: real-user Web Vitals | 20 |
-| Observability: wrapped Auth.js error name | Watch in `todo-before-live.md` |
-| Observability: browser events without OS | Known risks in `docs/architecture.md` |
-| Items: cards as links, hover, focus return, inline form errors, `/profile` loading | 20 |
-| Items: read-only over the Free limit | 19 |
-| Items: endless lists at 500 rows; Database: production latency | 22 |
-| Collections, Database: full content in lists | Known risks in `docs/architecture.md` |
-| Database: schema without migration | 16 |
-| Database: Neon branch per preview | dropped (ADR 0013 records the upgrade path) |
-| Database: drop the superseded columns | 17 (`@ignore`) and 18 (drop) |
-| Demo data | 16 (seed), the README (the seed differs on purpose) |
-| Tooling: Prettier, CI build cache, copy-paste, crowded folders | 16 |
-| Tooling: ESLint 10 | Watch in `todo-before-live.md` |
-| Tests: mutation check | 23 |
-| Tests: `useItemFavorites`, own Upstash database, change-password journey | 21 |
-| Languages: the root `Toaster` | 20 |
-| UI review: full Playwright pass | 23 |
-| UI review: the other findings | 20 (the palette axe violations were fixed in 14) |
-| UI review: social proof | `todo-before-live.md` |
-| UI review: an email link for another account | 17 |
+| Former section                                                                                     | Now                                                                                                                                                          |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Pro features: custom item types                                                                    | 18                                                                                                                                                           |
+| Billing: Stripe phase 2 checks, webhook reconciliation                                             | 19                                                                                                                                                           |
+| Germany: tax and legal                                                                             | the code in test mode in 19; the adviser's and lawyer's sign-off, vendor facts, live key and live payment methods in `todo-before-live.md`; the AI Act in 15 |
+| Auth (bcrypt bytes, old GitHub tokens, GitHub-only delete, expired tokens and unverified accounts) | 17                                                                                                                                                           |
+| Security: resend enumeration, HMAC identifiers, unclaimed uploads                                  | 17                                                                                                                                                           |
+| Security: CSP                                                                                      | 22                                                                                                                                                           |
+| Security: `dompurify`, `glob`                                                                      | Watch in `todo-before-live.md`                                                                                                                               |
+| Observability: egress check, Next.js log messages                                                  | 22                                                                                                                                                           |
+| Observability: real-user Web Vitals                                                                | 20                                                                                                                                                           |
+| Observability: wrapped Auth.js error name                                                          | Watch in `todo-before-live.md`                                                                                                                               |
+| Observability: browser events without OS                                                           | Known risks in `docs/architecture.md`                                                                                                                        |
+| Items: cards as links, hover, focus return, inline form errors, `/profile` loading                 | 20                                                                                                                                                           |
+| Items: read-only over the Free limit                                                               | 19                                                                                                                                                           |
+| Items: endless lists at 500 rows; Database: production latency                                     | 22                                                                                                                                                           |
+| Collections, Database: full content in lists                                                       | Known risks in `docs/architecture.md`                                                                                                                        |
+| Database: schema without migration                                                                 | 16                                                                                                                                                           |
+| Database: Neon branch per preview                                                                  | dropped (ADR 0013 records the upgrade path)                                                                                                                  |
+| Database: drop the superseded columns                                                              | 17 (`@ignore`) and 18 (drop)                                                                                                                                 |
+| Demo data                                                                                          | 16 (seed), the README (the seed differs on purpose)                                                                                                          |
+| Tooling: Prettier, CI build cache, copy-paste, crowded folders                                     | 16                                                                                                                                                           |
+| Tooling: ESLint 10                                                                                 | Watch in `todo-before-live.md`                                                                                                                               |
+| Tests: mutation check                                                                              | 23                                                                                                                                                           |
+| Tests: `useItemFavorites`, own Upstash database, change-password journey                           | 21                                                                                                                                                           |
+| Languages: the root `Toaster`                                                                      | 20                                                                                                                                                           |
+| UI review: full Playwright pass                                                                    | 23                                                                                                                                                           |
+| UI review: the other findings                                                                      | 20 (the palette axe violations were fixed in 14)                                                                                                             |
+| UI review: social proof                                                                            | `todo-before-live.md`                                                                                                                                        |
+| UI review: an email link for another account                                                       | 17                                                                                                                                                           |

@@ -31,9 +31,9 @@ describe("getClientIp: which header wins", () => {
   });
 
   it("falls back to x-forwarded-for when x-real-ip is empty", () => {
-    expect(
-      ipFrom({ "x-real-ip": "", "x-forwarded-for": "203.0.113.7" }),
-    ).toBe("203.0.113.7");
+    expect(ipFrom({ "x-real-ip": "", "x-forwarded-for": "203.0.113.7" })).toBe(
+      "203.0.113.7",
+    );
   });
 
   it("is null when x-forwarded-for is empty", () => {
@@ -41,7 +41,9 @@ describe("getClientIp: which header wins", () => {
   });
 
   it("works with any object that has a get method", () => {
-    const headers = { get: (name: string) => (name === "x-real-ip" ? "203.0.113.7" : null) };
+    const headers = {
+      get: (name: string) => (name === "x-real-ip" ? "203.0.113.7" : null),
+    };
     expect(getClientIp(headers)).toBe("203.0.113.7");
   });
 });
@@ -59,9 +61,9 @@ describe("getClientIp: values that are not an address", () => {
 // as the same client or a limit can be dodged by rotating through them.
 describe("getClientIp: IPv6", () => {
   it("reduces an address to its /64 prefix", () => {
-    expect(ipFrom({ "x-real-ip": "2001:db8:85a3:8d3:1319:8a2e:370:7348" })).toBe(
-      "2001:db8:85a3:8d3::/64",
-    );
+    expect(
+      ipFrom({ "x-real-ip": "2001:db8:85a3:8d3:1319:8a2e:370:7348" }),
+    ).toBe("2001:db8:85a3:8d3::/64");
   });
 
   it("gives every address in one /64 the same result", () => {
@@ -96,9 +98,9 @@ describe("getClientIp: IPv6", () => {
   });
 
   it("reads the first address of a chain", () => {
-    expect(
-      ipFrom({ "x-forwarded-for": "2001:db8:1:2::1, 203.0.113.7" }),
-    ).toBe("2001:db8:1:2::/64");
+    expect(ipFrom({ "x-forwarded-for": "2001:db8:1:2::1, 203.0.113.7" })).toBe(
+      "2001:db8:1:2::/64",
+    );
   });
 });
 

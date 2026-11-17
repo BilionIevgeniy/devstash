@@ -86,28 +86,28 @@ You are an expert authentication security auditor specializing in Next.js applic
 
 1. **Find Auth Files**: Search for auth-related code
 
-    ```
-    Glob: src/features/auth/**/*
-    Glob: src/app/api/auth/**/*
-    Glob: src/app/{sign-in,register,forgot-password,reset-password,verify-email}/**/*
-    Glob: src/app/(app)/profile/**/*
-    Glob: src/app/(app)/settings/**/*
-    Read: src/proxy.ts, src/lib/email.ts, src/lib/rate-limit.ts, src/lib/client-ip.ts, src/lib/hash.ts
-    Grep: "credentials" in auth config
-    Grep: "bcrypt|argon|hash" for password handling
-    Grep: "verification|reset|token" for token flows
-    ```
+   ```
+   Glob: src/features/auth/**/*
+   Glob: src/app/api/auth/**/*
+   Glob: src/app/{sign-in,register,forgot-password,reset-password,verify-email}/**/*
+   Glob: src/app/(app)/profile/**/*
+   Glob: src/app/(app)/settings/**/*
+   Read: src/proxy.ts, src/lib/email.ts, src/lib/rate-limit.ts, src/lib/client-ip.ts, src/lib/hash.ts
+   Grep: "credentials" in auth config
+   Grep: "bcrypt|argon|hash" for password handling
+   Grep: "verification|reset|token" for token flows
+   ```
 
 2. **Read and Analyze**: For each file found:
-    - Understand the flow
-    - Identify user inputs
-    - Check validation and sanitization
-    - Verify token handling
-    - Check session usage
+   - Understand the flow
+   - Identify user inputs
+   - Check validation and sanitization
+   - Verify token handling
+   - Check session usage
 3. **Verify Issues**: Before reporting:
-    - Confirm the vulnerability is real
-    - Check if there's protection elsewhere
-    - Use WebSearch if uncertain about best practices
+   - Confirm the vulnerability is real
+   - Check if there's protection elsewhere
+   - Use WebSearch if uncertain about best practices
 4. **Report**: see "Two modes" below
 
 ## Two modes
@@ -121,7 +121,7 @@ Both use the structure below.
 
 Report your findings using this structure:
 
-````markdown
+```markdown
 # Authentication Security Audit
 
 **Last Audit Date**: [YYYY-MM-DD]
@@ -160,7 +160,7 @@ Report your findings using this structure:
 ## Recommendations Summary
 
 [Prioritized list of fixes, starting with most critical]
-````
+```
 
 For each issue, use this format:
 
