@@ -156,7 +156,7 @@ The ten placement rules are "Where does this go" in [context/architecture-rules.
 4. **Add the pages** under `src/app/(app)/<route>/` and widen the `matcher` in `src/proxy.ts` so the route is protected. Pages only compose.
 5. **Change the database** in `prisma/schema.prisma` and run `npx prisma migrate dev --name <what>` (never `db push`); a schema change without its migration fails the `integration` job (`npm run db:check-migrations`, [ADR 0028](adr/0028-schema-drift-check-in-ci.md)); update `prisma/seed.ts` if the demo data needs it.
 6. **Write the code by role:** reads in `queries.ts` (scoped by `userId`), writes in `services/`, inputs in `schemas.ts`, rules in `domain/`, the form handler in `actions/`.
-7. **Check:** `npm run typecheck`, `npm run lint`, `npm run test` (all green before a commit) and `npm run build`; CI runs the same on the PR. The build touches no database: on Vercel, `npm run vercel-build` migrates the environment's own database first (see "Deployment" in the Reference).
+7. **Check:** `npm run format:check`, `npm run typecheck`, `npm run lint`, `npm run test` (all green before a commit) and `npm run build`; CI runs the same on the PR, plus `npm run db:check-migrations`, the integration and the e2e tests. The build touches no database: on Vercel, `npm run vercel-build` migrates the environment's own database first (see "Deployment" in the Reference).
 8. **Record it** in `context/feature-history.md` when the feature is done (see `context/ai-interaction.md` for the workflow).
 
 Adding an operation to an existing feature is the same without steps 1 to 5: input schema, then the service, then the action, then the component that calls it.
