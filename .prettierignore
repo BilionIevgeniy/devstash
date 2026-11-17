@@ -1,0 +1,16 @@
+# Prettier also reads .gitignore, which covers the generated Prisma client,
+# public/monaco, .next, storybook-static and the test reports.
+
+# Applied migrations are never edited (a fix is a new migration).
+prisma/migrations
+
+# Written by npm.
+package-lock.json
+
+# Written by `next dev` from the installed Next.js; its block must stay as Next
+# writes it, or every dev start rewrites the file.
+AGENTS.md
+
+# Personal Claude Code settings, ignored by the global git excludes and not by
+# .gitignore, which is all Prettier reads.
+.claude/settings.local.json
