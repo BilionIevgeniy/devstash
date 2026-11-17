@@ -1,7 +1,7 @@
 import { act, render, screen, waitFor } from "../../../../test/intl";
 import userEvent from "@testing-library/user-event";
 import type { ComponentProps } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import type { ItemFields } from "@/features/items/_internal/components/ItemFields";
 import type { ActionResult } from "@/lib/action-result";
@@ -39,6 +39,15 @@ vi.mock("@/features/items/_internal/components/ItemFileField", () => ({
 }));
 
 import { CreateItemDialog } from "@/features/items/components/CreateItemDialog";
+
+// The dialog loads its form with import() when it opens. On a cold transform
+// cache (every CI run, the first local run after an install) that chunk can
+// take longer than the one second a findBy waits, so it is loaded here first,
+// where the hook has time; the dialog's own import() then finds it in the
+// module cache. The lazy load itself is tested in CreateItemDialog.load.test.tsx.
+beforeAll(async () => {
+  await import("@/features/items/_internal/components/CreateItemForm");
+});
 
 const CREATED: ActionResult = { success: true, data: null, error: null };
 
