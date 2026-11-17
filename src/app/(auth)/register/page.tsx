@@ -6,9 +6,10 @@ import { AuthCard } from "@/features/auth/components/AuthCard";
 import { GitHubAuthSection } from "@/features/auth/components/GitHubAuthSection";
 import { RegisterForm } from "@/features/auth/components/RegisterForm";
 import { auth } from "@/features/auth/nextauth/auth";
-import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
-
-const DASHBOARD_PATH = "/dashboard";
+import {
+  DASHBOARD_PATH,
+  SIGN_IN_PATH,
+} from "@/features/auth/domain/auth-paths";
 
 // A signed-in user goes to the dashboard. Checked here and not in the proxy:
 // auth() also checks the session version, so a revoked session reads as signed

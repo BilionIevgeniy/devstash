@@ -15,7 +15,10 @@ import { useEscapeToClose } from "./hooks/use-escape-to-close";
 import { useScrolled } from "./hooks/use-scrolled";
 import { LanguageLink } from "./LanguageLink";
 import { MobileNavPanel } from "./MobileNavPanel";
-import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
+import {
+  DASHBOARD_PATH,
+  SIGN_IN_PATH,
+} from "@/features/auth/domain/auth-paths";
 
 const PANEL_ID = "mobile-nav";
 const DESKTOP_LINK = "transition-colors hover:text-foreground";
@@ -73,7 +76,7 @@ function MemberAction({ hidden }: { hidden: boolean }) {
       )}
     >
       <Button asChild size="lg" className={cn("px-3.5", BUTTON_TRANSITION)}>
-        <Link href="/dashboard" prefetch={hidden ? false : undefined}>
+        <Link href={DASHBOARD_PATH} prefetch={hidden ? false : undefined}>
           {t("nav.dashboard")}
         </Link>
       </Button>
