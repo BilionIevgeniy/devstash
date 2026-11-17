@@ -8,9 +8,10 @@ import {
   REAUTH_WRONG_ACCOUNT,
 } from "@/features/auth/domain/reauth";
 import { getSessionVersion } from "@/features/auth/queries";
+import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
 const WRONG_ACCOUNT_URL = `/settings?reauth=${REAUTH_WRONG_ACCOUNT}`;
-const REVOKED_SESSION_URL = "/sign-in?error=OAuthAccountNotLinked";
+const REVOKED_SESSION_URL = `${SIGN_IN_PATH}?error=OAuthAccountNotLinked`;
 
 // Reads the raw cookie and not auth(): Auth.js links an account to whatever the
 // cookie holds, while auth() answers "no session" once the session is revoked.

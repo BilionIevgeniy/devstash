@@ -15,6 +15,7 @@ import { useEscapeToClose } from "./hooks/use-escape-to-close";
 import { useScrolled } from "./hooks/use-scrolled";
 import { LanguageLink } from "./LanguageLink";
 import { MobileNavPanel } from "./MobileNavPanel";
+import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
 const PANEL_ID = "mobile-nav";
 const DESKTOP_LINK = "transition-colors hover:text-foreground";
@@ -46,7 +47,7 @@ function GuestActions({ hidden }: { hidden: boolean }) {
           BUTTON_TRANSITION,
         )}
       >
-        <Link href="/sign-in" prefetch={prefetch}>
+        <Link href={SIGN_IN_PATH} prefetch={prefetch}>
           {t("nav.signIn")}
         </Link>
       </Button>

@@ -4,13 +4,14 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import { UserAvatar } from "@/features/auth/components/UserAvatar";
 import { getUserProfile } from "@/features/auth/queries";
 import { getSessionUser } from "@/features/auth/nextauth/session";
+import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
 export async function ProfileInfo() {
   const format = await getFormatter();
   const t = await getTranslations("pages.profile");
   const { id: userId } = await getSessionUser();
   const profile = await getUserProfile(userId);
-  if (!profile) redirect("/sign-in");
+  if (!profile) redirect(SIGN_IN_PATH);
 
   return (
     <div className="flex items-center gap-4 rounded-lg border bg-card p-6">

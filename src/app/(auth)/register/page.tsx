@@ -6,6 +6,7 @@ import { AuthCard } from "@/features/auth/components/AuthCard";
 import { GitHubAuthSection } from "@/features/auth/components/GitHubAuthSection";
 import { RegisterForm } from "@/features/auth/components/RegisterForm";
 import { auth } from "@/features/auth/nextauth/auth";
+import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
 const DASHBOARD_PATH = "/dashboard";
 
@@ -26,7 +27,7 @@ export default async function RegisterPage() {
       <p className="text-center text-sm text-muted-foreground">
         {t("haveAccount")}{" "}
         <Link
-          href="/sign-in"
+          href={SIGN_IN_PATH}
           className="text-foreground underline-offset-4 hover:underline"
         >
           {t("signIn")}

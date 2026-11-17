@@ -3,11 +3,12 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/features/auth/nextauth/auth";
+import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
 // For pages and Server Actions: a signed-out caller is sent to sign-in.
 export const getSessionUser = cache(async () => {
   const session = await auth();
-  if (!session?.user?.id) redirect("/sign-in");
+  if (!session?.user?.id) redirect(SIGN_IN_PATH);
   return session.user;
 });
 

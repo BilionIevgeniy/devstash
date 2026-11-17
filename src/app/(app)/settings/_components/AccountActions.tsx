@@ -8,6 +8,7 @@ import { needsReauthentication } from "@/features/auth/services/account";
 import { ChangePasswordForm } from "@/features/auth/components/ChangePasswordForm";
 import { getUserProfile } from "@/features/auth/queries";
 import { getSessionUser } from "@/features/auth/nextauth/session";
+import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
 interface AccountActionsProps {
   searchParams: Promise<{ reauth?: string | string[] }>;
@@ -20,7 +21,7 @@ export async function AccountActions({ searchParams }: AccountActionsProps) {
     getUserProfile(userId),
     searchParams,
   ]);
-  if (!profile) redirect("/sign-in");
+  if (!profile) redirect(SIGN_IN_PATH);
 
   const requiresReauth = needsReauthentication(
     profile.hasPassword,

@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { ForgotPasswordForm } from "@/features/auth/components/ForgotPasswordForm";
+import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
 export default async function ForgotPasswordPage() {
   const t = await getTranslations("auth.forgot");
@@ -14,7 +15,7 @@ export default async function ForgotPasswordPage() {
       <p className="text-center text-sm text-muted-foreground">
         {t("remembered")}{" "}
         <Link
-          href="/sign-in"
+          href={SIGN_IN_PATH}
           className="text-foreground underline-offset-4 hover:underline"
         >
           {t("signIn")}
