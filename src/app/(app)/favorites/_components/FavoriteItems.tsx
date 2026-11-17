@@ -5,7 +5,7 @@ import { ListRowFrame } from "@/app/(app)/_components/ListRowFrame";
 import { SortSelect } from "@/app/(app)/_components/SortSelect";
 import { FavoriteSection } from "@/app/(app)/favorites/_components/FavoriteSection";
 import { ListPagesFrame } from "@/app/(app)/_components/ListPagesFrame";
-import { LoadMore } from "@/components/common/LoadMore";
+import { LoadMore } from "@/components/common/lists/LoadMore";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import type { ItemListPages } from "@/features/items/components/hooks/use-item-list-pages";
 import { ItemDrawerTrigger } from "@/features/items/components/drawer/ItemDrawerTrigger";

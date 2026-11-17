@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
-import { I18nProvider } from "@/components/common/I18nProvider";
+import { I18nProvider } from "@/components/common/providers/I18nProvider";
 import { messagesFor } from "@/i18n/messages";
 
 // The description of every page under this layout, in its language; the

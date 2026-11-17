@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { I18nProvider } from "@/components/common/I18nProvider";
+import { I18nProvider } from "@/components/common/providers/I18nProvider";
 import type { Locale } from "@/i18n/config";
 import { pickMessages } from "@/i18n/messages";
 

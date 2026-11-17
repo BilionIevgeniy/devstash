@@ -1,8 +1,8 @@
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { act, render, screen } from "../../../test/intl";
-import { LoadMore } from "@/components/common/LoadMore";
+import { act, render, screen } from "../../../../test/intl";
+import { LoadMore } from "@/components/common/lists/LoadMore";
 
 // jsdom has no IntersectionObserver: this one lets the test say when the
 // sentinel enters or leaves the view.

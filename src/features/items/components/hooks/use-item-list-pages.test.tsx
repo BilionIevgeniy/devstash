@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { act, renderHook, waitFor } from "../../../../../test/intl";
-import { createQueryClient } from "@/components/common/query-client";
+import { createQueryClient } from "@/components/common/providers/query-client";
 import type { FavoriteItem, FirstListPage } from "@/features/items/types";
 
 const { fetchFavoritePage, router } = vi.hoisted(() => ({

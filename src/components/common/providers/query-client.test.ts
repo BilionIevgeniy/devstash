@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createQueryClient } from "@/components/common/query-client";
+import { createQueryClient } from "@/components/common/providers/query-client";
 import { fail } from "@/lib/errors/action-result";
 import { RouteError } from "@/lib/errors/route-error";
 

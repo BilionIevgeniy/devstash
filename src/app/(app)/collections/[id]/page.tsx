@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 import { CollectionSections } from "@/app/(app)/collections/[id]/_components/CollectionSections";
 import CollectionLoading from "@/app/(app)/collections/[id]/loading";
-import { PaginationNav } from "@/components/common/PaginationNav";
+import { PaginationNav } from "@/components/common/lists/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { getEntitlements } from "@/features/billing/queries";
 import { CollectionHeaderActions } from "@/features/collections/components/CollectionHeaderActions";

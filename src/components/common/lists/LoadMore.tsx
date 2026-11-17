@@ -2,7 +2,10 @@
 
 import { useEffect, useEffectEvent, useRef } from "react";
 
-import { ShowMore, type ShowMoreProps } from "@/components/common/ShowMore";
+import {
+  ShowMore,
+  type ShowMoreProps,
+} from "@/components/common/lists/ShowMore";
 
 // Starts the next page this far before the end of the list comes into view.
 const SENTINEL_MARGIN = "400px";

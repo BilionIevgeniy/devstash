@@ -5,7 +5,7 @@ import { ItemListFilters } from "@/app/(app)/items/[type]/_components/ItemListFi
 import { ItemsHeader } from "@/app/(app)/items/[type]/_components/ItemsHeader";
 import { ItemsListing } from "@/app/(app)/items/[type]/_components/ItemsListing";
 import { ListingSkeleton } from "@/app/(app)/items/[type]/_components/ListingSkeleton";
-import { PaginationNav } from "@/components/common/PaginationNav";
+import { PaginationNav } from "@/components/common/lists/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import { getEntitlements } from "@/features/billing/queries";

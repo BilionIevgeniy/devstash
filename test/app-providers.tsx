@@ -1,7 +1,7 @@
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 
-import { I18nProvider } from "@/components/common/I18nProvider";
+import { I18nProvider } from "@/components/common/providers/I18nProvider";
 import type { Locale } from "@/i18n/config";
 import { messagesFor } from "@/i18n/messages";
 

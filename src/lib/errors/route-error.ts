@@ -20,7 +20,7 @@ function isParams(value: unknown): value is Record<string, string | number> {
 // A failed answer of one of our routes, thrown by a browser helper whose
 // caller is a Query: the status tells the retry rule a refusal (4xx, never
 // retried) from a failure (5xx, retried once), and `failure` holds the code
-// to show (`createQueryClient` in components/common/query-client.ts).
+// to show (`createQueryClient` in components/common/providers/query-client.ts).
 export class RouteError extends Error {
   readonly status: number;
   readonly failure: Failure;

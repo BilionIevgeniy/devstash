@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
-import { ListLoadError } from "@/components/common/ListLoadError";
+import { ListLoadError } from "@/components/common/lists/ListLoadError";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
