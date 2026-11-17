@@ -27,7 +27,7 @@ Rules that apply to every file:
 | 11 | [English and German (i18n)](../11.i18n-en-de.md) | SHOULD | [x] |
 | 12 | [Client data and infinite lists](../12.client-data-and-infinite-lists.md) | SHOULD | [x] |
 | 13 | [Performance and SEO](../13.performance-and-seo.md) | SHOULD | [x] |
-| 14 | [Storybook and accessibility](../14.storybook-and-a11y.md) | SHOULD | [ ] |
+| 14 | [Storybook and accessibility](../14.storybook-and-a11y.md) | SHOULD | [x] |
 | 15 | [AI output marking](15.ai-output-marking.md) | MUST, by 2026-12-02 | [ ] |
 | 16 | [Codebase hygiene](16.codebase-hygiene.md) | SHOULD | [ ] |
 | 17 | [Security, auth and data retention](17.security-auth-retention.md) | MUST | [ ] |
@@ -90,6 +90,6 @@ The deferred list was split on 2026-11-14. Accepted ADRs and historical specs th
 | Tests: `useItemFavorites`, own Upstash database, change-password journey | 21 |
 | Languages: the root `Toaster` | 20 |
 | UI review: full Playwright pass | 23 |
-| UI review: the other findings, the palette axe violations | 20 |
+| UI review: the other findings | 20 (the palette axe violations were fixed in 14) |
 | UI review: social proof | `todo-before-live.md` |
 | UI review: an email link for another account | 17 |
