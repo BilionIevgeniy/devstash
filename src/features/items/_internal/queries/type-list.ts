@@ -8,7 +8,7 @@ import {
 import type {
   ItemListFilter,
   ItemListSort,
-} from "@/features/items/domain/list-params";
+} from "@/features/items/domain/list/list-params";
 import type { UploadItemRecord } from "@/features/items/types";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/postgres/prisma";

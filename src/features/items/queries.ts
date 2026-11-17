@@ -13,8 +13,8 @@ import {
   itemListOrderBy,
   itemListWhere,
 } from "@/features/items/_internal/queries/type-list";
-import { compareNames } from "@/features/items/domain/favorite-sort";
-import type { ItemListFilter } from "@/features/items/domain/list-params";
+import { compareNames } from "@/features/items/domain/list/favorite-sort";
+import type { ItemListFilter } from "@/features/items/domain/list/list-params";
 import {
   limitSidebarRows,
   SIDEBAR_ITEMS_LIMIT,

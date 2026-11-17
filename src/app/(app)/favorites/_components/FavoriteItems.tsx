@@ -13,7 +13,7 @@ import { ItemRowActions } from "@/features/items/components/cards/ItemRowActions
 import {
   FAVORITE_ITEM_SORTS,
   type FavoriteItemSort,
-} from "@/features/items/domain/favorite-sort";
+} from "@/features/items/domain/list/favorite-sort";
 import type { FavoriteItem } from "@/features/items/types";
 
 interface FavoriteItemsProps {

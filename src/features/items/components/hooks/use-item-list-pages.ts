@@ -10,8 +10,8 @@ import {
   fetchPinnedPage,
 } from "@/features/items/_internal/components/fetch/fetch-item-list-page";
 import { itemKeys } from "@/features/items/components/item-queries";
-import type { FavoriteItemSort } from "@/features/items/domain/favorite-sort";
-import type { PinnedItemSort } from "@/features/items/domain/pinned-items";
+import type { FavoriteItemSort } from "@/features/items/domain/list/favorite-sort";
+import type { PinnedItemSort } from "@/features/items/domain/list/pinned-items";
 import type {
   DashboardItem,
   FavoriteItem,

@@ -1,6 +1,6 @@
-import type { CursorKind } from "@/features/items/domain/list-cursor";
-import type { FavoriteItemSort } from "@/features/items/domain/favorite-sort";
-import type { PinnedItemSort } from "@/features/items/domain/pinned-items";
+import type { CursorKind } from "@/features/items/domain/list/list-cursor";
+import type { FavoriteItemSort } from "@/features/items/domain/list/favorite-sort";
+import type { PinnedItemSort } from "@/features/items/domain/list/pinned-items";
 import type { DashboardItem, FavoriteItem } from "@/features/items/types";
 
 // The endless lists of /favorites and /pinned (ADR 0025): how many rows a page

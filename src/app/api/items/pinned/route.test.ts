@@ -10,7 +10,7 @@ vi.mock("@/lib/observability/logger", () => ({
 }));
 
 import { GET } from "@/app/api/items/pinned/route";
-import { encodeListCursor } from "@/features/items/domain/list-cursor";
+import { encodeListCursor } from "@/features/items/domain/list/list-cursor";
 
 function callGet(query: string) {
   return GET(new Request(`http://localhost/api/items/pinned${query}`));

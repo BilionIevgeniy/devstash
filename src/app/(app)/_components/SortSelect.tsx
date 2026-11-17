@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { FavoriteItemSort } from "@/features/items/domain/favorite-sort";
+import type { FavoriteItemSort } from "@/features/items/domain/list/favorite-sort";
 
 // Shared with the loading.tsx files, so the skeleton is as wide as the control.
 export const SORT_SELECT_WIDTH = "w-36";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { compareNames } from "@/features/items/domain/favorite-sort";
+import { compareNames } from "@/features/items/domain/list/favorite-sort";
 
 // The order of the /pinned groups and of the favorite collections.
 describe("compareNames", () => {

@@ -3,7 +3,7 @@ import "server-only";
 import { toItemTypeInfo } from "@/features/item-types/domain/item-type";
 import { itemTypeSelect } from "@/features/item-types/queries";
 import { copyValueOf } from "@/features/items/domain/item-fields";
-import { ITEMS_PER_PAGE } from "@/features/items/domain/pagination";
+import { ITEMS_PER_PAGE } from "@/features/items/domain/list/pagination";
 import type {
   CollectionItemRecord,
   DashboardItem,

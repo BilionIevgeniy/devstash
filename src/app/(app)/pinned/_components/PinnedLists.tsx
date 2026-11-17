@@ -11,8 +11,8 @@ import { PinnedGroup } from "@/app/(app)/pinned/_components/PinnedGroup";
 import { useScrollRestore } from "@/components/common/hooks/use-scroll-restore";
 import { useSearchParam } from "@/components/common/hooks/use-search-param";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
-import { pendingRemovals } from "@/features/items/domain/list-rows";
-import { PINNED_ITEM_SORTS } from "@/features/items/domain/pinned-items";
+import { pendingRemovals } from "@/features/items/domain/list/list-rows";
+import { PINNED_ITEM_SORTS } from "@/features/items/domain/list/pinned-items";
 import { pinnedItemSortSchema } from "@/features/items/schemas";
 import type { PinnedGroupPage } from "@/features/items/types";
 

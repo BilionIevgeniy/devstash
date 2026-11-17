@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { visibleListItems } from "@/features/items/domain/list-rows";
+import { visibleListItems } from "@/features/items/domain/list/list-rows";
 
 const ITEMS = [{ id: "a" }, { id: "b" }];
 const NOTHING_HIDDEN: ReadonlySet<string> = new Set();

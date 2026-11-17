@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupItemsByType } from "@/features/items/domain/group-by-type";
+import { groupItemsByType } from "@/features/items/domain/list/group-by-type";
 
 const NOTE = { id: "t-note", name: "note", icon: "StickyNote" };
 const IMAGE = { id: "t-image", name: "image", icon: "Image" };

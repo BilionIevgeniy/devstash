@@ -5,7 +5,7 @@ import {
   isFilteredList,
   itemListHref,
   type ItemListParams,
-} from "@/features/items/domain/list-params";
+} from "@/features/items/domain/list/list-params";
 
 const BASE = "/items/snippets";
 

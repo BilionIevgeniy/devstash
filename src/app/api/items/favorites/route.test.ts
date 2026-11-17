@@ -10,7 +10,7 @@ vi.mock("@/lib/observability/logger", () => ({
 }));
 
 import { GET } from "@/app/api/items/favorites/route";
-import { encodeListCursor } from "@/features/items/domain/list-cursor";
+import { encodeListCursor } from "@/features/items/domain/list/list-cursor";
 
 const NEWEST_CURSOR = encodeListCursor("newest", [
   "2026-03-01T10:00:00.000Z",

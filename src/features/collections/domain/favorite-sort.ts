@@ -1,5 +1,5 @@
 import type { FavoriteCollection } from "@/features/collections/types";
-import { compareNames } from "@/features/items/domain/favorite-sort";
+import { compareNames } from "@/features/items/domain/list/favorite-sort";
 
 export const FAVORITE_COLLECTION_SORTS = [
   "newest",

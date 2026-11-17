@@ -11,12 +11,12 @@ import { favoriteKeyset } from "@/features/items/_internal/queries/list-keyset";
 import {
   FAVORITE_ITEM_SORTS,
   type FavoriteItemSort,
-} from "@/features/items/domain/favorite-sort";
-import { FAVORITES_PAGE_SIZE } from "@/features/items/domain/list-pages";
+} from "@/features/items/domain/list/favorite-sort";
+import { FAVORITES_PAGE_SIZE } from "@/features/items/domain/list/list-pages";
 import {
   PINNED_ITEM_SORTS,
   type PinnedItemSort,
-} from "@/features/items/domain/pinned-items";
+} from "@/features/items/domain/list/pinned-items";
 import {
   countFavoriteItems,
   getFavoriteItemPage,

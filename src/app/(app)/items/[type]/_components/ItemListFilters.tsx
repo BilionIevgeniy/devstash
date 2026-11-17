@@ -10,7 +10,7 @@ import {
   ITEM_LIST_SORTS,
   itemListHref,
   type ItemListParams,
-} from "@/features/items/domain/list-params";
+} from "@/features/items/domain/list/list-params";
 
 interface ItemListFiltersProps {
   basePath: string;

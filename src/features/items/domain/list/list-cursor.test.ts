@@ -3,12 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
   decodeListCursor,
   encodeListCursor,
-} from "@/features/items/domain/list-cursor";
+} from "@/features/items/domain/list/list-cursor";
 import {
   FAVORITE_CURSOR_KINDS,
   favoriteCursorValues,
   splitPage,
-} from "@/features/items/domain/list-pages";
+} from "@/features/items/domain/list/list-pages";
 import type { FavoriteItem } from "@/features/items/types";
 
 const DATE_KINDS = FAVORITE_CURSOR_KINDS.newest;

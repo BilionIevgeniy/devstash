@@ -11,16 +11,16 @@ import {
 import {
   compareNames,
   type FavoriteItemSort,
-} from "@/features/items/domain/favorite-sort";
-import { encodeListCursor } from "@/features/items/domain/list-cursor";
+} from "@/features/items/domain/list/favorite-sort";
+import { encodeListCursor } from "@/features/items/domain/list/list-cursor";
 import {
   FAVORITES_PAGE_SIZE,
   favoriteCursorValues,
   PINNED_GROUP_PAGE_SIZE,
   pinnedCursorValues,
   splitPage,
-} from "@/features/items/domain/list-pages";
-import type { PinnedItemSort } from "@/features/items/domain/pinned-items";
+} from "@/features/items/domain/list/list-pages";
+import type { PinnedItemSort } from "@/features/items/domain/list/pinned-items";
 import type {
   DashboardItem,
   FavoriteItem,

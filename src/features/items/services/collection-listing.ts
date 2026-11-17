@@ -8,9 +8,9 @@ import {
 import {
   groupItemsByType,
   type TypeGroup,
-} from "@/features/items/domain/group-by-type";
+} from "@/features/items/domain/list/group-by-type";
 import { typeListing } from "@/features/items/domain/item-fields";
-import { ITEMS_PER_PAGE } from "@/features/items/domain/pagination";
+import { ITEMS_PER_PAGE } from "@/features/items/domain/list/pagination";
 import { toFileListItem } from "@/features/items/services/file-list";
 import { toGalleryItem } from "@/features/items/services/gallery";
 import type {

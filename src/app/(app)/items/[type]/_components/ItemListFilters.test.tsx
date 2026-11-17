@@ -9,7 +9,7 @@ import { ItemListFilters } from "@/app/(app)/items/[type]/_components/ItemListFi
 import {
   DEFAULT_ITEM_LIST_PARAMS,
   type ItemListParams,
-} from "@/features/items/domain/list-params";
+} from "@/features/items/domain/list/list-params";
 
 const BASE = "/items/snippets";
 
