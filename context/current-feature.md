@@ -22,7 +22,7 @@ Acceptance:
 - `npm run format:check` passes and runs in `ci`; a file saved in the editor shows no unrelated diff
 - The second CI run uses the build cache
 - A schema edit without a migration fails the `integration` job
-- lint, typecheck, the tests, the build, integration and e2e stay green after every commit; `git diff -w` of the sweep is empty
+- lint, typecheck, the tests, the build, integration and e2e stay green after every commit; the sweep changes only whitespace and punctuation: `git diff -w --word-diff=porcelain` shows nothing but `;`, quotes, commas and parentheses in code, and the Markdown diff is read in full
 
 ## Notes
 
