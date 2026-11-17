@@ -62,7 +62,7 @@ const result = await sendVerificationLink(parsed.data, origin);
 **Fix**: Add a shared limiter (the stack already lists Redis as optional; Upstash works on Vercel) and apply it in `authorize` (using the `request` argument, which covers both the Server Action and the raw NextAuth route), in the register route and in each action. Use the limiter itself as the atomic cooldown so the race disappears. On Vercel, `x-forwarded-for` is overwritten by the platform, so it is a safe IP source there ([Vercel request headers](https://vercel.com/docs/headers/request-headers)).
 
 ```typescript
-// src/lib/rate-limit.ts
+// src/lib/vendors/rate-limit.ts
 import "server-only";
 
 import { Ratelimit } from "@upstash/ratelimit";
@@ -235,7 +235,7 @@ const emailResult = await sendVerificationLink(
 **Fix**: Build links from a configured, trusted base URL. Put the helper in `src/lib` so both the register route and the actions can import it (the route cannot import from `_internal/`).
 
 ```typescript
-// src/lib/app-url.ts
+// src/lib/http/app-url.ts
 import "server-only";
 
 export function getAppOrigin(): string {

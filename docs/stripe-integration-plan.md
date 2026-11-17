@@ -41,13 +41,13 @@ The cost argument is weaker than ADR 0005 suggests. `getSessionUser` is wrapped 
 
 ### Billing code
 
-| Exists                                                                                   | Missing                                 |
-| ---------------------------------------------------------------------------------------- | --------------------------------------- |
-| `billing/domain/limits.ts`: limits, prices, `isProStatus`, `entitlementsFor`, with tests | `stripe` package, `lib/stripe.ts`       |
-| `billing/queries.ts` `getEntitlements`                                                   | Checkout, portal, webhook               |
-| `billing/components/ProBadge`                                                            | `BillingSection`                        |
-| Homepage pricing built from the constants                                                | Enforcement of the Free limits          |
-|                                                                                          | Stripe cancellation on account deletion |
+| Exists                                                                                   | Missing                                   |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `billing/domain/limits.ts`: limits, prices, `isProStatus`, `entitlementsFor`, with tests | `stripe` package, `lib/vendors/stripe.ts` |
+| `billing/queries.ts` `getEntitlements`                                                   | Checkout, portal, webhook                 |
+| `billing/components/ProBadge`                                                            | `BillingSection`                          |
+| Homepage pricing built from the constants                                                | Enforcement of the Free limits            |
+|                                                                                          | Stripe cancellation on account deletion   |
 
 ## 3. Feature gating
 
@@ -71,8 +71,8 @@ The settings page (`app/(app)/settings/page.tsx`) composes `EditorPreferencesSec
 - **Routes:** thin. `failure()` helper, `{ success, data, error }`, `try/catch` with `await logger.error`, see `api/auth/register/route.ts`. The proxy matcher covers pages only, so `/api/webhooks/stripe` needs no change there
 - **Actions:** parse with a schema, `getSessionUser()` outside the `try`, one service call, `refresh()`, a local `failure()`. `redirect()` stays outside the `try` (`delete-account.ts`). `getAppOrigin()` is read in the action inside the `try` and passed in (`password-reset.ts`)
 - **Client:** `useTransition` with `try` and `unstable_rethrow(error)` first in the catch (`CreateItemDialog.tsx`)
-- **Env:** read lazily where used, never at module load; `.env.example` documents each one. `lib/r2.ts` is the model for a vendor client
-- **Vendors:** the lint rule `VENDOR_SDKS` has no type exception, so `import type Stripe from "stripe"` fails outside `lib`. `lib/stripe.ts` re-exports the types `billing` needs
+- **Env:** read lazily where used, never at module load; `.env.example` documents each one. `lib/vendors/r2.ts` is the model for a vendor client
+- **Vendors:** the lint rule `VENDOR_SDKS` has no type exception, so `import type Stripe from "stripe"` fails outside `lib`. `lib/vendors/stripe.ts` re-exports the types `billing` needs
 - **Next.js:** `redirect()` accepts absolute URLs and works from a Server Action (`node_modules/next/dist/docs/01-app/03-api-reference/04-functions/redirect.md`)
 
 ## 5. Design decisions
@@ -157,7 +157,7 @@ A successful external redirect from a Server Action reaches the client as a reje
 
 ### Free limits under parallel requests
 
-Count and insert in one transaction does not stop two parallel requests at Postgres's default isolation. `lib/advisory-lock.ts` takes `pg_advisory_xact_lock(hashtextextended(key, 0))`, which is released at commit and safe through Neon's transaction-mode pooler. It is called with `$executeRaw`, since the function returns `void`. Pro users skip the lock and the count.
+Count and insert in one transaction does not stop two parallel requests at Postgres's default isolation. `lib/postgres/advisory-lock.ts` takes `pg_advisory_xact_lock(hashtextextended(key, 0))`, which is released at commit and safe through Neon's transaction-mode pooler. It is called with `$executeRaw`, since the function returns `void`. Pro users skip the lock and the count.
 
 ### Stale Stripe customer
 
@@ -180,8 +180,8 @@ Full steps and code are in the specs.
 
 | Create                                               | Purpose                                                   |
 | ---------------------------------------------------- | --------------------------------------------------------- |
-| `src/lib/stripe.ts`                                  | Client, event verification, error checks, type re-exports |
-| `src/lib/stripe.test.ts`                             | The error checks against real `Stripe.errors` instances   |
+| `src/lib/vendors/stripe.ts`                          | Client, event verification, error checks, type re-exports |
+| `src/lib/vendors/stripe.test.ts`                     | The error checks against real `Stripe.errors` instances   |
 | `src/features/billing/schemas.ts`                    | `planSchema`, `checkoutSessionIdSchema`                   |
 | `src/features/billing/types.ts`                      | `BillingOverview`                                         |
 | `src/features/billing/_internal/queries.ts`          | `getStripeCustomerId`                                     |
@@ -189,20 +189,20 @@ Full steps and code are in the specs.
 | `src/features/billing/actions/checkout.ts`           | `startCheckout`, `openBillingPortal`                      |
 | `docs/adr/0011-past-due-grace-and-no-event-table.md` | Supersedes ADR 0005                                       |
 
-| Modify                                                                                           | Change                                                                  |
-| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| `billing/domain/limits.ts` and test                                                              | `past_due` is Pro, Free limit functions, `billingOverviewFor`           |
-| `billing/queries.ts`                                                                             | `getBillingOverview`                                                    |
-| `eslint.config.mjs`                                                                              | `VENDOR_SDKS` as an anchored regex, so it does not match `@/lib/stripe` |
-| `.env.example`                                                                                   | Remove `STRIPE_PUBLISHABLE_KEY`                                         |
-| `docs/adr/0005-…`, `docs/adr/README.md`                                                          | Status only                                                             |
-| `context/architecture-rules.md`, `docs/modules.md`, `docs/architecture.md`, `docs/arc42-lite.md` | No `StripeEvent`; `past_due`; Stripe client exists                      |
+| Modify                                                                                           | Change                                                                          |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| `billing/domain/limits.ts` and test                                                              | `past_due` is Pro, Free limit functions, `billingOverviewFor`                   |
+| `billing/queries.ts`                                                                             | `getBillingOverview`                                                            |
+| `eslint.config.mjs`                                                                              | `VENDOR_SDKS` as an anchored regex, so it does not match `@/lib/vendors/stripe` |
+| `.env.example`                                                                                   | Remove `STRIPE_PUBLISHABLE_KEY`                                                 |
+| `docs/adr/0005-…`, `docs/adr/README.md`                                                          | Status only                                                                     |
+| `context/architecture-rules.md`, `docs/modules.md`, `docs/architecture.md`, `docs/arc42-lite.md` | No `StripeEvent`; `past_due`; Stripe client exists                              |
 
 ### Phase 2
 
 | Create                                                       | Purpose                                  |
 | ------------------------------------------------------------ | ---------------------------------------- |
-| `src/lib/advisory-lock.ts`                                   | Transaction lock                         |
+| `src/lib/postgres/advisory-lock.ts`                          | Transaction lock                         |
 | `src/app/api/webhooks/stripe/route.ts`                       | Verify, one service call                 |
 | `billing/domain/subscription.ts` and test                    | `subscriptionWrite`, status classes      |
 | `billing/services/webhook.ts`                                | Event to subscription                    |

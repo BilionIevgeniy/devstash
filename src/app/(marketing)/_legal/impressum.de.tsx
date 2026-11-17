@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { PRIVACY_PATH } from "@/lib/legal-paths";
+import { PRIVACY_PATH } from "@/lib/http/legal-paths";
 
 import { OperatorContact } from "../_components/OperatorContact";
 import type { LegalContent } from "./types";

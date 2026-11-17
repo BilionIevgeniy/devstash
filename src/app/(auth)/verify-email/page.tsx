@@ -7,7 +7,7 @@ import { ResendVerificationButton } from "@/features/auth/components/ResendVerif
 import { Button } from "@/components/ui/button";
 import { isVerificationTokenValid } from "@/features/auth/queries";
 import { emailLinkParamsSchema } from "@/features/auth/schemas";
-import { getErrorText } from "@/lib/error-text";
+import { getErrorText } from "@/lib/errors/error-text";
 
 export default async function VerifyEmailPage({
   searchParams,

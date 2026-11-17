@@ -6,7 +6,7 @@ import {
   consumeRateLimit,
   RateLimitUnavailableError,
   type RateLimitPolicy,
-} from "@/lib/rate-limit";
+} from "@/lib/vendors/rate-limit";
 
 export type EmailSendCheck =
   | { status: "allowed" }

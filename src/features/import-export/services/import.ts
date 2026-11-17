@@ -19,10 +19,10 @@ import type {
 } from "@/features/import-export/types";
 import { getItemIdentities } from "@/features/items/queries/import";
 import { createUserItem } from "@/features/items/services/create-item";
-import type { OperationResult } from "@/lib/action-result";
+import type { OperationResult } from "@/lib/errors/action-result";
 import { toErrorRef, type ErrorRef } from "@/i18n/error-codes";
-import { logger } from "@/lib/logger";
-import { consumeRateLimit } from "@/lib/rate-limit";
+import { logger } from "@/lib/observability/logger";
+import { consumeRateLimit } from "@/lib/vendors/rate-limit";
 
 export type ImportBatchResult<T> =
   | { status: "ok"; data: T }

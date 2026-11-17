@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { Logo } from "@/components/common/Logo";
-import { IMPRINT_PATH, PRIVACY_PATH } from "@/lib/legal-paths";
+import { IMPRINT_PATH, PRIVACY_PATH } from "@/lib/http/legal-paths";
 
 const LEGAL_LINK =
   "inline-flex min-h-11 items-center underline underline-offset-4 transition-colors hover:text-foreground";

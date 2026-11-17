@@ -13,8 +13,13 @@ import {
   type FileKind,
 } from "@/features/files/domain/file-rules";
 import type { FileUrls } from "@/features/files/types";
-import { fail, ok, type OperationResult } from "@/lib/action-result";
-import { deleteObject, deletePrefix, headObject, signGetUrl } from "@/lib/r2";
+import { fail, ok, type OperationResult } from "@/lib/errors/action-result";
+import {
+  deleteObject,
+  deletePrefix,
+  headObject,
+  signGetUrl,
+} from "@/lib/vendors/r2";
 
 export type ConfirmUploadResult = OperationResult<{ size: number }>;
 

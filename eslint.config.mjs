@@ -177,7 +177,7 @@ const domainZone = {
 };
 
 // Vendor SDKs are reached only through a client in src/lib. Anchored, because a
-// bare "stripe" pattern would also match our own wrapper @/lib/stripe.
+// bare "stripe" pattern would also match our own wrapper @/lib/vendors/stripe.
 const VENDOR_SDKS = {
   regex: "^(resend|stripe|openai)(/|$)|^(@upstash|@aws-sdk|@sentry)/",
   message:
@@ -215,7 +215,7 @@ const SHARED_SYNTAX_BANS = [
     selector:
       "MemberExpression[computed=true][property.value=0][object.type='MemberExpression'][object.property.name='issues']",
     message:
-      "Read the failure of a refused input with firstIssue from @/lib/validation.",
+      "Read the failure of a refused input with firstIssue from @/lib/errors/validation.",
   },
   {
     selector: "Literal[value='Something went wrong. Please try again.']",
@@ -377,7 +377,7 @@ const eslintConfig = defineConfig([
     ],
     rules: {
       "no-restricted-imports": restrictImports({
-        paths: [{ name: "@/lib/prisma", message: NO_PRISMA_MESSAGE }],
+        paths: [{ name: "@/lib/postgres/prisma", message: NO_PRISMA_MESSAGE }],
         patterns: [
           {
             group: ["@/generated/prisma", "@/generated/prisma/*"],
@@ -405,7 +405,7 @@ const eslintConfig = defineConfig([
     // The shared bans for all of src. Comes before the blocks below, which
     // set the rule again for their files with their own selectors added.
     files: ["src/**/*.{ts,tsx}"],
-    ignores: ["src/**/*.test.{ts,tsx}", "src/lib/validation.ts"],
+    ignores: ["src/**/*.test.{ts,tsx}", "src/lib/errors/validation.ts"],
     rules: {
       "no-restricted-syntax": restrictSyntax(),
     },
@@ -502,10 +502,10 @@ const eslintConfig = defineConfig([
     rules: { "max-lines-per-function": maxFunctionLines(80) },
   },
   {
-    // One place writes a log line, src/lib/logger.ts: it keeps an email, a title
+    // One place writes a log line, src/lib/observability/logger.ts: it keeps an email, a title
     // or a raw error out of the logs and sends the caught errors to Sentry.
     files: ["src/**/*.{ts,tsx}"],
-    ignores: ["src/lib/logger.ts", "src/**/*.test.{ts,tsx}"],
+    ignores: ["src/lib/observability/logger.ts", "src/**/*.test.{ts,tsx}"],
     rules: { "no-console": "error" },
   },
   {

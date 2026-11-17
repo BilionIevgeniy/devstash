@@ -10,7 +10,7 @@ import {
   setUserCollectionFavorite,
   updateUserCollection,
 } from "@/features/collections/services/collection";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // A with B's collection id: "no longer exists", and B's rows are unchanged.
 // The owner's call goes through, so the refusal is about the owner.

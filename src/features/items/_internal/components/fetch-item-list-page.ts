@@ -5,7 +5,7 @@ import type {
   FavoriteItem,
   ItemListPage,
 } from "@/features/items/types";
-import { readRouteData } from "@/lib/route-error";
+import { readRouteData } from "@/lib/errors/route-error";
 
 // A row as JSON writes it: its dates as ISO strings.
 type Json<T> = {

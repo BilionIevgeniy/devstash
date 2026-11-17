@@ -1,6 +1,6 @@
 import "server-only";
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // The caller's collection for each of these names. Names are not unique, so
 // the oldest one wins, the same one on every run.

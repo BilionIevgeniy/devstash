@@ -15,7 +15,7 @@ requireTestDatabase(process.env.DATABASE_URL);
 // DATABASE_URL comes from vitest.integration.config.mts. The mocks are hoisted
 // above the guard; they import nothing real, so the order does not matter.
 
-vi.mock("@/lib/rate-limit", () => {
+vi.mock("@/lib/vendors/rate-limit", () => {
   class RateLimitUnavailableError extends Error {
     constructor(options?: ErrorOptions) {
       super("Rate limiting is unavailable", options);
@@ -34,7 +34,7 @@ vi.mock("@/lib/rate-limit", () => {
 });
 
 // No object exists until a test says so with `headObject`.
-vi.mock("@/lib/r2", () => ({
+vi.mock("@/lib/vendors/r2", () => ({
   signPutUrl: vi.fn(async (key: string) => `https://r2.test/put/${key}`),
   signGetUrl: vi.fn(async (key: string) => `https://r2.test/get/${key}`),
   headObject: vi.fn(async () => null),
@@ -42,13 +42,13 @@ vi.mock("@/lib/r2", () => ({
   deletePrefix: vi.fn(async () => {}),
 }));
 
-vi.mock("@/lib/email", () => ({
+vi.mock("@/lib/vendors/email", () => ({
   sendEmail: vi.fn(async () => ({ success: true, data: null, error: null })),
 }));
 
 // A test that reaches Stripe sets `getStripe` to the client it needs; the
 // default throws, so an unplanned call fails the test loudly.
-vi.mock("@/lib/stripe", () => ({
+vi.mock("@/lib/vendors/stripe", () => ({
   getStripe: vi.fn(() => {
     throw new Error("Stripe is mocked: set getStripe in the test");
   }),
@@ -61,7 +61,7 @@ vi.mock("@/lib/stripe", () => ({
   isStripeCustomerMissing: vi.fn(() => false),
 }));
 
-vi.mock("@/lib/openai", () => {
+vi.mock("@/lib/vendors/openai", () => {
   class AiOutputError extends Error {
     readonly reason: string;
     constructor(reason: string, options?: ErrorOptions) {

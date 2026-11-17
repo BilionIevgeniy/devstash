@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { ItemIdentity } from "@/features/items/types";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // The caller's items with one of these titles, as an import compares them to
 // decide what is already there.

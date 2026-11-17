@@ -1,7 +1,7 @@
 import "client-only";
 
 import type { ItemCollectionRef } from "@/features/items/types";
-import { readRouteData } from "@/lib/route-error";
+import { readRouteData } from "@/lib/errors/route-error";
 
 // The browser side of GET /api/collections. A failure (signed out, a server
 // error) is thrown as a RouteError for the Query retry rule; an empty list is

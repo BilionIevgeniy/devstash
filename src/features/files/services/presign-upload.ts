@@ -11,9 +11,9 @@ import {
 } from "@/features/files/domain/file-rules";
 import type { RequestUploadInput } from "@/features/files/schemas";
 import type { PresignedUpload } from "@/features/files/types";
-import { ok, fail, type OperationResult } from "@/lib/action-result";
-import { signPutUrl } from "@/lib/r2";
-import { consumeRateLimit } from "@/lib/rate-limit";
+import { ok, fail, type OperationResult } from "@/lib/errors/action-result";
+import { signPutUrl } from "@/lib/vendors/r2";
+import { consumeRateLimit } from "@/lib/vendors/rate-limit";
 
 const UPLOAD_URL_TTL_SECONDS = 10 * 60;
 

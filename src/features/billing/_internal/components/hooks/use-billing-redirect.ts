@@ -3,7 +3,7 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 
 import { useErrorText } from "@/components/common/hooks/use-error-text";
-import type { ActionResult } from "@/lib/action-result";
+import type { ActionResult } from "@/lib/errors/action-result";
 
 // A successful redirect to Stripe arrives as a rejection and the page then
 // navigates away, so the error must go on and isPending holds until unload.

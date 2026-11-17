@@ -11,10 +11,10 @@ import type {
   CollectionImportData,
   ImportSummary,
 } from "@/features/import-export/types";
-import { fail, ok, type ActionResult } from "@/lib/action-result";
-import { logger } from "@/lib/logger";
-import { RateLimitUnavailableError } from "@/lib/rate-limit";
-import { firstIssue } from "@/lib/validation";
+import { fail, ok, type ActionResult } from "@/lib/errors/action-result";
+import { logger } from "@/lib/observability/logger";
+import { RateLimitUnavailableError } from "@/lib/vendors/rate-limit";
+import { firstIssue } from "@/lib/errors/validation";
 
 // One batch, one service call. Nothing is refreshed here: the browser sends
 // the batches one after another and refreshes the page once, at the end.

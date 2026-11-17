@@ -12,7 +12,7 @@ import { LockedFileList } from "@/features/items/components/LockedFileList";
 import { LockedFileListSkeleton } from "@/features/items/components/LockedFileListSkeleton";
 import { LOCKED_FILES_PATH } from "@/features/items/domain/item-fields";
 import { getUserLockedFiles } from "@/features/items/services/locked-files";
-import { parsePage } from "@/lib/pagination";
+import { parsePage } from "@/lib/postgres/pagination";
 
 async function LockedFilesContent({ page }: { page: number }) {
   const { id: userId } = await getSessionUser();

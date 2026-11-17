@@ -7,7 +7,7 @@ import {
 } from "@/features/items/_internal/queries";
 import { signItemFile } from "@/features/items/_internal/services/file-urls";
 import type { LockedFile, LockedFileRecord } from "@/features/items/types";
-import type { Paginated } from "@/lib/pagination";
+import type { Paginated } from "@/lib/postgres/pagination";
 
 const NOTHING_LOCKED: Paginated<LockedFile> = {
   items: [],

@@ -17,10 +17,13 @@ import {
 } from "@/features/auth/domain/rate-limits";
 import { callbackPathSchema, signInSchema } from "@/features/auth/schemas";
 import type { AuthActionState } from "@/features/auth/types";
-import { getClientIp } from "@/lib/client-ip";
-import { getIpRateLimitStatus, getRateLimitStatus } from "@/lib/rate-limit";
-import { fail, ok, type Failure } from "@/lib/action-result";
-import { firstIssue } from "@/lib/validation";
+import { getClientIp } from "@/lib/http/client-ip";
+import {
+  getIpRateLimitStatus,
+  getRateLimitStatus,
+} from "@/lib/vendors/rate-limit";
+import { fail, ok, type Failure } from "@/lib/errors/action-result";
+import { firstIssue } from "@/lib/errors/validation";
 
 const HOME_URL = "/";
 const SETTINGS_URL = "/settings";

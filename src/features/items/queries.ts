@@ -27,7 +27,7 @@ import type {
   SidebarItems,
 } from "@/features/items/types";
 import type { Prisma } from "@/generated/prisma/client";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 const DASHBOARD_RECENT_ITEMS_LIMIT = 10;
 // Matches the planned item limit of the Free plan.

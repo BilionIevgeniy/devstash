@@ -19,7 +19,7 @@ const {
 }));
 const getEntitlements = vi.hoisted(() => vi.fn());
 vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
-vi.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/postgres/prisma", () => ({
   prisma: {
     $executeRaw: executeRaw,
     item: { update, delete: remove, findFirst },

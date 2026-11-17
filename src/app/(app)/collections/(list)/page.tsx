@@ -6,7 +6,7 @@ import { PaginationNav } from "@/components/common/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { CollectionCard } from "@/features/collections/components/CollectionCard";
 import { getUserCollections } from "@/features/collections/queries";
-import { parsePage } from "@/lib/pagination";
+import { parsePage } from "@/lib/postgres/pagination";
 
 async function CollectionsContent({ page }: { page: number }) {
   const t = await getTranslations("pages.collections");

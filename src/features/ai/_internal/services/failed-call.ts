@@ -1,9 +1,9 @@
 import "server-only";
 
 import { AI_FAILURE_CODES } from "@/features/ai/domain/messages";
-import { fail, type Failure } from "@/lib/action-result";
-import { logger } from "@/lib/logger";
-import { aiErrorKind, isAiSpendError } from "@/lib/openai";
+import { fail, type Failure } from "@/lib/errors/action-result";
+import { logger } from "@/lib/observability/logger";
+import { aiErrorKind, isAiSpendError } from "@/lib/vendors/openai";
 
 // A failure of an OpenAI call that the user can act on, or wait out, is
 // answered with its own code. Anything else (an Upstash outage, a bug) throws

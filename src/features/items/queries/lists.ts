@@ -28,7 +28,7 @@ import type {
   ItemListPage,
   PinnedGroupPage,
 } from "@/features/items/types";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // The endless lists of /favorites and /pinned (ADR 0025): one page at a time,
 // read with one row more than the page holds to know whether more exist. The

@@ -14,7 +14,7 @@ Spec: `context/features/16.codebase-hygiene.md`. Behaviour and UI do not change 
 - **The build cache in CI**: `actions/cache` for `.next/cache` in `.github/workflows/ci.yml`, in `ci` before `npm run build` and in `e2e` before Playwright builds; key on `package-lock.json` and the sources, `restore-keys` on the lockfile hash; the second run's log shows no "no build cache" warning
 - **Schema without its migration fails CI**: a step in the `integration` job that compares the migrations with `schema.prisma` and exits non-zero on a difference; proved once with a deliberate schema edit, then reverted; a new ADR as addendum to ADR 0013
 - **The seed**: `prisma/seed-data.ts` catches up with `20261030120000_demo_items_content` (or the seed creates only the user); the demo user stays Free with 49 items and 2 collections; the README says why the seed differs from production
-- **Topic subfolders**, one commit per folder, no `index.ts`: `git mv` with the colocated tests, then imports, `vi.mock` paths, stories, the paths in `eslint.config.mjs`, the `@/lib/sentry` alias in `vitest.shared.mts`; a rule in `architecture-rules.md`: "a folder past about 12 files is split by topic, without `index.ts`"
+- **Topic subfolders**, one commit per folder, no `index.ts`: `git mv` with the colocated tests, then imports, `vi.mock` paths, stories, the paths in `eslint.config.mjs`, the `@/lib/observability/sentry` alias in `vitest.shared.mts`; a rule in `architecture-rules.md`: "a folder past about 12 files is split by topic, without `index.ts`"
 - **The copies jscpd found**, each judged by `code-reviewer` first: `PasswordFields` for `ConfirmEmailForm` and `ResetPasswordForm`; one component for `StatsCards` and `UsageStats`
 
 Acceptance:

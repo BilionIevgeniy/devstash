@@ -12,8 +12,8 @@ import {
 import { EXPORT_BY_USER } from "@/features/import-export/domain/limits";
 import { exportLinksExpireAt } from "@/features/items/domain/export";
 import { getUserExportItemPage } from "@/features/items/services/export";
-import { logger } from "@/lib/logger";
-import { consumeRateLimit } from "@/lib/rate-limit";
+import { logger } from "@/lib/observability/logger";
+import { consumeRateLimit } from "@/lib/vendors/rate-limit";
 
 export type ExportResult =
   | { status: "ok"; fileName: string; stream: ReadableStream<Uint8Array> }

@@ -5,7 +5,7 @@ import {
   type Tenants,
 } from "../../../../test/integration/fixtures";
 import { searchUserCollections } from "@/features/collections/queries/search";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // Read-only: one seed for the file. A and B both have "React Patterns" and
 // "Favorites", so a leak across users would show up as two rows.

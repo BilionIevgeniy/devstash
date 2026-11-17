@@ -22,9 +22,9 @@ import {
   updateUserItem,
 } from "@/features/items/services/item";
 import type { ItemDetailJson } from "@/features/items/types";
-import { fail, ok, type ActionResult } from "@/lib/action-result";
-import { logger } from "@/lib/logger";
-import { firstIssue } from "@/lib/validation";
+import { fail, ok, type ActionResult } from "@/lib/errors/action-result";
+import { logger } from "@/lib/observability/logger";
+import { firstIssue } from "@/lib/errors/validation";
 
 type UpdateItemActionResult = ActionResult<ItemDetailJson>;
 

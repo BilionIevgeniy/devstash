@@ -18,14 +18,14 @@ import {
 } from "@/features/auth/domain/rate-limits";
 import { getSessionVersion } from "@/features/auth/queries";
 import { credentialsSchema } from "@/features/auth/schemas";
-import { getClientIp } from "@/lib/client-ip";
-import { logger } from "@/lib/logger";
-import { prisma } from "@/lib/prisma";
+import { getClientIp } from "@/lib/http/client-ip";
+import { logger } from "@/lib/observability/logger";
+import { prisma } from "@/lib/postgres/prisma";
 import {
   consumeIpRateLimit,
   consumeRateLimit,
   resetRateLimit,
-} from "@/lib/rate-limit";
+} from "@/lib/vendors/rate-limit";
 import authConfig from "./auth.config";
 import { authLogger } from "./auth-logger";
 import { getForeignSignInRedirect } from "./foreign-sign-in";

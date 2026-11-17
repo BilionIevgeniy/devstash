@@ -5,14 +5,14 @@ import { syncSubscription } from "@/features/billing/_internal/services/subscrip
 import { stripeIdOf } from "@/features/billing/domain/subscription";
 import { getEntitlements } from "@/features/billing/queries";
 import type { Plan } from "@/features/billing/schemas";
-import { fail, ok, type OperationResult } from "@/lib/action-result";
-import { logger } from "@/lib/logger";
-import { prisma } from "@/lib/prisma";
+import { fail, ok, type OperationResult } from "@/lib/errors/action-result";
+import { logger } from "@/lib/observability/logger";
+import { prisma } from "@/lib/postgres/prisma";
 import {
   getStripe,
   isStripeCustomerMissing,
   isStripeNotFound,
-} from "@/lib/stripe";
+} from "@/lib/vendors/stripe";
 
 export type RedirectResult = OperationResult<{ url: string }>;
 

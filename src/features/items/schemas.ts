@@ -31,7 +31,7 @@ import {
 } from "@/features/items/domain/list-pages";
 import { PINNED_ITEM_SORTS } from "@/features/items/domain/pinned-items";
 import type { ErrorCode } from "@/i18n/error-codes";
-import { parsePage } from "@/lib/pagination";
+import { parsePage } from "@/lib/postgres/pagination";
 
 // One code per kind: the kind is a word inside the sentence.
 const UPLOAD_FIRST = {

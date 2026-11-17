@@ -14,8 +14,8 @@ import {
   setUserItemFavorite,
   setUserItemPin,
 } from "@/features/items/services/item";
-import { headObject } from "@/lib/r2";
-import { prisma } from "@/lib/prisma";
+import { headObject } from "@/lib/vendors/r2";
+import { prisma } from "@/lib/postgres/prisma";
 
 // Two users with the same shape of data, made through the services:
 // A on the Free plan, B on Pro. Every cross-user test reads or writes with A

@@ -16,8 +16,8 @@ import type {
   SearchableItemPage,
 } from "@/features/items/types";
 import type { Prisma } from "@/generated/prisma/client";
-import { orderByIds } from "@/lib/order-by-ids";
-import { prisma } from "@/lib/prisma";
+import { orderByIds } from "@/lib/postgres/order-by-ids";
+import { prisma } from "@/lib/postgres/prisma";
 
 // The rows the command palette shows (ADR 0018): what it searches and what it
 // lists for an empty query.

@@ -1,4 +1,4 @@
-import { initSentryClient } from "@/lib/sentry";
+import { initSentryClient } from "@/lib/observability/sentry";
 
 // Runs in the browser after the HTML is loaded and before React hydrates. Only
 // synchronous top-level code is certain to finish by then, which is why the

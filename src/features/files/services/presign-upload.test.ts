@@ -6,8 +6,8 @@ const { getEntitlements, signPutUrl, consumeRateLimit } = vi.hoisted(() => ({
   consumeRateLimit: vi.fn(),
 }));
 vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
-vi.mock("@/lib/r2", () => ({ signPutUrl }));
-vi.mock("@/lib/rate-limit", () => ({ consumeRateLimit }));
+vi.mock("@/lib/vendors/r2", () => ({ signPutUrl }));
+vi.mock("@/lib/vendors/rate-limit", () => ({ consumeRateLimit }));
 
 import { presignUpload } from "@/features/files/services/presign-upload";
 

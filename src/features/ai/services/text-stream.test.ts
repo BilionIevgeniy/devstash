@@ -7,11 +7,14 @@ const { consumeRateLimit, flushSentry, getEntitlements, streamText } =
     getEntitlements: vi.fn(),
     streamText: vi.fn(),
   }));
-vi.mock("@/lib/sentry", () => ({ captureSafeError: vi.fn(), flushSentry }));
-vi.mock("@/lib/rate-limit", () => ({ consumeRateLimit }));
+vi.mock("@/lib/observability/sentry", () => ({
+  captureSafeError: vi.fn(),
+  flushSentry,
+}));
+vi.mock("@/lib/vendors/rate-limit", () => ({ consumeRateLimit }));
 vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
-vi.mock("@/lib/openai", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/lib/openai")>()),
+vi.mock("@/lib/vendors/openai", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/vendors/openai")>()),
   streamText,
 }));
 
@@ -22,7 +25,7 @@ import {
   startTextStream,
   type TextStreamOperation,
 } from "@/features/ai/services/text-stream";
-import { AiOutputError } from "@/lib/openai";
+import { AiOutputError } from "@/lib/vendors/openai";
 
 const allowed = { success: true, remaining: 10, reset: Date.now() };
 const request: TextStreamOperation = {

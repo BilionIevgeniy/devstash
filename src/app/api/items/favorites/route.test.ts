@@ -5,7 +5,7 @@ const getFavoriteItemPage = vi.hoisted(() => vi.fn());
 const logError = vi.hoisted(() => vi.fn());
 vi.mock("@/features/auth/nextauth/auth", () => ({ auth }));
 vi.mock("@/features/items/queries/lists", () => ({ getFavoriteItemPage }));
-vi.mock("@/lib/logger", () => ({
+vi.mock("@/lib/observability/logger", () => ({
   logger: { error: logError, warn: vi.fn(), info: vi.fn() },
 }));
 

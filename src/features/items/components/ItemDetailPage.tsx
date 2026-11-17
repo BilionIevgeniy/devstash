@@ -12,7 +12,7 @@ import { ItemDetailView } from "@/features/items/_internal/components/ItemDetail
 import { deleteItem } from "@/features/items/actions/item";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
-import { isNavigationError } from "@/lib/navigation-error";
+import { isNavigationError } from "@/lib/errors/navigation-error";
 
 interface ItemDetailPageProps {
   item: DashboardItem;

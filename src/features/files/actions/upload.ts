@@ -4,9 +4,9 @@ import { getSessionUser } from "@/features/auth/nextauth/session";
 import { requestUploadSchema } from "@/features/files/schemas";
 import { presignUpload } from "@/features/files/services/presign-upload";
 import type { PresignedUpload } from "@/features/files/types";
-import { fail, ok, type ActionResult } from "@/lib/action-result";
-import { logger } from "@/lib/logger";
-import { firstIssue } from "@/lib/validation";
+import { fail, ok, type ActionResult } from "@/lib/errors/action-result";
+import { logger } from "@/lib/observability/logger";
+import { firstIssue } from "@/lib/errors/validation";
 
 // Signs the PUT; the browser then sends the file to R2 itself.
 export async function requestUpload(

@@ -9,8 +9,8 @@ import { FREE_ITEM_LIMIT } from "@/features/billing/domain/limits";
 import { contentTypeFor } from "@/features/items/domain/item-fields";
 import { createItemSchema } from "@/features/items/schemas";
 import { createUserItem } from "@/features/items/services/create-item";
-import { prisma } from "@/lib/prisma";
-import { headObject } from "@/lib/r2";
+import { prisma } from "@/lib/postgres/prisma";
+import { headObject } from "@/lib/vendors/r2";
 
 let t: Tenants;
 

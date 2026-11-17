@@ -4,8 +4,8 @@ import { toast } from "sonner";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import type { ToggleOptions } from "@/features/items/components/hooks/use-item-drawer";
 import type { PlainErrorCode } from "@/i18n/error-codes";
-import type { ActionResult } from "@/lib/action-result";
-import { isNavigationError } from "@/lib/navigation-error";
+import type { ActionResult } from "@/lib/errors/action-result";
+import { isNavigationError } from "@/lib/errors/navigation-error";
 
 const NO_OVERRIDES: ReadonlyMap<string, boolean> = new Map();
 

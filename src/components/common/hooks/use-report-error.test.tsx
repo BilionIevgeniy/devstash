@@ -2,9 +2,9 @@ import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { useReportError } from "@/components/common/hooks/use-report-error";
-import { logger } from "@/lib/logger";
+import { logger } from "@/lib/observability/logger";
 
-vi.mock("@/lib/logger", () => ({ logger: { error: vi.fn() } }));
+vi.mock("@/lib/observability/logger", () => ({ logger: { error: vi.fn() } }));
 
 const MESSAGE = "A page failed to render in the browser";
 

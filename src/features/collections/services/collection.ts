@@ -9,9 +9,12 @@ import type {
   CreateCollectionInput,
   UpdateCollectionInput,
 } from "@/features/collections/schemas";
-import { fail, ok, type OperationResult } from "@/lib/action-result";
-import { LOCKED_TRANSACTION, lockForTransaction } from "@/lib/advisory-lock";
-import { prisma } from "@/lib/prisma";
+import { fail, ok, type OperationResult } from "@/lib/errors/action-result";
+import {
+  LOCKED_TRANSACTION,
+  lockForTransaction,
+} from "@/lib/postgres/advisory-lock";
+import { prisma } from "@/lib/postgres/prisma";
 
 // Pro skips the lock and the count. Two parallel creates of a Free user wait
 // here, so they cannot both pass the limit.

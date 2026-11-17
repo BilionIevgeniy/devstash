@@ -6,7 +6,7 @@ const { count, findFirst, findMany, groupBy } = vi.hoisted(() => ({
   findMany: vi.fn(),
   groupBy: vi.fn(),
 }));
-vi.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/postgres/prisma", () => ({
   prisma: { item: { count, findFirst, findMany, groupBy } },
 }));
 

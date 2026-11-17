@@ -8,7 +8,7 @@ import {
 } from "@/features/files/domain/file-rules";
 import type { UploadedFile } from "@/features/files/types";
 import type { ErrorRef } from "@/i18n/error-codes";
-import { isNavigationError } from "@/lib/navigation-error";
+import { isNavigationError } from "@/lib/errors/navigation-error";
 
 // The router is already leaving the page (a session that ended).
 const NAVIGATING = "navigating";

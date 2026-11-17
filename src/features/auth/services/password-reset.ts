@@ -19,11 +19,11 @@ import {
   isPasswordResetTokenValid,
 } from "@/features/auth/queries";
 import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
-import { fail, ok, type OperationResult } from "@/lib/action-result";
-import { sendEmail } from "@/lib/email";
+import { fail, ok, type OperationResult } from "@/lib/errors/action-result";
+import { sendEmail } from "@/lib/vendors/email";
 import type { Locale } from "@/i18n/config";
-import { logger } from "@/lib/logger";
-import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/observability/logger";
+import { prisma } from "@/lib/postgres/prisma";
 
 async function createPasswordResetToken(email: string): Promise<string> {
   const identifier = getPasswordResetIdentifier(email);

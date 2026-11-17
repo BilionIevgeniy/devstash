@@ -8,7 +8,7 @@ import { getAccountState } from "@/features/auth/queries";
 import { checkEmailSend } from "@/features/auth/services/email-rate-limit";
 import type { Locale } from "@/i18n/config";
 import { sendVerificationLink } from "@/features/auth/services/email-verification";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 interface RegistrationInput {
   name: string;

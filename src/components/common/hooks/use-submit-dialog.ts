@@ -4,7 +4,7 @@ import { toast } from "sonner";
 
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import type { PlainErrorCode } from "@/i18n/error-codes";
-import type { OperationResult } from "@/lib/action-result";
+import type { OperationResult } from "@/lib/errors/action-result";
 
 export interface RunOptions {
   /** Runs in the transition: the dialog closes in the commit of the fresh page. */

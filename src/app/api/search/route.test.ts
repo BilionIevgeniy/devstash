@@ -6,15 +6,15 @@ const { auth, searchPalette } = vi.hoisted(() => ({
 }));
 vi.mock("@/features/auth/nextauth/auth", () => ({ auth }));
 vi.mock("@/features/search/services/search", () => ({ searchPalette }));
-vi.mock("@/lib/logger", () => ({
+vi.mock("@/lib/observability/logger", () => ({
   logger: { error: vi.fn(async () => {}), warn: vi.fn(), info: vi.fn() },
 }));
-vi.mock("@/lib/rate-limit", () => ({
+vi.mock("@/lib/vendors/rate-limit", () => ({
   RateLimitUnavailableError: class RateLimitUnavailableError extends Error {},
 }));
 
 import { GET } from "@/app/api/search/route";
-import { RateLimitUnavailableError } from "@/lib/rate-limit";
+import { RateLimitUnavailableError } from "@/lib/vendors/rate-limit";
 
 const results = {
   items: [],
@@ -108,7 +108,7 @@ describe("GET /api/search", () => {
       controller.abort();
       throw new DOMException("aborted", "AbortError");
     });
-    const { logger } = await import("@/lib/logger");
+    const { logger } = await import("@/lib/observability/logger");
 
     const response = await get("?q=react", controller.signal);
 

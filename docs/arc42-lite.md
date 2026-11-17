@@ -32,15 +32,15 @@ flowchart LR
 
 Solid lines exist in the code today, dashed lines are planned. The app is hosted on Vercel.
 
-| System        | Used for                      | Reached through                        | Status                                                  |
-| ------------- | ----------------------------- | -------------------------------------- | ------------------------------------------------------- |
-| Neon Postgres | all data                      | `lib/prisma.ts` (`@prisma/adapter-pg`) | in use                                                  |
-| GitHub        | OAuth sign-in                 | NextAuth in `auth/nextauth`            | in use                                                  |
-| Resend        | verification and reset emails | `lib/email.ts`                         | in use                                                  |
-| Upstash Redis | rate limits                   | `lib/rate-limit.ts`                    | in use                                                  |
-| Stripe        | subscriptions and webhooks    | `lib/stripe.ts`, owned by `billing`    | client, checkout and portal exist; no UI or webhook yet |
-| Cloudflare R2 | files and images              | `lib/r2.ts`, owned by `files`          | planned                                                 |
-| OpenAI        | tags, explanations            | `lib/openai.ts`, owned by `ai`         | planned                                                 |
+| System        | Used for                      | Reached through                                 | Status                                                  |
+| ------------- | ----------------------------- | ----------------------------------------------- | ------------------------------------------------------- |
+| Neon Postgres | all data                      | `lib/postgres/prisma.ts` (`@prisma/adapter-pg`) | in use                                                  |
+| GitHub        | OAuth sign-in                 | NextAuth in `auth/nextauth`                     | in use                                                  |
+| Resend        | verification and reset emails | `lib/vendors/email.ts`                          | in use                                                  |
+| Upstash Redis | rate limits                   | `lib/vendors/rate-limit.ts`                     | in use                                                  |
+| Stripe        | subscriptions and webhooks    | `lib/vendors/stripe.ts`, owned by `billing`     | client, checkout and portal exist; no UI or webhook yet |
+| Cloudflare R2 | files and images              | `lib/vendors/r2.ts`, owned by `files`           | planned                                                 |
+| OpenAI        | tags, explanations            | `lib/vendors/openai.ts`, owned by `ai`          | planned                                                 |
 
 A vendor SDK is imported only inside `lib/`; what the vendor means for the product stays in the feature ([ADR 0002](adr/0002-boundaries-enforced-by-eslint.md)).
 

@@ -18,8 +18,8 @@ import {
 import type { ImportFile } from "@/features/import-export/schemas";
 import type { ImportSummary } from "@/features/import-export/types";
 import type { ErrorRef } from "@/i18n/error-codes";
-import { fail, type ActionResult } from "@/lib/action-result";
-import { isNavigationError } from "@/lib/navigation-error";
+import { fail, type ActionResult } from "@/lib/errors/action-result";
+import { isNavigationError } from "@/lib/errors/navigation-error";
 
 const LIMITS = {
   maxRecords: IMPORT_BATCH_MAX_RECORDS,

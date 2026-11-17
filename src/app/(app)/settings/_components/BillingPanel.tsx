@@ -5,7 +5,7 @@ import { getCollectionStats } from "@/features/collections/queries";
 import { LockedFilesRow } from "@/features/items/components/LockedFilesRow";
 import { getItemStats } from "@/features/items/queries";
 import { getUserLockedFileCount } from "@/features/items/services/locked-files";
-import { isStripeTestMode } from "@/lib/stripe";
+import { isStripeTestMode } from "@/lib/vendors/stripe";
 
 interface BillingPanelProps {
   searchParams: Promise<{ session_id?: string | string[] }>;

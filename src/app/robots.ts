@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { getSiteOrigin } from "@/lib/app-url";
+import { getSiteOrigin } from "@/lib/http/app-url";
 
 // Only the API is closed to crawlers. The app and auth pages stay open on
 // purpose: a page a crawler may not fetch is never seen saying noindex, and

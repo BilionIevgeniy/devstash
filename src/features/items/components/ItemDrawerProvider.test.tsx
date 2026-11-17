@@ -5,8 +5,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ItemDrawerContent } from "@/features/items/_internal/components/ItemDrawerContent";
 import type { DashboardItem, OpenedItemJson } from "@/features/items/types";
-import { fail } from "@/lib/action-result";
-import { RouteError } from "@/lib/route-error";
+import { fail } from "@/lib/errors/action-result";
+import { RouteError } from "@/lib/errors/route-error";
 
 const fetchItemDetail = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));

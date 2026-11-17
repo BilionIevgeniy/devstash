@@ -2,10 +2,10 @@ import type { ZodType } from "zod";
 
 import type { TextStreamStart } from "@/features/ai/services/text-stream";
 import { getSignedInUserId } from "@/features/auth/nextauth/session";
-import { fail } from "@/lib/action-result";
-import { jsonError, NO_STORE } from "@/lib/api-response";
-import { logger } from "@/lib/logger";
-import { firstIssue } from "@/lib/validation";
+import { fail } from "@/lib/errors/action-result";
+import { jsonError, NO_STORE } from "@/lib/http/api-response";
+import { logger } from "@/lib/observability/logger";
+import { firstIssue } from "@/lib/errors/validation";
 
 type StartStream<T> = (
   userId: string,

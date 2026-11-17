@@ -10,8 +10,8 @@ import {
   createPortalSession,
 } from "@/features/billing/services/checkout";
 import { deleteBillingCustomer } from "@/features/billing/services/customer";
-import { prisma } from "@/lib/prisma";
-import { getStripe } from "@/lib/stripe";
+import { prisma } from "@/lib/postgres/prisma";
+import { getStripe } from "@/lib/vendors/stripe";
 
 // Stripe is mocked; the rows are real. The cases are the ones where an id from
 // the request (a Checkout session) or the caller's own row decides which

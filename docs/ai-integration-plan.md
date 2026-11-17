@@ -1,6 +1,6 @@
 # AI Integration Plan
 
-The plan for the Pro AI features: auto-tagging, summaries, Explain Code and prompt optimization, suggest content. Auto-tagging is built (2026-11-07), with the foundation: `openai` 7.53.0, `lib/openai.ts`, the `ai` module, the access check and the limits. Summaries and Explain Code are built too (2026-11-07), Explain Code with `streamText` and the first streaming route. Prompt optimization is built too (2026-11-07), on the same stream core (`ai/services/text-stream.ts`).
+The plan for the Pro AI features: auto-tagging, summaries, Explain Code and prompt optimization, suggest content. Auto-tagging is built (2026-11-07), with the foundation: `openai` 7.53.0, `lib/vendors/openai.ts`, the `ai` module, the access check and the limits. Summaries and Explain Code are built too (2026-11-07), Explain Code with `streamText` and the first streaming route. Prompt optimization is built too (2026-11-07), on the same stream core (`ai/services/text-stream.ts`).
 
 This document holds the analysis and the reasons. The steps to follow will be in the feature specs: [ai-auto-tag-spec.md](../featuresDRAFT/ai-auto-tag-spec.md), [ai-explain-spec.md](../featuresDRAFT/ai-explain-spec.md), and specs still to be written for summaries and prompt optimization.
 
@@ -26,8 +26,8 @@ The model name lives in one constant, `AI_MODEL` in `ai/domain/`, so the next de
 ### What exists
 
 - **Pro gate:** `billing/queries.ts` `getEntitlements(userId)`, cached per request. `presignUpload` in `files/services/presign-upload.ts` is the pattern to copy: Pro check, input check, rate limit, then the work
-- **Rate limits:** `lib/rate-limit.ts` `consumeRateLimit(policy, identifier)` on Upstash. It fails closed: an outage throws `RateLimitUnavailableError`. Policies are constants in the feature's `domain/`, like `PRESIGN_BY_USER`. Refusals are worded by `getTooManyAttemptsMessage` of `auth/domain/rate-limits`
-- **Vendor client:** `lib/stripe.ts` creates its client on first use, so a build needs no key. `lib/openai.ts` copies this
+- **Rate limits:** `lib/vendors/rate-limit.ts` `consumeRateLimit(policy, identifier)` on Upstash. It fails closed: an outage throws `RateLimitUnavailableError`. Policies are constants in the feature's `domain/`, like `PRESIGN_BY_USER`. Refusals are worded by `getTooManyAttemptsMessage` of `auth/domain/rate-limits`
+- **Vendor client:** `lib/vendors/stripe.ts` creates its client on first use, so a build needs no key. `lib/vendors/openai.ts` copies this
 - **Lint:** `eslint.config.mjs` already keeps `openai` and every `openai/*` path inside `lib`
 - **Environment:** `OPENAI_API_KEY` is in `.env.example`
 - **Markdown:** `MarkdownPreview` (private to `editor`) has raw HTML off and keeps the default URL filter
@@ -65,7 +65,7 @@ The model name lives in one constant, `AI_MODEL` in `ai/domain/`, so the next de
 
 Install `openai` (7.53.0 at the time of writing). It needs Node 22 or later: `.nvmrc` says 22, `package.json` has no `engines` field, and the Node version of the Vercel project was not checked. Zod 4 is within its peer range. Check `.d.ts` in `node_modules` before each use, as the coding standards require.
 
-`lib/openai.ts` is the only file that touches the SDK. Because the lint also blocks `openai/helpers/zod`, the `zodTextFormat` call lives here too, and features pass in a plain Zod schema. It knows nothing about tags or prompts: those belong to `ai/domain/`.
+`lib/vendors/openai.ts` is the only file that touches the SDK. Because the lint also blocks `openai/helpers/zod`, the `zodTextFormat` call lives here too, and features pass in a plain Zod schema. It knows nothing about tags or prompts: those belong to `ai/domain/`.
 
 A sketch, not compiled:
 
@@ -151,7 +151,7 @@ export async function generateAutoTags(
 
 No `refresh()`: nothing was written.
 
-Server Actions run one at a time, so a slow call holds up the user's Save, pin and star until it ends. Accepted for one short answer, and bounded: each operation sets a per-request timeout (10 s for tags), so with the one retry the wait is about 20 s at most. A failure `aiErrorKind` of `lib/openai.ts` knows is returned by the service in its own words; anything else throws to the action.
+Server Actions run one at a time, so a slow call holds up the user's Save, pin and star until it ends. Accepted for one short answer, and bounded: each operation sets a per-request timeout (10 s for tags), so with the one retry the wait is about 20 s at most. A failure `aiErrorKind` of `lib/vendors/openai.ts` knows is returned by the service in its own words; anything else throws to the action.
 
 ### The service
 
@@ -179,7 +179,7 @@ The client side is a browser helper, `ai/_internal/components/stream-explanation
 
 ## 6. Error handling
 
-Errors are logged by status and code only, never with the content. `logger.error` writes that line: the error goes in as `error` and is logged as its class, status and codes (`errorSummary`, `lib/error-summary.ts`). Users see plain words, through a toast, with their form left as it was.
+Errors are logged by status and code only, never with the content. `logger.error` writes that line: the error goes in as `error` and is logged as its class, status and codes (`errorSummary`, `lib/errors/error-summary.ts`). Users see plain words, through a toast, with their form left as it was.
 
 | Failure                             | How it appears                                                                                                                                     | User sees                                                               | Retried?                           |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ---------------------------------- |
@@ -265,7 +265,7 @@ export const AI_BY_USER_DAY = {
 
 ### The key
 
-- `OPENAI_API_KEY` is read only in `lib/openai.ts`, which starts with `import "server-only"`. No `NEXT_PUBLIC_` prefix, and never `dangerouslyAllowBrowser`
+- `OPENAI_API_KEY` is read only in `lib/vendors/openai.ts`, which starts with `import "server-only"`. No `NEXT_PUBLIC_` prefix, and never `dangerouslyAllowBrowser`
 - A key per environment, in a dedicated OpenAI project with its own spend limit. Whether the key is set on Vercel was not checked
 
 ### What the user's content does
@@ -342,7 +342,7 @@ Only for items of type prompt, with the same stream. Since the output would repl
 
 | File                                                 | What                                                         |
 | ---------------------------------------------------- | ------------------------------------------------------------ |
-| `src/lib/openai.ts`, test                            | Client, `generateStructured`, `streamText`, `AiOutputError`  |
+| `src/lib/vendors/openai.ts`, test                    | Client, `generateStructured`, `streamText`, `AiOutputError`  |
 | `eslint.config.mjs`                                  | `ai: 4` in `FEATURE_RANKS`                                   |
 | `docs/modules.md`, `context/architecture-rules.md`   | Move `ai` from planned to built, and correct its status      |
 | `src/features/ai/domain/model.ts`                    | `AI_MODEL`, the per-operation settings                       |
@@ -353,12 +353,12 @@ Only for items of type prompt, with the same stream. Since the output would repl
 
 ### Per feature
 
-| Feature              | Files                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Auto-tagging         | `ai/domain/tags.ts` (prompt, normalizing, test), `ai/services/auto-tags.ts` (test), `ai/actions/auto-tags.ts`, `ai/components/AiTagSuggestions.tsx` (was `SuggestTagsButton.tsx`), `ai/_internal/components/TagSuggestions.tsx`; changes in `items/_internal/components/ItemFields.tsx` and `TagsField.tsx`; `canUseAi` in `items/services/item-detail.ts`, `api/items/[id]/route.ts` and the drawer                                                                                                                                                                                                |
-| Explain Code (built) | `streamText` in `lib/openai.ts` (test), `ai/domain/explain.ts` (test), `ai/services/explain.ts` (test) with `_internal/services/stream-deadlines.ts`, `app/api/ai/explain/route.ts` (test), `ai/components/AiCodeExplanation.tsx` with `ExplainButton`, `ExplainViewToggle`, `ExplanationView`, `stream-explanation.ts`, `use-explain-code`, `use-frame-text` in `_internal`; changes in `editor/components/CodeEditor.tsx` (slots), `MarkdownPreview` (moved to `components/`, `images` required), `items/_internal/components/ItemBody.tsx`, `ItemDrawerContent.tsx`; `components/ui/tooltip.tsx` |
-| Summary (built)      | `ai/domain/summary.ts` (test), `ai/services/summary.ts` (test), `ai/actions/summary.ts`, `ai/components/AiDescriptionSummary.tsx` with `GenerateWithAiButton` and `SummaryPreview` in `_internal`; `items/_internal/components/DescriptionField.tsx`, `aiSource` in `items/domain/item-fields.ts`                                                                                                                                                                                                                                                                                                   |
-| Prompt optimization  | `ai/domain/prompt-optimizer.ts`, `ai/services/prompt-optimizer.ts`, `app/api/ai/optimize-prompt/route.ts`, the view in `ai/components/`                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Feature              | Files                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auto-tagging         | `ai/domain/tags.ts` (prompt, normalizing, test), `ai/services/auto-tags.ts` (test), `ai/actions/auto-tags.ts`, `ai/components/AiTagSuggestions.tsx` (was `SuggestTagsButton.tsx`), `ai/_internal/components/TagSuggestions.tsx`; changes in `items/_internal/components/ItemFields.tsx` and `TagsField.tsx`; `canUseAi` in `items/services/item-detail.ts`, `api/items/[id]/route.ts` and the drawer                                                                                                                                                                                                        |
+| Explain Code (built) | `streamText` in `lib/vendors/openai.ts` (test), `ai/domain/explain.ts` (test), `ai/services/explain.ts` (test) with `_internal/services/stream-deadlines.ts`, `app/api/ai/explain/route.ts` (test), `ai/components/AiCodeExplanation.tsx` with `ExplainButton`, `ExplainViewToggle`, `ExplanationView`, `stream-explanation.ts`, `use-explain-code`, `use-frame-text` in `_internal`; changes in `editor/components/CodeEditor.tsx` (slots), `MarkdownPreview` (moved to `components/`, `images` required), `items/_internal/components/ItemBody.tsx`, `ItemDrawerContent.tsx`; `components/ui/tooltip.tsx` |
+| Summary (built)      | `ai/domain/summary.ts` (test), `ai/services/summary.ts` (test), `ai/actions/summary.ts`, `ai/components/AiDescriptionSummary.tsx` with `GenerateWithAiButton` and `SummaryPreview` in `_internal`; `items/_internal/components/DescriptionField.tsx`, `aiSource` in `items/domain/item-fields.ts`                                                                                                                                                                                                                                                                                                           |
+| Prompt optimization  | `ai/domain/prompt-optimizer.ts`, `ai/services/prompt-optimizer.ts`, `app/api/ai/optimize-prompt/route.ts`, the view in `ai/components/`                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 `use-explain-code` is used through `ExplainButton`, so if `items` needs only the components, it can stay in `_internal/` (rule 9). Prompts are in `domain/`, since they are pure strings and the vendor's meaning for the product (rule 8).
 
@@ -368,8 +368,8 @@ Only for items of type prompt, with the same stream. Since the output would repl
 
 - `ai/domain`: tag normalizing (lowercase, trim, duplicates, length, count), `truncateForModel` at and past each limit, prompt builders keep content out of the instructions
 - `ai/schemas.ts`: over the ceiling, empty content
-- `access.ts` and the services, with `@/lib/openai`, `@/lib/rate-limit` and `getEntitlements` mocked: Free refused before any OpenAI call; a limit refused before any OpenAI call; hourly and daily both counted; an outage reaches no OpenAI call
-- `lib/openai.ts`, with the SDK mocked: `incomplete`, a refusal and an empty parse all throw; `store: false` and `safety_identifier` are always sent; a mid-stream failure ends the iterator with a throw
+- `access.ts` and the services, with `@/lib/vendors/openai`, `@/lib/vendors/rate-limit` and `getEntitlements` mocked: Free refused before any OpenAI call; a limit refused before any OpenAI call; hourly and daily both counted; an outage reaches no OpenAI call
+- `lib/vendors/openai.ts`, with the SDK mocked: `incomplete`, a refusal and an empty parse all throw; `store: false` and `safety_identifier` are always sent; a mid-stream failure ends the iterator with a throw
 
 ### Against the real API, on the first day
 
@@ -409,4 +409,4 @@ Each is its own branch, reviewed by the `architecture-reviewer` agent first.
 - OpenAI guides: [Structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs), [Reasoning](https://developers.openai.com/api/docs/guides/reasoning), [Streaming](https://developers.openai.com/api/docs/guides/streaming-responses), [Prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching), [Error codes](https://developers.openai.com/api/docs/guides/error-codes), [Data controls](https://developers.openai.com/api/docs/guides/your-data), [Safety best practices](https://developers.openai.com/api/docs/guides/safety-best-practices)
 - `openai` 7.53.0 types: `client.d.ts`, `core/error.d.ts`, `helpers/zod.d.ts`, `resources/responses/responses.d.ts`, `resources/shared.d.ts`
 - Next.js docs in `node_modules/next/dist/docs/`: `route.md` (streaming), `02-route-segment-config/maxDuration.md`
-- This repository: [modules.md](modules.md), [architecture.md](architecture.md), [coding-standards.md](../context/coding-standards.md), [architecture-rules.md](../context/architecture-rules.md), `lib/rate-limit.ts`, `files/services/presign-upload.ts`, `billing/queries.ts`, `items/actions/item.ts`
+- This repository: [modules.md](modules.md), [architecture.md](architecture.md), [coding-standards.md](../context/coding-standards.md), [architecture-rules.md](../context/architecture-rules.md), `lib/vendors/rate-limit.ts`, `files/services/presign-upload.ts`, `billing/queries.ts`, `items/actions/item.ts`

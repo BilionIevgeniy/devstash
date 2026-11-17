@@ -10,7 +10,7 @@ import { sharedResolve } from "./vitest.shared.mjs";
 //
 // TEST_DATABASE_URL comes from the environment (CI) or .env.test (locally;
 // a value already set wins). Each worker gets it as DATABASE_URL, which
-// src/lib/prisma.ts reads, so the database of .env is never used. The guard
+// src/lib/postgres/prisma.ts reads, so the database of .env is never used. The guard
 // (requireTestDatabase) runs in the global setup, which Vitest finishes before
 // it starts any test file.
 config({ path: ".env.test", quiet: true });

@@ -2,8 +2,11 @@ import "server-only";
 
 import type { SearchMatch } from "@/features/items/domain/search-text";
 import { Prisma } from "@/generated/prisma/client";
-import { fullTextMatchSql, fullTextRankSql } from "@/lib/full-text-search";
-import { prisma } from "@/lib/prisma";
+import {
+  fullTextMatchSql,
+  fullTextRankSql,
+} from "@/lib/postgres/full-text-search";
+import { prisma } from "@/lib/postgres/prisma";
 
 // The one raw read of items (ADR 0018): Prisma cannot match or rank a tsvector.
 // The lint lets this file call prisma.$queryRaw, a tagged template, so every

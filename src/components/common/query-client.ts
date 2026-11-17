@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 
-import { RouteError } from "@/lib/route-error";
+import { RouteError } from "@/lib/errors/route-error";
 
 // Well under the signed-URL window of an upload (one hour, files/domain/
 // file-rules.ts), so a detail kept for a later open never holds a dead link.

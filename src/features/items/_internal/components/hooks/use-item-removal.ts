@@ -7,7 +7,7 @@ import { deleteItem } from "@/features/items/actions/item";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import type { ItemChange } from "@/features/items/components/item-queries";
 import type { ErrorText } from "@/i18n/error-text";
-import { isNavigationError } from "@/lib/navigation-error";
+import { isNavigationError } from "@/lib/errors/navigation-error";
 
 const NO_HIDDEN_IDS: ReadonlySet<string> = new Set();
 

@@ -20,8 +20,8 @@ import {
   type CreateItemInput,
 } from "@/features/items/schemas";
 import { toErrorRef, type ErrorCode, type ErrorRef } from "@/i18n/error-codes";
-import { fail, type Failure } from "@/lib/action-result";
-import { firstIssue } from "@/lib/validation";
+import { fail, type Failure } from "@/lib/errors/action-result";
+import { firstIssue } from "@/lib/errors/validation";
 
 const UNSUPPORTED_VERSION = "unsupportedExportVersion" satisfies ErrorCode;
 const NOT_AN_EXPORT = "notAnExport" satisfies ErrorCode;

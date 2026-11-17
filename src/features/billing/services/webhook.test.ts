@@ -8,7 +8,7 @@ vi.mock("@/features/billing/_internal/services/subscription-sync", () => ({
 }));
 
 import { handleStripeEvent } from "@/features/billing/services/webhook";
-import type { StripeEvent } from "@/lib/stripe";
+import type { StripeEvent } from "@/lib/vendors/stripe";
 
 function event(type: string, object: unknown): StripeEvent {
   return { type, data: { object } } as unknown as StripeEvent;

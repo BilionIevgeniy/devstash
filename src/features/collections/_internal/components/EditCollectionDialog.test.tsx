@@ -4,7 +4,7 @@ import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import type { CollectionSummary } from "@/features/collections/types";
-import type { ActionResult } from "@/lib/action-result";
+import type { ActionResult } from "@/lib/errors/action-result";
 
 import { CatchBoundary } from "../../../../../test/catch-boundary";
 

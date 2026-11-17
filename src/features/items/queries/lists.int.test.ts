@@ -27,7 +27,7 @@ import {
   favoritePageQuerySchema,
   pinnedPageQuerySchema,
 } from "@/features/items/schemas";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 const BULK_COUNT = 95;
 // Few distinct values, so every sort has long runs of ties that only the id

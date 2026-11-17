@@ -4,9 +4,9 @@ import { refresh } from "next/cache";
 
 import { localeSchema } from "@/features/app-shell/schemas";
 import { getSessionUser } from "@/features/auth/nextauth/session";
-import { ok, type ActionResult } from "@/lib/action-result";
-import { setLocaleCookie } from "@/lib/locale-cookie";
-import { firstIssue } from "@/lib/validation";
+import { ok, type ActionResult } from "@/lib/errors/action-result";
+import { setLocaleCookie } from "@/lib/locale/locale-cookie";
+import { firstIssue } from "@/lib/errors/validation";
 
 // The language of the app and the auth pages, chosen in the user menu
 // (ADR 0024). No service: nothing is written but the cookie. refresh() brings

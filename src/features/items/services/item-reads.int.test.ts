@@ -18,7 +18,7 @@ import {
   getUserLockedFileCount,
   getUserLockedFiles,
 } from "@/features/items/services/locked-files";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // The read services of `items` (item-detail, collection-listing, file-list,
 // gallery, locked-files) in one file: each is a thin shape over a scoped

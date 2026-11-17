@@ -7,7 +7,7 @@ import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { setCollectionFavorite } from "@/features/collections/actions/collection";
 import { UNDO_TOAST_DURATION } from "@/features/items/domain/list-rows";
 import type { ErrorText } from "@/i18n/error-text";
-import { isNavigationError } from "@/lib/navigation-error";
+import { isNavigationError } from "@/lib/errors/navigation-error";
 
 export interface CollectionFavorite {
   isFavorite: boolean;

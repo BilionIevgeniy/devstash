@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { TestModeHint } from "@/features/billing/components/TestModeHint";
 import { homePath, LOCALES, type Locale } from "@/i18n/config";
-import { isStripeTestMode } from "@/lib/stripe";
+import { isStripeTestMode } from "@/lib/vendors/stripe";
 
 import { AISection } from "./AISection";
 import { CTASection } from "./CTASection";

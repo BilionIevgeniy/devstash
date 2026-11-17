@@ -26,9 +26,9 @@ import {
   ok,
   type Failure,
   type OperationResult,
-} from "@/lib/action-result";
-import { prisma } from "@/lib/prisma";
-import { consumeRateLimit, resetRateLimit } from "@/lib/rate-limit";
+} from "@/lib/errors/action-result";
+import { prisma } from "@/lib/postgres/prisma";
+import { consumeRateLimit, resetRateLimit } from "@/lib/vendors/rate-limit";
 
 export interface DeleteAccountProof {
   /** Required for accounts that have a password. */

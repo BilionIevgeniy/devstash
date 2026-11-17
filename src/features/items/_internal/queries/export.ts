@@ -5,7 +5,7 @@ import {
   toTagFields,
 } from "@/features/items/_internal/queries";
 import type { Prisma } from "@/generated/prisma/client";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // The pages of an export. They carry the object key, so they stay here and
 // only the export service reads them (ADR 0010).

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
-import { errorDigest } from "@/lib/error-summary";
-import { logger } from "@/lib/logger";
+import { errorDigest } from "@/lib/errors/error-summary";
+import { logger } from "@/lib/observability/logger";
 
 // For an error boundary. An error that Next.js got from the server carries a
 // digest, and the server already reported it (`onRequestError`), so reporting

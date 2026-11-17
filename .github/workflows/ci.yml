@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 20
     # Every variable here is a dummy: CI never connects to a database or a
     # vendor, and no GitHub secret is used.
-    # - DATABASE_URL: src/lib/prisma.ts throws at import when it is unset. The
+    # - DATABASE_URL: src/lib/postgres/prisma.ts throws at import when it is unset. The
     #   pg adapter connects only on a query, and no page queries at build time
     #   (the pages that read data are dynamic).
     # - DIRECT_URL: prisma.config.ts reads it for `prisma generate` (in

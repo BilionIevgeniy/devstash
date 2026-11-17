@@ -4,7 +4,7 @@ import type { ComponentProps } from "react";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import type { ItemFields } from "@/features/items/_internal/components/ItemFields";
-import type { ActionResult } from "@/lib/action-result";
+import type { ActionResult } from "@/lib/errors/action-result";
 
 import { CatchBoundary } from "../../../../test/catch-boundary";
 

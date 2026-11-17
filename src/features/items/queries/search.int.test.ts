@@ -8,7 +8,7 @@ import {
 } from "../../../../test/integration/fixtures";
 import { SEARCH_PAGE_SIZE } from "@/features/items/domain/search-text";
 import { searchUserItems } from "@/features/items/queries/search";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // Read-only: one seed for the file. A and B have the same titles, so a search
 // that leaked across users would find two rows instead of one.

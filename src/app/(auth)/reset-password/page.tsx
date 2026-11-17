@@ -6,7 +6,7 @@ import { ResetPasswordForm } from "@/features/auth/components/ResetPasswordForm"
 import { Button } from "@/components/ui/button";
 import { isPasswordResetTokenValid } from "@/features/auth/queries";
 import { emailLinkParamsSchema } from "@/features/auth/schemas";
-import { getErrorText } from "@/lib/error-text";
+import { getErrorText } from "@/lib/errors/error-text";
 
 export default async function ResetPasswordPage({
   searchParams,

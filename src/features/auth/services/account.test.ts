@@ -25,7 +25,7 @@ const {
   hash: vi.fn(),
   revokeGitHubGrant: vi.fn(),
 }));
-vi.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/postgres/prisma", () => ({
   prisma: {
     user: { findUnique, update: updateUser, delete: deleteUser },
     account: { findMany: findAccounts },
@@ -33,7 +33,10 @@ vi.mock("@/lib/prisma", () => ({
     $transaction: transaction,
   },
 }));
-vi.mock("@/lib/rate-limit", () => ({ consumeRateLimit, resetRateLimit }));
+vi.mock("@/lib/vendors/rate-limit", () => ({
+  consumeRateLimit,
+  resetRateLimit,
+}));
 vi.mock("bcryptjs", () => ({ default: { compare, hash } }));
 vi.mock("@/features/auth/_internal/services/github-grant", () => ({
   revokeGitHubGrant,

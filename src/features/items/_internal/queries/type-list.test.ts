@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { findMany } = vi.hoisted(() => ({ findMany: vi.fn() }));
-vi.mock("@/lib/prisma", () => ({ prisma: { item: { findMany } } }));
+vi.mock("@/lib/postgres/prisma", () => ({ prisma: { item: { findMany } } }));
 
 import { getUploadItemsOfType } from "@/features/items/_internal/queries/type-list";
 

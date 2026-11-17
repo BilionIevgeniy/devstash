@@ -16,9 +16,9 @@ import {
   updateUserCollection,
 } from "@/features/collections/services/collection";
 import { favoriteValueSchema } from "@/features/items/schemas";
-import { fail, ok, type ActionResult } from "@/lib/action-result";
-import { logger } from "@/lib/logger";
-import { firstIssue } from "@/lib/validation";
+import { fail, ok, type ActionResult } from "@/lib/errors/action-result";
+import { logger } from "@/lib/observability/logger";
+import { firstIssue } from "@/lib/errors/validation";
 
 export async function createCollection(data: unknown): Promise<ActionResult> {
   const parsed = createCollectionSchema.safeParse(data);

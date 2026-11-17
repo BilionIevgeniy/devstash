@@ -14,14 +14,14 @@ const {
   logError: vi.fn(async () => {}),
 }));
 vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
-vi.mock("@/lib/rate-limit", () => ({ consumeRateLimit }));
+vi.mock("@/lib/vendors/rate-limit", () => ({ consumeRateLimit }));
 vi.mock("@/features/collections/queries/export", () => ({
   getExportCollections,
 }));
 vi.mock("@/features/items/services/export", () => ({
   getUserExportItemPage: getPage,
 }));
-vi.mock("@/lib/logger", () => ({
+vi.mock("@/lib/observability/logger", () => ({
   logger: { error: logError, warn: vi.fn(), info: vi.fn() },
 }));
 

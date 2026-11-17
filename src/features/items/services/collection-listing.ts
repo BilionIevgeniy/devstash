@@ -19,7 +19,7 @@ import type {
   CollectionSection,
   ItemCardData,
 } from "@/features/items/types";
-import { readPage } from "@/lib/pagination";
+import { readPage } from "@/lib/postgres/pagination";
 
 function toCardItem(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- a card shows no upload, and the key never leaves the server

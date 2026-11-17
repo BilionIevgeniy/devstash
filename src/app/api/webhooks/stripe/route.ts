@@ -1,12 +1,12 @@
 import { handleStripeEvent } from "@/features/billing/services/webhook";
-import { fail } from "@/lib/action-result";
-import { jsonError } from "@/lib/api-response";
-import { logger } from "@/lib/logger";
+import { fail } from "@/lib/errors/action-result";
+import { jsonError } from "@/lib/http/api-response";
+import { logger } from "@/lib/observability/logger";
 import {
   constructStripeEvent,
   isStripeSignatureError,
   type StripeEvent,
-} from "@/lib/stripe";
+} from "@/lib/vendors/stripe";
 
 export async function POST(request: Request) {
   const signature = request.headers.get("stripe-signature");

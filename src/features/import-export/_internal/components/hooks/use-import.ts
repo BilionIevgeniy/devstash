@@ -14,7 +14,7 @@ import {
 } from "@/features/import-export/schemas";
 import type { ImportSummary } from "@/features/import-export/types";
 import { errorRef, type ErrorRef } from "@/i18n/error-codes";
-import { fail } from "@/lib/action-result";
+import { fail } from "@/lib/errors/action-result";
 
 export type ImportState =
   | { status: "idle" }

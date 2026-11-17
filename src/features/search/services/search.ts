@@ -18,7 +18,7 @@ import {
 } from "@/features/search/domain/limits";
 import type { SearchParams } from "@/features/search/schemas";
 import type { PaletteResults } from "@/features/search/types";
-import { consumeRateLimit } from "@/lib/rate-limit";
+import { consumeRateLimit } from "@/lib/vendors/rate-limit";
 
 export type PaletteSearchResult =
   | { status: "ok"; results: PaletteResults }

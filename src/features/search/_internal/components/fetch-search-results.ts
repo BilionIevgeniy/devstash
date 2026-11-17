@@ -4,7 +4,7 @@ import type {
   PaletteResults,
   PaletteResultsJson,
 } from "@/features/search/types";
-import type { ActionResult } from "@/lib/action-result";
+import type { ActionResult } from "@/lib/errors/action-result";
 
 export type SearchOutcome =
   | { status: "ready"; results: PaletteResults }

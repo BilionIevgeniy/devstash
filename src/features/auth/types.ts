@@ -1,5 +1,5 @@
 import type { ErrorRef } from "@/i18n/error-codes";
-import type { ActionResult } from "@/lib/action-result";
+import type { ActionResult } from "@/lib/errors/action-result";
 
 export type AuthActionState = ActionResult;
 

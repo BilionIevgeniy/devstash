@@ -1,7 +1,7 @@
 import { fn } from "storybook/test";
 
 import type * as Actions from "@/features/collections/actions/collection";
-import { ok } from "@/lib/action-result";
+import { ok } from "@/lib/errors/action-result";
 
 // What the stories get instead of ../collection (registered with sb.mock in
 // .storybook/preview.tsx; ADR 0026). A mock file and not an automock: an

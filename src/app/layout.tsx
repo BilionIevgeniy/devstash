@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppToaster } from "@/components/common/AppToaster";
-import { getSiteOrigin } from "@/lib/app-url";
+import { getSiteOrigin } from "@/lib/http/app-url";
 import { geistMono, geistSans } from "./fonts";
 import "./globals.css";
 

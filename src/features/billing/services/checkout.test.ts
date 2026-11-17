@@ -11,11 +11,11 @@ const mocks = vi.hoisted(() => ({
   syncSubscription: vi.fn(),
 }));
 
-// The real check is pinned in lib/stripe.test.ts; here only this error is one.
+// The real check is pinned in lib/vendors/stripe.test.ts; here only this error is one.
 const DEAD_CUSTOMER = vi.hoisted(() => new Error("No such customer"));
 const MISSING_SESSION = vi.hoisted(() => new Error("No such session"));
 
-vi.mock("@/lib/stripe", () => ({
+vi.mock("@/lib/vendors/stripe", () => ({
   getStripe: () => ({
     customers: { create: mocks.createCustomer },
     checkout: {
@@ -29,7 +29,7 @@ vi.mock("@/lib/stripe", () => ({
   isStripeCustomerMissing: (error: unknown) => error === DEAD_CUSTOMER,
   isStripeNotFound: (error: unknown) => error === MISSING_SESSION,
 }));
-vi.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/postgres/prisma", () => ({
   prisma: { subscription: { upsert: mocks.upsert } },
 }));
 vi.mock("@/features/billing/queries", () => ({

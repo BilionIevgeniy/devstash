@@ -10,7 +10,7 @@ import {
   deleteVerifiedUserRows,
   verifyAccountDeletion,
 } from "@/features/auth/services/account";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/postgres/prisma";
 
 // A changes or deletes its own account: the writes are keyed by A's id and
 // A's email, so B's hash, session version and verification token stay.

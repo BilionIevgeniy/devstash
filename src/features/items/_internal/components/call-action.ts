@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import type { PlainErrorCode } from "@/i18n/error-codes";
 import type { ErrorText } from "@/i18n/error-text";
-import type { ActionResult } from "@/lib/action-result";
+import type { ActionResult } from "@/lib/errors/action-result";
 
 // Calls a Server Action whose success always carries data, from a transition:
 // the data, or null after a failure with its toast already shown (the server's

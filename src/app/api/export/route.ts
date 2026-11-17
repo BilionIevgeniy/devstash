@@ -1,10 +1,10 @@
 import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { getRetryAfterSeconds } from "@/features/auth/domain/rate-limits";
 import { exportUserData } from "@/features/import-export/services/export";
-import { fail } from "@/lib/action-result";
-import { jsonError, NO_STORE } from "@/lib/api-response";
-import { logger } from "@/lib/logger";
-import { RateLimitUnavailableError } from "@/lib/rate-limit";
+import { fail } from "@/lib/errors/action-result";
+import { jsonError, NO_STORE } from "@/lib/http/api-response";
+import { logger } from "@/lib/observability/logger";
+import { RateLimitUnavailableError } from "@/lib/vendors/rate-limit";
 
 // The export file (ADR 0019), streamed page by page by the service. Answers
 // 401 instead of redirecting: the settings page calls this with fetch.

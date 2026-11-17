@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { createQueryClient } from "@/components/common/query-client";
-import { fail } from "@/lib/action-result";
-import { RouteError } from "@/lib/route-error";
+import { fail } from "@/lib/errors/action-result";
+import { RouteError } from "@/lib/errors/route-error";
 
 function retryRule() {
   const retry = createQueryClient().getDefaultOptions().queries?.retry;

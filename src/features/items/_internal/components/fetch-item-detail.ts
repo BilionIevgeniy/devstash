@@ -4,7 +4,7 @@ import type { QueryClient } from "@tanstack/react-query";
 
 import { itemKeys } from "@/features/items/components/item-queries";
 import type { OpenedItemJson } from "@/features/items/types";
-import { readRouteData } from "@/lib/route-error";
+import { readRouteData } from "@/lib/errors/route-error";
 
 // How long a detail read for the drawer or a copy is reused without asking
 // again (ADR 0025). Short: an edit made elsewhere shows within a minute.

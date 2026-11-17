@@ -8,8 +8,8 @@ import {
 } from "@/features/ai/domain/rate-limits";
 import { tooManyAttemptsParams } from "@/features/auth/domain/rate-limits";
 import { getEntitlements } from "@/features/billing/queries";
-import { fail, type Failure } from "@/lib/action-result";
-import { consumeRateLimit } from "@/lib/rate-limit";
+import { fail, type Failure } from "@/lib/errors/action-result";
+import { consumeRateLimit } from "@/lib/vendors/rate-limit";
 
 export type AiRefusalReason = "not-pro" | "limited";
 

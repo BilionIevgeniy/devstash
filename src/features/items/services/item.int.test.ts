@@ -13,8 +13,8 @@ import {
   setUserItemPin,
   updateUserItem,
 } from "@/features/items/services/item";
-import { prisma } from "@/lib/prisma";
-import { deleteObject } from "@/lib/r2";
+import { prisma } from "@/lib/postgres/prisma";
+import { deleteObject } from "@/lib/vendors/r2";
 
 // Every write of `items/services/item.ts`: A with B's id gets "not found" and
 // B's rows stay exactly as they were; the owner's call goes through, so the

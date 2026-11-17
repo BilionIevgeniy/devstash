@@ -14,10 +14,10 @@ import {
   createCheckoutSession,
   createPortalSession,
 } from "@/features/billing/services/checkout";
-import { fail, ok, type ActionResult } from "@/lib/action-result";
-import { getAppOrigin } from "@/lib/app-url";
-import { logger } from "@/lib/logger";
-import { firstIssue } from "@/lib/validation";
+import { fail, ok, type ActionResult } from "@/lib/errors/action-result";
+import { getAppOrigin } from "@/lib/http/app-url";
+import { logger } from "@/lib/observability/logger";
+import { firstIssue } from "@/lib/errors/validation";
 
 export async function startCheckout(plan: unknown): Promise<ActionResult> {
   const parsed = planSchema.safeParse(plan);

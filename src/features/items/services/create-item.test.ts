@@ -17,10 +17,10 @@ const {
   getEntitlements: vi.fn(),
   confirmUpload: vi.fn(),
 }));
-vi.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/postgres/prisma", () => ({
   prisma: { $transaction: transaction, item: { create } },
 }));
-vi.mock("@/lib/advisory-lock", () => ({
+vi.mock("@/lib/postgres/advisory-lock", () => ({
   LOCKED_TRANSACTION: {},
   lockForTransaction: lock,
 }));

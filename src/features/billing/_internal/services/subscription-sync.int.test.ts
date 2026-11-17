@@ -5,8 +5,8 @@ import {
 } from "../../../../../test/integration/fixtures";
 import { snapshotTenant } from "../../../../../test/integration/snapshot";
 import { syncSubscription } from "@/features/billing/_internal/services/subscription-sync";
-import { prisma } from "@/lib/prisma";
-import { getStripe } from "@/lib/stripe";
+import { prisma } from "@/lib/postgres/prisma";
+import { getStripe } from "@/lib/vendors/stripe";
 
 // The Stripe sync is the one write not scoped by userId: the customer id from
 // Stripe picks the row (ADR 0012). An update for B's customer must reach B's
