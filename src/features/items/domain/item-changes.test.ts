@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   hasItemChanges,
+  isMissingRequired,
   typeFieldValues,
   type ItemFormValues,
 } from "@/features/items/domain/item-changes";
@@ -113,5 +114,42 @@ describe("typeFieldValues", () => {
   it("sends nothing type-specific for a file or a custom type", () => {
     expect(typeFieldValues(editableFields("file"), values)).toEqual({});
     expect(typeFieldValues(editableFields("custom"), values)).toEqual({});
+  });
+});
+
+describe("isMissingRequired", () => {
+  const filled = { title: "Title", url: "https://example.com" };
+
+  it("needs a title on every type", () => {
+    expect(
+      isMissingRequired(
+        editableFields("note"),
+        { ...filled, title: " " },
+        true,
+      ),
+    ).toBe(true);
+    expect(isMissingRequired(editableFields("note"), filled, true)).toBe(false);
+  });
+
+  it("needs a URL only on a type that has one", () => {
+    const blankUrl = { ...filled, url: "" };
+    expect(isMissingRequired(editableFields("link"), blankUrl, true)).toBe(
+      true,
+    );
+    expect(isMissingRequired(editableFields("note"), blankUrl, true)).toBe(
+      false,
+    );
+  });
+
+  it("needs an upload only on a file or image type", () => {
+    expect(isMissingRequired(editableFields("image"), filled, false)).toBe(
+      true,
+    );
+    expect(isMissingRequired(editableFields("image"), filled, true)).toBe(
+      false,
+    );
+    expect(isMissingRequired(editableFields("note"), filled, false)).toBe(
+      false,
+    );
   });
 });

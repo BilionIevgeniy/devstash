@@ -76,3 +76,18 @@ export function hasItemChanges(
     (!fields.url || sameText(initial.url, current.url));
   return !unchanged;
 }
+
+// What keeps both forms from sending: a blank title, a blank URL on a type
+// that needs one, and on create a file or image type with no upload yet (the
+// edit form keeps the upload it has, so it passes true).
+export function isMissingRequired(
+  fields: EditableFields,
+  values: Pick<ItemFormValues, "title" | "url">,
+  hasUpload: boolean,
+): boolean {
+  return (
+    values.title.trim() === "" ||
+    (fields.url && values.url.trim() === "") ||
+    (fields.file !== null && !hasUpload)
+  );
+}

@@ -11,6 +11,8 @@ export const SNIPPET_ITEM: ItemCardData = {
   description: "Delays a value until the user stops typing.",
   isFavorite: false,
   isPinned: false,
+  descriptionAiGenerated: false,
+  aiTags: [],
   createdAt: CREATED_AT,
   tags: ["react", "hooks"],
   type: { id: "type-snippet", name: "snippet", icon: "Code", color: "#3b82f6" },
@@ -46,4 +48,16 @@ export const LONG_TITLE_ITEM: ItemCardData = {
     color: "#8b5cf6",
   },
   canCopy: false,
+};
+
+// An accepted summary and two accepted suggestions (ADR 0027): the icons
+// stand by the description and the AI tags, and "mine" stays unmarked.
+export const AI_MARKED_ITEM: ItemCardData = {
+  ...SNIPPET_ITEM,
+  id: "item-ai",
+  description:
+    "A hook that waits until the value has stopped changing for the given delay, then returns it.",
+  descriptionAiGenerated: true,
+  tags: ["hooks", "mine", "react"],
+  aiTags: ["hooks", "react"],
 };

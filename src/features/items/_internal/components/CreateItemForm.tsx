@@ -18,10 +18,14 @@ import type { UploadedFile } from "@/features/files/types";
 import { CollectionSelect } from "@/features/items/_internal/components/CollectionSelect";
 import { ItemFileField } from "@/features/items/_internal/components/ItemFileField";
 import { ItemFields } from "@/features/items/_internal/components/ItemFields";
+import { useAcceptedAi } from "@/features/items/_internal/components/hooks/use-accepted-ai";
 import { ItemTypeSelect } from "@/features/items/_internal/components/ItemTypeSelect";
 import { submitNewItem } from "@/features/items/_internal/components/submit-new-item";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
-import type { ItemFormValues } from "@/features/items/domain/item-changes";
+import {
+  isMissingRequired,
+  type ItemFormValues,
+} from "@/features/items/domain/item-changes";
 import {
   editableFields,
   type CreatableTypeName,
@@ -63,13 +67,10 @@ export function CreateItemForm({
   const [upload, setUpload] = useState<UploadedFile | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const contentRef = useRef<EditorHandle>(null);
+  const acceptedAi = useAcceptedAi();
   const errorText = useErrorText();
   const syncItems = useSyncItemQueries();
   const fields = editableFields(typeName);
-  const isMissingRequired =
-    values.title.trim() === "" ||
-    (fields.url && values.url.trim() === "") ||
-    (fields.file !== null && upload === null);
 
   useLateFocus(formRef);
 
@@ -93,6 +94,7 @@ export function CreateItemForm({
       typeName,
       fields,
       values,
+      aiGenerated: acceptedAi.claims(values),
       upload,
       contentRef,
       run,
@@ -125,6 +127,7 @@ export function CreateItemForm({
         canUseAi={isPro}
         fileName={upload?.fileName}
         contentRef={contentRef}
+        acceptedAi={acceptedAi}
       />
       <CollectionSelect
         value={values.collectionIds}
@@ -133,7 +136,7 @@ export function CreateItemForm({
       />
       <CreateFormFooter
         isCreating={isCreating}
-        canCreate={!isMissingRequired}
+        canCreate={!isMissingRequired(fields, values, upload !== null)}
       />
     </form>
   );

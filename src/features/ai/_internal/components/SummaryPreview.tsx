@@ -7,9 +7,11 @@ import { Check, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   ACCEPT_CLASS,
+  AI_ICON_CLASS,
   DISMISS_CLASS,
   SUGGESTION_FRAME_CLASS,
 } from "@/features/ai/_internal/components/suggestion-classes";
+import { aiMarkProps } from "@/features/ai/domain/marking";
 import { cn } from "@/lib/utils";
 
 interface SummaryPreviewProps {
@@ -57,10 +59,10 @@ export function SummaryPreview({
     >
       <p className="flex gap-2">
         <Sparkles
-          className="mt-0.5 size-3.5 shrink-0 text-violet-500 dark:text-violet-400"
+          className={cn("mt-0.5 size-3.5 shrink-0", AI_ICON_CLASS)}
           aria-hidden
         />
-        <span>{summary}</span>
+        <span {...aiMarkProps(true)}>{summary}</span>
       </p>
       <div className="flex flex-wrap items-center justify-end gap-1">
         {replaces && (

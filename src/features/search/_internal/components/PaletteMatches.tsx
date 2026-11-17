@@ -6,6 +6,7 @@ import {
   CommandItem,
   CommandShortcut,
 } from "@/components/ui/command";
+import { aiMarkProps } from "@/features/ai/domain/marking";
 import type { SearchableCollection } from "@/features/collections/types";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import type { PaletteItem, PaletteResults } from "@/features/search/types";
@@ -57,7 +58,10 @@ export function PaletteMatches({
                   )}
                 </p>
                 {item.preview && (
-                  <p className="truncate text-xs text-muted-foreground">
+                  <p
+                    className="truncate text-xs text-muted-foreground"
+                    {...aiMarkProps(item.previewAiGenerated)}
+                  >
                     {item.preview}
                   </p>
                 )}

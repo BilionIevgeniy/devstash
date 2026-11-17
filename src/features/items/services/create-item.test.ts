@@ -28,6 +28,7 @@ vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
 vi.mock("@/features/files/services/objects", () => ({ confirmUpload }));
 vi.mock("@/features/item-types/queries", () => ({ getItemTypeByName }));
 
+import { NO_AI_CLAIMS } from "@/features/items/domain/ai-marks";
 import { Prisma } from "@/generated/prisma/client";
 import { createUserItem } from "@/features/items/services/create-item";
 
@@ -48,6 +49,7 @@ describe("createUserItem", () => {
     url: null,
     tags: [],
     collectionIds: [],
+    aiGenerated: NO_AI_CLAIMS,
   };
 
   beforeEach(() => {
@@ -118,6 +120,7 @@ describe("createUserItem", () => {
     expect(create.mock.calls[0][0].data.tags).toEqual({
       create: [
         {
+          aiGenerated: false,
           tag: {
             connectOrCreate: {
               where: { userId_name: { userId: "user-1", name: "react" } },
@@ -127,6 +130,26 @@ describe("createUserItem", () => {
         },
       ],
     });
+  });
+
+  it("marks a claimed summary and tags, and no content a link lacks", async () => {
+    await createUserItem("user-1", {
+      ...snippet,
+      typeName: "link",
+      url: "https://example.com",
+      description: "A summary",
+      tags: ["react", "mine"],
+      aiGenerated: { description: true, content: true, tags: ["react"] },
+    });
+
+    const { data } = create.mock.calls[0][0];
+    expect(data.descriptionAiGenerated).toBe(true);
+    expect(data.contentAiGenerated).toBe(false);
+    expect(
+      data.tags.create.map(
+        (link: { aiGenerated: boolean }) => link.aiGenerated,
+      ),
+    ).toEqual([true, false]);
   });
 
   it("links collections of the caller only", async () => {

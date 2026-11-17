@@ -40,13 +40,28 @@ describe("getItemEditState", () => {
 
   it("flattens the type and the collection links", async () => {
     findFirst.mockResolvedValue({
+      description: "A summary",
+      content: "code",
+      descriptionAiGenerated: true,
+      contentAiGenerated: false,
       type: { name: "snippet" },
       collections: [{ collectionId: "col-1" }, { collectionId: "col-2" }],
+      tags: [
+        { aiGenerated: true, tag: { name: "hooks" } },
+        { aiGenerated: false, tag: { name: "mine" } },
+      ],
     });
 
     await expect(getItemEditState("user-1", "item-1")).resolves.toEqual({
       typeName: "snippet",
       collectionIds: ["col-1", "col-2"],
+      ai: {
+        description: "A summary",
+        content: "code",
+        descriptionAiGenerated: true,
+        contentAiGenerated: false,
+        aiTags: ["hooks"],
+      },
     });
   });
 });

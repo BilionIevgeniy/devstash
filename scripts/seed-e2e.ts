@@ -6,6 +6,7 @@ import {
   E2E_LIST_ROWS,
   E2E_USER_PASSWORD,
   listsUserEmail,
+  proUserEmail,
   requireE2eUserEmail,
 } from "./e2e-user";
 import { migrateTestDatabase } from "./migrate-test-database";
@@ -23,6 +24,8 @@ config({ path: ".env.test", quiet: true });
 
 // Low cost on purpose: only the tests read this hash.
 const TEST_BCRYPT_ROUNDS = 4;
+
+const PRO_PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
 
 // The user of the endless lists: snippets "List item 01" to "40", each starred
 // and pinned, starred a minute apart (so Newest is 40 first and A-Z 01 first).
@@ -57,6 +60,25 @@ async function seedListsUser(
   });
 }
 
+// The Pro user of the AI journey: an active subscription row, as the Stripe
+// sync writes one, so getEntitlements gives Pro.
+async function seedProUser(
+  prisma: PrismaClient,
+  email: string,
+  passwordHash: string,
+): Promise<void> {
+  await createVerifiedTestUser(prisma, { email, passwordHash });
+  await prisma.subscription.create({
+    data: {
+      user: { connect: { email } },
+      status: "active",
+      stripeCustomerId: "cus_e2e_pro",
+      stripeSubscriptionId: "sub_e2e_pro",
+      currentPeriodEnd: new Date(Date.now() + PRO_PERIOD_MS),
+    },
+  });
+}
+
 async function main() {
   const connectionString = requireTestDatabase(process.env.TEST_DATABASE_URL);
   const email = requireE2eUserEmail();
@@ -73,6 +95,7 @@ async function main() {
     );
     await createVerifiedTestUser(prisma, { email, passwordHash });
     await seedListsUser(prisma, listsUserEmail(email), passwordHash);
+    await seedProUser(prisma, proUserEmail(email), passwordHash);
     console.log("End-to-end database ready");
   } finally {
     await prisma.$disconnect();

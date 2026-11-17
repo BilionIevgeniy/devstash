@@ -23,9 +23,11 @@ const card = {
   description: null,
   isFavorite: false,
   isPinned: false,
+  descriptionAiGenerated: false,
+  contentAiGenerated: false,
   createdAt,
   type: { id: "type-1", name: "command", icon: "Terminal", color: null },
-  tags: [{ tag: { name: "cli" } }],
+  tags: [{ aiGenerated: false, tag: { name: "cli" } }],
   contentType: "TEXT",
   content: null,
   url: null,
@@ -62,6 +64,28 @@ describe("getRecentSearchableItems", () => {
       "npm run dev",
       "https://react.dev",
       null,
+    ]);
+  });
+
+  it("marks a preview taken from AI content, never a link's URL", async () => {
+    findMany.mockResolvedValue([
+      { ...card, content: "Optimized prompt", contentAiGenerated: true },
+      { ...card, content: "Mine" },
+      {
+        ...card,
+        id: "item-2",
+        contentType: "URL",
+        url: "https://react.dev",
+        contentAiGenerated: true,
+      },
+    ]);
+
+    const items = await getRecentSearchableItems("user-1");
+
+    expect(items.map((item) => item.previewAiGenerated)).toEqual([
+      true,
+      false,
+      false,
     ]);
   });
 

@@ -46,7 +46,8 @@ describe("buildE2eServerEnv", () => {
     const env = buildE2eServerEnv(INPUT);
     const vendorKeys = Object.keys(env).filter(
       (name) =>
-        /^(RESEND|OPENAI|STRIPE|R2|AUTH_GITHUB)_/.test(name) ||
+        (/^(RESEND|OPENAI|STRIPE|R2|AUTH_GITHUB)_/.test(name) &&
+          name !== "OPENAI_BASE_URL") ||
         name === "SEED_DEMO_PASSWORD",
     );
 
@@ -54,6 +55,12 @@ describe("buildE2eServerEnv", () => {
     for (const name of vendorKeys) {
       expect(env[name], name).toMatch(/dummy|devstash\.test/);
     }
+  });
+
+  it("sends the AI calls to the local fake, never to the real API", () => {
+    expect(buildE2eServerEnv(INPUT).OPENAI_BASE_URL).toBe(
+      "http://localhost:3101/v1",
+    );
   });
 
   it("keeps Sentry off: no DSN, and no token to upload source maps with", () => {

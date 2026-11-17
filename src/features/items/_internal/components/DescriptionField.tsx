@@ -16,6 +16,8 @@ interface DescriptionFieldProps {
   /** What the summary is made from. */
   title: string;
   content: string;
+  /** Told the value an accepted summary put in the field (ADR 0027). */
+  onAcceptSummary?: (value: string) => void;
 }
 
 // The description of both forms. An accepted summary only changes the field:
@@ -26,6 +28,7 @@ export function DescriptionField({
   canUseAi,
   title,
   content,
+  onAcceptSummary,
 }: DescriptionFieldProps) {
   const t = useTranslations("items.fields");
   const field = (action?: ReactNode) => (
@@ -48,7 +51,11 @@ export function DescriptionField({
       title={title}
       content={content}
       currentValue={value}
-      onAccept={(summary) => onChange(summary.slice(0, DESCRIPTION_MAX))}
+      onAccept={(summary) => {
+        const value = summary.slice(0, DESCRIPTION_MAX);
+        onChange(value);
+        onAcceptSummary?.(value);
+      }}
     >
       {field}
     </AiDescriptionSummary>

@@ -83,6 +83,40 @@ describe("parseImportedItem", () => {
     });
   });
 
+  it("reads the AI marks of a record (ADR 0027)", () => {
+    const marked = {
+      ...snippet,
+      aiGenerated: { description: false, content: true, tags: ["react"] },
+    };
+    expect(parseImportedItem(marked)).toMatchObject({
+      kind: "ok",
+      data: {
+        aiGenerated: { description: false, content: true, tags: ["react"] },
+      },
+    });
+  });
+
+  it("imports a record without marks, or with malformed ones, as not marked", () => {
+    const none = { description: false, content: false, tags: [] };
+    expect(parseImportedItem(snippet)).toMatchObject({
+      kind: "ok",
+      data: { aiGenerated: none },
+    });
+    expect(
+      parseImportedItem({
+        ...snippet,
+        aiGenerated: {
+          description: "yes",
+          content: 1,
+          tags: [3, "x".repeat(99)],
+        },
+      }),
+    ).toMatchObject({ kind: "ok", data: { aiGenerated: none } });
+    expect(parseImportedItem({ ...snippet, aiGenerated: "all" })).toMatchObject(
+      { kind: "ok", data: { aiGenerated: none } },
+    );
+  });
+
   it("counts a file or image apart, never as a link", () => {
     expect(parseImportedItem({ type: "image", title: "Diagram" })).toEqual({
       kind: "file",

@@ -58,7 +58,10 @@ export function ItemBody({
         </DrawerSection>
       )}
       {detail.content && (
-        <DrawerSection title={t("content")}>
+        <DrawerSection
+          title={t("content")}
+          aiGenerated={detail.contentAiGenerated}
+        >
           {fields.codeEditor ? (
             <AiCodeExplanation
               title={title}

@@ -17,16 +17,34 @@ vi.mock("@/features/items/actions/item", () => ({ createItem }));
 vi.mock("next/navigation", () => ({ unstable_rethrow: rethrow }));
 vi.mock("sonner", () => ({ toast }));
 // The real fields pull in the editors. The probe keeps only the title, which
-// is all a snippet needs to be sent.
+// is all a snippet needs to be sent, and an accepted AI summary, which hands
+// the form what ItemFields would (ADR 0027).
 vi.mock("@/features/items/_internal/components/ItemFields", () => ({
-  ItemFields: ({ values, onChange }: ComponentProps<typeof ItemFields>) => (
-    <label>
-      Title
-      <input
-        value={values.title}
-        onChange={(event) => onChange("title", event.target.value)}
-      />
-    </label>
+  ItemFields: ({
+    values,
+    onChange,
+    acceptedAi,
+  }: ComponentProps<typeof ItemFields>) => (
+    <>
+      <label>
+        Title
+        <input
+          value={values.title}
+          onChange={(event) => onChange("title", event.target.value)}
+        />
+      </label>
+      <button
+        type="button"
+        onClick={() => {
+          onChange("description", "A summary.");
+          acceptedAi.acceptDescription("A summary.");
+          onChange("tags", "mine, react");
+          acceptedAi.acceptTag("react");
+        }}
+      >
+        Accept AI
+      </button>
+    </>
   ),
 }));
 // The real select fetches the user's collections, and the file field loads
@@ -140,5 +158,25 @@ describe("CreateItemDialog", () => {
       await screen.findByText("Caught: NEXT_REDIRECT"),
     ).toBeInTheDocument();
     expect(toast.error).not.toHaveBeenCalled();
+  });
+});
+
+describe("CreateItemDialog AI claims", () => {
+  it("sends the summary and the tags accepted from the AI as claims", async () => {
+    createItem.mockResolvedValue(CREATED);
+    const user = userEvent.setup();
+    renderDialog();
+
+    await user.click(screen.getByRole("button", { name: "New Snippet" }));
+    await user.type(await screen.findByLabelText("Title"), "ls -la");
+    await user.click(screen.getByRole("button", { name: "Accept AI" }));
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    await waitFor(() => expect(createItem).toHaveBeenCalled());
+    expect(createItem.mock.calls[0][0].aiGenerated).toEqual({
+      description: true,
+      content: false,
+      tags: ["react"],
+    });
   });
 });

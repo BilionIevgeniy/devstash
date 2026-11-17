@@ -61,6 +61,7 @@ function renderFields(typeName: string) {
       onChange={() => undefined}
       canUseAi={false}
       contentRef={contentRef}
+      acceptedAi={{ acceptDescription: vi.fn(), acceptTag: vi.fn() }}
     />,
   );
   return contentRef;

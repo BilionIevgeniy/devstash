@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 
 import type { ItemDeleteHandler } from "@/features/items/_internal/components/DeleteItemDialog";
 import { DrawerSection } from "@/features/items/_internal/components/DrawerSection";
+import { ItemTagBadges } from "@/features/items/_internal/components/ItemTagBadges";
 import { ItemActionBar } from "@/features/items/_internal/components/ItemActionBar";
 import { ItemBody } from "@/features/items/_internal/components/ItemBody";
 import { ItemDrawerHeader } from "@/features/items/_internal/components/ItemDrawerHeader";
@@ -88,9 +89,10 @@ export function ItemDrawerContent({
       />
       <div className="flex-1 space-y-6 overflow-y-auto p-6">
         {item.description && (
-          <DrawerSection title={t("fields.description")}>
-            <p>{item.description}</p>
-          </DrawerSection>
+          <ItemDescription
+            text={item.description}
+            aiGenerated={item.descriptionAiGenerated}
+          />
         )}
         {state.status === "loading" && (
           <ItemDrawerSkeleton typeName={item.type.name} />
@@ -107,27 +109,35 @@ export function ItemDrawerContent({
             onSaved={onSaved}
           />
         )}
-        {item.tags.length > 0 && <ItemTagList tags={item.tags} />}
+        {item.tags.length > 0 && (
+          <ItemTagList tags={item.tags} aiTags={item.aiTags} />
+        )}
         {detail && <ItemMeta detail={detail} />}
       </div>
     </>
   );
 }
 
-function ItemTagList({ tags }: { tags: string[] }) {
+function ItemDescription({
+  text,
+  aiGenerated,
+}: {
+  text: string;
+  aiGenerated: boolean;
+}) {
+  const t = useTranslations("items.fields");
+  return (
+    <DrawerSection title={t("description")} aiGenerated={aiGenerated}>
+      <p>{text}</p>
+    </DrawerSection>
+  );
+}
+
+function ItemTagList({ tags, aiTags }: { tags: string[]; aiTags: string[] }) {
   const t = useTranslations("items.fields");
   return (
     <DrawerSection title={t("tags")} icon={Tag}>
-      <ul className="flex flex-wrap gap-2">
-        {tags.map((tag) => (
-          <li
-            key={tag}
-            className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground"
-          >
-            {tag}
-          </li>
-        ))}
-      </ul>
+      <ItemTagBadges tags={tags} aiTags={aiTags} spoken />
     </DrawerSection>
   );
 }

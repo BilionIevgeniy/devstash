@@ -1,3 +1,4 @@
+import { savedRowFields } from "@/features/items/domain/item-detail";
 import type { InfiniteData, QueryClient } from "@tanstack/react-query";
 
 import type {
@@ -150,9 +151,7 @@ async function syncSaved(queryClient: QueryClient, detail: ItemDetailJson) {
   void resumeDetail();
   patchListRows(queryClient, itemKeys.lists(), detail.id, (row) => ({
     ...row,
-    title: detail.title,
-    description: detail.description,
-    tags: detail.tags,
+    ...savedRowFields(detail),
   }));
   void resumeLists();
   void queryClient.invalidateQueries(

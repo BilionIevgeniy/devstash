@@ -5,6 +5,7 @@ import {
   FILE_NAME_MAX,
   type FileKind,
 } from "@/features/files/domain/file-rules";
+import { NO_AI_CLAIMS } from "@/features/items/domain/ai-marks";
 import { FAVORITE_ITEM_SORTS } from "@/features/items/domain/favorite-sort";
 import {
   COLLECTIONS_MAX,
@@ -101,6 +102,20 @@ const collectionIdList = z
   .transform((ids) => [...new Set(ids)])
   .pipe(z.array(z.string()).max(COLLECTIONS_MAX, "tooManyCollections"));
 
+// What a save claims came from the AI unchanged (ADR 0027). Trusted: it can
+// mark only the caller's own item; the service keeps a claim only on a value
+// it stores. Left out, nothing is claimed.
+const aiGeneratedClaimsSchema = z
+  .object({
+    description: z.boolean("invalidRequest").default(false),
+    content: z.boolean("invalidRequest").default(false),
+    tags: z
+      .array(z.string("invalidRequest").trim().max(TAG_MAX, "invalidRequest"))
+      .max(TAGS_MAX, "invalidRequest")
+      .default([]),
+  })
+  .default(NO_AI_CLAIMS);
+
 // A field left out is not changed; null clears it. The tags and the collections
 // are always sent and replace the old ones as a whole.
 export const updateItemSchema = z.object({
@@ -115,6 +130,7 @@ export const updateItemSchema = z.object({
   language: optionalText(LANGUAGE_MAX, "languageTooLong"),
   tags: tagList,
   collectionIds: collectionIdList,
+  aiGenerated: aiGeneratedClaimsSchema,
 });
 
 export type UpdateItemInput = z.infer<typeof updateItemSchema>;

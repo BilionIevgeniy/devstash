@@ -11,6 +11,7 @@ import { MarkdownEditor } from "@/features/editor/components/MarkdownEditor";
 import type { EditorHandle } from "@/features/editor/types";
 import { DescriptionField } from "@/features/items/_internal/components/DescriptionField";
 import { TagsField } from "@/features/items/_internal/components/TagsField";
+import type { AcceptedAiHandlers } from "@/features/items/_internal/components/hooks/use-accepted-ai";
 import type {
   ItemFormValues,
   ItemTextField,
@@ -33,6 +34,8 @@ interface ItemFieldsProps {
   fileName?: string | null;
   /** Reaches the content editor, for a label click and a refused submit. */
   contentRef: RefObject<EditorHandle | null>;
+  /** Told what is accepted from the AI, for the marks of the save. */
+  acceptedAi: AcceptedAiHandlers;
 }
 
 // The text fields of the create and edit forms, in the same order in both;
@@ -46,6 +49,7 @@ export function ItemFields({
   canUseAi,
   fileName,
   contentRef,
+  acceptedAi,
 }: ItemFieldsProps) {
   const t = useTranslations("items.fields");
   const source = aiSource(fields, { ...values, fileName });
@@ -70,6 +74,7 @@ export function ItemFields({
         canUseAi={canUseAi}
         title={values.title}
         content={source.text}
+        onAcceptSummary={acceptedAi.acceptDescription}
       />
       {fields.url && (
         <Field label={t("url")}>
@@ -112,6 +117,7 @@ export function ItemFields({
         canUseAi={canUseAi}
         title={values.title}
         content={source.text}
+        onAcceptTag={acceptedAi.acceptTag}
       />
     </>
   );

@@ -28,7 +28,10 @@ const row = {
   isPinned: false,
   createdAt: NOW,
   updatedAt: NOW,
+  descriptionAiGenerated: false,
+  contentAiGenerated: false,
   tags: [],
+  aiTags: [],
   collectionIds: [],
   fileKey: "users/user-1/spec.pdf",
   fileName: "spec.pdf",
@@ -59,6 +62,31 @@ describe("getUserExportItemPage", () => {
     });
     expect(page.items[0]).not.toHaveProperty("fileKey");
     expect(signItemFile).toHaveBeenCalledWith(row.fileKey, "spec.pdf", NOW);
+  });
+
+  it("writes the AI marks as one aiGenerated field (ADR 0027)", async () => {
+    getEntitlements.mockResolvedValue({ isPro: true });
+    getExportItemRows.mockResolvedValue({
+      rows: [
+        {
+          ...row,
+          descriptionAiGenerated: true,
+          tags: ["react", "mine"],
+          aiTags: ["react"],
+        },
+      ],
+      nextCursor: null,
+    });
+
+    const [item] = (await getUserExportItemPage("user-1", null, NOW)).items;
+
+    expect(item.aiGenerated).toEqual({
+      description: true,
+      content: false,
+      tags: ["react"],
+    });
+    expect(item).not.toHaveProperty("descriptionAiGenerated");
+    expect(item).not.toHaveProperty("aiTags");
   });
 
   it("signs nothing for a plan that does not give the file", async () => {

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import type { ItemDeleteHandler } from "@/features/items/_internal/components/DeleteItemDialog";
 import { ItemDrawerContent } from "@/features/items/_internal/components/ItemDrawerContent";
+import { savedRowFields } from "@/features/items/domain/item-detail";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
 interface ItemDetailViewProps {
@@ -35,12 +36,7 @@ export function ItemDetailView({
   const [isEditing, setIsEditing] = useState(false);
 
   function handleSaved(saved: ItemDetailJson) {
-    setItem((current) => ({
-      ...current,
-      title: saved.title,
-      description: saved.description,
-      tags: saved.tags,
-    }));
+    setItem((current) => ({ ...current, ...savedRowFields(saved) }));
     setDetail(saved);
     setIsEditing(false);
   }

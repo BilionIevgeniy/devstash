@@ -6,6 +6,7 @@ import {
   isRecordNotFound,
   tagLinks,
 } from "@/features/items/_internal/services/item-writes";
+import { nextAiMarks } from "@/features/items/domain/ai-marks";
 import {
   editableFields,
   editableUpdate,
@@ -59,9 +60,16 @@ export async function updateUserItem(
   if ("error" in update) {
     return fail(update.error);
   }
-  const { tags, collectionIds, ...fields } = update.data;
+  const { tags, collectionIds, aiGenerated, ...fields } = update.data;
   const linked = new Set(current.collectionIds);
   const added = collectionIds.filter((id) => !linked.has(id));
+  // From the filtered fields, so a claim on a field the type lacks marks
+  // nothing (ADR 0027).
+  const { aiTags, ...marks } = nextAiMarks(
+    current.ai,
+    { description: fields.description, content: fields.content, tags },
+    aiGenerated,
+  );
 
   // A delete of the item or a collection can win between the read and here:
   // P2025 below.
@@ -70,7 +78,8 @@ export async function updateUserItem(
       where: { id: itemId, userId },
       data: {
         ...fields,
-        tags: { deleteMany: {}, create: tagLinks(userId, tags) },
+        ...marks,
+        tags: { deleteMany: {}, create: tagLinks(userId, tags, aiTags) },
         searchTags: toSearchTags(tags),
         collections: {
           deleteMany: { collectionId: { notIn: collectionIds } },
@@ -92,10 +101,11 @@ export async function updateUserItem(
   return ok(item);
 }
 
-// Replaces only the content, for an accepted AI rewrite of it: the tags,
-// collections and other fields stay as they are. Scoped by the owner, and
-// limited to the types that have content.
-export async function setUserItemContent(
+// Replaces only the content with an accepted AI rewrite of it, marked as AI
+// output (ADR 0027): the tags, collections and other fields stay as they are.
+// Scoped by the owner, and limited to the types that have content. Not for
+// text the user wrote: that goes through updateUserItem.
+export async function setUserItemAiContent(
   userId: string,
   itemId: string,
   content: string,
@@ -109,7 +119,7 @@ export async function setUserItemContent(
   try {
     await prisma.item.update({
       where: { id: itemId, userId },
-      data: { content },
+      data: { content, contentAiGenerated: true },
       select: { id: true },
     });
   } catch (error) {

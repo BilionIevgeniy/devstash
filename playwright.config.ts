@@ -2,6 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 import { config as loadEnv } from "dotenv";
 import { AUTH_FILE } from "./e2e/support/storage-state";
 import { buildE2eServerEnv } from "./scripts/e2e-server-env";
+import { FAKE_OPENAI_PORT } from "./scripts/fake-openai";
 import { requireTestDatabase } from "./scripts/require-dev-database";
 
 // End-to-end smoke tests against the production build, on the test database.
@@ -51,21 +52,31 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], storageState: AUTH_FILE },
     },
   ],
-  webServer: {
-    // `next start` listens on every interface by default; the test server holds
-    // the Upstash token and a public AUTH_SECRET, so it stays on this machine.
-    command: "npm run build && npm run start -- --hostname localhost",
-    url: ORIGIN,
-    reuseExistingServer: false,
-    timeout: BUILD_AND_START_TIMEOUT_MS,
-    // A failed `next build` is unreadable without its output.
-    stdout: isCi ? "pipe" : "ignore",
-    env: buildE2eServerEnv({
-      origin: ORIGIN,
-      port: PORT,
-      databaseUrl: requireTestDatabase(process.env.TEST_DATABASE_URL),
-      upstashUrl: required("E2E_UPSTASH_REDIS_REST_URL"),
-      upstashToken: required("E2E_UPSTASH_REDIS_REST_TOKEN"),
-    }),
-  },
+  webServer: [
+    {
+      // The stand-in for the OpenAI API (scripts/fake-openai.ts), which the
+      // test server reaches through OPENAI_BASE_URL.
+      command: "npx tsx scripts/fake-openai.ts",
+      url: `http://localhost:${FAKE_OPENAI_PORT}/health`,
+      reuseExistingServer: false,
+    },
+    {
+      // `next start` listens on every interface by default; the test server
+      // holds the Upstash token and a public AUTH_SECRET, so it stays on this
+      // machine.
+      command: "npm run build && npm run start -- --hostname localhost",
+      url: ORIGIN,
+      reuseExistingServer: false,
+      timeout: BUILD_AND_START_TIMEOUT_MS,
+      // A failed `next build` is unreadable without its output.
+      stdout: isCi ? "pipe" : "ignore",
+      env: buildE2eServerEnv({
+        origin: ORIGIN,
+        port: PORT,
+        databaseUrl: requireTestDatabase(process.env.TEST_DATABASE_URL),
+        upstashUrl: required("E2E_UPSTASH_REDIS_REST_URL"),
+        upstashToken: required("E2E_UPSTASH_REDIS_REST_TOKEN"),
+      }),
+    },
+  ],
 });

@@ -1,4 +1,8 @@
-import { editableFields } from "@/features/items/domain/item-fields";
+import {
+  editableFields,
+  TAG_MAX,
+  TAGS_MAX,
+} from "@/features/items/domain/item-fields";
 import type { ItemIdentity } from "@/features/items/types";
 import type { ImportSummary } from "@/features/import-export/types";
 
@@ -42,6 +46,24 @@ export function remapCollectionIds(
   return { ...record, collectionIds };
 }
 
+// The AI marks of an exported item (ADR 0027), read defensively: a file from
+// before the marks, or a malformed field, imports as not marked instead of
+// refusing the item.
+export function importedAiClaims(value: unknown) {
+  if (!isImportRecord(value)) return undefined;
+  const tags = Array.isArray(value.tags) ? value.tags : [];
+  return {
+    description: value.description === true,
+    content: value.content === true,
+    tags: tags
+      .filter(
+        (tag): tag is string =>
+          typeof tag === "string" && tag.length <= TAG_MAX,
+      )
+      .slice(0, TAGS_MAX),
+  };
+}
+
 // The fields of an exported item in the shape the create schema reads. A
 // missing optional field is null; the schema decides the rest.
 export function toCreateItemCandidate(record: ImportRecord) {
@@ -54,6 +76,7 @@ export function toCreateItemCandidate(record: ImportRecord) {
     language: record.language ?? null,
     tags: record.tags ?? [],
     collectionIds: record.collectionIds ?? [],
+    aiGenerated: importedAiClaims(record.aiGenerated),
   };
 }
 

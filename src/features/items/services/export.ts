@@ -39,13 +39,26 @@ async function toExportedItem(
   isPro: boolean,
   now: Date,
 ): Promise<ExportedItem> {
-  const { fileKey, fileName, fileSize, ...item } = row;
+  const {
+    fileKey,
+    fileName,
+    fileSize,
+    descriptionAiGenerated,
+    contentAiGenerated,
+    aiTags,
+    ...item
+  } = row;
   const file = await exportedFile(
     { type: item.type, fileKey, fileName, fileSize },
     isPro,
     now,
   );
-  return { ...item, file };
+  const aiGenerated = {
+    description: descriptionAiGenerated,
+    content: contentAiGenerated,
+    tags: aiTags,
+  };
+  return { ...item, aiGenerated, file };
 }
 
 // One page of the caller's items for the export, oldest id first. Every page

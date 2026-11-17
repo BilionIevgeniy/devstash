@@ -18,6 +18,7 @@ import {
   editableFields,
 } from "@/features/items/domain/item-fields";
 import { createErrorText } from "../../../../../test/error-text";
+import { NO_AI_CLAIMS } from "@/features/items/domain/ai-marks";
 
 const VALUES: ItemFormValues = {
   title: "Debounce",
@@ -41,6 +42,7 @@ function submission(
     typeName: "snippet",
     fields: editableFields("snippet"),
     values: VALUES,
+    aiGenerated: NO_AI_CLAIMS,
     upload: null,
     contentRef: { current: { focus } },
     run,
@@ -87,6 +89,7 @@ describe("submitNewItem", () => {
       description: "A helper",
       tags: ["react", "hooks"],
       collectionIds: ["col-1"],
+      aiGenerated: NO_AI_CLAIMS,
       content: "const a = 1;",
       language: "typescript",
     });
@@ -101,6 +104,7 @@ describe("submitNewItem", () => {
       description: "A helper",
       tags: ["react", "hooks"],
       collectionIds: ["col-1"],
+      aiGenerated: NO_AI_CLAIMS,
       url: "https://example.com",
     });
   });

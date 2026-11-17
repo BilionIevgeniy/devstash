@@ -13,6 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
+import { AI_ICON_CLASS } from "@/features/ai/_internal/components/suggestion-classes";
 
 export interface AiStreamButtonLabels {
   /** Before the first answer: "Explain". */
@@ -37,8 +38,6 @@ interface AiStreamButtonProps {
   /** Where the focus goes back when the controls below it unmount. */
   ref?: Ref<HTMLButtonElement>;
 }
-
-const ICON_CLASS = "text-violet-500 dark:text-violet-400";
 
 // The header button of a streamed AI answer: its label changes from idle to
 // again, so the focus stays on it. While a request runs it is aria-disabled,
@@ -71,7 +70,7 @@ export function AiStreamButton({
       {isPending ? (
         <Loader2 className="animate-spin" aria-hidden />
       ) : (
-        <Sparkles className={ICON_CLASS} aria-hidden />
+        <Sparkles className={AI_ICON_CLASS} aria-hidden />
       )}
       {isPending ? labels.pending : hasAnswer ? labels.again : labels.idle}
     </Button>

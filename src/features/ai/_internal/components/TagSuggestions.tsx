@@ -7,9 +7,11 @@ import { Check, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   ACCEPT_CLASS,
+  AI_ICON_CLASS,
   DISMISS_CLASS,
   SUGGESTION_FRAME_CLASS,
 } from "@/features/ai/_internal/components/suggestion-classes";
+import { aiMarkProps } from "@/features/ai/domain/marking";
 import { cn } from "@/lib/utils";
 
 interface TagSuggestionsProps {
@@ -76,11 +78,9 @@ export function TagSuggestions({
             "inline-flex h-7 items-center gap-1 pr-0.5 pl-2 text-xs",
             SUGGESTION_FRAME_CLASS,
           )}
+          {...aiMarkProps(true)}
         >
-          <Sparkles
-            className="size-3 text-violet-500 dark:text-violet-400"
-            aria-hidden
-          />
+          <Sparkles className={cn("size-3", AI_ICON_CLASS)} aria-hidden />
           <span>{tag}</span>
           <Button
             type="button"

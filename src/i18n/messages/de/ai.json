@@ -49,5 +49,8 @@
     "add": "Tag {tag} hinzufügen",
     "dismiss": "Tag {tag} verwerfen"
   },
-  "view": "Ansicht"
+  "view": "Ansicht",
+  "marking": {
+    "label": "KI-generiert"
+  }
 }

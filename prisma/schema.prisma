@@ -107,28 +107,32 @@ model VerificationToken {
 }
 
 model Item {
-  id          String    @id @default(cuid())
+  id                     String    @id @default(cuid())
   // Collated "und-x-icu" by the migration item_title_icu_collation, which Prisma
   // cannot express: a migration that recreates this column must set it again.
-  title       String
-  contentType String
-  content     String?
+  title                  String
+  contentType            String
+  content                String?
   // Deprecated: replaced by fileKey and read by nothing (features 17 and 18 in context/features/plan/).
-  fileUrl     String?
+  fileUrl                String?
   // The R2 object key under users/<userId>/, never a URL. Unique, so one
   // upload cannot back two items.
-  fileKey     String?   @unique
-  fileName    String?
-  fileSize    Int?
-  url         String?
-  description String?
-  isFavorite  Boolean   @default(false)
+  fileKey                String?   @unique
+  fileName               String?
+  fileSize               Int?
+  url                    String?
+  description            String?
+  // AI-generated marks (ADR 0027): the value is an accepted AI output,
+  // unchanged since. An edit of the field clears it (items/domain/ai-marks.ts).
+  descriptionAiGenerated Boolean   @default(false)
+  contentAiGenerated     Boolean   @default(false)
+  isFavorite             Boolean   @default(false)
   // When it was starred, null when it is not a favorite: the CHECK of the
   // migration favorited_at_required keeps the two together. A toggle leaves
   // updatedAt alone: favoriting is not an edit.
-  favoritedAt DateTime?
-  isPinned    Boolean   @default(false)
-  language    String?
+  favoritedAt            DateTime?
+  isPinned               Boolean   @default(false)
+  language               String?
 
   userId String
   user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -232,6 +236,10 @@ model ItemTag {
 
   item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
   tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  // An accepted AI suggestion on this item (ADR 0027); on the link, since one
+  // tag name can be the AI's on one item and the user's on another.
+  aiGenerated Boolean @default(false)
 
   @@id([itemId, tagId])
   @@index([tagId])

@@ -1,5 +1,9 @@
 import "server-only";
 
+import {
+  itemTagsSelect,
+  toTagFields,
+} from "@/features/items/_internal/queries";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
@@ -21,10 +25,9 @@ const exportItemSelect = {
   fileName: true,
   fileSize: true,
   type: { select: { name: true } },
-  tags: {
-    select: { tag: { select: { name: true } } },
-    orderBy: { tag: { name: "asc" } },
-  },
+  descriptionAiGenerated: true,
+  contentAiGenerated: true,
+  tags: itemTagsSelect,
   collections: {
     select: { collectionId: true },
     orderBy: { collectionId: "asc" },
@@ -41,6 +44,7 @@ export interface ExportItemRow extends Omit<
 > {
   type: string;
   tags: string[];
+  aiTags: string[];
   collectionIds: string[];
 }
 
@@ -59,7 +63,7 @@ function toExportItemRow({
   return {
     ...item,
     type: type.name,
-    tags: tags.map(({ tag }) => tag.name),
+    ...toTagFields(tags),
     collectionIds: collections.map(({ collectionId }) => collectionId),
   };
 }

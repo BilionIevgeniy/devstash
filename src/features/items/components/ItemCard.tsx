@@ -1,5 +1,8 @@
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { useFormatter } from "next-intl";
+import { AiGeneratedLabel } from "@/features/ai/components/AiGeneratedLabel";
+import { aiMarkProps } from "@/features/ai/domain/marking";
+import { ItemTagBadges } from "@/features/items/_internal/components/ItemTagBadges";
 import { PinMark } from "@/features/items/_internal/components/PinMark";
 import { cn } from "@/lib/utils";
 import type { ItemCardData } from "@/features/items/types";
@@ -38,23 +41,20 @@ export function ItemCard({ item }: ItemCardProps) {
             {item.isPinned && <PinMark color={type.color} />}
           </div>
           {item.description && (
-            <p className="line-clamp-2 text-sm text-muted-foreground">
+            <p
+              className="line-clamp-2 text-sm text-muted-foreground"
+              {...aiMarkProps(item.descriptionAiGenerated)}
+            >
+              {item.descriptionAiGenerated && (
+                <AiGeneratedLabel variant="icon" className="mr-1 inline" />
+              )}
               {item.description}
             </p>
           )}
         </div>
       </div>
       <div className="mt-auto flex items-end justify-between gap-3">
-        <ul className="flex flex-wrap gap-2">
-          {item.tags.map((tag) => (
-            <li
-              key={tag}
-              className="rounded-md bg-muted px-2 py-0.5 text-xs text-muted-foreground"
-            >
-              {tag}
-            </li>
-          ))}
-        </ul>
+        <ItemTagBadges tags={item.tags} aiTags={item.aiTags} />
         <time
           dateTime={item.createdAt.toISOString()}
           className="ml-auto shrink-0 text-xs text-muted-foreground"

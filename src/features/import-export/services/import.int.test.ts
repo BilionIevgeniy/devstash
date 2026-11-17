@@ -12,6 +12,7 @@ import {
   importUserItems,
 } from "@/features/import-export/services/import";
 import type { CollectionImportData } from "@/features/import-export/types";
+import { setUserItemAiContent } from "@/features/items/services/item";
 import { prisma } from "@/lib/prisma";
 
 // B is on Pro, so B imports. A holds rows that look like B's import, and they
@@ -77,6 +78,42 @@ describe("an import of the user's own export", () => {
     expect(second.collections).toMatchObject({ created: 0, duplicates: 2 });
     expect(second.items).toMatchObject({ created: 0, duplicates: 3 });
     expect(await snapshotTenant(t.b.userId)).toEqual(before);
+  });
+});
+
+// ADR 0027: the marks travel with the export and come back with the import.
+it("keeps the AI marks through an export and an import", async () => {
+  await setUserItemAiContent(t.b.userId, t.b.items.snippet, "Better code");
+  await prisma.itemTag.updateMany({
+    where: { itemId: t.b.items.snippet, tag: { name: "react" } },
+    data: { aiGenerated: true },
+  });
+  const file = await exportOf(t.b.userId);
+  await prisma.item.deleteMany({
+    where: { userId: t.b.userId, fileKey: null },
+  });
+  await prisma.collection.deleteMany({ where: { userId: t.b.userId } });
+
+  await importAll(t.b.userId, file);
+
+  const snippet = await prisma.item.findFirstOrThrow({
+    where: { userId: t.b.userId, title: "useDebounce" },
+    select: {
+      contentAiGenerated: true,
+      descriptionAiGenerated: true,
+      tags: {
+        select: { aiGenerated: true, tag: { select: { name: true } } },
+        orderBy: { tag: { name: "asc" } },
+      },
+    },
+  });
+  expect(snippet).toEqual({
+    contentAiGenerated: true,
+    descriptionAiGenerated: false,
+    tags: [
+      { aiGenerated: true, tag: { name: "react" } },
+      { aiGenerated: false, tag: { name: "shared" } },
+    ],
   });
 });
 
