@@ -1,12 +1,13 @@
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { useTranslations } from "next-intl";
-import { CommandItem } from "@/components/ui/command";
+import { CommandItem, CommandList } from "@/components/ui/command";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PaletteSearch } from "@/features/search/_internal/components/hooks/use-palette-search";
 import {
   type MatchHandlers,
   PaletteMatches,
 } from "@/features/search/_internal/components/PaletteMatches";
+import { paletteView } from "@/features/search/domain/palette-view";
 
 const LOADING_ROWS = [0, 1, 2, 3, 4];
 
@@ -34,27 +35,30 @@ function PaletteLoading() {
   );
 }
 
-function PaletteFailure({
-  status,
-  onRetry,
-}: {
-  status: keyof typeof FAILURE_CODES;
-  onRetry: () => void;
-}) {
-  const t = useTranslations("search");
+function PaletteFailure({ status }: { status: keyof typeof FAILURE_CODES }) {
   const errorText = useErrorText();
   return (
-    <>
-      <p
-        role="alert"
-        className="px-2 py-4 text-center text-sm text-destructive"
-      >
-        {errorText(FAILURE_CODES[status])}
-      </p>
-      <CommandItem value="retry" onSelect={onRetry} className="justify-center">
-        {t("tryAgain")}
-      </CommandItem>
-    </>
+    <p role="alert" className="px-2 py-4 text-center text-sm text-destructive">
+      {errorText(FAILURE_CODES[status])}
+    </p>
+  );
+}
+
+function RetryOption({ onRetry }: { onRetry: () => void }) {
+  const t = useTranslations("search");
+  return (
+    <CommandItem value="retry" onSelect={onRetry} className="justify-center">
+      {t("tryAgain")}
+    </CommandItem>
+  );
+}
+
+function PaletteEmpty() {
+  const t = useTranslations("search");
+  return (
+    <p className="py-6 text-center text-sm" role="status">
+      {t("noResults")}
+    </p>
   );
 }
 
@@ -77,40 +81,39 @@ function ShowMore({ search }: { search: PaletteSearch }) {
   );
 }
 
-// What the list shows: the answer for the current text; while it is pending,
-// the last results dimmed and not selectable (or the skeleton when there are
-// none yet); a failure in plain words with a way to retry.
+// What the palette shows under its input, in a box of fixed height: the
+// answer for the current text; while it is pending, the last results (their
+// options disabled, so dimmed and not selectable), or the skeleton when there
+// are none yet; a failure in plain words with a way to retry. The messages sit
+// next to the listbox and not in it, which may own options and groups only,
+// so a screen reader announces them.
 export function PaletteBody({ search, ...handlers }: PaletteBodyProps) {
-  const t = useTranslations("search");
-  const { outcome, previous, isPending } = search;
+  const { isLoading, failure, results, isEmpty } = paletteView(search);
+  const { isPending } = search;
 
-  if (isPending) {
-    if (!previous) return <PaletteLoading />;
-    return (
-      <div data-pending="" aria-busy="true" className="opacity-50">
-        <PaletteMatches results={previous} isStale {...handlers} />
-      </div>
-    );
-  }
-  if (!outcome) return <PaletteLoading />;
-  if (outcome.status !== "ready") {
-    return <PaletteFailure status={outcome.status} onRetry={search.retry} />;
-  }
-
-  const { results } = outcome;
-  if (results.items.length === 0 && results.collections.length === 0) {
-    return (
-      <p className="py-6 text-center text-sm" role="status">
-        {t("noResults")}
-      </p>
-    );
-  }
   return (
-    <PaletteMatches
-      results={results}
-      isStale={false}
-      footer={results.nextCursor !== null && <ShowMore search={search} />}
-      {...handlers}
-    />
+    <div className="flex h-72 flex-col">
+      {isLoading && <PaletteLoading />}
+      {failure && <PaletteFailure status={failure} />}
+      {isEmpty && <PaletteEmpty />}
+      <CommandList
+        className="min-h-0 flex-1"
+        aria-busy={isPending || undefined}
+        data-pending={isPending ? "" : undefined}
+      >
+        {failure && <RetryOption onRetry={search.retry} />}
+        {results && !isEmpty && (
+          <PaletteMatches
+            results={results}
+            isStale={isPending}
+            footer={
+              !isPending &&
+              results.nextCursor !== null && <ShowMore search={search} />
+            }
+            {...handlers}
+          />
+        )}
+      </CommandList>
+    </div>
   );
 }

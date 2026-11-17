@@ -34,7 +34,7 @@ An agent's findings are not handed to me to decide. For each one, take it, or an
 `/feature review` reads the IDE diagnostics of all files (`getDiagnostics` of the VS Code extension; the review agents have no IDE tools, so the main session does it) and runs `npm run lint`. The Problems panel stays clean, Tailwind canonical-class hints included:
 
 - A warning in a file the feature changed is fixed in the feature
-- A warning in another file is named in the verdict with its fix and goes into its own change, so the feature does not grow
+- A warning in another file is fixed in the feature too, in its own commit, and named in the verdict ("Found work" below)
 - A warning that the IDE shows and `npm run lint` does not is a gap in the lint, so its fix comes with the guard that closes the gap, in this order: an ESLint rule, or a change of the scope of one, in `eslint.config.mjs` with its line in "What the lint enforces" in `architecture-rules.md` (example: `components/ui` is exempt from `better-tailwindcss/enforce-canonical-classes`, so a canonical-class hint there reaches the Problems panel and never the lint); else a line in the matching section of `coding-standards.md`, or in `architecture-rules.md` when it is about where code goes. A rule change that is more than a new check gets an ADR in `docs/adr/` (rule 10 of "Where does this go")
 - The final message names each warning, what fixed it and which guard was added
 
@@ -92,9 +92,18 @@ We will create a new branch for every feature/fix. Name branch **feature/[featur
 ## Code Changes
 
 - Make minimal changes to accomplish the task
-- Don't refactor unrelated code unless asked
+- Don't refactor unrelated code unless asked; a defect found on the way is not unrelated ("Found work" below)
 - Don't add "nice to have" features
 - Preserve existing patterns in the codebase
+
+## Found work
+
+Nothing new is written down for later. A bug, a warning, a gap in a test or a doc, or a review finding that turns up during a feature is fixed in that feature, in its own commit, and named in the final message. Only two cases leave the feature:
+
+1. **It cannot be built**: it needs real money, a live Stripe key, a tax adviser or a lawyer, or it waits for an outside release or event. It goes to `context/todo-before-live.md` (a waiting item under "Watch", with its trigger).
+2. **It is too large or off-topic**: its own functionality, a migration, or a change that would make the PR hard to review. It goes into the Scope of the matching spec in `context/features/plan/`, with what was found and the fix idea; if no spec fits, a new numbered spec there and a row in its README.
+
+A code comment that points at deferred work names the spec or the before-live file that holds it.
 
 ## Production standard
 

@@ -116,7 +116,7 @@ export async function getPinnedGroupPage(
 
 // Every type with pins, by name, each with its count and its first page. One
 // read per type (the system types are seven); custom types would make this
-// grow (context/todo.md).
+// grow (feature 18, context/features/plan/18.custom-item-types.md).
 export async function getPinnedFirstPages(
   userId: string,
   sort: PinnedItemSort,

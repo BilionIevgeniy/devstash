@@ -1,4 +1,4 @@
-import { act, render, screen } from "../../../../../test/intl";
+import { act, render, screen, within } from "../../../../../test/intl";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -106,6 +106,38 @@ describe("PaletteResults", () => {
       "Too many searches. Wait a moment and try again.",
     );
     expect(screen.getByRole("option", { name: "Try again" })).toBeVisible();
+  });
+
+  // A listbox may own options and groups only: a message inside it is not
+  // announced, so the failure sits next to the list and the retry in it.
+  it("says a failure next to the list, with the retry as its option", async () => {
+    const user = renderPalette();
+    await answer("", found());
+    await user.type(screen.getByRole("combobox"), "react");
+    await act(() => vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS));
+
+    await answer("react", { status: "error" });
+
+    const list = screen.getByRole("listbox");
+    expect(screen.getByRole("alert")).toBeVisible();
+    expect(within(list).queryByRole("alert")).not.toBeInTheDocument();
+    expect(
+      within(list).getByRole("option", { name: "Try again" }),
+    ).toBeVisible();
+  });
+
+  it("marks the list busy and its old rows disabled while an answer is pending", async () => {
+    const user = renderPalette();
+    await answer("", found("Recent snippet"));
+    expect(screen.getByRole("listbox")).not.toHaveAttribute("aria-busy");
+
+    await user.type(screen.getByRole("combobox"), "react");
+    await act(() => vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS));
+
+    expect(screen.getByRole("listbox")).toHaveAttribute("aria-busy", "true");
+    expect(
+      screen.getByRole("option", { name: "Recent snippet" }),
+    ).toHaveAttribute("aria-disabled", "true");
   });
 
   it("says when nothing matches", async () => {

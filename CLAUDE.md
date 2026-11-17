@@ -16,7 +16,7 @@ Read the following to get the full context of the project:
 
 The structure of `src/` is explained for newcomers in `docs/architecture.md` (not auto-loaded: read it when adding a feature; its Reference section holds the operations table, background work, public API and known risks). The short rulebook is `context/architecture-rules.md`, and the guide is updated whenever the structure changes.
 
-Work deferred on purpose is listed in `context/todo.md` (not auto-loaded: read it when the project is feature-complete or when asked what is left).
+Planned work is in `context/features/plan/` (its README gives the order). What only a commercial launch needs is in `context/todo-before-live.md` (not auto-loaded: read it before a launch or when asked what a launch needs). Nothing new is deferred: "Found work" in `context/ai-interaction.md`.
 
 ## Commands
 
@@ -29,11 +29,13 @@ Work deferred on purpose is listed in `context/todo.md` (not auto-loaded: read i
 - `npm run lint:dup` — jscpd copy-paste report over `src/` (for `/cleanup` and the code review; not a CI gate)
 - `npm run test` — Vitest, one run; must be green and run before every commit
 - `npm run test:watch` — Vitest in watch mode
+- `npm run test:storybook` — only the story tests (the `storybook` project, part of `npm run test`): every `*.stories.tsx` rendered in Chromium with its `play` steps and the axe check; needs Chromium (`npx playwright install chromium`, once)
+- `npm run storybook` / `npm run build-storybook` — Storybook on port 6006 / the static build; what gets a story is in "Stories" in `context/coding-standards.md` (ADR 0026)
 - `npm run test:integration` — the `*.int.test.ts` files against the test database (`TEST_DATABASE_URL` from `.env.test`, a local Docker Postgres on port 5433); run it when a query or service changed
 - `npm run test:e2e` — the Playwright smoke tests in `e2e/` against the production build (`next build`, then `next start` on port 3100) on the test database; needs `TEST_DATABASE_URL` and `E2E_UPSTASH_REDIS_REST_URL`/`E2E_UPSTASH_REDIS_REST_TOKEN` in `.env.test` and Chromium (`npx playwright install chromium`, once); run it when a page, a route or the sign-in or item flows changed
 - `npm run db:seed-test` — empty and seed the test database (system types, a Free and a Pro user)
 
-Tests are colocated as `[name].test.ts` (node) and `[name].test.tsx` (components and hooks, jsdom); the end-to-end tests are `[name].spec.ts` in `e2e/`. What to test and how is in "Testing" in `context/coding-standards.md`.
+Tests are colocated as `[name].test.ts` (node), `[name].test.tsx` (components and hooks, jsdom) and `[name].stories.tsx` (stories, Chromium); the end-to-end tests are `[name].spec.ts` in `e2e/`. What to test and how is in "Testing" in `context/coding-standards.md`.
 
 ## Neon MCP
 

@@ -4,13 +4,13 @@ import {
   type RenderHookOptions,
   type RenderOptions,
 } from "@testing-library/react";
-import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
+import type { QueryClient } from "@tanstack/react-query";
 import type { JSXElementConstructor, ReactElement, ReactNode } from "react";
 
-import { I18nProvider } from "@/components/common/I18nProvider";
 import { createQueryClient } from "@/components/common/query-client";
 import type { Locale } from "@/i18n/config";
-import { messagesFor } from "@/i18n/messages";
+
+import { AppProviders } from "./app-providers";
 
 // Testing Library with the messages of the app around every render, as the
 // layouts put them there (ADR 0024). A test imports render and renderHook from
@@ -36,11 +36,9 @@ function withIntl(
 ): Wrapper {
   return function IntlWrapper({ children }: { children: ReactNode }) {
     return (
-      <I18nProvider locale={locale} messages={messagesFor(locale)}>
-        <QueryClientProvider client={queryClient}>
-          {Inner ? <Inner>{children}</Inner> : children}
-        </QueryClientProvider>
-      </I18nProvider>
+      <AppProviders locale={locale} queryClient={queryClient}>
+        {Inner ? <Inner>{children}</Inner> : children}
+      </AppProviders>
     );
   };
 }

@@ -30,7 +30,7 @@ The app pages need a session, so their layout shift and the create dialog were m
 
 ### No real-user Web Vitals
 
-DevStash does not report Web Vitals from visitors' browsers (no `useReportWebVitals`, no Vercel Speed Insights). Reading performance data on a visitor's device may need consent under §25 TDDDG, and there is no consent banner. Decided 2026-11-14; revisit with a consent decision (`context/todo.md`, "Observability").
+DevStash does not report Web Vitals from visitors' browsers (no `useReportWebVitals`, no Vercel Speed Insights). Reading performance data on a visitor's device may need consent under §25 TDDDG, and there is no consent banner. Decided 2026-11-14; revisit with a consent decision (feature 20, `context/features/plan/20.ux-a11y-and-consent.md`).
 
 ## Feature 13 (2026-11-14)
 
@@ -68,4 +68,4 @@ Layout shift on `/dashboard`, `/items/snippets`, `/items/images` and `/favorites
 
 ### Sidebar navigation
 
-Each sidebar link carries `LinkPendingMark` and dims while its navigation is pending, after a 100 ms delay so a prefetched or fast navigation does not flicker. Every app segment has its own `loading.tsx` except `/profile` (`context/todo.md`).
+Each sidebar link carries `LinkPendingMark` and dims while its navigation is pending, after a 100 ms delay so a prefetched or fast navigation does not flicker. Every app segment has its own `loading.tsx` except `/profile` (feature 20 adds it).

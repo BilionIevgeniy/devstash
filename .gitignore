@@ -18,6 +18,9 @@
 /playwright/.auth/
 /playwright-report/
 /test-results/
+# Storybook: the static build and the log of a failed run
+/storybook-static/
+debug-storybook.log
 
 # next.js
 /.next/

@@ -24,8 +24,10 @@ function sourceFiles(dir: string): string[] {
     const path = join(dir, entry.name);
     if (entry.isDirectory()) return sourceFiles(path);
     const isSource = /\.tsx?$/.test(entry.name);
-    const isTest = /\.test\.tsx?$/.test(entry.name);
-    return isSource && !isTest ? [path] : [];
+    // A story imports an action only to assert on its mock (ADR 0026): it
+    // calls nothing, so there is no cache to sync.
+    const isTestOrStory = /\.(test|stories)\.tsx?$/.test(entry.name);
+    return isSource && !isTestOrStory ? [path] : [];
   });
 }
 

@@ -18,7 +18,7 @@ model User {
 
   // Deprecated: superseded by Subscription and read by nothing. Dropped by a
   // later migration once the deploy without them is live, so the old
-  // deployment and a rollback keep working (see context/todo.md).
+  // deployment and a rollback keep working (features 17 and 18 in context/features/plan/).
   isPro                Boolean @default(false)
   stripeCustomerId     String?
   stripeSubscriptionId String?
@@ -113,7 +113,7 @@ model Item {
   title       String
   contentType String
   content     String?
-  // Deprecated: replaced by fileKey and read by nothing (see context/todo.md).
+  // Deprecated: replaced by fileKey and read by nothing (features 17 and 18 in context/features/plan/).
   fileUrl     String?
   // The R2 object key under users/<userId>/, never a URL. Unique, so one
   // upload cannot back two items.

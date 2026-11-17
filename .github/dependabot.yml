@@ -6,12 +6,24 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # A dependency joins the first group it matches, so the groups of packages
+    # that must keep one version come first, for majors too:
+    # @vitest/browser-playwright peers vitest at exactly its own version, the
+    # Storybook packages peer storybook at theirs, and `playwright` stays the
+    # version of @playwright/test, so the story tests and e2e launch the same
+    # Chromium.
     groups:
+      storybook:
+        patterns: ["storybook", "@storybook/*"]
+      vitest:
+        patterns: ["vitest", "@vitest/*"]
+      playwright:
+        patterns: ["playwright", "@playwright/test"]
       minor-and-patch:
         update-types: [minor, patch]
     # Majors that are upgraded on purpose, on their own branch:
     # - @types/node follows the Node major of .nvmrc, engines and Vercel (24)
-    # - eslint 10 waits for its plugins (context/todo.md, "Tooling")
+    # - eslint 10 waits for its plugins (Watch in context/todo-before-live.md)
     # - typescript waits for typescript-eslint, whose peer range ends below 6.1
     ignore:
       - dependency-name: "@types/node"

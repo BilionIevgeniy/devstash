@@ -28,16 +28,19 @@ jobs:
     # - DIRECT_URL: prisma.config.ts reads it for `prisma generate` (in
     #   `npm ci` through postinstall, and in the build). Never connected.
     # - AUTH_SECRET, APP_URL: read by NextAuth and the email links.
+    # - STORYBOOK_DISABLE_TELEMETRY: the Storybook CLI sends no usage data
+    #   (main.ts turns it off too; this covers the CLI before it reads main.ts).
     # Not set: vendor keys (Stripe, R2, Resend, Upstash, OpenAI, GitHub OAuth),
     # read only when a request comes in; NEXT_PUBLIC_MONACO_VS_PATH, set by
-    # next.config.ts from package.json. The build fetches the Google Fonts of
-    # next/font, the only network access it needs.
+    # next.config.ts from package.json. The build and the Storybook build fetch
+    # the Google Fonts of next/font, the only network access they need.
     env:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
       DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
       AUTH_SECRET: ci-dummy-secret-not-used-anywhere
       APP_URL: http://localhost:3000
       NEXT_TELEMETRY_DISABLED: "1"
+      STORYBOOK_DISABLE_TELEMETRY: "1"
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -47,8 +50,12 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      # `npm run test` runs the stories as tests in Chromium (the `storybook`
+      # project of vitest.config.mts, ADR 0026); the same browser as e2e.
+      - run: npx playwright install --with-deps chromium
       - run: npm run test
       - run: npm run build
+      - run: npm run build-storybook
 
   # The integration tests: the app's Prisma on a real Postgres, so a `where`
   # without `userId` fails a test. Runs beside `ci`, on every PR.
