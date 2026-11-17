@@ -26,6 +26,7 @@ Planned work is in `context/features/plan/` (its README gives the order). What o
 - `npm run db:migrate:deploy` — `prisma migrate deploy`; on Vercel migrations run in `npm run vercel-build` through a guard (ADR 0013)
 - `npm run start` — run the production build
 - `npm run lint` — ESLint via flat config
+- `npm run format` / `npm run format:check` — Prettier over the whole repository (its defaults, `.prettierrc`) / the same as a check, the first step of the `ci` job
 - `npm run lint:dup` — jscpd copy-paste report over `src/` (for `/cleanup` and the code review; not a CI gate)
 - `npm run test` — Vitest, one run; must be green and run before every commit
 - `npm run test:watch` — Vitest in watch mode

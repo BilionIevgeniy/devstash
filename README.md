@@ -47,6 +47,7 @@ The development seed differs from production on purpose: there the demo user sta
 | `npm run build`                                 | Production build. Touches no database                                                                                                                                        |
 | `npm run start`                                 | Run the production build                                                                                                                                                     |
 | `npm run lint`                                  | ESLint, including the architecture boundaries and size limits                                                                                                                |
+| `npm run format` / `npm run format:check`       | Prettier over the whole repository / the same as a check (CI). The editor formats on save with the same version (`.vscode/settings.json`)                                    |
 | `npm run lint:dup`                              | jscpd copy-paste report over `src/` (a report for `/cleanup`, not a CI check)                                                                                                |
 | `npm run typecheck`                             | `next typegen && tsc --noEmit`: route types, then the type check                                                                                                             |
 | `npm run db:migrate:deploy`                     | `prisma migrate deploy`: applies pending migrations without creating any. **It has no guard**: it migrates whatever database `DIRECT_URL` in `.env` names, so check it first |
@@ -63,7 +64,7 @@ The development seed differs from production on purpose: there the demo user sta
 | `npm run db:test`                               | Check the database connection and the demo data                                                                                                                              |
 | `npm run db:studio`                             | Prisma Studio                                                                                                                                                                |
 
-Before every commit: `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build` must all pass, `npm run test:integration` when a query or service changed, and `npm run test:e2e` when a page, a route or the sign-in or item flows changed. CI runs all six on every PR and every push to `main`. Schema changes go through `prisma migrate dev`, never `db push`.
+Before every commit: `npm run format:check`, `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build` must all pass, `npm run test:integration` when a query or service changed, and `npm run test:e2e` when a page, a route or the sign-in or item flows changed. CI runs all seven on every PR and every push to `main`. Schema changes go through `prisma migrate dev`, never `db push`.
 
 ### Integration tests
 

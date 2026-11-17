@@ -2,7 +2,7 @@
 
 The feature reaches `main` through a PR merged on GitHub after green `ci`, `integration` and `e2e` checks, never through a local merge and a push of `main`: branch protection rejects a direct push, and the merge commit would land without a CI result.
 
-1. Run `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build`, `npm run test:integration` when a query or service changed, and `npm run test:e2e` when a page, a route or the sign-in or item flows changed; stop and fix if anything is not green
+1. Run `npm run format:check`, `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build`, `npm run test:integration` when a query or service changed, and `npm run test:e2e` when a page, a route or the sign-in or item flows changed; stop and fix if anything is not green
 2. Reset current-feature.md:
    - Change H1 back to `# Current Feature`
    - Clear Goals, Notes and Model sections (keep placeholder comments)

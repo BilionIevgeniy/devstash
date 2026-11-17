@@ -48,6 +48,9 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # The cheapest check first: Prettier's defaults (.prettierrc), the whole
+      # repository except .prettierignore and .gitignore.
+      - run: npm run format:check
       - run: npm run lint
       - run: npm run typecheck
       # `npm run test` runs the stories as tests in Chromium (the `storybook`
