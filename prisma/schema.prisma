@@ -107,6 +107,7 @@ model VerificationToken {
 }
 
 model Item {
+  driftProbe String?
   id                     String    @id @default(cuid())
   // Collated "und-x-icu" by the migration item_title_icu_collation, which Prisma
   // cannot express: a migration that recreates this column must set it again.
