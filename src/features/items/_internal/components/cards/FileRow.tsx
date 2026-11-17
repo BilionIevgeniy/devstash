@@ -13,9 +13,9 @@ import { PinMark } from "@/features/items/_internal/components/toggles/PinMark";
 import {
   FILE_ROW_ACTIONS,
   FILE_ROW_HEIGHT,
-} from "@/features/items/components/FileListSkeleton";
+} from "@/features/items/components/lists/FileListSkeleton";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
-import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
+import { ItemDrawerTrigger } from "@/features/items/components/drawer/ItemDrawerTrigger";
 import type { FileListItem } from "@/features/items/types";
 import { cn } from "@/lib/utils";
 

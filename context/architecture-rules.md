@@ -116,7 +116,7 @@ Course specs name the paths of the original layout. Put the code here instead:
 
 ## Rules
 
-- Import by full path (`@/features/items/components/ItemRow`). No `index.ts` barrels ([ADR 0015](../docs/adr/0015-no-barrel-files.md)). Never import another feature's `_internal/`
+- Import by full path (`@/features/items/components/cards/ItemRow`). No `index.ts` barrels ([ADR 0015](../docs/adr/0015-no-barrel-files.md)). Never import another feature's `_internal/`
 - Circular imports are forbidden (`import/no-cycle`)
 - A folder with more than 12 files, not counting tests and stories, is split into topic subfolders named by what they hold (`lib/errors/`, `items/components/lists/`), with no `index.ts`; the files keep their names and their role, and `components/hooks/` stays where it is. Exempt: `components/ui` (shadcn's layout) and `i18n/messages/<locale>` (one file per namespace). `/cleanup` checks it ([ADR 0029](../docs/adr/0029-topic-subfolders.md))
 - Prisma (`@/lib/postgres/prisma`, `@/generated/prisma`) is imported only by `queries.ts`, services and `lib`, and by `auth/nextauth/auth.ts` for `PrismaAdapter`

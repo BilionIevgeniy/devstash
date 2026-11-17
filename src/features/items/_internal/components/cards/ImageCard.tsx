@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { PinMark } from "@/features/items/_internal/components/toggles/PinMark";
-import { IMAGE_CARD_TITLE_HEIGHT } from "@/features/items/components/ImageGallerySkeleton";
+import { IMAGE_CARD_TITLE_HEIGHT } from "@/features/items/components/lists/ImageGallerySkeleton";
 import type { GalleryItem } from "@/features/items/types";
 import { cn } from "@/lib/utils";
 

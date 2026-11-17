@@ -2,9 +2,9 @@ import { FilteredEmpty } from "@/app/(app)/items/[type]/_components/FilteredEmpt
 import { typeLabel } from "@/features/item-types/domain/item-type";
 import { getTranslations } from "next-intl/server";
 import type { ItemTypeInfo } from "@/features/item-types/types";
-import { FileList } from "@/features/items/components/FileList";
-import { ImageGallery } from "@/features/items/components/ImageGallery";
-import { ItemList } from "@/features/items/components/ItemList";
+import { FileList } from "@/features/items/components/lists/FileList";
+import { ImageGallery } from "@/features/items/components/lists/ImageGallery";
+import { ItemList } from "@/features/items/components/lists/ItemList";
 import { typeListing } from "@/features/items/domain/item-fields";
 import {
   isFilteredList,

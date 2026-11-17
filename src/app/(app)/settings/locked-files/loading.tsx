@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { LockedFileListSkeleton } from "@/features/items/components/LockedFileListSkeleton";
+import { LockedFileListSkeleton } from "@/features/items/components/lists/LockedFileListSkeleton";
 
 export default function LockedFilesLoading() {
   return (

@@ -1,4 +1,4 @@
-import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvider";
+import { ItemDrawerProvider } from "@/features/items/components/drawer/ItemDrawerProvider";
 
 // The provider wraps both slots: the list's cards open items by URL, and the
 // intercepted drawer in @drawer hides a deleted card through the same context.

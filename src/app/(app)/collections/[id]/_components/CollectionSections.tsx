@@ -1,9 +1,9 @@
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { typeLabel } from "@/features/item-types/domain/item-type";
 import { useTranslations } from "next-intl";
-import { FileList } from "@/features/items/components/FileList";
-import { ImageGallery } from "@/features/items/components/ImageGallery";
-import { ItemList } from "@/features/items/components/ItemList";
+import { FileList } from "@/features/items/components/lists/FileList";
+import { ImageGallery } from "@/features/items/components/lists/ImageGallery";
+import { ItemList } from "@/features/items/components/lists/ItemList";
 import type { CollectionSection } from "@/features/items/types";
 
 interface CollectionSectionsProps {

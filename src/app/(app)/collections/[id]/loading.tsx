@@ -1,5 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { ItemListSkeleton } from "@/features/items/components/ItemListSkeleton";
+import { ItemListSkeleton } from "@/features/items/components/lists/ItemListSkeleton";
 
 export default function CollectionLoading() {
   return (

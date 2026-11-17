@@ -1,5 +1,5 @@
-import { ItemCard } from "@/features/items/components/ItemCard";
-import { ItemCardTrigger } from "@/features/items/components/ItemCardTrigger";
+import { ItemCard } from "@/features/items/components/cards/ItemCard";
+import { ItemCardTrigger } from "@/features/items/components/cards/ItemCardTrigger";
 import type { ItemCardData } from "@/features/items/types";
 
 interface ItemListProps {

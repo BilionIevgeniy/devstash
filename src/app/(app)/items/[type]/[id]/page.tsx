@@ -4,7 +4,7 @@ import { getSessionUser } from "@/features/auth/nextauth/session";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import { getEntitlements } from "@/features/billing/queries";
 import { parseTypeSlug } from "@/features/item-types/domain/item-type";
-import { ItemDetailPage } from "@/features/items/components/ItemDetailPage";
+import { ItemDetailPage } from "@/features/items/components/drawer/ItemDetailPage";
 import { toItemDetailJson } from "@/features/items/domain/item-detail";
 import { getUserItemDetailOfType } from "@/features/items/services/item-detail";
 import { userCanUseType } from "@/features/items/services/type-access";

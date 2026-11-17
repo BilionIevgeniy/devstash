@@ -5,7 +5,7 @@ import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import {
   ItemRouteDrawerMissing,
   ItemRouteDrawerView,
-} from "@/features/items/components/ItemRouteDrawer";
+} from "@/features/items/components/drawer/ItemRouteDrawer";
 import { toItemDetailJson } from "@/features/items/domain/item-detail";
 import { openUserItem } from "@/features/items/services/item-detail";
 

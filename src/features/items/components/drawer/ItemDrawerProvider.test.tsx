@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "../../../../test/intl";
+import { act, render, screen, waitFor } from "../../../../../test/intl";
 import userEvent from "@testing-library/user-event";
 import { useEffect, type ComponentProps } from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -61,7 +61,7 @@ vi.mock(
   },
 );
 
-import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvider";
+import { ItemDrawerProvider } from "@/features/items/components/drawer/ItemDrawerProvider";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
 
 type Drawer = ReturnType<typeof useItemDrawer>;

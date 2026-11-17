@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { ItemCopyButton } from "@/features/items/_internal/components/cards/ItemCopyButton";
 import { ItemFavoriteButton } from "@/features/items/_internal/components/toggles/ItemFavoriteButton";
-import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
+import { ItemDrawerTrigger } from "@/features/items/components/drawer/ItemDrawerTrigger";
 import type { ItemCardData } from "@/features/items/types";
 
 interface ItemCardTriggerProps {

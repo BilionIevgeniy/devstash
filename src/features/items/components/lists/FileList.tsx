@@ -1,5 +1,5 @@
 import { FileRow } from "@/features/items/_internal/components/cards/FileRow";
-import { FILE_LIST } from "@/features/items/components/FileListSkeleton";
+import { FILE_LIST } from "@/features/items/components/lists/FileListSkeleton";
 import type { FileListItem } from "@/features/items/types";
 
 interface FileListProps {

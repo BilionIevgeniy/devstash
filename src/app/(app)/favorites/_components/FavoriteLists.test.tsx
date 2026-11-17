@@ -50,7 +50,7 @@ vi.mock(
 );
 
 import { FavoriteLists } from "@/app/(app)/favorites/_components/FavoriteLists";
-import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvider";
+import { ItemDrawerProvider } from "@/features/items/components/drawer/ItemDrawerProvider";
 
 // jsdom has no IntersectionObserver; the sentinel never fires here, so every
 // next page in these tests is asked for with the button.

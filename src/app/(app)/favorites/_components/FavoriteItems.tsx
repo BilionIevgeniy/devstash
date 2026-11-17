@@ -8,8 +8,8 @@ import { ListPagesFrame } from "@/app/(app)/_components/ListPagesFrame";
 import { LoadMore } from "@/components/common/LoadMore";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import type { ItemListPages } from "@/features/items/components/hooks/use-item-list-pages";
-import { ItemDrawerTrigger } from "@/features/items/components/ItemDrawerTrigger";
-import { ItemRowActions } from "@/features/items/components/ItemRowActions";
+import { ItemDrawerTrigger } from "@/features/items/components/drawer/ItemDrawerTrigger";
+import { ItemRowActions } from "@/features/items/components/cards/ItemRowActions";
 import {
   FAVORITE_ITEM_SORTS,
   type FavoriteItemSort,

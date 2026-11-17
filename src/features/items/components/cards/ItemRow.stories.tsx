@@ -7,19 +7,19 @@ import {
   PINNED_COMMAND_ITEM,
   SNIPPET_ITEM,
 } from "@/features/items/_internal/components/item-story-data";
-import { ItemCard } from "@/features/items/components/ItemCard";
+import { ItemRow } from "@/features/items/components/cards/ItemRow";
 
 const meta = {
-  component: ItemCard,
+  component: ItemRow,
   decorators: [
     (Story) => (
-      <div className="w-80">
+      <div className="max-w-2xl">
         <Story />
       </div>
     ),
   ],
   args: { item: SNIPPET_ITEM },
-} satisfies Meta<typeof ItemCard>;
+} satisfies Meta<typeof ItemRow>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

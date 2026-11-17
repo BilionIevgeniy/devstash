@@ -42,7 +42,7 @@ vi.mock(
 );
 
 import { PinnedGroup } from "@/app/(app)/pinned/_components/PinnedGroup";
-import { ItemDrawerProvider } from "@/features/items/components/ItemDrawerProvider";
+import { ItemDrawerProvider } from "@/features/items/components/drawer/ItemDrawerProvider";
 
 const TYPE = { id: "type-note", name: "note", icon: "StickyNote" };
 

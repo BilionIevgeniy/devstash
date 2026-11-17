@@ -1,8 +1,8 @@
 import { Pin } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { ItemCardTrigger } from "@/features/items/components/ItemCardTrigger";
-import { ItemRow } from "@/features/items/components/ItemRow";
+import { ItemCardTrigger } from "@/features/items/components/cards/ItemCardTrigger";
+import { ItemRow } from "@/features/items/components/cards/ItemRow";
 import { getPinnedItems } from "@/features/items/queries";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 
