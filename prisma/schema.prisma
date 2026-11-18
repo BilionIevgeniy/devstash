@@ -16,12 +16,13 @@ model User {
   password       String?
   sessionVersion Int       @default(0)
 
-  // Deprecated: superseded by Subscription and read by nothing. Dropped by a
-  // later migration once the deploy without them is live, so the old
-  // deployment and a rollback keep working (features 17 and 18 in context/features/plan/).
-  isPro                Boolean @default(false)
-  stripeCustomerId     String?
-  stripeSubscriptionId String?
+  // Superseded by Subscription. @ignore keeps the columns in the database and
+  // out of the client (no migration): the deployment that is live before this
+  // one still selects them by name. Feature 18 drops them once this deploy is
+  // live (expand/contract, ADR 0013). Code must not read them again.
+  isPro                Boolean @default(false) @ignore
+  stripeCustomerId     String? @ignore
+  stripeSubscriptionId String? @ignore
 
   accounts     Account[]
   sessions     Session[]
@@ -113,8 +114,9 @@ model Item {
   title                  String
   contentType            String
   content                String?
-  // Deprecated: replaced by fileKey and read by nothing (features 17 and 18 in context/features/plan/).
-  fileUrl                String?
+  // Superseded by fileKey; @ignore keeps the column until feature 18 drops it
+  // (see User.isPro).
+  fileUrl                String?   @ignore
   // The R2 object key under users/<userId>/, never a URL. Unique, so one
   // upload cannot back two items.
   fileKey                String?   @unique
