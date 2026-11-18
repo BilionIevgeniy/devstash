@@ -2,10 +2,12 @@ import "server-only";
 
 import { cache } from "react";
 
+import { sameTypeName } from "@/features/item-types/domain/custom-type";
 import {
   isSystemTypeName,
   sortBySystemOrder,
   toItemTypeInfo,
+  type ItemTypeRow,
 } from "@/features/item-types/domain/item-type";
 import type {
   CustomTypeRow,
@@ -15,6 +17,7 @@ import type {
 } from "@/features/item-types/types";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/postgres/prisma";
+import { compareNames } from "@/lib/utils";
 
 export const itemTypeSelect = {
   id: true,
@@ -27,24 +30,25 @@ export const itemTypeSelect = {
 // The type an item names: a system type by its exact name, else the caller's
 // own custom type, whatever the case. A custom name is never a system name
 // (isReservedTypeName), and another user's type is never read, so nobody can
-// create items of someone else's type.
+// create items of someone else's type. The case is compared here with
+// sameTypeName, as the service does under its lock: Prisma's case-insensitive
+// equals is an ILIKE, where `_` and `%` match any character.
 export async function getUserItemTypeByName(
   userId: string,
   name: string,
 ): Promise<ItemTypeInfo | null> {
-  const type = await prisma.itemType.findFirst({
+  const candidates = await prisma.itemType.findMany({
     where: {
       OR: [
         { isSystem: true, userId: null, name },
-        {
-          userId,
-          isSystem: false,
-          name: { equals: name, mode: "insensitive" },
-        },
+        { userId, isSystem: false },
       ],
     },
-    select: itemTypeSelect,
+    select: { ...itemTypeSelect, isSystem: true },
   });
+  const type =
+    candidates.find((row) => row.isSystem) ??
+    candidates.find((row) => sameTypeName(row.name, name));
   return type ? toItemTypeInfo(type) : null;
 }
 
@@ -75,6 +79,18 @@ export async function getItemTypesById(
   return new Map(types.map((type) => [type.id, toItemTypeInfo(type)]));
 }
 
+// Rows read with their item count, as the lists show them, by name.
+function withItemCounts(
+  rows: (ItemTypeRow & { _count: { items: number } })[],
+): SidebarItemType[] {
+  return rows
+    .map(({ _count, ...type }) => ({
+      ...toItemTypeInfo(type),
+      itemCount: _count.items,
+    }))
+    .toSorted((a, b) => compareNames(a.name, b.name));
+}
+
 // The system types in their order, then the caller's own types by name, each
 // with the caller's item count. cache(): the sidebar, the create button and
 // the profile read it in one request.
@@ -88,14 +104,7 @@ export const getSidebarItemTypes = cache(
       },
     });
 
-    return sortBySystemOrder(
-      types
-        .map(({ _count, ...type }) => ({
-          ...toItemTypeInfo(type),
-          itemCount: _count.items,
-        }))
-        .toSorted((a, b) => a.name.localeCompare(b.name)),
-    );
+    return sortBySystemOrder(withItemCounts(types));
   },
 );
 
@@ -117,21 +126,16 @@ export async function getCustomTypes(userId: string): Promise<CustomTypeRow[]> {
       _count: { select: { items: true } },
     },
   });
-  return types
-    .map(({ _count, ...type }) => ({
-      ...toItemTypeInfo(type),
-      itemCount: _count.items,
-    }))
-    .toSorted((a, b) => a.name.localeCompare(b.name));
+  return withItemCounts(types);
 }
 
 // The caller's custom types for the export, by name.
-export function getExportCustomTypes(
+export async function getExportCustomTypes(
   userId: string,
 ): Promise<ExportedCustomType[]> {
-  return prisma.itemType.findMany({
+  const types = await prisma.itemType.findMany({
     where: { userId, isSystem: false },
-    orderBy: { name: "asc" },
     select: { name: true, icon: true, color: true },
   });
+  return types.toSorted((a, b) => compareNames(a.name, b.name));
 }

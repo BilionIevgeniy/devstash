@@ -161,6 +161,25 @@ describe("the reads of custom types", () => {
     await expect(getCustomTypes(t.a.userId)).resolves.toEqual([]);
   });
 
+  it("matches a name exactly but for case: `_`, `%` and `\\` are no wildcards", async () => {
+    const names = ["To-Do", "To_Do", "%", "C:\\Notes"];
+    const ids = new Map<string, string>();
+    for (const [index, name] of names.entries()) {
+      const row = await prisma.itemType.create({
+        data: { name, slug: `odd-${index}`, userId: t.b.userId },
+      });
+      ids.set(name, row.id);
+    }
+    for (const name of names) {
+      await expect(
+        getUserItemTypeByName(t.b.userId, name.toLowerCase()),
+      ).resolves.toMatchObject({ id: ids.get(name) });
+    }
+    await expect(
+      getUserItemTypeByName(t.b.userId, "To Do"),
+    ).resolves.toBeNull();
+  });
+
   it("a lookup of a system name never returns a user's type", async () => {
     await prisma.itemType.create({
       data: { name: "snippet", slug: "legacy", userId: t.b.userId },
