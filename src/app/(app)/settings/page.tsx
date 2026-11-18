@@ -15,7 +15,7 @@ export default function SettingsPage({ searchParams }: PageProps<"/settings">) {
       <EditorPreferencesSection />
       <BillingPanel searchParams={searchParams} />
       <DataPanel />
-      <AccountActions searchParams={searchParams} />
+      <AccountActions />
     </div>
   );
 }

@@ -6,3 +6,6 @@
 // a test pins the public URL.
 export const SIGN_IN_PATH = "/sign-in";
 export const DASHBOARD_PATH = "/dashboard";
+// The settings page, where a flow that ends in the account's own settings
+// (checkout, a locked file, the deletion link) leads back to.
+export const SETTINGS_PATH = "/settings";

@@ -3,8 +3,10 @@ import {
   buildPasswordResetUrl,
   getPasswordResetExpiry,
   getPasswordResetIdentifier,
+  MAX_PASSWORD_BYTES,
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
+  passwordByteLength,
 } from "@/features/auth/domain/password-reset";
 
 const NOW = new Date("2026-01-15T12:00:00.000Z");
@@ -73,5 +75,14 @@ describe("password length bounds", () => {
   it("keeps the 8 to 72 range that the schemas and bcrypt rely on", () => {
     expect(MIN_PASSWORD_LENGTH).toBe(8);
     expect(MAX_PASSWORD_LENGTH).toBe(72);
+  });
+});
+
+describe("passwordByteLength", () => {
+  it("counts UTF-8 bytes, as bcrypt reads them", () => {
+    expect(passwordByteLength("a".repeat(MAX_PASSWORD_BYTES))).toBe(72);
+    expect(passwordByteLength("é".repeat(36))).toBe(72);
+    expect(passwordByteLength("é".repeat(72))).toBe(144);
+    expect(passwordByteLength("🔑")).toBe(4);
   });
 });

@@ -1,8 +1,9 @@
 import "server-only";
 
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/postgres/prisma";
 
-// Reads that hand a secret (a password hash, an OAuth token) to their caller.
+// Reads that hand a secret (a password hash) to their caller.
 // They live here and not in auth/queries.ts so that nothing outside auth can
 // import them (ADR 0009). A read that reduces the secret to a boolean, such as
 // getAccountState, is an ordinary query.
@@ -37,16 +38,6 @@ export async function getDeletionCredentials(
   });
 }
 
-export async function getGitHubAccessTokens(userId: string): Promise<string[]> {
-  const accounts = await prisma.account.findMany({
-    where: { userId, provider: "github" },
-    select: { access_token: true },
-  });
-  return accounts.flatMap(({ access_token }) =>
-    access_token ? [access_token] : [],
-  );
-}
-
 // The two reads below are keyed by an email address: their callers hold no user
 // id yet, and the password they are about to check is the authorization.
 
@@ -72,5 +63,31 @@ export async function getCredentialsUser(
       password: true,
       emailVerified: true,
     },
+  });
+}
+
+// A registration with a password whose email was never verified, created
+// before the cutoff. A GitHub account also has no verified email (Auth.js
+// leaves it null) and must never match, hence no linked Account. Shared by the
+// daily job's reads and its delete, so a verification in between keeps the
+// account.
+export function staleRegistrationWhere(cutoff: Date): Prisma.UserWhereInput {
+  return {
+    password: { not: null },
+    emailVerified: null,
+    accounts: { none: {} },
+    createdAt: { lt: cutoff },
+  };
+}
+
+// The address of a stale registration, for the deletion proof of the daily
+// job; null once the user verified, linked GitHub or is gone.
+export async function getStaleRegistration(
+  userId: string,
+  cutoff: Date,
+): Promise<{ email: string } | null> {
+  return prisma.user.findFirst({
+    where: { id: userId, ...staleRegistrationWhere(cutoff) },
+    select: { email: true },
   });
 }

@@ -65,6 +65,14 @@ export const CONFIRM_EMAIL_BY_ADDRESS = {
   windowSeconds: 15 * MINUTE_SECONDS,
 } as const;
 
+// The deletion link of an account with no password. Keyed by the signed-in
+// user, who may see the refusal: the account is their own.
+export const DELETION_EMAIL_BY_USER = {
+  name: "deletion-email:user",
+  limit: 3,
+  windowSeconds: HOUR_SECONDS,
+} as const;
+
 export const PASSWORD_CHECK_BY_USER = {
   name: "password-check:user",
   limit: 5,

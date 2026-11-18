@@ -4,7 +4,17 @@
   "deleteDescription": "Lösch dein Konto und alle deine Daten endgültig.",
   "dialogTitle": "Dein Konto löschen?",
   "dialogDescription": "Damit werden dein Konto und alle deine Einträge, Sammlungen, Tags, Dateien und Bilder endgültig gelöscht. Das kann nicht rückgängig gemacht werden.",
-  "reauthNote": "Melde dich zu deiner Sicherheit erneut mit GitHub an, um das zu bestätigen, und komm dann hierher zurück.",
-  "continueGithub": "Weiter mit GitHub",
-  "confirmPassword": "Gib zur Bestätigung dein Passwort ein"
+  "confirmPassword": "Gib zur Bestätigung dein Passwort ein",
+  "emailLinkNote": "Wir senden einen Bestätigungslink an {email}. Öffne ihn, während du bei DevStash angemeldet bist, um das Konto zu löschen.",
+  "noInbox": "Du kannst unter dieser Adresse keine E-Mails empfangen? Schreib an die Adresse im <link>Impressum</link>.",
+  "sendLink": "Bestätigungslink senden",
+  "sendingLink": "Wird gesendet…",
+  "linkSent": "Sieh in deinem Postfach von {email} nach. Der Link ist eine Stunde gültig.",
+  "close": "Schließen",
+  "confirmTitle": "Konto löschen",
+  "confirmButton": "Konto endgültig löschen",
+  "expiredTitle": "Bestätigungslink abgelaufen",
+  "backToSettings": "Zurück zu den Einstellungen",
+  "otherAccountTitle": "Dieser Link gehört zu einem anderen Konto",
+  "otherAccountDescription": "Dieser Browser ist mit einem anderen Konto angemeldet als dem, das der Link löscht. Melde dich ab und mit diesem Konto an, um fortzufahren."
 }

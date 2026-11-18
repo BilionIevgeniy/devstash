@@ -30,7 +30,7 @@ Rules that apply to every file:
 | 14  | [Storybook and accessibility](../14.storybook-and-a11y.md)                       | SHOULD              | [x]    |
 | 15  | [AI output marking](../15.ai-output-marking.md)                                  | MUST, by 2026-12-02 | [x]    |
 | 16  | [Codebase hygiene](../16.codebase-hygiene.md)                                    | SHOULD              | [x]    |
-| 17  | [Security, auth and data retention](17.security-auth-retention.md)               | MUST                | [ ]    |
+| 17  | [Security, auth and data retention](../17.security-auth-retention.md)            | MUST                | [x]    |
 | 18  | [Custom item types](18.custom-item-types.md)                                     | MUST                | [ ]    |
 | 19  | [A real shop in test mode](19.real-shop-in-test-mode.md)                         | MUST                | [ ]    |
 | 20  | [UX, accessibility and consent](20.ux-a11y-and-consent.md)                       | SHOULD              | [ ]    |

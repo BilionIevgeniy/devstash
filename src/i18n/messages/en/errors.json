@@ -15,6 +15,7 @@
   "invalidEmail": "Invalid email address",
   "passwordTooShort": "Password must be at least {min} characters",
   "passwordTooLong": "Password must be at most {max} characters",
+  "passwordTooManyBytes": "Password must be at most {max} bytes: an accented letter counts as 2, an emoji as 4",
   "passwordRequired": "Password is required",
   "currentPasswordRequired": "Current password is required",
   "passwordsDoNotMatch": "Passwords do not match",
@@ -32,6 +33,8 @@
   "noPasswordToChange": "This account has no password to change",
   "incorrectCurrentPassword": "Current password is incorrect",
   "incorrectPassword": "Password is incorrect",
+  "invalidDeletionLink": "This confirmation link is invalid or has expired. Request a new one from the settings",
+  "githubEmailUnverified": "Your GitHub account has no verified primary email. Verify it on GitHub, then sign in again",
 
   "uploadsProOnly": "File uploads are a Pro feature",
   "chooseFileKind": "Choose a file kind",

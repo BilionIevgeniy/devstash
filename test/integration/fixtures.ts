@@ -78,6 +78,7 @@ async function createFileItem(userId: string): Promise<string> {
   vi.mocked(headObject).mockResolvedValueOnce({
     size: 1024,
     contentType: "application/pdf",
+    lastModified: new Date(),
   });
   return createItem(userId, {
     typeName: "file",

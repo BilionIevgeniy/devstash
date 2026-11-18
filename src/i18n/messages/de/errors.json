@@ -15,6 +15,7 @@
   "invalidEmail": "Ungültige E-Mail-Adresse",
   "passwordTooShort": "Das Passwort muss mindestens {min} Zeichen lang sein",
   "passwordTooLong": "Das Passwort darf höchstens {max} Zeichen lang sein",
+  "passwordTooManyBytes": "Das Passwort darf höchstens {max} Bytes lang sein: ein Umlaut zählt 2, ein Emoji 4",
   "passwordRequired": "Passwort fehlt",
   "currentPasswordRequired": "Aktuelles Passwort fehlt",
   "passwordsDoNotMatch": "Die Passwörter stimmen nicht überein",
@@ -32,6 +33,8 @@
   "noPasswordToChange": "Dieses Konto hat kein Passwort, das geändert werden kann",
   "incorrectCurrentPassword": "Das aktuelle Passwort ist falsch",
   "incorrectPassword": "Das Passwort ist falsch",
+  "invalidDeletionLink": "Dieser Bestätigungslink ist ungültig oder abgelaufen. Fordere in den Einstellungen einen neuen an",
+  "githubEmailUnverified": "Dein GitHub-Konto hat keine bestätigte primäre E-Mail-Adresse. Bestätige sie bei GitHub und melde dich dann erneut an",
 
   "uploadsProOnly": "Datei-Uploads sind eine Pro-Funktion",
   "chooseFileKind": "Wähle eine Dateiart",

@@ -76,6 +76,27 @@ describe("ConfirmEmailForm", () => {
     );
   });
 
+  // Signed in as someone else, "You can now sign in" would be wrong: the switch
+  // page says what happened and offers to sign out.
+  it("leads to the switch page, with no toast, while another account is signed in", async () => {
+    confirmEmail.mockResolvedValue(SUCCESS);
+    const user = userEvent.setup();
+    render(
+      <ConfirmEmailForm
+        email="ada@example.com"
+        token="tok-123"
+        switchReason="email"
+      />,
+    );
+
+    await fillAndSubmit(user);
+
+    await waitFor(() =>
+      expect(replace).toHaveBeenCalledWith("/switch-account?reason=email"),
+    );
+    expect(toastSuccess).not.toHaveBeenCalled();
+  });
+
   it("empties the password once the email is confirmed", async () => {
     confirmEmail.mockResolvedValue(SUCCESS);
     const user = userEvent.setup();

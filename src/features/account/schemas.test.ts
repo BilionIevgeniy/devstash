@@ -14,4 +14,9 @@ describe("deleteAccountSchema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("accepts the token of a deletion link and refuses an empty one", () => {
+    expect(deleteAccountSchema.safeParse({ token: "tok" }).success).toBe(true);
+    expect(deleteAccountSchema.safeParse({ token: "" }).success).toBe(false);
+  });
 });

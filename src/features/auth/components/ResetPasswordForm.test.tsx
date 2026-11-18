@@ -102,6 +102,27 @@ describe("ResetPasswordForm", () => {
     );
   });
 
+  // Signed in as someone else, "You can now sign in" would be wrong: the switch
+  // page says what happened and offers to sign out.
+  it("leads to the switch page, with no toast, while another account is signed in", async () => {
+    resetPassword.mockResolvedValue(SUCCESS);
+    const user = userEvent.setup();
+    render(
+      <ResetPasswordForm
+        email="ada@example.com"
+        token="tok-123"
+        switchReason="password"
+      />,
+    );
+
+    await fillAndSubmit(user);
+
+    await waitFor(() =>
+      expect(replace).toHaveBeenCalledWith("/switch-account?reason=password"),
+    );
+    expect(toastSuccess).not.toHaveBeenCalled();
+  });
+
   it("empties both fields once the password is reset", async () => {
     resetPassword.mockResolvedValue(SUCCESS);
     const user = userEvent.setup();

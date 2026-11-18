@@ -13,3 +13,13 @@ interface ExistingAccount {
 export function shouldResendVerification(account: ExistingAccount): boolean {
   return account.hasPassword && !account.isEmailVerified;
 }
+
+// A registration whose email was never verified is deleted after this many
+// days (the daily job, stated in the privacy notice). The link lives 24 hours
+// and can be sent again in the meantime.
+export const UNVERIFIED_REGISTRATION_DAYS = 7;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+export function staleRegistrationCutoff(now: Date): Date {
+  return new Date(now.getTime() - UNVERIFIED_REGISTRATION_DAYS * MS_PER_DAY);
+}

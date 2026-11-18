@@ -13,6 +13,7 @@ import { LockedFileListSkeleton } from "@/features/items/components/lists/Locked
 import { LOCKED_FILES_PATH } from "@/features/items/domain/item-fields";
 import { getUserLockedFiles } from "@/features/items/services/locked-files";
 import { parsePage } from "@/lib/pagination";
+import { SETTINGS_PATH } from "@/features/auth/domain/auth-paths";
 
 async function LockedFilesContent({ page }: { page: number }) {
   const { id: userId } = await getSessionUser();
@@ -38,7 +39,7 @@ export default async function LockedFilesPage({
   const t = await getTranslations("pages.lockedFiles");
   const { id: userId } = await getSessionUser();
   const { isPro } = await getEntitlements(userId);
-  if (isPro) redirect("/settings");
+  if (isPro) redirect(SETTINGS_PATH);
 
   const page = parsePage((await searchParams).page);
 
@@ -51,7 +52,7 @@ export default async function LockedFilesPage({
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline">
-            <Link href="/settings">{t("back")}</Link>
+            <Link href={SETTINGS_PATH}>{t("back")}</Link>
           </Button>
           <Button asChild>
             <Link href={UPGRADE_PATH}>{t("renew")}</Link>

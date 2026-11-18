@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
+import { auth } from "@/features/auth/nextauth/auth";
 import { AuthCard } from "@/features/auth/components/AuthCard";
+import { isOtherAccount } from "@/features/auth/domain/account-switch";
 import { ConfirmEmailForm } from "@/features/auth/components/ConfirmEmailForm";
 import { ResendVerificationButton } from "@/features/auth/components/ResendVerificationButton";
 import { Button } from "@/components/ui/button";
@@ -20,9 +22,16 @@ export default async function VerifyEmailPage({
     parsed.success &&
     (await isVerificationTokenValid(parsed.data.email, parsed.data.token))
   ) {
+    const session = await auth();
     return (
       <AuthCard title={t("title")} description={t("description")}>
-        <ConfirmEmailForm email={parsed.data.email} token={parsed.data.token} />
+        <ConfirmEmailForm
+          email={parsed.data.email}
+          token={parsed.data.token}
+          switchReason={
+            isOtherAccount(session?.user, parsed.data.email) ? "email" : null
+          }
+        />
       </AuthCard>
     );
   }

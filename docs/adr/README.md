@@ -33,6 +33,7 @@ One short file per decision that shapes the structure of the code, in the [MADR]
 | [0027](0027-marking-ai-generated-output.md)                        | AI output is marked per field, in the data and in the markup                                 | accepted           |
 | [0028](0028-schema-drift-check-in-ci.md)                           | CI fails on a schema change without its migration                                            | accepted           |
 | [0029](0029-topic-subfolders.md)                                   | A large folder is split into topic subfolders                                                | accepted           |
+| [0030](0030-daily-cron-and-retention.md)                           | One daily cron route runs the data retention                                                 | accepted           |
 
 Records up to 0026 that name `context/todo.md` mean the deferred list that was split on 2026-11-14 into the specs of `context/features/plan/` and `context/todo-before-live.md`; the table "Where the former `context/todo.md` went" in `context/features/plan/README.md` says where each item is now.
 

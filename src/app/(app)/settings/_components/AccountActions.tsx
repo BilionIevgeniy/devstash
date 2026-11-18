@@ -3,30 +3,16 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { DeleteAccountDialog } from "@/features/account/components/DeleteAccountDialog";
-import { REAUTH_WRONG_ACCOUNT } from "@/features/auth/domain/reauth";
-import { needsReauthentication } from "@/features/auth/services/account";
 import { ChangePasswordForm } from "@/features/auth/components/ChangePasswordForm";
 import { getUserProfile } from "@/features/auth/queries";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
-interface AccountActionsProps {
-  searchParams: Promise<{ reauth?: string | string[] }>;
-}
-
-export async function AccountActions({ searchParams }: AccountActionsProps) {
+export async function AccountActions() {
   const t = await getTranslations("account");
-  const { id: userId, authenticatedAt } = await getSessionUser();
-  const [profile, { reauth }] = await Promise.all([
-    getUserProfile(userId),
-    searchParams,
-  ]);
+  const { id: userId } = await getSessionUser();
+  const profile = await getUserProfile(userId);
   if (!profile) redirect(SIGN_IN_PATH);
-
-  const requiresReauth = needsReauthentication(
-    profile.hasPassword,
-    authenticatedAt,
-  );
 
   return (
     <section className="space-y-4">
@@ -44,13 +30,7 @@ export async function AccountActions({ searchParams }: AccountActionsProps) {
         </div>
         <DeleteAccountDialog
           hasPassword={profile.hasPassword}
-          requiresReauth={requiresReauth}
-          // The URL can outlive the refusal: after a good sign-in it means nothing.
-          returnError={
-            requiresReauth && reauth === REAUTH_WRONG_ACCOUNT
-              ? "wrongGithubAccount"
-              : null
-          }
+          email={profile.email}
         />
       </div>
     </section>

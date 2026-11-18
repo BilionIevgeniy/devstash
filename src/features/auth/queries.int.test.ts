@@ -2,11 +2,9 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { seedTenants, type Tenants } from "../../../test/integration/fixtures";
 import {
   getDeletionCredentials,
-  getGitHubAccessTokens,
   getPasswordHash,
 } from "@/features/auth/_internal/queries";
 import { getSessionVersion, getUserProfile } from "@/features/auth/queries";
-import { prisma } from "@/lib/postgres/prisma";
 
 // The reads of `auth` keyed by a user id, public and `_internal` together: each
 // answers with the caller's own row. The reads keyed by email or a one-time
@@ -15,15 +13,6 @@ let t: Tenants;
 
 beforeAll(async () => {
   t = await seedTenants();
-  await prisma.account.create({
-    data: {
-      userId: t.b.userId,
-      type: "oauth",
-      provider: "github",
-      providerAccountId: "gh-b",
-      access_token: "gho_token_of_b",
-    },
-  });
 });
 
 describe("reads of the caller's own user row", () => {
@@ -49,12 +38,5 @@ describe("reads of the caller's own user row", () => {
       email: t.a.email,
       password: hashOfA,
     });
-  });
-
-  it("getGitHubAccessTokens", async () => {
-    await expect(getGitHubAccessTokens(t.b.userId)).resolves.toEqual([
-      "gho_token_of_b",
-    ]);
-    await expect(getGitHubAccessTokens(t.a.userId)).resolves.toEqual([]);
   });
 });

@@ -127,6 +127,14 @@ Guard rails in `.claude/settings.json`: Claude Code cannot read `.env`. Planned 
 
 Vercel. A push to `main` deploys production. Vercel runs `npm run vercel-build`: `scripts/migrate-if-allowed.ts` applies pending migrations to that environment's own database, then the app is built. Production migrates only the production Neon branch; every preview uses the `development` branch, and its build fails if its URLs point anywhere else. Why, and how to ship a breaking schema change: [ADR 0013](docs/adr/0013-how-schema-changes-reach-production.md).
 
+### Secrets of the server
+
+Two secrets have no default and are set in Vercel for Production and Preview, a different value in each (`openssl rand -hex 32`), and in `.env` locally: `RATE_LIMIT_HASH_KEY` keys the HMAC that names the rate-limit counters in Upstash (without it rate limiting fails closed and sign-in stops working; a new value resets every counter once), and `CRON_SECRET` signs the calls of Vercel Cron.
+
+### Scheduled jobs
+
+`vercel.json` calls `GET /api/cron/daily` once a day at 03:00 UTC (Hobby allows no more, and runs it some time within that hour) with `Authorization: Bearer <CRON_SECRET>`. It deletes expired tokens, uploads no item holds after 24 hours and registrations never verified within 7 days ([ADR 0030](docs/adr/0030-daily-cron-and-retention.md)). Cron runs only on Production; a run and its counts are in the runtime logs (`Cron job … finished`). To run it by hand: `curl -H "Authorization: Bearer $CRON_SECRET" https://<host>/api/cron/daily`.
+
 ### Error monitoring
 
 Sentry, in its EU data region ([ADR 0016](docs/adr/0016-error-monitoring-with-sentry.md): what leaves the server and what never does). Without `NEXT_PUBLIC_SENTRY_DSN` the SDK is off, so local development needs no account. In Vercel set `NEXT_PUBLIC_SENTRY_DSN` for Production and Preview (it is built into the bundle: redeploy after a change) and, optionally, `SENTRY_DSN` for the same two (a second client key of the project that only the server uses, so forged events through the public key cannot starve the errors of the server), and `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` for Production only: they upload the source maps in the build, and a build without the token generates none. Each is explained in `.env.example`. The alert for new issues is set in Sentry, filtered to `environment:production`. The token is a secret: it goes into Vercel or `.env.local`, never into `.env.example`.

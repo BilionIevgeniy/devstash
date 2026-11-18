@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { safeCallbackPath } from "./callback-url";
+import { safeCallbackPath, signInHref } from "./callback-url";
 
 const DEFAULT = "/dashboard";
 
@@ -45,4 +45,17 @@ describe("safeCallbackPath", () => {
       expect(safeCallbackPath(value)).toBe(DEFAULT);
     },
   );
+});
+
+describe("signInHref", () => {
+  it("leaves the default path out", () => {
+    expect(signInHref("/dashboard")).toBe("/sign-in");
+  });
+
+  it("carries another path, query included, as one encoded parameter", () => {
+    const href = signInHref("/settings/delete-account?token=t&email=a%40b.co");
+    expect(
+      new URL(href, "https://x.test").searchParams.get("callbackUrl"),
+    ).toBe("/settings/delete-account?token=t&email=a%40b.co");
+  });
 });

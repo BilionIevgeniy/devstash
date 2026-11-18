@@ -15,6 +15,20 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 export interface R2Object {
   size: number;
   contentType: string | null;
+  /** When the object was written; null if R2 did not say. */
+  lastModified: Date | null;
+}
+
+export interface R2ListedObject {
+  key: string;
+  /** When the object was written; null if R2 did not say. */
+  lastModified: Date | null;
+}
+
+export interface R2ObjectPage {
+  objects: R2ListedObject[];
+  /** The token of the next page, or undefined on the last one. */
+  next: string | undefined;
 }
 
 export interface SignGetOptions {
@@ -110,6 +124,7 @@ export async function headObject(key: string): Promise<R2Object | null> {
     return {
       size: head.ContentLength ?? 0,
       contentType: head.ContentType ?? null,
+      lastModified: head.LastModified ?? null,
     };
   } catch (error) {
     if (error instanceof NotFound) return null;
@@ -123,38 +138,53 @@ export async function deleteObject(key: string): Promise<void> {
   await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
 }
 
+// One page (up to 1,000 keys, R2's maximum) of the objects under a prefix, in
+// key order. Every keyed object is listed, also one without a date, so a purge
+// never skips it.
+export async function listObjectsPage(
+  prefix: string,
+  continuationToken?: string,
+): Promise<R2ObjectPage> {
+  const { client, bucket } = getR2();
+  const page = await client.send(
+    new ListObjectsV2Command({
+      Bucket: bucket,
+      Prefix: prefix,
+      ContinuationToken: continuationToken,
+    }),
+  );
+  const objects = (page.Contents ?? []).flatMap(({ Key, LastModified }) =>
+    Key ? [{ key: Key, lastModified: LastModified ?? null }] : [],
+  );
+  return {
+    objects,
+    next: page.IsTruncated ? page.NextContinuationToken : undefined,
+  };
+}
+
+// Deletes up to 1,000 keys in one call; a missing key counts as deleted. Throws
+// when R2 keeps any of them, so a caller never goes on as if they were gone.
+export async function deleteObjects(keys: string[]): Promise<void> {
+  if (keys.length === 0) return;
+  const { client, bucket } = getR2();
+  const result = await client.send(
+    new DeleteObjectsCommand({
+      Bucket: bucket,
+      Delete: { Objects: keys.map((Key) => ({ Key })), Quiet: true },
+    }),
+  );
+  if (result.Errors && result.Errors.length > 0) {
+    throw new Error(`R2 kept ${result.Errors.length} objects`);
+  }
+}
+
 // Pages through the prefix and throws if any object is left undeleted, so the
 // caller can abort before it removes the rows that point to them.
 export async function deletePrefix(prefix: string): Promise<void> {
-  const { client, bucket } = getR2();
   let continuationToken: string | undefined;
-
   do {
-    const page = await client.send(
-      new ListObjectsV2Command({
-        Bucket: bucket,
-        Prefix: prefix,
-        ContinuationToken: continuationToken,
-      }),
-    );
-    const keys = (page.Contents ?? []).flatMap(({ Key }) =>
-      Key ? [{ Key }] : [],
-    );
-    if (keys.length > 0) {
-      const result = await client.send(
-        new DeleteObjectsCommand({
-          Bucket: bucket,
-          Delete: { Objects: keys, Quiet: true },
-        }),
-      );
-      if (result.Errors && result.Errors.length > 0) {
-        throw new Error(
-          `R2 kept ${result.Errors.length} objects under ${prefix}`,
-        );
-      }
-    }
-    continuationToken = page.IsTruncated
-      ? page.NextContinuationToken
-      : undefined;
+    const page = await listObjectsPage(prefix, continuationToken);
+    await deleteObjects(page.objects.map(({ key }) => key));
+    continuationToken = page.next;
   } while (continuationToken);
 }

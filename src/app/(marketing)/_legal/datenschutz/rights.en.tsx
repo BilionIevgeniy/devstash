@@ -7,11 +7,17 @@ export const RIGHTS_EN: LegalSection[] = [
     body: (
       <p>
         We keep your account and content until you delete them or delete your
-        account (Settings, &ldquo;Delete account&rdquo;). When you delete the
-        account we remove your data from the database, delete your files and
-        delete the Stripe customer. Counters for abuse protection expire after
-        minutes, and after 24 hours at most. The hosting provider deletes server
-        logs after its own period.
+        account (Settings, &ldquo;Delete account&rdquo;; an account without a
+        password confirms with a link we email to its address). When you delete
+        the account we remove your data from the database, delete your files and
+        delete the Stripe customer. A registration whose email address is not
+        confirmed within 7 days is deleted with its data. Links for email
+        confirmation, password reset and account deletion are deleted once they
+        expire (after 24 hours or 1 hour), at the latest by the next daily
+        clean-up. A file uploaded but never saved to an item is deleted after 24
+        hours. Counters for abuse protection expire after minutes, and after 24
+        hours at most. The hosting provider deletes server logs after its own
+        period.
       </p>
     ),
   },

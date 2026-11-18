@@ -2,7 +2,8 @@ import "server-only";
 
 import { buildPasswordResetEmail } from "@/features/auth/_internal/emails/password-reset-email";
 import { hashPassword } from "@/features/auth/_internal/password";
-import { generateToken, hashToken } from "@/features/auth/_internal/token";
+import { replaceToken } from "@/features/auth/_internal/services/token-store";
+import { hashToken } from "@/features/auth/_internal/token";
 import {
   buildPasswordResetUrl,
   getPasswordResetExpiry,
@@ -25,20 +26,6 @@ import type { Locale } from "@/i18n/config";
 import { logger } from "@/lib/observability/logger";
 import { prisma } from "@/lib/postgres/prisma";
 
-async function createPasswordResetToken(email: string): Promise<string> {
-  const identifier = getPasswordResetIdentifier(email);
-  const token = generateToken();
-  const expires = getPasswordResetExpiry(new Date());
-
-  await prisma.$transaction([
-    prisma.verificationToken.deleteMany({ where: { identifier } }),
-    prisma.verificationToken.create({
-      data: { identifier, token: hashToken(token), expires },
-    }),
-  ]);
-  return token;
-}
-
 export async function sendPasswordResetLink(
   email: string,
   origin: string,
@@ -46,7 +33,13 @@ export async function sendPasswordResetLink(
 ): Promise<OperationResult> {
   let token: string;
   try {
-    token = await createPasswordResetToken(email);
+    const now = new Date();
+    token = await replaceToken(
+      getPasswordResetIdentifier(email),
+      email,
+      getPasswordResetExpiry(now),
+      now,
+    );
   } catch (error) {
     await logger.error("Failed to create password reset token", { error });
     return fail("generic");

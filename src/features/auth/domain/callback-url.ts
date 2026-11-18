@@ -1,4 +1,4 @@
-import { DASHBOARD_PATH } from "./auth-paths";
+import { DASHBOARD_PATH, SIGN_IN_PATH } from "./auth-paths";
 
 // One leading slash, so `//host` is out, and printable ASCII with no backslash,
 // which browsers read as a slash. The proxy percent-encodes real paths, and
@@ -11,4 +11,11 @@ export function safeCallbackPath(value: unknown): string {
   return typeof value === "string" && INTERNAL_PATH.test(value)
     ? value
     : DASHBOARD_PATH;
+}
+
+// The sign-in page that leads on to the path afterwards; the default path
+// needs no parameter.
+export function signInHref(callbackPath: string): string {
+  if (callbackPath === DASHBOARD_PATH) return SIGN_IN_PATH;
+  return `${SIGN_IN_PATH}?callbackUrl=${encodeURIComponent(callbackPath)}`;
 }

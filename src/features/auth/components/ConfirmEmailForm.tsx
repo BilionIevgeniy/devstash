@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
-import { toast } from "sonner";
 
 import { confirmEmail } from "@/features/auth/_internal/actions/email-verification";
 import { ResendVerificationButton } from "@/features/auth/components/ResendVerificationButton";
@@ -16,7 +15,12 @@ import type { FormActionState } from "@/features/auth/types";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
+import type { AccountSwitchReason } from "@/features/auth/domain/account-switch";
+import {
+  doneStep,
+  finishEmailLink,
+  type DoneStep,
+} from "@/features/auth/_internal/components/finish-email-link";
 
 const FIELD_NAMES = ["password"] as const;
 type State = FormActionState<(typeof FIELD_NAMES)[number]>;
@@ -35,7 +39,7 @@ async function submit(
   router: Router,
   email: string,
   token: string,
-  successText: string,
+  done: DoneStep,
   formData: FormData,
 ): Promise<State> {
   const values = formValues(formData, FIELD_NAMES);
@@ -45,9 +49,7 @@ async function submit(
     if (!result.success) {
       return { error: result, values };
     }
-    toast.success(successText);
-    // replace: Back must not lead to the link that was just used.
-    router.replace(SIGN_IN_PATH);
+    finishEmailLink(router, done);
     return INITIAL_STATE;
   } catch {
     // A rejection left in an action would show the error page.
@@ -58,14 +60,26 @@ async function submit(
 interface ConfirmEmailFormProps {
   email: string;
   token: string;
+  /** Set while another account is signed in: success leads to the switch page. */
+  switchReason?: AccountSwitchReason | null;
 }
 
-export function ConfirmEmailForm({ email, token }: ConfirmEmailFormProps) {
+export function ConfirmEmailForm({
+  email,
+  token,
+  switchReason = null,
+}: ConfirmEmailFormProps) {
   const router = useRouter();
   const t = useTranslations("auth");
   const [state, formAction, isPending] = useActionState(
     (_previous: State, formData: FormData) =>
-      submit(router, email, token, t("verify.success"), formData),
+      submit(
+        router,
+        email,
+        token,
+        doneStep(switchReason, t("verify.success")),
+        formData,
+      ),
     INITIAL_STATE,
   );
   // Gone while a new attempt runs, so a repeated error is announced again.

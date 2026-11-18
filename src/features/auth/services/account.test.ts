@@ -4,31 +4,28 @@ const {
   findUnique,
   updateUser,
   deleteUser,
-  findAccounts,
   deleteTokens,
   transaction,
   consumeRateLimit,
   resetRateLimit,
   compare,
   hash,
-  revokeGitHubGrant,
+  isAccountDeletionTokenValid,
 } = vi.hoisted(() => ({
   findUnique: vi.fn(),
   updateUser: vi.fn(),
   deleteUser: vi.fn(),
-  findAccounts: vi.fn(),
   deleteTokens: vi.fn(),
   transaction: vi.fn(),
   consumeRateLimit: vi.fn(),
   resetRateLimit: vi.fn(),
   compare: vi.fn(),
   hash: vi.fn(),
-  revokeGitHubGrant: vi.fn(),
+  isAccountDeletionTokenValid: vi.fn(),
 }));
 vi.mock("@/lib/postgres/prisma", () => ({
   prisma: {
     user: { findUnique, update: updateUser, delete: deleteUser },
-    account: { findMany: findAccounts },
     verificationToken: { deleteMany: deleteTokens },
     $transaction: transaction,
   },
@@ -37,12 +34,11 @@ vi.mock("@/lib/vendors/rate-limit", () => ({
   consumeRateLimit,
   resetRateLimit,
 }));
+vi.mock("@/features/auth/queries", () => ({ isAccountDeletionTokenValid }));
 vi.mock("bcryptjs", () => ({ default: { compare, hash } }));
-vi.mock("@/features/auth/_internal/services/github-grant", () => ({
-  revokeGitHubGrant,
-}));
 
 import { DUMMY_PASSWORD_HASH } from "@/features/auth/_internal/password";
+import { getAccountDeletionIdentifier } from "@/features/auth/domain/account-deletion";
 import { getPasswordResetIdentifier } from "@/features/auth/domain/password-reset";
 import {
   changeUserPassword,
@@ -145,31 +141,19 @@ describe("deleteVerifiedUserRows", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    findAccounts.mockResolvedValue([]);
   });
 
-  it("revokes every stored GitHub token before the rows go", async () => {
-    findAccounts.mockResolvedValue([
-      { access_token: "token-1" },
-      { access_token: null },
-      { access_token: "token-2" },
-    ]);
-
-    await deleteVerifiedUserRows(proof);
-
-    expect(revokeGitHubGrant.mock.calls).toEqual([["token-1"], ["token-2"]]);
-    expect(revokeGitHubGrant.mock.invocationCallOrder[1]).toBeLessThan(
-      transaction.mock.invocationCallOrder[0],
-    );
-  });
-
-  it("removes the user and both kinds of token in one transaction", async () => {
+  it("removes the user and every kind of token in one transaction", async () => {
     await deleteVerifiedUserRows(proof);
 
     expect(transaction).toHaveBeenCalledTimes(1);
     expect(deleteTokens.mock.calls[0][0].where).toEqual({
       identifier: {
-        in: ["ada@example.com", getPasswordResetIdentifier("ada@example.com")],
+        in: [
+          "ada@example.com",
+          getPasswordResetIdentifier("ada@example.com"),
+          getAccountDeletionIdentifier("ada@example.com"),
+        ],
       },
     });
     expect(deleteUser).toHaveBeenCalledWith({ where: { id: "user-1" } });
@@ -209,29 +193,53 @@ describe("verifyAccountDeletion", () => {
     expect(resetRateLimit).not.toHaveBeenCalled();
   });
 
-  it("asks an account without a password for a fresh sign-in", async () => {
+  it("refuses an account without a password that brings no or a bad link token", async () => {
     findUnique.mockResolvedValue({ email: "ada@example.com", password: null });
+    isAccountDeletionTokenValid.mockResolvedValue(false);
 
-    const result = await verifyAccountDeletion("user-1", {
-      authenticatedAt: Date.now() - 24 * 60 * 60 * 1000,
+    const missing = await verifyAccountDeletion("user-1", {});
+    const expired = await verifyAccountDeletion("user-1", {
+      deletionToken: "old",
     });
 
-    expect(result).toEqual({
-      success: false,
-      data: null,
-      error: "reauthRequired",
-    });
+    for (const result of [missing, expired]) {
+      expect(result).toEqual({
+        success: false,
+        data: null,
+        error: "invalidDeletionLink",
+      });
+    }
   });
 
-  it("passes an account without a password after a recent sign-in", async () => {
+  // The address comes from the account, never from the link, so a token sent
+  // to another address cannot confirm this account's delete.
+  it("passes an account without a password with a token for its own address", async () => {
     findUnique.mockResolvedValue({ email: "ada@example.com", password: null });
+    isAccountDeletionTokenValid.mockResolvedValue(true);
 
     const result = await verifyAccountDeletion("user-1", {
-      authenticatedAt: Date.now(),
+      deletionToken: "tok",
     });
 
     expect(result.success).toBe(true);
-    expect(result.data).not.toBeNull();
+    expect(isAccountDeletionTokenValid).toHaveBeenCalledWith(
+      "ada@example.com",
+      "tok",
+    );
+  });
+
+  it("does not let a link token stand in for the password of an account that has one", async () => {
+    isAccountDeletionTokenValid.mockResolvedValue(true);
+
+    const result = await verifyAccountDeletion("user-1", {
+      deletionToken: "tok",
+    });
+
+    expect(result).toMatchObject({
+      success: false,
+      error: "incorrectPassword",
+    });
+    expect(isAccountDeletionTokenValid).not.toHaveBeenCalled();
   });
 
   it("answers success with nothing to delete when the user is gone", async () => {

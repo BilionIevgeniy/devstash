@@ -4,7 +4,17 @@
   "deleteDescription": "Permanently delete your account and all of your data.",
   "dialogTitle": "Delete your account?",
   "dialogDescription": "This permanently deletes your account and all of your items, collections, tags, files and images. This cannot be undone.",
-  "reauthNote": "For your security, sign in with GitHub again to confirm, then come back here to finish.",
-  "continueGithub": "Continue with GitHub",
-  "confirmPassword": "Enter your password to confirm"
+  "confirmPassword": "Enter your password to confirm",
+  "emailLinkNote": "We'll email a confirmation link to {email}. Open it while signed in to DevStash to delete the account.",
+  "noInbox": "Can't receive email at this address? Write to the address in the <link>imprint</link>.",
+  "sendLink": "Email me a confirmation link",
+  "sendingLink": "Sending…",
+  "linkSent": "Check your inbox at {email}. The link is valid for one hour.",
+  "close": "Close",
+  "confirmTitle": "Delete your account",
+  "confirmButton": "Delete account permanently",
+  "expiredTitle": "Confirmation link expired",
+  "backToSettings": "Back to settings",
+  "otherAccountTitle": "This link is for another account",
+  "otherAccountDescription": "This browser is signed in with another account than the one the link deletes. Sign out and sign in with that account to continue."
 }

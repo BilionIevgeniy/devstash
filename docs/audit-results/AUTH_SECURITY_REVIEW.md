@@ -1,6 +1,6 @@
 # Authentication Security Audit
 
-> **Historical.** This audit predates Auth Security Hardening, which fixed findings 1-6, and the move of the auth code into `features/auth/`, so its file paths and open findings are out of date. Run the `auth-auditor` agent for a current audit; it overwrites this file.
+> **Historical.** This audit predates Auth Security Hardening, which fixed findings 1-6, and the move of the auth code into `features/auth/`, so its file paths and open findings are out of date. Feature 17 (2026-11-18) closed findings 8 and 11 and the byte rule of finding 10, and replaced the recent GitHub sign-in of finding 6 with an emailed link (notes under each). Run the `auth-auditor` agent for a current audit; it overwrites this file.
 
 **Last Audit Date**: 2026-10-26
 **Auditor**: Auth Security Agent
@@ -363,6 +363,8 @@ if (existing) {
 
 #### 6. Account deletion requires no re-authentication
 
+(Update 2026-11-18: fixed. An account with a password confirms with it; one without (GitHub only) confirms with a link emailed to its own address and opened while signed in, since a GitHub sign-in can finish with no screen and so no longer proves the owner is present. A new GitHub user gets only an address GitHub has verified, and is refused without one.)
+
 **Severity**: Medium
 **File**: `src/features/auth/_internal/actions/account.ts`, `src/features/auth/account.ts`
 **Line(s)**: actions/account.ts 75-89; account.ts 35-50
@@ -457,6 +459,8 @@ return SUCCESS;
 
 #### 8. Resend verification returns a distinguishable error for existing unverified accounts
 
+(Update 2026-11-18: fixed. A failed send is logged and answered with the same neutral success as every other address.)
+
 **Severity**: Low
 **File**: `src/features/auth/_internal/actions/email-verification.ts`
 **Line(s)**: 43-49
@@ -528,6 +532,8 @@ Apply the same guard in `changeUserPassword` and in `resetPasswordWithToken`.
 
 #### 10. Weak input limits and password policy details
 
+(Update 2026-11-18: the byte rule is in. A new password over 72 UTF-8 bytes is refused (`passwordTooManyBytes`); a password being checked keeps a 72-character cap, so older accounts still sign in. The breach check is not built.)
+
 **Severity**: Low
 **File**: `src/app/api/auth/register/route.ts`, `src/features/auth/domain/password-reset.ts`, `src/features/auth/_internal/actions/account.ts`
 **Line(s)**: register/route.ts 11-28; domain/password-reset.ts 2-3; actions/account.ts 17-35
@@ -569,7 +575,7 @@ Optionally reject passwords found in the Have I Been Pwned range API (k-anonymit
 
 #### 11. OAuth access, refresh and ID tokens are stored in plaintext
 
-(Update 2026-11-06: half fixed. New `Account` rows store no tokens; older rows keep theirs until the clean-up of feature 17 (`context/features/plan/17.security-auth-retention.md`).)
+(Update 2026-11-06: half fixed. New `Account` rows store no tokens. Update 2026-11-18: fixed. The migration `clear_github_tokens` nulled the tokens of the older rows, and the revoke loop that read them is gone.)
 
 **Severity**: Low
 **File**: `src/features/auth/auth.ts`, `prisma/schema.prisma`

@@ -16,6 +16,7 @@ import {
   LOGIN_BY_IP,
   loginEmailKey,
 } from "@/features/auth/domain/rate-limits";
+import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 import { getSessionVersion } from "@/features/auth/queries";
 import { credentialsSchema } from "@/features/auth/schemas";
 import { getClientIp } from "@/lib/http/client-ip";
@@ -29,6 +30,11 @@ import {
 import authConfig from "./auth.config";
 import { authLogger } from "./auth-logger";
 import { getForeignSignInRedirect } from "./foreign-sign-in";
+import { requestGitHubProfile } from "./github-userinfo";
+
+// A new GitHub user without a verified address is refused: the account's
+// email is where its deletion link and every notice go.
+const GITHUB_EMAIL_UNVERIFIED_URL = `${SIGN_IN_PATH}?error=GitHubEmailUnverified`;
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -37,8 +43,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   providers: [
     // Nothing from GitHub is stored: the app never calls its API after sign-in,
-    // so a token in Account would only make a database leak worse.
-    GitHub({ account: () => undefined }),
+    // so a token in Account would only make a database leak worse. The address
+    // must be one GitHub has verified (github-userinfo.ts).
+    GitHub({
+      account: () => undefined,
+      userinfo: { request: requestGitHubProfile },
+    }),
     Credentials({
       credentials: {
         email: { label: "Email", type: "email" },
@@ -77,15 +87,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    // Runs before Auth.js links the account, so a refusal links nothing.
+    // Runs before Auth.js links the account, so a refusal links nothing. A
+    // linked account brings the stored user, which always has its address.
     async signIn({ user, account }) {
       if (account?.provider !== "github") return true;
-      return (await getForeignSignInRedirect(user.id)) ?? true;
+      const foreign = await getForeignSignInRedirect(user.id);
+      if (foreign) return foreign;
+      return user.email ? true : GITHUB_EMAIL_UNVERIFIED_URL;
     },
     async jwt({ token, user }) {
       if (user?.id) {
         token.sv = (await getSessionVersion(user.id)) ?? 0;
-        token.authAt = Date.now();
         return token;
       }
       if (!token.sub) return null;
@@ -108,10 +120,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
     },
     session({ session, token }) {
-      if (token.sub) {
-        session.user.id = token.sub;
-        session.user.authenticatedAt = token.authAt;
-      }
+      if (token.sub) session.user.id = token.sub;
       return session;
     },
   },
