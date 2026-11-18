@@ -62,12 +62,14 @@ export function CommandPalette() {
         variant="outline"
         aria-haspopup="dialog"
         aria-label={t("trigger")}
-        className="w-full min-w-0 max-w-md shrink justify-start font-normal text-muted-foreground"
+        className="size-8 justify-center font-normal text-muted-foreground lg:w-full lg:max-w-md lg:min-w-0 lg:shrink lg:justify-start"
         onClick={open}
       >
         <Search />
-        <span className="truncate">{t("placeholder")}</span>
-        <kbd className="ml-auto hidden rounded border px-1.5 text-xs sm:inline">
+        {/* Icon-only below lg: beside an open sidebar at 768px the field had
+            room for a few letters of its placeholder. The label stays. */}
+        <span className="hidden truncate lg:inline">{t("placeholder")}</span>
+        <kbd className="ml-auto hidden rounded border px-1.5 text-xs lg:inline">
           ⌘K
         </kbd>
       </Button>

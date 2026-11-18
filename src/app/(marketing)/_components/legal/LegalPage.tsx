@@ -1,5 +1,6 @@
 import type { LegalContent } from "../../_legal/types";
 import { LegalDocument } from "./LegalDocument";
+import { MAIN_CONTENT_ID } from "../SkipLink";
 
 interface LegalPageProps {
   /** `impressum` or `datenschutz`: the ids of the two documents derive from it. */
@@ -12,7 +13,11 @@ interface LegalPageProps {
 // English reader skip the German text; it is itself marked as English.
 export function LegalPage({ slug, de, en }: LegalPageProps) {
   return (
-    <main className="marketing-container pt-28 pb-20">
+    <main
+      id={MAIN_CONTENT_ID}
+      tabIndex={-1}
+      className="marketing-container pt-28 pb-20 outline-none"
+    >
       <div className="mx-auto max-w-3xl wrap-break-word">
         <p className="mb-8 text-sm">
           <a

@@ -15,8 +15,59 @@ import {
   PRO_ROADMAP_FEATURES,
 } from "@/features/billing/domain/limits";
 
+import { DASHBOARD_PATH } from "@/features/auth/domain/auth-paths";
+import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
+
+import { BUTTON_TRANSITION, SessionAwareAction } from "../SessionAwareAction";
 import { ScrollFadeIn } from "./ScrollFadeIn";
 import { SectionHead } from "./SectionHead";
+
+// A hidden variant is not prefetched (SessionAwareAction).
+const prefetch = (hidden: boolean) => (hidden ? false : undefined);
+
+interface PlanActionProps {
+  variant?: "outline";
+  label: string;
+  /** Where a signed-in visitor goes instead of the registration. */
+  memberHref: string;
+  memberLabel: string;
+}
+
+// The button of a plan card: register for a guest, the plan's page in the app
+// for a signed-in visitor.
+function PlanAction({
+  variant,
+  label,
+  memberHref,
+  memberLabel,
+}: PlanActionProps) {
+  return (
+    <SessionAwareAction
+      guest={(hidden) => (
+        <PricingCardButton
+          asChild
+          variant={variant}
+          className={BUTTON_TRANSITION}
+        >
+          <Link href="/register" prefetch={prefetch(hidden)}>
+            {label}
+          </Link>
+        </PricingCardButton>
+      )}
+      member={(hidden) => (
+        <PricingCardButton
+          asChild
+          variant={variant}
+          className={BUTTON_TRANSITION}
+        >
+          <Link href={memberHref} prefetch={prefetch(hidden)}>
+            {memberLabel}
+          </Link>
+        </PricingCardButton>
+      )}
+    />
+  );
+}
 
 // The roadmap line on top of what Pro gives today: the export is JSON only.
 const PRO_FEATURES = [...PRO_PLAN_FEATURES, ...PRO_ROADMAP_FEATURES];
@@ -29,6 +80,7 @@ interface PricingSectionProps {
 export function PricingSection({ note }: PricingSectionProps) {
   const [isYearly, setIsYearly] = useState(false);
   const t = useTranslations("marketing.pricing");
+  const marketing = useTranslations("marketing");
   const plan = usePlanText();
 
   return (
@@ -47,9 +99,12 @@ export function PricingSection({ note }: PricingSectionProps) {
                 {...plan.free}
                 features={plan.features(FREE_PLAN_FEATURES)}
                 action={
-                  <PricingCardButton asChild variant="outline">
-                    <Link href="/register">{plan.t("plans.getStarted")}</Link>
-                  </PricingCardButton>
+                  <PlanAction
+                    variant="outline"
+                    label={plan.t("plans.getStarted")}
+                    memberHref={DASHBOARD_PATH}
+                    memberLabel={marketing("openDashboard")}
+                  />
                 }
               />
             </ScrollFadeIn>
@@ -61,9 +116,11 @@ export function PricingSection({ note }: PricingSectionProps) {
                 features={plan.features(PRO_FEATURES)}
                 highlighted
                 action={
-                  <PricingCardButton asChild>
-                    <Link href="/register">{plan.t("plans.goPro")}</Link>
-                  </PricingCardButton>
+                  <PlanAction
+                    label={plan.t("plans.goPro")}
+                    memberHref={UPGRADE_PATH}
+                    memberLabel={plan.t("plans.goPro")}
+                  />
                 }
               />
             </ScrollFadeIn>

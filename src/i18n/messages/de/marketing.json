@@ -112,5 +112,7 @@
     "title": "Bereit, dein Wissen zu ordnen?",
     "lead": "Starte kostenlos mit {items} Einträgen und {collections} Sammlungen.",
     "button": "Kostenlos loslegen"
-  }
+  },
+  "skipToContent": "Zum Inhalt springen",
+  "openDashboard": "Dashboard öffnen"
 }

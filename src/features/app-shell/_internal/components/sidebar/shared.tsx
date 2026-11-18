@@ -4,7 +4,7 @@ import { SidebarNavLink } from "@/features/app-shell/_internal/components/sideba
 
 // A link marked `aria-current="page"` stands for the page on screen.
 export const LINK_CLASS =
-  "flex items-center gap-3 rounded-md px-2 py-1.5 text-sm text-foreground/80 hover:bg-accent hover:text-foreground aria-[current=page]:bg-accent aria-[current=page]:font-medium aria-[current=page]:text-foreground";
+  "flex items-center gap-3 rounded-md px-2 py-1.5 text-sm max-md:min-h-11 text-foreground/80 hover:bg-accent hover:text-foreground aria-[current=page]:bg-accent aria-[current=page]:font-medium aria-[current=page]:text-foreground";
 
 export function ItemCount({ value }: { value: number }) {
   return (
@@ -38,7 +38,7 @@ export function SidebarGroup({ label, viewAll, children }: SidebarGroupProps) {
         <SidebarNavLink
           href={viewAll.href}
           match="exact"
-          className="flex h-7 items-center rounded-md pr-2 pl-9 text-xs text-muted-foreground hover:bg-accent hover:text-foreground aria-[current=page]:bg-accent aria-[current=page]:font-medium aria-[current=page]:text-foreground"
+          className="flex h-7 items-center rounded-md pr-2 pl-9 max-md:h-11 text-xs text-muted-foreground hover:bg-accent hover:text-foreground aria-[current=page]:bg-accent aria-[current=page]:font-medium aria-[current=page]:text-foreground"
         >
           {viewAll.label}
         </SidebarNavLink>

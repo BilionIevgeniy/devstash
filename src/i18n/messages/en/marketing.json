@@ -112,5 +112,7 @@
     "title": "Ready to Organize Your Knowledge?",
     "lead": "Start free with {items} items and {collections} collections.",
     "button": "Get Started Free"
-  }
+  },
+  "skipToContent": "Skip to content",
+  "openDashboard": "Open Dashboard"
 }

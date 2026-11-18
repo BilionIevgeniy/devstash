@@ -47,6 +47,32 @@ describe("useHasSession", () => {
     expect(result.current).toBe(false);
   });
 
+  it("sends one request for the callers mounted together", async () => {
+    const answer = Promise.withResolvers<boolean>();
+    fetchHasSession.mockReturnValue(answer.promise);
+
+    const first = renderHook(() => useHasSession());
+    const second = renderHook(() => useHasSession());
+    await act(async () => answer.resolve(true));
+
+    expect(fetchHasSession).toHaveBeenCalledOnce();
+    expect(first.result.current).toBe(true);
+    expect(second.result.current).toBe(true);
+  });
+
+  it("aborts the shared request only when its last caller unmounts", async () => {
+    fetchHasSession.mockReturnValue(new Promise(() => undefined));
+
+    const first = renderHook(() => useHasSession());
+    const second = renderHook(() => useHasSession());
+    const signal: AbortSignal = fetchHasSession.mock.calls[0][0];
+    first.unmount();
+    expect(signal.aborted).toBe(false);
+
+    second.unmount();
+    expect(signal.aborted).toBe(true);
+  });
+
   it("counts a failure with no answer yet as a guest", async () => {
     fetchHasSession.mockRejectedValue(new TypeError("offline"));
 

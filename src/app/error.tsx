@@ -8,7 +8,8 @@ import { useReportError } from "@/components/common/hooks/use-report-error";
 import { Button } from "@/components/ui/button";
 
 // Catches what the segments below do not: the app layout (its sidebar) and the
-// auth pages. Rendered inside the root layout, so the theme and toasts stay.
+// auth pages. Rendered inside the root layout, so the theme stays; the toast
+// region belongs to the provider layouts it replaces, so it shows none.
 export default function RootError({
   error,
   retry,

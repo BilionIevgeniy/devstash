@@ -78,7 +78,7 @@ export function CodeMockup({ codeLabel, tagsLabel }: CodeMockupProps) {
         role="region"
         tabIndex={0}
         aria-label={codeLabel}
-        className="overflow-x-auto px-4 py-5 font-mono text-[13px] leading-[1.7]"
+        className="overflow-x-auto px-4 py-5 font-mono text-[13px] leading-[1.7] max-sm:wrap-anywhere max-sm:whitespace-pre-wrap"
       >
         <code>
           {CODE.map((line, lineIndex) => (

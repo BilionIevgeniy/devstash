@@ -15,6 +15,7 @@ import { useEscapeToClose } from "./hooks/use-escape-to-close";
 import { useScrolled } from "./hooks/use-scrolled";
 import { LanguageLink } from "./LanguageLink";
 import { MobileNavPanel } from "./MobileNavPanel";
+import { BUTTON_TRANSITION, SessionAwareAction } from "./SessionAwareAction";
 import {
   DASHBOARD_PATH,
   SIGN_IN_PATH,
@@ -23,11 +24,6 @@ import {
 const PANEL_ID = "mobile-nav";
 const DESKTOP_LINK = "transition-colors hover:text-foreground";
 
-// `Button` fades every property, `visibility` included: when the answer flips,
-// the variant that hides would stay drawn over the one that shows for 150 ms.
-const BUTTON_TRANSITION =
-  "transition-[color,background-color,border-color,box-shadow,translate]";
-
 // The guest buttons. Hidden, they are not prefetched: a signed-in visitor
 // would load /sign-in and /register for links nobody sees.
 function GuestActions({ hidden }: { hidden: boolean }) {
@@ -35,12 +31,7 @@ function GuestActions({ hidden }: { hidden: boolean }) {
   const prefetch = hidden ? false : undefined;
 
   return (
-    <div
-      className={cn(
-        "col-start-1 row-start-1 flex items-center gap-2 justify-self-end",
-        hidden && "invisible",
-      )}
-    >
+    <>
       <Button
         asChild
         variant="ghost"
@@ -59,7 +50,7 @@ function GuestActions({ hidden }: { hidden: boolean }) {
           {t("nav.getStarted")}
         </Link>
       </Button>
-    </div>
+    </>
   );
 }
 
@@ -69,34 +60,24 @@ function MemberAction({ hidden }: { hidden: boolean }) {
   const t = useTranslations("marketing");
 
   return (
-    <div
-      className={cn(
-        "col-start-1 row-start-1 flex items-center justify-self-end",
-        hidden && "invisible",
-      )}
-    >
-      <Button asChild size="lg" className={cn("px-3.5", BUTTON_TRANSITION)}>
-        <Link href={DASHBOARD_PATH} prefetch={hidden ? false : undefined}>
-          {t("nav.dashboard")}
-        </Link>
-      </Button>
-    </div>
+    <Button asChild size="lg" className={cn("px-3.5", BUTTON_TRANSITION)}>
+      <Link href={DASHBOARD_PATH} prefetch={hidden ? false : undefined}>
+        {t("nav.dashboard")}
+      </Link>
+    </Button>
   );
 }
 
-// Sign in and the main action, which depend on the session. The static page
-// renders as a guest and the answer comes after mount, so both variants stay
-// in the markup, stacked in one grid cell as wide as the wider of the two: the
-// place is kept whatever the answer, and the language link beside it never
-// moves. The variant that does not apply (both, until the answer) is
-// `invisible`, which also takes it out of the tab order and the accessibility
-// tree; a signed-in user never sees Sign in flash.
-function SessionActions({ hasSession }: { hasSession: boolean | null }) {
+// Sign in and the main action, which depend on the session, stacked in one
+// cell (SessionAwareAction): the language link beside them never moves.
+function SessionActions() {
   return (
-    <div className="grid items-center">
-      <GuestActions hidden={hasSession !== false} />
-      <MemberAction hidden={hasSession !== true} />
-    </div>
+    <SessionAwareAction
+      className="items-center"
+      cellClassName="flex items-center gap-2 justify-self-end"
+      guest={(hidden) => <GuestActions hidden={hidden} />}
+      member={(hidden) => <MemberAction hidden={hidden} />}
+    />
   );
 }
 
@@ -139,7 +120,7 @@ export function Navbar() {
             variant="code"
             className="hidden px-2 text-sm text-muted-foreground transition-colors hover:text-foreground md:inline"
           />
-          <SessionActions hasSession={hasSession} />
+          <SessionActions />
           <Button
             ref={toggleRef}
             variant="ghost"
