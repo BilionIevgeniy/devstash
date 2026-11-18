@@ -3,9 +3,12 @@ import bcrypt from "bcryptjs";
 import { config } from "dotenv";
 import { PrismaClient } from "../src/generated/prisma/client";
 import {
+  E2E_KEPT_TYPE,
   E2E_LIST_ROWS,
+  E2E_OVER_LIMIT_ROWS,
   E2E_USER_PASSWORD,
   listsUserEmail,
+  overLimitUserEmail,
   proUserEmail,
   requireE2eUserEmail,
 } from "./e2e-user";
@@ -79,6 +82,44 @@ async function seedProUser(
   });
 }
 
+// The former Pro user of the downgrade journey: a cancelled subscription, more
+// items than the Free plan allows and a custom type kept from Pro (ADR 0032).
+// Written directly, past the limit, as an account that grew on Pro would be.
+async function seedOverLimitUser(
+  prisma: PrismaClient,
+  email: string,
+  passwordHash: string,
+): Promise<void> {
+  await createVerifiedTestUser(prisma, { email, passwordHash });
+  const [user, snippet] = await Promise.all([
+    prisma.user.findUniqueOrThrow({ where: { email }, select: { id: true } }),
+    prisma.itemType.findFirstOrThrow({
+      where: { name: "snippet", isSystem: true },
+      select: { id: true },
+    }),
+  ]);
+  await prisma.subscription.create({
+    data: { userId: user.id, status: "canceled" },
+  });
+  await prisma.itemType.create({
+    data: {
+      userId: user.id,
+      name: E2E_KEPT_TYPE,
+      slug: E2E_KEPT_TYPE.toLowerCase(),
+      icon: "Code",
+    },
+  });
+  await prisma.item.createMany({
+    data: Array.from({ length: E2E_OVER_LIMIT_ROWS }, (_, i) => ({
+      userId: user.id,
+      typeId: snippet.id,
+      contentType: "TEXT",
+      title: `Kept item ${String(i + 1).padStart(2, "0")}`,
+      content: `echo ${i + 1}`,
+    })),
+  });
+}
+
 async function main() {
   const connectionString = requireTestDatabase(process.env.TEST_DATABASE_URL);
   const email = requireE2eUserEmail();
@@ -96,6 +137,7 @@ async function main() {
     await createVerifiedTestUser(prisma, { email, passwordHash });
     await seedListsUser(prisma, listsUserEmail(email), passwordHash);
     await seedProUser(prisma, proUserEmail(email), passwordHash);
+    await seedOverLimitUser(prisma, overLimitUserEmail(email), passwordHash);
     console.log("End-to-end database ready");
   } finally {
     await prisma.$disconnect();

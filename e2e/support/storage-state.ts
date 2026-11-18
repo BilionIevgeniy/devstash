@@ -8,6 +8,9 @@ export const LISTS_AUTH_FILE = "playwright/.auth/lists-user.json";
 // The session of the Pro user of the AI journey (scripts/seed-e2e.ts).
 export const PRO_AUTH_FILE = "playwright/.auth/pro-user.json";
 
+// The session of the former Pro user over the Free limit (scripts/seed-e2e.ts).
+export const OVER_LIMIT_AUTH_FILE = "playwright/.auth/over-limit-user.json";
+
 // A visitor who has not signed in: a spec uses it with `test.use` instead of
 // the saved session of the setup.
 export const SIGNED_OUT = { cookies: [], origins: [] };
