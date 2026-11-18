@@ -4,12 +4,14 @@ const {
   getEntitlements,
   consumeRateLimit,
   getExportCollections,
+  getExportCustomTypes,
   getPage,
   logError,
 } = vi.hoisted(() => ({
   getEntitlements: vi.fn(),
   consumeRateLimit: vi.fn(),
   getExportCollections: vi.fn(),
+  getExportCustomTypes: vi.fn(),
   getPage: vi.fn(),
   logError: vi.fn(async () => {}),
 }));
@@ -17,6 +19,9 @@ vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
 vi.mock("@/lib/vendors/rate-limit", () => ({ consumeRateLimit }));
 vi.mock("@/features/collections/queries/export", () => ({
   getExportCollections,
+}));
+vi.mock("@/features/item-types/queries", () => ({
+  getExportCustomTypes,
 }));
 vi.mock("@/features/items/services/export", () => ({
   getUserExportItemPage: getPage,
@@ -43,6 +48,7 @@ describe("exportUserData", () => {
       reset: 0,
     });
     getExportCollections.mockResolvedValue([{ id: "c1", name: "React" }]);
+    getExportCustomTypes.mockResolvedValue([]);
   });
 
   it("refuses a Free user before the rate limit is used", async () => {
