@@ -15,6 +15,7 @@
   "invalidEmail": "Invalid email address",
   "passwordTooShort": "Password must be at least {min} characters",
   "passwordTooLong": "Password must be at most {max} characters",
+  "passwordTooManyBytes": "Password must be at most {max} bytes: an accented letter counts as 2, an emoji as 4",
   "passwordRequired": "Password is required",
   "currentPasswordRequired": "Current password is required",
   "passwordsDoNotMatch": "Passwords do not match",

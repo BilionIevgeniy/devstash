@@ -1,8 +1,10 @@
 import { z } from "zod";
 import { safeCallbackPath } from "@/features/auth/domain/callback-url";
 import {
+  MAX_PASSWORD_BYTES,
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
+  passwordByteLength,
 } from "@/features/auth/domain/password-reset";
 import { EMAIL_MAX, NAME_MAX } from "@/features/auth/domain/registration";
 
@@ -13,10 +15,22 @@ export const emailSchema = z
   .max(EMAIL_MAX, "invalidEmail")
   .pipe(z.email("invalidEmail"));
 
+// A new password is bounded in bytes, which is what bcrypt reads. The issue is
+// a too_big one, so firstIssue fills the `{max}` of its message.
 const newPasswordSchema = z
   .string()
   .min(MIN_PASSWORD_LENGTH, "passwordTooShort")
-  .max(MAX_PASSWORD_LENGTH, "passwordTooLong");
+  .superRefine((password, ctx) => {
+    if (passwordByteLength(password) <= MAX_PASSWORD_BYTES) return;
+    ctx.addIssue({
+      code: "too_big",
+      origin: "string",
+      maximum: MAX_PASSWORD_BYTES,
+      inclusive: true,
+      input: password,
+      message: "passwordTooManyBytes",
+    });
+  });
 
 export const credentialsSchema = z.object({
   email: emailSchema,

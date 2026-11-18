@@ -16,6 +16,7 @@ export const ERROR_PARAM_NAMES = {
   collectionLimitReached: ["limit"],
   passwordTooShort: ["min"],
   passwordTooLong: ["max"],
+  passwordTooManyBytes: ["max"],
   profileNameTooLong: ["max"],
   nameTooLong: ["max"],
   titleTooLong: ["max"],

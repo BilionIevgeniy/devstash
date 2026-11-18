@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  MAX_PASSWORD_BYTES,
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
+import { firstIssue } from "@/lib/errors/validation";
 import { NAME_MAX } from "@/features/auth/domain/registration";
 import {
   changePasswordSchema,
@@ -28,7 +30,7 @@ function messagesAt(outcome: ParseOutcome, path: string): string[] {
 }
 
 const TOO_SHORT = "passwordTooShort";
-const TOO_LONG = "passwordTooLong";
+const TOO_MANY_BYTES = "passwordTooManyBytes";
 const MISMATCH = "passwordsDoNotMatch";
 const PASSWORD = "correct-horse-1";
 
@@ -123,7 +125,7 @@ describe("registerSchema", () => {
   });
 
   it("accepts a password of exactly the maximum length", () => {
-    const password = "a".repeat(MAX_PASSWORD_LENGTH);
+    const password = "a".repeat(MAX_PASSWORD_BYTES);
     expect(
       registerSchema.safeParse({
         ...valid,
@@ -133,14 +135,40 @@ describe("registerSchema", () => {
     ).toBe(true);
   });
 
-  it("rejects a password one character too long", () => {
-    const password = "a".repeat(MAX_PASSWORD_LENGTH + 1);
+  it("rejects a password one byte too long", () => {
+    const password = "a".repeat(MAX_PASSWORD_BYTES + 1);
     const result = registerSchema.safeParse({
       ...valid,
       password,
       confirmPassword: password,
     });
-    expect(messagesAt(result, "password")).toContain(TOO_LONG);
+    expect(messagesAt(result, "password")).toContain(TOO_MANY_BYTES);
+  });
+
+  // bcrypt ignores everything after the first 72 bytes, so a password of 72
+  // characters with accents would share its hash with every password that
+  // starts with the same 72 bytes.
+  it("counts bytes, not characters", () => {
+    const fits = "é".repeat(MAX_PASSWORD_BYTES / 2);
+    const tooLong = "é".repeat(MAX_PASSWORD_BYTES / 2 + 1);
+    expect(
+      registerSchema.safeParse({
+        ...valid,
+        password: fits,
+        confirmPassword: fits,
+      }).success,
+    ).toBe(true);
+    const result = registerSchema.safeParse({
+      ...valid,
+      password: tooLong,
+      confirmPassword: tooLong,
+    });
+    expect(result.success).toBe(false);
+    if (result.success) return;
+    expect(firstIssue(result.error)).toMatchObject({
+      error: TOO_MANY_BYTES,
+      params: { max: MAX_PASSWORD_BYTES },
+    });
   });
 
   it("puts a mismatch on the confirmation field", () => {
@@ -216,7 +244,7 @@ describe("changePasswordSchema", () => {
 
   it("applies the length rules to the new password", () => {
     const short = "a".repeat(MIN_PASSWORD_LENGTH - 1);
-    const long = "a".repeat(MAX_PASSWORD_LENGTH + 1);
+    const long = "é".repeat(MAX_PASSWORD_BYTES);
     expect(
       messagesAt(
         changePasswordSchema.safeParse({
@@ -236,7 +264,7 @@ describe("changePasswordSchema", () => {
         }),
         "newPassword",
       ),
-    ).toContain(TOO_LONG);
+    ).toContain(TOO_MANY_BYTES);
   });
 
   it("puts a mismatch on the confirmation field", () => {
@@ -271,6 +299,16 @@ describe("credentialsSchema", () => {
       password: "a".repeat(MAX_PASSWORD_LENGTH + 1),
     });
     expect(messagesAt(result, "password")).not.toHaveLength(0);
+  });
+
+  // An account from before the byte rule may hold such a password; signing in
+  // must still work, so only new passwords are counted in bytes.
+  it("accepts an existing password of 72 characters over 72 bytes", () => {
+    const result = credentialsSchema.safeParse({
+      email: "ada@example.com",
+      password: "é".repeat(MAX_PASSWORD_LENGTH),
+    });
+    expect(result.success).toBe(true);
   });
 });
 
