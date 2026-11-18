@@ -14,11 +14,11 @@ import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogFooter } from "@/components/ui/dialog";
 import type { EditorHandle } from "@/features/editor/types";
-import type { UploadedFile } from "@/features/files/types";
 import { CollectionSelect } from "@/features/items/_internal/components/fields/CollectionSelect";
 import { ItemFileField } from "@/features/items/_internal/components/fields/ItemFileField";
 import { ItemFields } from "@/features/items/_internal/components/fields/ItemFields";
 import { useAcceptedAi } from "@/features/items/_internal/components/hooks/use-accepted-ai";
+import { useTypeChoice } from "@/features/items/_internal/components/hooks/use-type-choice";
 import { ItemTypeSelect } from "@/features/items/_internal/components/fields/ItemTypeSelect";
 import { submitNewItem } from "@/features/items/_internal/components/form/submit-new-item";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
@@ -63,9 +63,9 @@ export function CreateItemForm({
   run,
   onCreated,
 }: CreateItemFormProps) {
-  const [typeName, setTypeName] = useState(initialType);
+  const { typeName, changeType, upload, setUpload } =
+    useTypeChoice(initialType);
   const [values, setValues] = useState<ItemFormValues>(EMPTY_VALUES);
-  const [upload, setUpload] = useState<UploadedFile | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const contentRef = useRef<EditorHandle>(null);
   const acceptedAi = useAcceptedAi();
@@ -80,13 +80,6 @@ export function CreateItemForm({
     value: ItemFormValues[K],
   ) {
     setValues((current) => ({ ...current, [name]: value }));
-  }
-
-  // An upload belongs to the kind it was made for, so a type switch drops it;
-  // the key on FileUpload remounts it, which aborts a running PUT.
-  function handleTypeChange(value: string) {
-    setTypeName(value);
-    setUpload(null);
   }
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
@@ -109,7 +102,7 @@ export function CreateItemForm({
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
       <ItemTypeSelect
         value={typeName}
-        onChange={handleTypeChange}
+        onChange={changeType}
         customTypeNames={customTypeNames}
         isPro={isPro}
         disabled={isCreating}
