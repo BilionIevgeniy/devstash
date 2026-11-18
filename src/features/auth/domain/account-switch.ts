@@ -16,11 +16,13 @@ export function switchAccountHref(reason: AccountSwitchReason): string {
   return `${SWITCH_ACCOUNT_PATH}?reason=${reason}`;
 }
 
-// Emails are stored lowercased (emailSchema), and the session holds the one
-// the account signed in with.
+// Whether a signed-in user is someone else than the link's account. Emails
+// are stored lowercased (emailSchema), and the session holds the one the
+// account signed in with; a session without one cannot be the link's account.
 export function isOtherAccount(
-  sessionEmail: string | null | undefined,
+  sessionUser: { email?: string | null } | undefined,
   linkEmail: string,
 ): boolean {
-  return Boolean(sessionEmail) && sessionEmail?.toLowerCase() !== linkEmail;
+  if (!sessionUser) return false;
+  return sessionUser.email?.toLowerCase() !== linkEmail;
 }

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { useState, useTransition, type MouseEvent } from "react";
+import { unstable_rethrow } from "next/navigation";
 
 import { requestAccountDeletionLink } from "@/features/account/_internal/actions/delete-account";
 import { DeleteError } from "@/features/account/_internal/components/DeleteError";
@@ -12,7 +13,6 @@ import {
   AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
 import type { ErrorRef } from "@/i18n/error-codes";
-import { isNavigationError } from "@/lib/errors/navigation-error";
 import { IMPRINT_PATH } from "@/lib/http/legal-paths";
 
 // The body of the delete dialog for an account with no password: it sends the
@@ -35,7 +35,8 @@ export function EmailLinkDeletion({ email }: { email: string }) {
         if (result.success) setSent(true);
         else setError(result);
       } catch (error) {
-        if (isNavigationError(error)) return;
+        // A redirect (a session that ended) must go on.
+        unstable_rethrow(error);
         setError({ error: "generic" });
       }
     });

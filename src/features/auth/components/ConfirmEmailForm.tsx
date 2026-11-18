@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
-import { toast } from "sonner";
 
 import { confirmEmail } from "@/features/auth/_internal/actions/email-verification";
 import { ResendVerificationButton } from "@/features/auth/components/ResendVerificationButton";
@@ -16,11 +15,12 @@ import type { FormActionState } from "@/features/auth/types";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
+import type { AccountSwitchReason } from "@/features/auth/domain/account-switch";
 import {
-  switchAccountHref,
-  type AccountSwitchReason,
-} from "@/features/auth/domain/account-switch";
+  doneStep,
+  finishEmailLink,
+  type DoneStep,
+} from "@/features/auth/_internal/components/finish-email-link";
 
 const FIELD_NAMES = ["password"] as const;
 type State = FormActionState<(typeof FIELD_NAMES)[number]>;
@@ -30,22 +30,6 @@ const INITIAL_STATE: State = {
 };
 
 type Router = ReturnType<typeof useRouter>;
-
-// After success: the sign-in page with a toast, or, while another account is
-// signed in, the switch page, which says the same itself.
-type DoneStep =
-  | { switchReason: AccountSwitchReason }
-  | { switchReason: null; successText: string };
-
-function finish(router: Router, done: DoneStep) {
-  // replace: Back must not lead to the link that was just used.
-  if (done.switchReason) {
-    router.replace(switchAccountHref(done.switchReason));
-    return;
-  }
-  toast.success(done.successText);
-  router.replace(SIGN_IN_PATH);
-}
 
 // Runs in the browser, since the answer decides what the page does next: a
 // toast and a move to the sign-in page. The values come back with the state, so
@@ -65,7 +49,7 @@ async function submit(
     if (!result.success) {
       return { error: result, values };
     }
-    finish(router, done);
+    finishEmailLink(router, done);
     return INITIAL_STATE;
   } catch {
     // A rejection left in an action would show the error page.
@@ -93,9 +77,7 @@ export function ConfirmEmailForm({
         router,
         email,
         token,
-        switchReason
-          ? { switchReason }
-          : { switchReason: null, successText: t("verify.success") },
+        doneStep(switchReason, t("verify.success")),
         formData,
       ),
     INITIAL_STATE,

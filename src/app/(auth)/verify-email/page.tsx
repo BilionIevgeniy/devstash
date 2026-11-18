@@ -29,9 +29,7 @@ export default async function VerifyEmailPage({
           email={parsed.data.email}
           token={parsed.data.token}
           switchReason={
-            isOtherAccount(session?.user?.email, parsed.data.email)
-              ? "email"
-              : null
+            isOtherAccount(session?.user, parsed.data.email) ? "email" : null
           }
         />
       </AuthCard>

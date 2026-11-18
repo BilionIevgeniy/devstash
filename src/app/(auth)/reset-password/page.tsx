@@ -47,9 +47,7 @@ export default async function ResetPasswordPage({
         email={parsed.data.email}
         token={parsed.data.token}
         switchReason={
-          isOtherAccount(session?.user?.email, parsed.data.email)
-            ? "password"
-            : null
+          isOtherAccount(session?.user, parsed.data.email) ? "password" : null
         }
       />
     </AuthCard>

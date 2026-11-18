@@ -9,16 +9,23 @@ import {
 describe("isOtherAccount", () => {
   it("is false without a session: the link leads to the sign-in page as usual", () => {
     expect(isOtherAccount(undefined, "b@example.com")).toBe(false);
-    expect(isOtherAccount(null, "b@example.com")).toBe(false);
-    expect(isOtherAccount("", "b@example.com")).toBe(false);
   });
 
   it("is false for the link's own account", () => {
-    expect(isOtherAccount("B@example.com", "b@example.com")).toBe(false);
+    expect(isOtherAccount({ email: "B@example.com" }, "b@example.com")).toBe(
+      false,
+    );
   });
 
   it("is true for a session of another address", () => {
-    expect(isOtherAccount("a@example.com", "b@example.com")).toBe(true);
+    expect(isOtherAccount({ email: "a@example.com" }, "b@example.com")).toBe(
+      true,
+    );
+  });
+
+  it("is true for a session with no address, which cannot be the link's", () => {
+    expect(isOtherAccount({ email: null }, "b@example.com")).toBe(true);
+    expect(isOtherAccount({}, "b@example.com")).toBe(true);
   });
 });
 

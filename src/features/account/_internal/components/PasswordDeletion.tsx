@@ -1,10 +1,9 @@
 "use client";
 import { useTranslations } from "next-intl";
 
-import { useState, useTransition, type MouseEvent } from "react";
-import { unstable_rethrow } from "next/navigation";
+import { useState, type MouseEvent } from "react";
 
-import { deleteAccount } from "@/features/account/_internal/actions/delete-account";
+import { useDeleteAccount } from "@/features/account/_internal/components/hooks/use-delete-account";
 import { DeleteError } from "@/features/account/_internal/components/DeleteError";
 import {
   AlertDialogAction,
@@ -12,30 +11,18 @@ import {
   AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import type { ErrorRef } from "@/i18n/error-codes";
 
 // The body of the delete dialog for an account with a password.
 export function PasswordDeletion() {
   const tActions = useTranslations("common.actions");
   const t = useTranslations("account");
-  const [isPending, startTransition] = useTransition();
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<ErrorRef | null>(null);
+  const { isPending, error, submit } = useDeleteAccount();
 
   function handleConfirm(event: MouseEvent<HTMLButtonElement>) {
     // Keep the dialog open while working; a success redirects away.
     event.preventDefault();
-    setError(null);
-    startTransition(async () => {
-      try {
-        const result = await deleteAccount({ password });
-        if (!result.success) setError(result);
-      } catch (error) {
-        // A success ends in a redirect, which must go on.
-        unstable_rethrow(error);
-        setError({ error: "generic" });
-      }
-    });
+    submit({ password });
   }
 
   return (
