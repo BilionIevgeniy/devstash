@@ -158,7 +158,7 @@ describe("stale registration", () => {
       where: { id: user.id },
       data: { emailVerified: new Date() },
     });
-    await deleteVerifiedUserRows(verified);
+    await expect(deleteVerifiedUserRows(verified)).resolves.toBe(false);
 
     await expect(prisma.user.count({ where: { id: user.id } })).resolves.toBe(
       1,

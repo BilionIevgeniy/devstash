@@ -16,10 +16,11 @@ import { logger } from "@/lib/observability/logger";
 // aborts, so no file outlives the rows that would let the user delete it. The
 // second purge catches an upload from another tab whose signed PUT landed
 // between the first purge and the rows; it is best effort, since the account
-// is already gone by then.
+// is already gone by then. `removed` is false only for a stale registration
+// verified in the meantime, whose row stays.
 export async function removeVerifiedAccount(
   verified: VerifiedDeletion,
-): Promise<OperationResult> {
+): Promise<OperationResult<{ removed: boolean }>> {
   const { userId } = verified;
   try {
     await deleteBillingCustomer(userId);
@@ -41,7 +42,8 @@ export async function removeVerifiedAccount(
     return fail("filesPurgeFailed");
   }
 
-  await deleteVerifiedUserRows(verified);
+  const removed = await deleteVerifiedUserRows(verified);
+  if (!removed) return ok({ removed });
 
   try {
     await purgeUserObjects(userId);
@@ -51,5 +53,5 @@ export async function removeVerifiedAccount(
       userId,
     });
   }
-  return ok();
+  return ok({ removed });
 }

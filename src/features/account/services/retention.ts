@@ -13,11 +13,17 @@ const PAGE_SIZE = 100;
 // through the same path as a user's own delete, after `auth` has checked it
 // again. Pages by id, so a user whose delete fails is skipped and retried the
 // next day; at the deadline it stops. A second run finds nobody left.
+type PurgeOutcome = "deleted" | "skipped" | "failed";
+
 export async function purgeStaleRegistrations({
   now,
   deadline,
 }: CronContext): Promise<CronJobReport> {
-  const counts = { deleted: 0, failed: 0 };
+  const counts: Record<PurgeOutcome, number> = {
+    deleted: 0,
+    skipped: 0,
+    failed: 0,
+  };
   let afterId: string | null = null;
 
   for (;;) {
@@ -25,29 +31,27 @@ export async function purgeStaleRegistrations({
     const ids = await getStaleRegistrationIds(now, afterId, PAGE_SIZE);
     if (ids.length === 0) return { counts, stoppedEarly: false };
 
-    for (const userId of ids) {
-      if (await purgeOne(userId, now)) counts.deleted += 1;
-      else counts.failed += 1;
-    }
+    for (const userId of ids) counts[await purgeOne(userId, now)] += 1;
     afterId = ids[ids.length - 1];
   }
 }
 
-// True when the registration is gone, or no longer stale (verified meanwhile).
-async function purgeOne(userId: string, now: Date): Promise<boolean> {
+// "skipped" when the registration is no longer stale (verified meanwhile).
+async function purgeOne(userId: string, now: Date): Promise<PurgeOutcome> {
   try {
     const verified = await verifyStaleRegistration(userId, now);
-    if (!verified) return true;
+    if (!verified) return "skipped";
     const result = await removeVerifiedAccount(verified);
     if (!result.success) {
       logger.warn("Removing a stale registration failed", { userId });
+      return "failed";
     }
-    return result.success;
+    return result.data.removed ? "deleted" : "skipped";
   } catch (error) {
     await logger.error("Removing a stale registration failed", {
       error,
       userId,
     });
-    return false;
+    return "failed";
   }
 }

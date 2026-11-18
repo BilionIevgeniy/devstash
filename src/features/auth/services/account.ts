@@ -7,9 +7,10 @@ import {
 } from "@/features/auth/_internal/password";
 import {
   getDeletionCredentials,
-  getStaleRegistration,
   getPasswordHash,
   getPasswordHashByEmail,
+  getStaleRegistration,
+  staleRegistrationWhere,
 } from "@/features/auth/_internal/queries";
 import { staleRegistrationCutoff } from "@/features/auth/domain/registration";
 import { addressTokenIdentifiers } from "@/features/auth/domain/token-identifiers";
@@ -24,7 +25,6 @@ import {
   type Failure,
   type OperationResult,
 } from "@/lib/errors/action-result";
-import { staleRegistrationWhere } from "@/features/auth/_internal/queries";
 import { prisma } from "@/lib/postgres/prisma";
 import { consumeRateLimit, resetRateLimit } from "@/lib/vendors/rate-limit";
 
@@ -35,8 +35,9 @@ export interface DeleteAccountProof {
   deletionToken?: string;
 }
 
-// Not exported: only verifyAccountDeletion can build a VerifiedDeletion, so
-// deleteVerifiedUserRows cannot be called without the proof check.
+// Not exported: only verifyAccountDeletion and verifyStaleRegistration can
+// build a VerifiedDeletion, so deleteVerifiedUserRows cannot be called without
+// a proof check.
 declare const verified: unique symbol;
 
 export interface VerifiedDeletion {
@@ -100,11 +101,11 @@ export async function verifyPasswordByEmail(
 // A valid session alone is not enough to delete an account: the caller proves
 // it is the owner with the password, or, when the account has none, with the
 // token of the link emailed to the account's own address. The token is checked
-// against the address read here by the user id, never the one in the link, and
-// it is not used up: the rows delete takes every token of the address with the
-// user, so a delete that fails later (R2 down) can be retried from the link. A passed check resets the shared counter, as a password change
-// does, so a delete that fails later (R2 down) and is retried with the right
-// password cannot lock the user out.
+// against the address read here by the user id, never the one in the link. It
+// is not used up: the row delete removes every token of the address with the
+// user, so a delete that fails later (R2 down) can be retried from the link.
+// A passed check resets the shared counter, as a password change does, so a
+// retried delete cannot lock the user out.
 export async function verifyAccountDeletion(
   userId: string,
   proof: DeleteAccountProof,
@@ -148,6 +149,8 @@ export async function verifyStaleRegistration(
 }
 
 // Called only by account's delete flow, after it has purged the user's files.
+// True when the user row went; false only for a stale registration that was
+// verified in the meantime.
 //
 // Items, collections, tags, custom types, accounts and sessions go with the
 // user through the schema's onDelete: Cascade. Verification and reset tokens
@@ -156,10 +159,9 @@ export async function deleteVerifiedUserRows({
   userId,
   email,
   staleBefore,
-}: VerifiedDeletion): Promise<void> {
+}: VerifiedDeletion): Promise<boolean> {
   if (staleBefore) {
-    await deleteStaleRegistrationRows(userId, email, staleBefore);
-    return;
+    return deleteStaleRegistrationRows(userId, email, staleBefore);
   }
 
   await prisma.$transaction([
@@ -170,6 +172,7 @@ export async function deleteVerifiedUserRows({
     }),
     prisma.user.delete({ where: { id: userId } }),
   ]);
+  return true;
 }
 
 // A verification that lands between the job's proof and this delete keeps the
@@ -178,14 +181,15 @@ async function deleteStaleRegistrationRows(
   userId: string,
   email: string,
   staleBefore: Date,
-): Promise<void> {
-  await prisma.$transaction(async (tx) => {
+): Promise<boolean> {
+  return prisma.$transaction(async (tx) => {
     const { count } = await tx.user.deleteMany({
       where: { id: userId, ...staleRegistrationWhere(staleBefore) },
     });
-    if (count !== 1) return;
+    if (count !== 1) return false;
     await tx.verificationToken.deleteMany({
       where: { identifier: { in: addressTokenIdentifiers(email) } },
     });
+    return true;
   });
 }

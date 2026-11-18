@@ -16,5 +16,6 @@ export async function deleteAccount(
   if (!verification.success) return verification;
   if (!verification.data) return ok();
 
-  return removeVerifiedAccount(verification.data);
+  const result = await removeVerifiedAccount(verification.data);
+  return result.success ? ok() : result;
 }

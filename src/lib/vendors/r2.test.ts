@@ -84,6 +84,21 @@ describe("deletePrefix", () => {
     ]);
   });
 
+  // The account purge must not leave an object behind because R2 gave no date.
+  it("deletes an object listed without a date too", async () => {
+    send.mockImplementation(async (command: SentCommand) =>
+      command.name === "delete"
+        ? {}
+        : { Contents: [{ Key: "users/u1/no-date.png" }], IsTruncated: false },
+    );
+
+    await deletePrefix("users/u1/");
+
+    expect(sentOf("delete").map(({ input }) => input.Delete)).toEqual([
+      { Objects: [{ Key: "users/u1/no-date.png" }], Quiet: true },
+    ]);
+  });
+
   it("sends no delete for an empty prefix", async () => {
     send.mockResolvedValue({ IsTruncated: false });
 
@@ -158,7 +173,10 @@ describe("listObjectsPage", () => {
     });
 
     expect(await listObjectsPage("users/", "page-1")).toEqual({
-      objects: [{ key: "users/u1/a.png", lastModified: CREATED }],
+      objects: [
+        { key: "users/u1/a.png", lastModified: CREATED },
+        { key: "users/u1/no-date.png", lastModified: null },
+      ],
       next: "page-2",
     });
     expect(sentOf("list")[0].input).toMatchObject({

@@ -28,8 +28,12 @@ export async function sweepUnclaimedUploads({
       return { counts: { scanned, deleted }, stoppedEarly: true };
     }
     const page = await listUploadPage(next);
+    // An object with no date cannot be aged, so it is left alone.
     const due = page.objects
-      .filter(({ lastModified }) => isUnclaimedUploadDue(lastModified, now))
+      .filter(
+        ({ lastModified }) =>
+          lastModified !== null && isUnclaimedUploadDue(lastModified, now),
+      )
       .map(({ key }) => key);
     const held = await getHeldFileKeys(due);
     const unclaimed = due.filter((key) => !held.has(key));

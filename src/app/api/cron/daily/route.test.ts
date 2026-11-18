@@ -6,7 +6,7 @@ const { deleteExpiredTokens } = vi.hoisted(() => ({
 vi.mock("@/features/auth/services/retention", () => ({ deleteExpiredTokens }));
 vi.mock("@/features/account/services/retention", () => ({
   purgeStaleRegistrations: vi.fn(async () => ({
-    counts: { deleted: 0, failed: 0 },
+    counts: { deleted: 0, skipped: 0, failed: 0 },
     stoppedEarly: false,
   })),
 }));

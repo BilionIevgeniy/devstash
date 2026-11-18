@@ -21,7 +21,8 @@ export interface R2Object {
 
 export interface R2ListedObject {
   key: string;
-  lastModified: Date;
+  /** When the object was written; null if R2 did not say. */
+  lastModified: Date | null;
 }
 
 export interface R2ObjectPage {
@@ -138,7 +139,8 @@ export async function deleteObject(key: string): Promise<void> {
 }
 
 // One page (up to 1,000 keys, R2's maximum) of the objects under a prefix, in
-// key order. An object R2 lists without a key or a date is left out.
+// key order. Every keyed object is listed, also one without a date, so a purge
+// never skips it.
 export async function listObjectsPage(
   prefix: string,
   continuationToken?: string,
@@ -152,7 +154,7 @@ export async function listObjectsPage(
     }),
   );
   const objects = (page.Contents ?? []).flatMap(({ Key, LastModified }) =>
-    Key && LastModified ? [{ key: Key, lastModified: LastModified }] : [],
+    Key ? [{ key: Key, lastModified: LastModified ?? null }] : [],
   );
   return {
     objects,

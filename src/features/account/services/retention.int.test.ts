@@ -63,11 +63,11 @@ describe("purgeStaleRegistrations", () => {
     const before = await snapshotTenant(t.b.userId);
 
     await expect(purgeStaleRegistrations(context())).resolves.toEqual({
-      counts: { deleted: 1, failed: 0 },
+      counts: { deleted: 1, skipped: 0, failed: 0 },
       stoppedEarly: false,
     });
     await expect(purgeStaleRegistrations(context())).resolves.toEqual({
-      counts: { deleted: 0, failed: 0 },
+      counts: { deleted: 0, skipped: 0, failed: 0 },
       stoppedEarly: false,
     });
 
