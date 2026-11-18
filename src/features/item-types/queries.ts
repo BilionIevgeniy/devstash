@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import {
+  isSystemTypeName,
   sortBySystemOrder,
   toItemTypeInfo,
 } from "@/features/item-types/domain/item-type";
@@ -96,6 +97,15 @@ export const getSidebarItemTypes = cache(
     );
   },
 );
+
+// The names of the caller's custom types, by name, for the create dialog:
+// read from the sidebar's list, which cache() shares within the request.
+export async function getCustomTypeNames(userId: string): Promise<string[]> {
+  const types = await getSidebarItemTypes(userId);
+  return types
+    .filter((type) => !isSystemTypeName(type.name))
+    .map((type) => type.name);
+}
 
 // The settings list of the caller's custom types, by name.
 export async function getCustomTypes(userId: string): Promise<CustomTypeRow[]> {

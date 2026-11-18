@@ -19,12 +19,11 @@ import {
 import { ProBadge } from "@/features/billing/components/ProBadge";
 import type { CreateItemForm as CreateItemFormComponent } from "@/features/items/_internal/components/form/CreateItemForm";
 import { CreateItemFormSkeleton } from "@/features/items/_internal/components/form/CreateItemFormSkeleton";
-import {
-  canCreateType,
-  type CreatableTypeName,
-} from "@/features/items/domain/item-fields";
+import { typeLabel } from "@/features/item-types/domain/item-type";
+import { canCreateType } from "@/features/items/domain/item-fields";
 
-const DEFAULT_TYPE: CreatableTypeName = "snippet";
+const DEFAULT_TYPE = "snippet";
+const NO_CUSTOM_TYPES: readonly string[] = [];
 const IDLE_FALLBACK_MS = 1500;
 
 type FormComponent = typeof CreateItemFormComponent;
@@ -111,8 +110,11 @@ function useCreateItemForm(isOpen: boolean) {
 }
 
 interface CreateItemDialogProps {
-  /** The type chosen when the dialog opens; also names the button. */
-  defaultType?: CreatableTypeName;
+  /** The type chosen when the dialog opens (a system type's name or a custom
+   * type's); also names the button. */
+  defaultType?: string;
+  /** The user's custom types, from getCustomTypeNames on the server. */
+  customTypeNames?: readonly string[];
   /** From getEntitlements on the server; the server checks again on create. */
   isPro: boolean;
   /** Opened from elsewhere: no button, and the focus goes back through this. */
@@ -125,6 +127,7 @@ interface CreateItemDialogProps {
 
 export function CreateItemDialog({
   defaultType,
+  customTypeNames = NO_CUSTOM_TYPES,
   isPro,
   controlled,
 }: CreateItemDialogProps) {
@@ -139,7 +142,7 @@ export function CreateItemDialog({
   const contentRef = useRef<HTMLDivElement>(null);
   const initialType = defaultType ?? DEFAULT_TYPE;
   const label = defaultType
-    ? t("create.newType", { type: typeName(`${defaultType}.one`) })
+    ? t("create.newType", { type: typeLabel(typeName, defaultType, "one") })
     : t("create.newItem");
   // A type page of a Pro type keeps its button for a Free user, disabled.
   const isLocked =
@@ -194,6 +197,7 @@ export function CreateItemDialog({
         {Form ? (
           <Form
             initialType={initialType}
+            customTypeNames={customTypeNames}
             isPro={isPro}
             isCreating={isCreating}
             run={run}

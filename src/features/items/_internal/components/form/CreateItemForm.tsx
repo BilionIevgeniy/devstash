@@ -26,10 +26,7 @@ import {
   isMissingRequired,
   type ItemFormValues,
 } from "@/features/items/domain/item-changes";
-import {
-  editableFields,
-  type CreatableTypeName,
-} from "@/features/items/domain/item-fields";
+import { editableFields } from "@/features/items/domain/item-fields";
 
 const EMPTY_VALUES: ItemFormValues = {
   title: "",
@@ -45,7 +42,10 @@ const FOCUSABLE =
   "button:not([disabled]), input:not([disabled]), textarea:not([disabled])";
 
 export interface CreateItemFormProps {
-  initialType: CreatableTypeName;
+  /** A system type's name or one of the user's custom types. */
+  initialType: string;
+  /** The user's custom types, offered after the system types. */
+  customTypeNames: readonly string[];
   isPro: boolean;
   isCreating: boolean;
   run: SubmitRun;
@@ -57,12 +57,13 @@ export interface CreateItemFormProps {
 // parts do not ship with every page.
 export function CreateItemForm({
   initialType,
+  customTypeNames,
   isPro,
   isCreating,
   run,
   onCreated,
 }: CreateItemFormProps) {
-  const [typeName, setTypeName] = useState<CreatableTypeName>(initialType);
+  const [typeName, setTypeName] = useState(initialType);
   const [values, setValues] = useState<ItemFormValues>(EMPTY_VALUES);
   const [upload, setUpload] = useState<UploadedFile | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -83,7 +84,7 @@ export function CreateItemForm({
 
   // An upload belongs to the kind it was made for, so a type switch drops it;
   // the key on FileUpload remounts it, which aborts a running PUT.
-  function handleTypeChange(value: CreatableTypeName) {
+  function handleTypeChange(value: string) {
     setTypeName(value);
     setUpload(null);
   }
@@ -109,6 +110,7 @@ export function CreateItemForm({
       <ItemTypeSelect
         value={typeName}
         onChange={handleTypeChange}
+        customTypeNames={customTypeNames}
         isPro={isPro}
         disabled={isCreating}
       />

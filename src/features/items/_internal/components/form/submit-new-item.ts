@@ -16,12 +16,11 @@ import {
 } from "@/features/items/domain/item-changes";
 import {
   parseTagInput,
-  type CreatableTypeName,
   type EditableFields,
 } from "@/features/items/domain/item-fields";
 
 export interface NewItemSubmission {
-  typeName: CreatableTypeName;
+  typeName: string;
   fields: EditableFields;
   values: ItemFormValues;
   /** What the form claims came from the AI unchanged (ADR 0027). */

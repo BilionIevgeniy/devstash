@@ -165,10 +165,7 @@ export function canUseType(typeName: string, isPro: boolean): boolean {
 
 // Whether the user may create an item of this type now: a type the dialog
 // offers, and one their plan gives them.
-export function canCreateType(
-  typeName: CreatableTypeName,
-  isPro: boolean,
-): boolean {
+export function canCreateType(typeName: string, isPro: boolean): boolean {
   return canUseType(typeName, isPro);
 }
 

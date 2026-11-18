@@ -20,11 +20,13 @@ type CreateDialog = "item" | "collection";
 interface CreateMenuProps {
   /** From getEntitlements on the server, for the item dialog. */
   isPro: boolean;
+  /** The user's custom types, for the item dialog. */
+  customTypeNames: readonly string[];
 }
 
 // The top bar's two create buttons in one, for a phone. The dialogs have no
 // trigger of their own here, so they hand the focus back to the +.
-export function CreateMenu({ isPro }: CreateMenuProps) {
+export function CreateMenu({ isPro, customTypeNames }: CreateMenuProps) {
   const t = useTranslations("shell");
   const [trigger, setTrigger] = useState<HTMLButtonElement | null>(null);
   const [openDialog, setOpenDialog] = useState<CreateDialog | null>(null);
@@ -71,7 +73,11 @@ export function CreateMenu({ isPro }: CreateMenuProps) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <CreateItemDialog isPro={isPro} controlled={dialogState("item")} />
+      <CreateItemDialog
+        isPro={isPro}
+        customTypeNames={customTypeNames}
+        controlled={dialogState("item")}
+      />
       <CreateCollectionDialog controlled={dialogState("collection")} />
     </>
   );

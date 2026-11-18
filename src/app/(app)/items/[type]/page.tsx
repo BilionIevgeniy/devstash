@@ -9,7 +9,10 @@ import { PaginationNav } from "@/components/common/lists/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import { getEntitlements } from "@/features/billing/queries";
-import { getItemTypeBySlug } from "@/features/item-types/queries";
+import {
+  getCustomTypeNames,
+  getItemTypeBySlug,
+} from "@/features/item-types/queries";
 import { typeListing } from "@/features/items/domain/item-fields";
 import { itemListHref } from "@/features/items/domain/list/list-params";
 import { ITEMS_PER_PAGE } from "@/features/items/domain/list/pagination";
@@ -41,17 +44,23 @@ export default async function ItemsByTypePage({
   }
 
   const requested = parseItemListParams(await searchParams);
-  const [totalCount, tags, { isPro }] = await Promise.all([
+  const [totalCount, tags, { isPro }, customTypeNames] = await Promise.all([
     countItemsOfType(userId, type.id, requested.tag),
     getTypeTagNames(userId, type.id),
     getEntitlements(userId),
+    getCustomTypeNames(userId),
   ]);
   const position = pagePosition(totalCount, ITEMS_PER_PAGE, requested.page);
   const current = { ...requested, page: position.page };
   const basePath = `/items/${slug}`;
   return (
     <div className="group/list space-y-8">
-      <ItemsHeader type={type} totalCount={totalCount} isPro={isPro} />
+      <ItemsHeader
+        type={type}
+        totalCount={totalCount}
+        isPro={isPro}
+        customTypeNames={customTypeNames}
+      />
       <div className="space-y-4">
         <ItemListFilters basePath={basePath} params={current} tags={tags} />
         <div className="transition-opacity group-has-data-pending/list:opacity-50">
