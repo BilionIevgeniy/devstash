@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   sendEmail: vi.fn(),
   consumeRateLimit: vi.fn(),
   consumeIpRateLimit: vi.fn(),
+  isRateLimitConfigured: vi.fn(),
 }));
 
 const { Unavailable } = vi.hoisted(() => ({
@@ -36,6 +37,7 @@ vi.mock("@/lib/vendors/email", () => ({ sendEmail: mocks.sendEmail }));
 vi.mock("@/lib/vendors/rate-limit", () => ({
   consumeRateLimit: mocks.consumeRateLimit,
   consumeIpRateLimit: mocks.consumeIpRateLimit,
+  isRateLimitConfigured: mocks.isRateLimitConfigured,
   RateLimitUnavailableError: Unavailable,
 }));
 vi.mock("@/lib/observability/logger", () => ({
@@ -66,10 +68,11 @@ beforeEach(() => {
     customerId: "cus_1",
     subscriptionId: "sub_1",
   });
-  mocks.getContractState.mockResolvedValue({
-    status: "cancelling",
-    periodEnd: PERIOD_END,
-  });
+  // Running before the cancellation, ending after it.
+  mocks.getContractState
+    .mockResolvedValueOnce({ status: "live", periodEnd: PERIOD_END })
+    .mockResolvedValue({ status: "cancelling", periodEnd: PERIOD_END });
+  mocks.isRateLimitConfigured.mockReturnValue(true);
   mocks.sendEmail.mockResolvedValue({ success: true, data: null, error: null });
   mocks.consumeRateLimit.mockResolvedValue(ALLOWED);
   mocks.consumeIpRateLimit.mockResolvedValue(ALLOWED);
@@ -100,7 +103,10 @@ describe("cancelOwnSubscription", () => {
   });
 
   it("refuses when no subscription runs", async () => {
-    mocks.getLiveSubscriptionRef.mockResolvedValue(null);
+    mocks.getContractState.mockReset().mockResolvedValue({
+      status: "none",
+      periodEnd: null,
+    });
 
     const result = await cancelOwnSubscription(
       "user-1",
@@ -111,6 +117,32 @@ describe("cancelOwnSubscription", () => {
 
     expect(result.error).toBe("noLiveContract");
     expect(mocks.updateSubscription).not.toHaveBeenCalled();
+  });
+
+  it("does nothing more for a contract that already ends", async () => {
+    mocks.getContractState.mockReset().mockResolvedValue({
+      status: "cancelling",
+      periodEnd: PERIOD_END,
+    });
+
+    const result = await cancelOwnSubscription(
+      "user-1",
+      { kind: "extraordinary", reason: "x" },
+      "en",
+      NOW,
+    );
+
+    expect(result.success).toBe(true);
+    expect(mocks.updateSubscription).not.toHaveBeenCalled();
+    expect(mocks.sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("sends at most one confirmation per account and day", async () => {
+    await cancelOwnSubscription("user-1", { kind: "ordinary" }, "en", NOW);
+
+    expect(mocks.sendEmail.mock.calls[0][0].idempotencyKey).toBe(
+      "cancellation/user-1/2026-11-18",
+    );
   });
 
   it("tells the operator about a cancellation for good cause", async () => {
@@ -149,6 +181,26 @@ describe("checkCancellationLimit", () => {
     });
   });
 
+  it("fails loudly when the limiter is not configured", async () => {
+    mocks.isRateLimitConfigured.mockReturnValue(false);
+
+    await expect(checkCancellationLimit("a@b.c", null, NOW)).rejects.toThrow(
+      "not configured",
+    );
+  });
+
+  it("bounds the declarations in memory while the limiter is down", async () => {
+    mocks.consumeIpRateLimit.mockRejectedValue(new Unavailable());
+    const email = "outage@example.com";
+
+    const answers = [];
+    for (let i = 0; i < 4; i += 1) {
+      answers.push((await checkCancellationLimit(email, null, NOW)).success);
+    }
+
+    expect(answers).toEqual([true, true, true, false]);
+  });
+
   it("takes the declaration when the limiter is down", async () => {
     mocks.consumeIpRateLimit.mockRejectedValue(new Unavailable());
 
@@ -177,14 +229,37 @@ describe("processCancellationDeclaration", () => {
     expect(mocks.sendEmail).not.toHaveBeenCalled();
   });
 
-  it("confirms the declaration also when no subscription runs", async () => {
-    mocks.getLiveSubscriptionRef.mockResolvedValue(null);
+  it("sends nothing to an account with no running contract", async () => {
+    mocks.getContractState.mockReset().mockResolvedValue({
+      status: "none",
+      periodEnd: null,
+    });
 
     await processCancellationDeclaration(DECLARATION, "en", NOW);
 
-    expect(mocks.sendEmail.mock.calls[0][0].text).toContain(
-      "no running subscription",
+    expect(mocks.updateSubscription).not.toHaveBeenCalled();
+    expect(mocks.sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("never carries the visitor's words to the holder, only to the operator", async () => {
+    await processCancellationDeclaration(
+      {
+        ...DECLARATION,
+        kind: "extraordinary",
+        name: "Visit https://evil.test",
+        reason: "Sign in at https://evil.test",
+      },
+      "en",
+      NOW,
     );
+
+    const [holder, operator] = mocks.sendEmail.mock.calls.map(
+      (call) => call[0],
+    );
+    expect(holder.text).not.toContain("evil.test");
+    expect(holder.html).not.toContain("evil.test");
+    expect(operator.to).toBe(OPERATOR.email);
+    expect(operator.text).toContain("Sign in at https://evil.test");
   });
 
   it("hands a failed declaration to the operator, never losing it", async () => {

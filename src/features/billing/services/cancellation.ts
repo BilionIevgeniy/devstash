@@ -8,6 +8,7 @@ import {
   type CancellationRecord,
 } from "@/features/billing/_internal/emails/cancellation-email";
 import { getLiveSubscriptionRef } from "@/features/billing/_internal/queries";
+import { consumeLocalLimit } from "@/features/billing/_internal/services/local-limit";
 import { syncSubscription } from "@/features/billing/_internal/services/subscription-sync";
 import {
   CANCEL_BY_EMAIL,
@@ -25,17 +26,33 @@ import { logger } from "@/lib/observability/logger";
 import {
   consumeIpRateLimit,
   consumeRateLimit,
+  isRateLimitConfigured,
   RateLimitUnavailableError,
 } from "@/lib/vendors/rate-limit";
 import { getStripe } from "@/lib/vendors/stripe";
 import { sendEmail } from "@/lib/vendors/email";
 
-type Outcome = CancellationRecord["outcome"];
+/** What a declaration did: only "cancelled" changed anything. */
+type Effect =
+  | { status: "none" }
+  | { status: "already"; periodEnd: Date | null }
+  | { status: "cancelled"; periodEnd: Date | null };
+
+function periodEndOf(iso: string | null): Date | null {
+  return iso ? new Date(iso) : null;
+}
 
 // Sets the live subscription to end with its term and lets the sync write it.
 // Ending at the term, not at once, is what an ordinary cancellation means and
-// what a wrongly filed one can still undo in the portal (ADR 0032).
-async function cancelAtPeriodEnd(userId: string): Promise<Outcome> {
+// what a wrongly filed one can still undo in the portal (ADR 0032). A contract
+// that does not run, or already ends, is left alone: no Stripe call, and the
+// caller sends no second email.
+async function cancelAtPeriodEnd(userId: string): Promise<Effect> {
+  const before = await getContractState(userId);
+  if (before.status === "none") return { status: "none" };
+  if (before.status === "cancelling") {
+    return { status: "already", periodEnd: periodEndOf(before.periodEnd) };
+  }
   const ref = await getLiveSubscriptionRef(userId);
   if (!ref) return { status: "none" };
 
@@ -43,23 +60,23 @@ async function cancelAtPeriodEnd(userId: string): Promise<Outcome> {
     cancel_at_period_end: true,
   });
   await syncSubscription(ref.customerId, ref.subscriptionId);
-  const { status, periodEnd } = await getContractState(userId);
-  if (status === "none") return { status: "none" };
-  return {
-    status: "cancelled",
-    periodEnd: periodEnd ? new Date(periodEnd) : null,
-  };
+  const after = await getContractState(userId);
+  return { status: "cancelled", periodEnd: periodEndOf(after.periodEnd) };
 }
 
+// One confirmation per account and day at most (Resend's idempotency key), so
+// the holder cannot be flooded through the form.
 async function confirmToHolder(
   userId: string,
   record: CancellationRecord,
 ): Promise<void> {
   const profile = await getUserProfile(userId);
   if (!profile) return;
+  const day = record.declaredAt.toISOString().slice(0, 10);
   const result = await sendEmail({
     to: profile.email,
     ...buildCancellationEmail(record),
+    idempotencyKey: `cancellation/${userId}/${day}`,
   });
   if (!result.success) {
     await logger.error("The cancellation confirmation was not sent", {
@@ -99,14 +116,16 @@ export async function cancelOwnSubscription(
   locale: Locale,
   now: Date,
 ): Promise<OperationResult<{ declaredAt: string }>> {
-  const outcome = await cancelAtPeriodEnd(userId);
-  if (outcome.status === "none") return fail("noLiveContract");
+  const effect = await cancelAtPeriodEnd(userId);
+  if (effect.status === "none") return fail("noLiveContract");
+  // Already ending: the first declaration was confirmed; nothing more to do.
+  if (effect.status === "already") return ok({ declaredAt: now.toISOString() });
 
   const record: CancellationRecord = {
     locale,
     ...input,
     declaredAt: now,
-    outcome,
+    periodEnd: effect.periodEnd,
   };
   await confirmToHolder(userId, record);
   if (input.kind === "extraordinary") {
@@ -118,15 +137,31 @@ export async function cancelOwnSubscription(
   return ok({ declaredAt: now.toISOString() });
 }
 
+const OUTAGE_LIMIT_FAILED = fail("tooManyAttemptsNoTime");
+
+// While Upstash is down the declaration is taken anyway, counted only in the
+// memory of this instance.
+function checkLocally(email: string, ip: string | null, now: Date) {
+  const time = now.getTime();
+  const allowed =
+    (!ip || consumeLocalLimit(CANCEL_BY_IP, ip, time)) &&
+    consumeLocalLimit(CANCEL_BY_EMAIL, email, time);
+  return allowed ? ok() : OUTAGE_LIMIT_FAILED;
+}
+
 // The limits of the signed-out form. A refusal depends only on how often a
 // request comes, so it may say so. When Upstash is down the declaration is
-// taken anyway: a consumer's cancellation must never be lost to an outage of
-// ours (ADR 0032); consumeRateLimit has logged the outage.
+// taken anyway, bounded per instance: a consumer's cancellation must never be
+// lost to an outage of ours (ADR 0032); consumeRateLimit has logged it. A
+// missing setting is not an outage: it throws, so the form fails loudly.
 export async function checkCancellationLimit(
   email: string,
   ip: string | null,
   now: Date,
 ): Promise<OperationResult> {
+  if (!isRateLimitConfigured()) {
+    throw new Error("Rate limiting is not configured");
+  }
   try {
     for (const check of [
       () => consumeIpRateLimit(CANCEL_BY_IP, ip),
@@ -142,11 +177,17 @@ export async function checkCancellationLimit(
     }
     return ok();
   } catch (error) {
-    if (error instanceof RateLimitUnavailableError) return ok();
+    if (error instanceof RateLimitUnavailableError) {
+      return checkLocally(email, ip, now);
+    }
     throw error;
   }
 }
 
+// Only a declaration that ended a running contract is confirmed, and the
+// email repeats none of the visitor's free text (name, reason): the form is
+// open to anyone, and DevStash must not carry a stranger's words to the
+// holder. The operator gets them for a cancellation for good cause.
 async function processDeclaration(
   input: CancellationDeclarationInput,
   locale: Locale,
@@ -155,21 +196,21 @@ async function processDeclaration(
   const userId = await getUserIdByEmail(input.email);
   if (!userId) return; // Nobody to confirm to; the screen holds the record.
 
-  const outcome = await cancelAtPeriodEnd(userId);
+  const effect = await cancelAtPeriodEnd(userId);
+  if (effect.status !== "cancelled") return;
   const record: CancellationRecord = {
     locale,
     kind: input.kind,
-    reason: input.reason,
-    name: input.name,
     declaredAt,
-    outcome,
+    periodEnd: effect.periodEnd,
   };
   await confirmToHolder(userId, record);
   if (input.kind === "extraordinary") {
-    await notifyOperator(
-      "Extraordinary cancellation",
-      extraordinaryFacts(record, { userId, email: input.email }),
-    );
+    await notifyOperator("Extraordinary cancellation", {
+      ...extraordinaryFacts(record, { userId, email: input.email }),
+      name: input.name,
+      reason: input.reason ?? "",
+    });
   }
 }
 

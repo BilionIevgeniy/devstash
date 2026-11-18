@@ -82,6 +82,20 @@ function toIdentifier(identifier: string): string {
   return hmacSha256Hex(key, identifier);
 }
 
+// Whether the limiter has what it needs (the Upstash credentials and the HMAC
+// key). A caller that takes requests while Upstash is down (the § 312k
+// cancellation, ADR 0032) checks this first, so a missing setting fails loudly
+// instead of looking like an outage.
+export function isRateLimitConfigured(): boolean {
+  const key = process.env.RATE_LIMIT_HASH_KEY;
+  return Boolean(
+    process.env.UPSTASH_REDIS_REST_URL &&
+    process.env.UPSTASH_REDIS_REST_TOKEN &&
+    key &&
+    key.length >= MIN_HASH_KEY_LENGTH,
+  );
+}
+
 // Sliding-window counter on Upstash, so parallel requests and separate
 // serverless instances all count the same hit. The library lets a request
 // through when Upstash times out; here that is treated as an outage, like an

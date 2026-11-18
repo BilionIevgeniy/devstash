@@ -46,7 +46,6 @@
     "reason": "Reason: {reason}",
     "endsOn": "Your subscription ends on {date}. You keep Pro until then, and nothing more is billed.",
     "endsAtTerm": "Your subscription ends at the end of the current term, and nothing more is billed.",
-    "noContract": "There is no running subscription under this account, so nothing is billed.",
     "resume": "If you did not send this, open Manage Billing in the DevStash settings and resume your subscription before it ends."
   }
 }

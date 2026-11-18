@@ -8,11 +8,11 @@ export interface CancellationRecord {
   locale: Locale;
   kind: CancellationKind;
   reason?: string;
-  /** Given on the signed-out form only. */
+  /** The holder's own name, never a visitor's (ADR 0032). */
   name?: string;
   declaredAt: Date;
-  /** "none": no running subscription; else when it ends, if known. */
-  outcome: { status: "none" } | { status: "cancelled"; periodEnd: Date | null };
+  /** When the cancelled subscription ends, if known. */
+  periodEnd: Date | null;
 }
 
 function effectLine(
@@ -20,8 +20,7 @@ function effectLine(
   t: ReturnType<typeof emailTranslator>,
   date: (d: Date) => string,
 ) {
-  if (record.outcome.status === "none") return t("cancellation.noContract");
-  const { periodEnd } = record.outcome;
+  const { periodEnd } = record;
   return periodEnd
     ? t("cancellation.endsOn", { date: date(periodEnd) })
     : t("cancellation.endsAtTerm");

@@ -95,19 +95,22 @@ This record is the design and our reading of the law. It is not legal advice: a 
 - **Signed in:**
   - The page shows the contract: running with its renewal date, already ending, or none.
   - The consumer chooses an ordinary cancellation, or one for good cause with a reason.
-  - `cancelOwnContract` sets `cancel_at_period_end` on the Stripe subscription at once, syncs it, and emails the confirmation.
+  - `cancelOwnContract` sets `cancel_at_period_end` on the Stripe subscription at once, syncs it, and emails the confirmation. A contract that already ends is left alone: no Stripe call and no second email.
 - **Signed out:**
   - The form takes name, the account's email, the type and the reason.
   - The submission is the declaration.
   - The answer is the same for every address. The work runs in `after()`, so its timing says nothing either. This is the one entry point with a second call: the limit check, then the deferred processing.
-  - The processing finds the account by email (`getUserIdByEmail` of `auth`, returning the id only; rule 4 of the architecture rules names this exception). If a subscription runs, it ends with the term. The confirmation goes to the address on file only.
+  - The processing finds the account by email (`getUserIdByEmail` of `auth`, returning the id only; rule 4 of the architecture rules names this exception). If a subscription runs, it ends with the term.
+  - Only a declaration that ended a running contract is confirmed, to the address on file. An account with no running contract, or one already ending, gets nothing, so the form cannot be used to flood a holder.
+  - The holder's email repeats none of the visitor's free text (name, reason): the form is open to anyone, and DevStash must not carry a stranger's words, a phishing link say, from its own domain. A cancellation for good cause goes with its text to the operator.
 - **Both:**
   - The screen then shows the declaration with its date and time, ready to print or save (§ 312k (3)).
-  - The confirmation email (§ 312k (4)) states the time in Berlin and tells the holder how to resume in the portal if they did not send it.
+  - The confirmation email (§ 312k (4)) states the time in Berlin and tells the holder how to resume in the portal if they did not send it. At most one goes to an account per day (Resend's idempotency key `cancellation/<userId>/<day>`).
   - A cancellation for good cause also goes to the operator's address with its reason.
 - **Limits:** `cancel:ip` and `cancel:email` (HMAC identifiers):
   - A refusal shows "try again in N minutes". The limits count requests, not accounts, so the refusal reveals nothing.
-  - When Upstash is down, the declaration is taken anyway: a consumer's cancellation must never be lost to our outage.
+  - When Upstash is down, the declaration is taken anyway: a consumer's cancellation must never be lost to our outage. It is still bounded, by the same limits counted in the memory of the instance (`_internal/services/local-limit.ts`).
+  - A missing Upstash setting or HMAC key is not an outage: `isRateLimitConfigured` is checked first, and the form answers with an error, so the mistake shows at once instead of turning the limits off.
   - A failure of the deferred work goes to Sentry with ids only, and the full declaration goes to the operator's address to be finished by hand.
 - **No declaration table:**
   - The screen record, the emails and Stripe's subscription carry what happened.

@@ -46,7 +46,6 @@
     "reason": "Grund: {reason}",
     "endsOn": "Dein Abonnement endet am {date}. Bis dahin behältst du Pro, danach wird nichts mehr abgerechnet.",
     "endsAtTerm": "Dein Abonnement endet zum Ende der laufenden Laufzeit, danach wird nichts mehr abgerechnet.",
-    "noContract": "Unter diesem Konto läuft kein Abonnement, es wird also nichts abgerechnet.",
     "resume": "Wenn du das nicht warst, öffne „Abrechnung verwalten“ in den Einstellungen von DevStash und setze dein Abonnement fort, bevor es endet."
   }
 }
