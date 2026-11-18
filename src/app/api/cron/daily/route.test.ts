@@ -4,6 +4,12 @@ const { deleteExpiredTokens } = vi.hoisted(() => ({
   deleteExpiredTokens: vi.fn(),
 }));
 vi.mock("@/features/auth/services/retention", () => ({ deleteExpiredTokens }));
+vi.mock("@/features/items/services/upload-sweep", () => ({
+  sweepUnclaimedUploads: vi.fn(async () => ({
+    counts: { scanned: 0, deleted: 0 },
+    stoppedEarly: false,
+  })),
+}));
 vi.mock("@/lib/observability/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(async () => {}) },
 }));

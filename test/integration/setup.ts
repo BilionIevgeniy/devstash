@@ -40,6 +40,8 @@ vi.mock("@/lib/vendors/r2", () => ({
   headObject: vi.fn(async () => null),
   deleteObject: vi.fn(async () => {}),
   deletePrefix: vi.fn(async () => {}),
+  listObjectsPage: vi.fn(async () => ({ objects: [], next: undefined })),
+  deleteObjects: vi.fn(async () => {}),
 }));
 
 vi.mock("@/lib/vendors/email", () => ({

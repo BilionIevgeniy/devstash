@@ -30,7 +30,14 @@ vi.stubEnv("R2_SECRET_ACCESS_KEY", "secret");
 vi.stubEnv("R2_BUCKET_NAME", "bucket");
 
 import { NotFound } from "@aws-sdk/client-s3";
-import { deletePrefix, headObject } from "@/lib/vendors/r2";
+import {
+  deleteObjects,
+  deletePrefix,
+  headObject,
+  listObjectsPage,
+} from "@/lib/vendors/r2";
+
+const CREATED = new Date("2026-11-01T10:00:00Z");
 
 interface SentCommand {
   name: string;
@@ -52,9 +59,12 @@ describe("deletePrefix", () => {
     send.mockImplementation(async (command: SentCommand) => {
       if (command.name === "delete") return {};
       return command.input.ContinuationToken
-        ? { Contents: [{ Key: "users/u1/b.png" }], IsTruncated: false }
+        ? {
+            Contents: [{ Key: "users/u1/b.png", LastModified: CREATED }],
+            IsTruncated: false,
+          }
         : {
-            Contents: [{ Key: "users/u1/a.png" }],
+            Contents: [{ Key: "users/u1/a.png", LastModified: CREATED }],
             IsTruncated: true,
             NextContinuationToken: "page-2",
           };
@@ -87,11 +97,14 @@ describe("deletePrefix", () => {
     send.mockImplementation(async (command: SentCommand) =>
       command.name === "delete"
         ? { Errors: [{ Key: "users/u1/a.png", Code: "InternalError" }] }
-        : { Contents: [{ Key: "users/u1/a.png" }], IsTruncated: false },
+        : {
+            Contents: [{ Key: "users/u1/a.png", LastModified: CREATED }],
+            IsTruncated: false,
+          },
     );
 
     await expect(deletePrefix("users/u1/")).rejects.toThrow(
-      "R2 kept 1 objects under users/u1/",
+      "R2 kept 1 objects",
     );
   });
 });
@@ -101,12 +114,17 @@ describe("headObject", () => {
     send.mockReset();
   });
 
-  it("gives the size and the stored Content-Type", async () => {
-    send.mockResolvedValue({ ContentLength: 2048, ContentType: "image/png" });
+  it("gives the size, the stored Content-Type and the write time", async () => {
+    send.mockResolvedValue({
+      ContentLength: 2048,
+      ContentType: "image/png",
+      LastModified: CREATED,
+    });
 
     expect(await headObject("users/u1/a.png")).toEqual({
       size: 2048,
       contentType: "image/png",
+      lastModified: CREATED,
     });
   });
 
@@ -121,5 +139,55 @@ describe("headObject", () => {
     send.mockRejectedValue(new Error("R2 down"));
 
     await expect(headObject("users/u1/a.png")).rejects.toThrow("R2 down");
+  });
+});
+
+describe("listObjectsPage", () => {
+  beforeEach(() => {
+    send.mockReset();
+  });
+
+  it("gives the keys with their write time and the next page's token", async () => {
+    send.mockResolvedValue({
+      Contents: [
+        { Key: "users/u1/a.png", LastModified: CREATED },
+        { Key: "users/u1/no-date.png" },
+      ],
+      IsTruncated: true,
+      NextContinuationToken: "page-2",
+    });
+
+    expect(await listObjectsPage("users/", "page-1")).toEqual({
+      objects: [{ key: "users/u1/a.png", lastModified: CREATED }],
+      next: "page-2",
+    });
+    expect(sentOf("list")[0].input).toMatchObject({
+      Prefix: "users/",
+      ContinuationToken: "page-1",
+    });
+  });
+
+  it("has no next token on the last page", async () => {
+    send.mockResolvedValue({ Contents: [], IsTruncated: false });
+
+    expect((await listObjectsPage("users/")).next).toBeUndefined();
+  });
+});
+
+describe("deleteObjects", () => {
+  beforeEach(() => {
+    send.mockReset();
+  });
+
+  it("sends nothing for no keys", async () => {
+    await deleteObjects([]);
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it("throws when R2 keeps a key", async () => {
+    send.mockResolvedValue({ Errors: [{ Key: "users/u1/a.png" }] });
+    await expect(deleteObjects(["users/u1/a.png"])).rejects.toThrow(
+      "R2 kept 1 objects",
+    );
   });
 });

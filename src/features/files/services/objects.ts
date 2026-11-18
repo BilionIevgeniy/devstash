@@ -4,10 +4,13 @@ import {
   contentDisposition,
   contentTypeFor,
   DOWNLOAD_CACHE_CONTROL,
+  isObjectKey,
+  isUploadClaimable,
   isUserKey,
   maxFileSize,
   signingWindowFor,
   tooLargeError,
+  UPLOADS_PREFIX,
   userPrefix,
   viewDisposition,
   type FileKind,
@@ -16,9 +19,12 @@ import type { FileUrls } from "@/features/files/types";
 import { fail, ok, type OperationResult } from "@/lib/errors/action-result";
 import {
   deleteObject,
+  deleteObjects,
   deletePrefix,
   headObject,
+  listObjectsPage,
   signGetUrl,
+  type R2ObjectPage,
 } from "@/lib/vendors/r2";
 
 export type ConfirmUploadResult = OperationResult<{ size: number }>;
@@ -39,6 +45,12 @@ export async function confirmUpload(
 
   const object = await headObject(key);
   if (!object) return fail("uploadNotFound");
+  // Too old to claim: the daily sweep may delete it at any moment. Not deleted
+  // here, since a create sent again for an item that already holds the key
+  // reaches this check too; the sweep removes it once no item holds it.
+  if (!isUploadClaimable(object.lastModified, new Date())) {
+    return fail("uploadNotFound");
+  }
 
   if (object.size > maxFileSize(kind)) {
     await deleteObject(key);
@@ -63,6 +75,20 @@ export async function deleteUserObject(
   }
   await deleteObject(key);
   return ok();
+}
+
+// One page of every upload of every user, for the daily sweep of unclaimed
+// uploads in `items`, which owns the rows that claim them.
+export function listUploadPage(
+  continuationToken?: string,
+): Promise<R2ObjectPage> {
+  return listObjectsPage(UPLOADS_PREFIX, continuationToken);
+}
+
+// Deletes uploads by key, in one batch of at most a page. A key outside the
+// scheme of the app is never deleted. Throws when R2 keeps any.
+export async function deleteUploads(keys: string[]): Promise<void> {
+  await deleteObjects(keys.filter(isObjectKey));
 }
 
 // Throws when an object survives, so the account delete aborts before the rows.

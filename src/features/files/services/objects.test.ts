@@ -1,22 +1,32 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { headObject, deleteObject, deletePrefix, signGetUrl } = vi.hoisted(
-  () => ({
-    headObject: vi.fn(),
-    deleteObject: vi.fn(),
-    deletePrefix: vi.fn(),
-    signGetUrl: vi.fn(),
-  }),
-);
+const {
+  headObject,
+  deleteObject,
+  deleteObjects,
+  deletePrefix,
+  listObjectsPage,
+  signGetUrl,
+} = vi.hoisted(() => ({
+  headObject: vi.fn(),
+  deleteObject: vi.fn(),
+  deleteObjects: vi.fn(),
+  deletePrefix: vi.fn(),
+  listObjectsPage: vi.fn(),
+  signGetUrl: vi.fn(),
+}));
 vi.mock("@/lib/vendors/r2", () => ({
   headObject,
   deleteObject,
+  deleteObjects,
   deletePrefix,
+  listObjectsPage,
   signGetUrl,
 }));
 
 import {
   confirmUpload,
+  deleteUploads,
   deleteUserObject,
   purgeUserObjects,
   signFileUrls,
@@ -31,7 +41,11 @@ describe("confirmUpload", () => {
   });
 
   it("returns the real size of a valid object", async () => {
-    headObject.mockResolvedValue({ size: 1234, contentType: "image/png" });
+    headObject.mockResolvedValue({
+      size: 1234,
+      contentType: "image/png",
+      lastModified: new Date(),
+    });
 
     const result = await confirmUpload("user-1", imageKey, "image");
 
@@ -47,6 +61,7 @@ describe("confirmUpload", () => {
     headObject.mockResolvedValue({
       size: 5 * MB + 1,
       contentType: "image/png",
+      lastModified: new Date(),
     });
 
     const result = await confirmUpload("user-1", imageKey, "image");
@@ -56,7 +71,11 @@ describe("confirmUpload", () => {
   });
 
   it("deletes an object whose stored type differs from its key", async () => {
-    headObject.mockResolvedValue({ size: 100, contentType: "text/html" });
+    headObject.mockResolvedValue({
+      size: 100,
+      contentType: "text/html",
+      lastModified: new Date(),
+    });
 
     const result = await confirmUpload("user-1", imageKey, "image");
 
@@ -89,6 +108,37 @@ describe("confirmUpload", () => {
     const result = await confirmUpload("user-1", imageKey, "image");
 
     expect(result.success).toBe(false);
+  });
+
+  // The daily sweep deletes unclaimed uploads after 24 hours; a create refuses
+  // them an hour earlier. The object stays: an item may already hold its key.
+  it("refuses an upload too old to claim, without deleting it", async () => {
+    headObject.mockResolvedValue({
+      size: 1234,
+      contentType: "image/png",
+      lastModified: new Date(Date.now() - 23.5 * 60 * 60 * 1000),
+    });
+
+    const result = await confirmUpload("user-1", imageKey, "image");
+
+    expect(result).toMatchObject({ success: false, error: "uploadNotFound" });
+    expect(deleteObject).not.toHaveBeenCalled();
+  });
+});
+
+describe("deleteUploads", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("deletes only keys of the app's scheme", async () => {
+    await deleteUploads([
+      "users/u1/a.png",
+      "users/u1/nested/b.png",
+      "backups/c.png",
+    ]);
+
+    expect(deleteObjects).toHaveBeenCalledExactlyOnceWith(["users/u1/a.png"]);
   });
 });
 

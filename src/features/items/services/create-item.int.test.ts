@@ -67,6 +67,7 @@ describe("createUserItem across users", () => {
     vi.mocked(headObject).mockResolvedValue({
       size: 10,
       contentType: "application/pdf",
+      lastModified: new Date(),
     });
     const before = await snapshotTenant(t.b.userId);
     const result = await createUserItem(

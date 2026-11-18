@@ -9,8 +9,14 @@ import {
   fileExtension,
   fileIconKind,
   fileSizeParts,
+  isObjectKey,
+  isUnclaimedUploadDue,
+  isUploadClaimable,
   isUserKey,
   objectKey,
+  parseUserKey,
+  UNCLAIMED_UPLOAD_HOURS,
+  UPLOAD_CLAIM_HOURS,
   signingWindowFor,
   viewDisposition,
 } from "@/features/files/domain/file-rules";
@@ -176,5 +182,50 @@ describe("contentDisposition", () => {
 
   it("never lets a line break into the header", () => {
     expect(contentDisposition("inline", "a\r\nb.txt")).not.toMatch(/[\r\n]/);
+  });
+});
+
+describe("parseUserKey", () => {
+  it("gives the owner and the name of a key of the scheme", () => {
+    expect(parseUserKey(objectKey("abc", "id-1", "png"))).toEqual({
+      userId: "abc",
+      name: "id-1.png",
+    });
+  });
+
+  it.each([
+    "users/abc/",
+    "users//id-1.png",
+    "users/abc/x/id-1.png",
+    "other/abc/id-1.png",
+    "users/abc",
+  ])("refuses %s", (key) => {
+    expect(parseUserKey(key)).toBeNull();
+    expect(isObjectKey(key)).toBe(false);
+  });
+});
+
+describe("upload ages", () => {
+  const HOUR = 60 * 60 * 1000;
+  const now = new Date("2026-11-18T12:00:00Z");
+  const hoursAgo = (hours: number) => new Date(now.getTime() - hours * HOUR);
+
+  it("leaves a create a window that ends before the sweep starts", () => {
+    expect(UPLOAD_CLAIM_HOURS).toBeLessThan(UNCLAIMED_UPLOAD_HOURS);
+  });
+
+  it("makes an upload due for the sweep only after 24 hours", () => {
+    expect(isUnclaimedUploadDue(hoursAgo(24), now)).toBe(false);
+    expect(
+      isUnclaimedUploadDue(new Date(hoursAgo(24).getTime() - 1), now),
+    ).toBe(true);
+  });
+
+  it("lets a create claim an upload up to 23 hours old", () => {
+    expect(isUploadClaimable(hoursAgo(23), now)).toBe(true);
+    expect(isUploadClaimable(new Date(hoursAgo(23).getTime() - 1), now)).toBe(
+      false,
+    );
+    expect(isUploadClaimable(null, now)).toBe(true);
   });
 });

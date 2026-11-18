@@ -1,4 +1,5 @@
 import { deleteExpiredTokens } from "@/features/auth/services/retention";
+import { sweepUnclaimedUploads } from "@/features/items/services/upload-sweep";
 import { fail } from "@/lib/errors/action-result";
 import { jsonError, jsonOk } from "@/lib/http/api-response";
 import { isCronRequest, runCronJobs, type CronJob } from "@/lib/http/cron";
@@ -18,6 +19,7 @@ const JOBS: CronJob[] = [
       stoppedEarly: false,
     }),
   },
+  { name: "unclaimed-uploads", run: sweepUnclaimedUploads },
 ];
 
 export async function GET(request: Request) {

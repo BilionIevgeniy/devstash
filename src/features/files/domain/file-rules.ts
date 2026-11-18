@@ -154,9 +154,12 @@ export function fileSizeParts(bytes: number): {
   return { value, digits, unit: SIZE_UNITS[unit] };
 }
 
+// Every upload lives under this prefix, one folder per user.
+export const UPLOADS_PREFIX = "users/";
+
 // The trailing slash keeps "users/abc" from matching "users/abcd/...".
 export function userPrefix(userId: string): string {
-  return `users/${userId}/`;
+  return `${UPLOADS_PREFIX}${userId}/`;
 }
 
 export function objectKey(
@@ -167,12 +170,52 @@ export function objectKey(
   return `${userPrefix(userId)}${objectId}.${extension}`;
 }
 
+// The owner and the name of a key of the scheme `users/<userId>/<name>`, or
+// null for anything else (a deeper path, an empty part, another prefix).
+export function parseUserKey(
+  key: string,
+): { userId: string; name: string } | null {
+  if (!key.startsWith(UPLOADS_PREFIX)) return null;
+  const [userId, name, ...rest] = key.slice(UPLOADS_PREFIX.length).split("/");
+  if (!userId || !name || rest.length > 0) return null;
+  return { userId, name };
+}
+
 // A key directly under the user's prefix, with no deeper path.
 export function isUserKey(userId: string, key: string): boolean {
-  const prefix = userPrefix(userId);
-  if (!key.startsWith(prefix)) return false;
-  const name = key.slice(prefix.length);
-  return name !== "" && !name.includes("/");
+  return parseUserKey(key)?.userId === userId;
+}
+
+// A key the app could have written: the only kind the daily sweep deletes.
+export function isObjectKey(key: string): boolean {
+  return parseUserKey(key) !== null;
+}
+
+// An upload no item holds is deleted by the daily sweep once it is older than
+// UNCLAIMED_UPLOAD_HOURS. A create accepts an upload only up to
+// UPLOAD_CLAIM_HOURS old, so the hour between them keeps the sweep from
+// deleting an object a create is saving. Both are far above the 10 minutes of
+// an upload URL plus any time a create dialog stays open.
+export const UNCLAIMED_UPLOAD_HOURS = 24;
+export const UPLOAD_CLAIM_HOURS = 23;
+const MS_PER_HOUR = HOUR_SECONDS * 1000;
+
+export function isUnclaimedUploadDue(lastModified: Date, now: Date): boolean {
+  return (
+    now.getTime() - lastModified.getTime() >
+    UNCLAIMED_UPLOAD_HOURS * MS_PER_HOUR
+  );
+}
+
+// An object R2 gives no date for cannot be aged, and the sweep skips it too.
+export function isUploadClaimable(
+  lastModified: Date | null,
+  now: Date,
+): boolean {
+  return (
+    lastModified === null ||
+    now.getTime() - lastModified.getTime() <= UPLOAD_CLAIM_HOURS * MS_PER_HOUR
+  );
 }
 
 export function signingWindowFor(now: Date): SigningWindow {
