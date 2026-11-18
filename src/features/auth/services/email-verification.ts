@@ -64,8 +64,10 @@ export async function sendVerificationLink(
   });
 }
 
-// Every outcome except an exhausted per-IP limit or a failed send is the same
-// neutral success, so the answer never shows whether the address has an account.
+// Every outcome except an exhausted per-IP limit is the same neutral success,
+// so the answer never shows whether the address has an account. For the same
+// reason a send failure is only logged (sendEmail logs it): only an address
+// waiting for its verification gets that far, so an error would name it.
 export async function resendVerificationLink(
   email: string,
   origin: string,
@@ -84,8 +86,8 @@ export async function resendVerificationLink(
   const account = await getAccountState(email);
   if (!account || !shouldResendVerification(account)) return SUCCESS;
 
-  const result = await sendVerificationLink(email, origin, locale);
-  return result.success ? SUCCESS : fail("emailSendFailed");
+  await sendVerificationLink(email, origin, locale);
+  return SUCCESS;
 }
 
 // Anyone can register an address they do not own, so holding the emailed link
