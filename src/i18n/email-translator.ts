@@ -1,6 +1,6 @@
-import { createTranslator } from "next-intl";
+import { createFormatter, createTranslator } from "next-intl";
 
-import type { Locale } from "@/i18n/config";
+import { DEFAULT_TIME_ZONE, FORMATS, type Locale } from "@/i18n/config";
 import { messagesFor } from "@/i18n/messages";
 
 function rethrow(error: Error): never {
@@ -18,5 +18,15 @@ export function emailTranslator(locale: Locale) {
     messages: { emails: messagesFor(locale).emails },
     namespace: "emails",
     onError: rethrow,
+  });
+}
+
+// Prices and dates of an email with the app's named formats, in Berlin time
+// like the pages (a § 312k confirmation states the time of the declaration).
+export function emailFormatter(locale: Locale) {
+  return createFormatter({
+    locale,
+    formats: FORMATS,
+    timeZone: DEFAULT_TIME_ZONE,
   });
 }

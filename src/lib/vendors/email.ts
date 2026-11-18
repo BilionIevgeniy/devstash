@@ -9,6 +9,8 @@ interface Email {
   subject: string;
   html: string;
   text: string;
+  /** Resend sends one email per key for 24 hours: a retry after a timeout that did deliver sends nothing. */
+  idempotencyKey?: string;
 }
 
 export async function sendEmail({
@@ -16,6 +18,7 @@ export async function sendEmail({
   subject,
   html,
   text,
+  idempotencyKey,
 }: Email): Promise<OperationResult> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
@@ -25,13 +28,10 @@ export async function sendEmail({
   }
 
   try {
-    const { error } = await new Resend(apiKey).emails.send({
-      from,
-      to,
-      subject,
-      html,
-      text,
-    });
+    const { error } = await new Resend(apiKey).emails.send(
+      { from, to, subject, html, text },
+      idempotencyKey ? { idempotencyKey } : undefined,
+    );
     if (error) {
       await logger.error("Resend rejected an email", { error });
       // Resend's own words are never shown: they can carry the call's data.

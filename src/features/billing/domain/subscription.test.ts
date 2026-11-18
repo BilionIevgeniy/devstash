@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  consentFromMetadata,
   stripeIdOf,
   subscriptionWrite,
+  syncPlan,
+  type SubscriptionRowState,
 } from "@/features/billing/domain/subscription";
 
 const PERIOD_END = new Date("2026-12-01T00:00:00Z");
@@ -13,6 +16,8 @@ function snapshot(status: string) {
     customerId: "cus_1",
     status,
     currentPeriodEnd: PERIOD_END,
+    cancelAtPeriodEnd: false,
+    consent: null,
   };
 }
 
@@ -26,6 +31,7 @@ describe("subscriptionWrite", () => {
           status,
           stripeSubscriptionId: "sub_1",
           currentPeriodEnd: PERIOD_END,
+          cancelAtPeriodEnd: false,
         },
       });
     },
@@ -40,6 +46,7 @@ describe("subscriptionWrite", () => {
           status,
           stripeSubscriptionId: "sub_1",
           currentPeriodEnd: PERIOD_END,
+          cancelAtPeriodEnd: false,
         },
       });
     },
@@ -54,6 +61,7 @@ describe("subscriptionWrite", () => {
           status,
           stripeSubscriptionId: null,
           currentPeriodEnd: PERIOD_END,
+          cancelAtPeriodEnd: false,
         },
       });
     },
@@ -80,5 +88,101 @@ describe("stripeIdOf", () => {
 
   it("answers null when there is no reference", () => {
     expect(stripeIdOf(null)).toBeNull();
+  });
+});
+
+const WAIVER = new Date("2026-11-18T09:00:00Z");
+const CONSENT = { withdrawalWaiverAt: WAIVER, termsVersion: "2026-11-18" };
+
+function row(
+  overrides: Partial<SubscriptionRowState> = {},
+): SubscriptionRowState {
+  return {
+    status: "active",
+    stripeSubscriptionId: "sub_1",
+    currentPeriodEnd: PERIOD_END,
+    cancelAtPeriodEnd: false,
+    withdrawalWaiverAt: WAIVER,
+    termsVersion: "2026-11-18",
+    confirmedSubscriptionId: "sub_1",
+    ...overrides,
+  };
+}
+
+describe("syncPlan", () => {
+  const live = { ...snapshot("active"), consent: CONSENT };
+
+  it("writes nothing when the row already says what Stripe says", () => {
+    expect(syncPlan(row(), live)).toEqual({ write: null, confirm: false });
+  });
+
+  it("writes a changed status, period end or cancellation", () => {
+    expect(syncPlan(row({ status: "past_due" }), live).write).not.toBeNull();
+    expect(
+      syncPlan(row({ currentPeriodEnd: new Date("2026-11-01") }), live).write,
+    ).not.toBeNull();
+    expect(
+      syncPlan(row(), { ...live, cancelAtPeriodEnd: true }).write?.data
+        .cancelAtPeriodEnd,
+    ).toBe(true);
+  });
+
+  it("copies the consent onto the row", () => {
+    const plan = syncPlan(
+      row({ withdrawalWaiverAt: null, termsVersion: null }),
+      live,
+    );
+    expect(plan.write?.data).toMatchObject(CONSENT);
+  });
+
+  it("confirms a live subscription with consent once", () => {
+    expect(syncPlan(row({ confirmedSubscriptionId: null }), live).confirm).toBe(
+      true,
+    );
+    expect(
+      syncPlan(row({ confirmedSubscriptionId: "sub_old" }), live).confirm,
+    ).toBe(true);
+    expect(syncPlan(row(), live).confirm).toBe(false);
+  });
+
+  it("never confirms a subscription without consent: no metadata, no send", () => {
+    expect(
+      syncPlan(row({ confirmedSubscriptionId: null }), snapshot("active"))
+        .confirm,
+    ).toBe(false);
+  });
+
+  it("never confirms a subscription that is not live", () => {
+    expect(
+      syncPlan(row({ confirmedSubscriptionId: null, status: "incomplete" }), {
+        ...snapshot("incomplete"),
+        consent: CONSENT,
+      }).confirm,
+    ).toBe(false);
+  });
+
+  it("leaves a row that holds a newer subscription alone", () => {
+    expect(
+      syncPlan(row({ stripeSubscriptionId: "sub_new" }), snapshot("canceled")),
+    ).toEqual({ write: null, confirm: false });
+  });
+});
+
+describe("consentFromMetadata", () => {
+  it("reads the consent the order step stored", () => {
+    expect(
+      consentFromMetadata({
+        termsVersion: "2026-11-18",
+        withdrawalWaiverAt: WAIVER.toISOString(),
+      }),
+    ).toEqual(CONSENT);
+  });
+
+  it.each([
+    [{}],
+    [{ termsVersion: "2026-11-18" }],
+    [{ termsVersion: "2026-11-18", withdrawalWaiverAt: "not a date" }],
+  ])("answers null for incomplete metadata %j", (metadata) => {
+    expect(consentFromMetadata(metadata)).toBeNull();
   });
 });

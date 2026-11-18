@@ -23,5 +23,17 @@
   },
   "checkout": {
     "submitNote": "By clicking “Pay” you place an order with an obligation to pay. Pro starts at once; you agreed that your right of withdrawal ends with that."
+  },
+  "contract": {
+    "subject": "Your DevStash Pro contract",
+    "heading": "Your DevStash Pro contract",
+    "intro": "Thank you for your order. This email confirms your contract and carries the terms and the withdrawal information in full; please keep it.",
+    "provider": "Provider: {name}, {address}, {email}",
+    "plan": "Plan: DevStash Pro, {period, select, yearly {billed yearly} other {billed monthly}}",
+    "price": "Price: {price} {period, select, yearly {per year} other {per month}}, including VAT",
+    "start": "Start: {date}",
+    "renewal": "It renews every {period, select, yearly {year} other {month}} until you cancel. You can cancel at any time with effect at the end of the current term: through “Verträge hier kündigen” (cancel contracts here) at the bottom of every DevStash page, or Manage Billing in the settings.",
+    "consent": "On {date} you expressly agreed that we begin the service before the withdrawal period ends, and confirmed that you know your right of withdrawal ends with that (§ 356 (5) BGB). Terms version: {version}.",
+    "texts": "The terms and the withdrawal information you accepted:"
   }
 }

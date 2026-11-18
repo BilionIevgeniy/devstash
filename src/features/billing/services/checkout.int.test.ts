@@ -90,7 +90,7 @@ describe("createCheckoutSession", () => {
     expect(createSession).toHaveBeenCalledWith(
       expect.objectContaining({
         customer: "cus_test_a",
-        metadata: { userId: t.a.userId },
+        metadata: expect.objectContaining({ userId: t.a.userId }),
       }),
     );
     expect(await snapshotTenant(t.b.userId)).toEqual(before);
