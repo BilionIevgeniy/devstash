@@ -11,7 +11,6 @@
   "tooManyAttemptsNoTime": "Zu viele Versuche. Versuch es später noch einmal.",
   "emailSendFailed": "Wir konnten die E-Mail nicht senden. Bitte versuch es später noch einmal.",
   "copyFailed": "Kopieren in die Zwischenablage fehlgeschlagen",
-
   "invalidEmail": "Ungültige E-Mail-Adresse",
   "passwordTooShort": "Das Passwort muss mindestens {min} Zeichen lang sein",
   "passwordTooLong": "Das Passwort darf höchstens {max} Zeichen lang sein",
@@ -35,7 +34,6 @@
   "incorrectPassword": "Das Passwort ist falsch",
   "invalidDeletionLink": "Dieser Bestätigungslink ist ungültig oder abgelaufen. Fordere in den Einstellungen einen neuen an",
   "githubEmailUnverified": "Dein GitHub-Konto hat keine bestätigte primäre E-Mail-Adresse. Bestätige sie bei GitHub und melde dich dann erneut an",
-
   "uploadsProOnly": "Datei-Uploads sind eine Pro-Funktion",
   "chooseFileKind": "Wähle eine Dateiart",
   "fileNameRequired": "Die Datei braucht einen Namen",
@@ -48,7 +46,6 @@
   "wrongFileType": "Die hochgeladene Datei passt nicht zu ihrem Typ",
   "uploadStartFailed": "Der Upload konnte nicht starten. Bitte versuch es noch einmal.",
   "uploadFailed": "Der Upload ist fehlgeschlagen. Prüf deine Verbindung und versuch es noch einmal.",
-
   "invalidItemId": "Ungültige Eintrags-ID",
   "invalidFavoriteValue": "Ungültiger Favoritenwert",
   "invalidPinValue": "Ungültiger Wert zum Anheften",
@@ -88,7 +85,6 @@
   "promptSaveFailed": "Der Prompt konnte nicht gespeichert werden",
   "favoriteFailed": "Der Favorit konnte nicht aktualisiert werden.",
   "pinFailed": "Das Anheften konnte nicht aktualisiert werden.",
-
   "enterName": "Gib einen Namen ein",
   "nameTooLong": "Der Name darf bis zu {max} Zeichen lang sein",
   "collectionNotFound": "Diese Sammlung existiert nicht mehr.",
@@ -96,11 +92,9 @@
   "collectionCreateFailed": "Die Sammlung konnte nicht erstellt werden",
   "collectionSaveFailed": "Die Sammlung konnte nicht aktualisiert werden",
   "collectionDeleteFailed": "Die Sammlung konnte nicht gelöscht werden",
-
   "invalidFontSize": "Ungültige Schriftgröße",
   "invalidTabSize": "Ungültige Tab-Breite",
   "preferencesSaveFailed": "Deine Einstellungen konnten nicht gespeichert werden. Bitte versuch es noch einmal.",
-
   "aiInputTooLong": "Bis zu {max} Zeichen",
   "nothingToRead": "Füge zuerst einen Titel oder Inhalt hinzu",
   "nothingToExplain": "Es gibt keinen Code zum Erklären",
@@ -114,12 +108,10 @@
   "aiRefused": "Die KI konnte zu diesem Eintrag nicht antworten.",
   "aiFailed": "Die KI konnte die Antwort nicht abschließen. Versuch es noch einmal.",
   "aiSignedOut": "Deine Sitzung ist abgelaufen. Melde dich erneut an.",
-
   "alreadyPro": "Du hast bereits den Pro-Plan.",
   "noBillingAccount": "Es wurde kein Abrechnungskonto gefunden.",
   "paymentNotConfirmed": "Diese Zahlung konnte nicht bestätigt werden.",
   "billingUnreachable": "Die Abrechnung ist nicht erreichbar. Bitte versuch es noch einmal.",
-
   "importProOnly": "Import ist eine Pro-Funktion",
   "importRateLimited": "Zu viele Import-Anfragen. Warte eine Minute und versuch es noch einmal.",
   "importUnavailable": "Der Import ist gerade nicht verfügbar. Bitte versuch es später noch einmal.",
@@ -142,13 +134,25 @@
   "exportUnavailable": "Der Export ist gerade nicht verfügbar",
   "exportDownloadFailed": "Der Export konnte nicht heruntergeladen werden. Prüf deine Verbindung und versuch es noch einmal.",
   "exportInterrupted": "Der Export wurde unterbrochen. Du kannst in einer Minute erneut exportieren.",
-
   "subscriptionCancelFailed": "Dein Abo konnte nicht gekündigt werden, daher wurde nichts entfernt. Bitte versuch es noch einmal.",
   "filesPurgeFailed": "Deine Dateien konnten nicht gelöscht werden, daher wurde dein Konto nicht entfernt. Ein aktives Abo wurde gekündigt. Bitte versuch es noch einmal.",
-
   "invalidSearch": "Ungültige Suche",
   "tooManySearches": "Zu viele Suchanfragen",
   "searchUnavailable": "Die Suche ist gerade nicht verfügbar",
   "searchFailed": "Die Suche ist fehlgeschlagen. Versuch es noch einmal.",
-  "searchRateLimited": "Zu viele Suchanfragen. Warte einen Moment und versuch es noch einmal."
+  "searchRateLimited": "Zu viele Suchanfragen. Warte einen Moment und versuch es noch einmal.",
+  "invalidTypeId": "Ungültiger Typ",
+  "typeNameRequired": "Gib dem Typ einen Namen",
+  "typeNameTooLong": "Ein Typname darf höchstens {max} Zeichen lang sein",
+  "typeNameReserved": "Dieser Name gehört zu einem eingebauten Typ. Wähle einen anderen.",
+  "typeNameTaken": "Du hast schon einen Typ mit diesem Namen",
+  "invalidTypeIcon": "Wähle eines der Symbole",
+  "invalidTypeColor": "Wähle eine der Farben",
+  "typeNotFound": "Diesen Typ gibt es nicht mehr.",
+  "typeHasItems": "Dieser Typ hat noch Einträge. Verschiebe oder lösche sie zuerst.",
+  "customTypesProOnly": "Eigene Typen sind eine Pro-Funktion",
+  "customTypeLimitReached": "Du kannst bis zu {limit} eigene Typen haben",
+  "customTypeSaveFailed": "Der Typ konnte nicht gespeichert werden. Versuch es noch einmal.",
+  "customTypeDeleteFailed": "Der Typ konnte nicht gelöscht werden. Versuch es noch einmal.",
+  "importTooManyTypes": "Eine Datei kann höchstens {max} eigene Typen enthalten"
 }

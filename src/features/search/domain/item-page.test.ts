@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { isItemPage } from "@/features/search/domain/item-page";
 
-const item = { id: "abc", type: { name: "snippet" } };
+const item = { id: "abc", type: { slug: "snippets" } };
 
 describe("isItemPage", () => {
   it("recognises the item's own page", () => {
@@ -15,6 +15,11 @@ describe("isItemPage", () => {
 
   it("is false on the same id under another type", () => {
     expect(isItemPage("/items/notes/abc", item)).toBe(false);
+  });
+
+  it("follows the stored slug of a custom type", () => {
+    const custom = { id: "abc", type: { slug: "my-recipes" } };
+    expect(isItemPage("/items/my-recipes/abc", custom)).toBe(true);
   });
 
   it("is false on the pages where a drawer is safe", () => {

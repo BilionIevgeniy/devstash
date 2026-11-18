@@ -6,6 +6,7 @@ import {
 } from "../../../../test/integration/fixtures";
 import { snapshotTenant } from "../../../../test/integration/snapshot";
 import { FREE_ITEM_LIMIT } from "@/features/billing/domain/limits";
+import { createCustomType } from "@/features/item-types/services/custom-types";
 import { contentTypeFor } from "@/features/items/domain/item-fields";
 import { createItemSchema } from "@/features/items/schemas";
 import { createUserItem } from "@/features/items/services/create-item";
@@ -129,5 +130,57 @@ describe("the Free item limit under a race", () => {
     await expect(
       prisma.item.count({ where: { userId: t.a.userId } }),
     ).resolves.toBe(FREE_ITEM_LIMIT);
+  });
+});
+
+describe("createUserItem with a custom type", () => {
+  async function recipesOfB(): Promise<string> {
+    const result = await createCustomType(t.b.userId, {
+      name: "Recipes",
+      icon: "Code",
+      color: "#3b82f6",
+    });
+    if (!result.success) throw new Error(result.error);
+    return result.data.id;
+  }
+
+  it("creates the owner's item as a text item, in any case of the name", async () => {
+    const typeId = await recipesOfB();
+    const result = await createUserItem(
+      t.b.userId,
+      note({ typeName: "recipes", content: "flour, milk", language: "md" }),
+    );
+    if (!result.success) throw new Error(result.error);
+    const row = await prisma.item.findUniqueOrThrow({
+      where: { id: result.data.id },
+      select: {
+        typeId: true,
+        contentType: true,
+        content: true,
+        language: true,
+      },
+    });
+    expect(row).toEqual({
+      typeId,
+      contentType: "TEXT",
+      content: "flour, milk",
+      language: "md",
+    });
+  });
+
+  it("refuses another user's type and creates nothing", async () => {
+    await recipesOfB();
+    await prisma.subscription.create({
+      data: { userId: t.a.userId, status: "active" },
+    });
+    const before = await snapshotTenant(t.b.userId);
+    const count = await prisma.item.count({ where: { userId: t.a.userId } });
+    await expect(
+      createUserItem(t.a.userId, note({ typeName: "Recipes" })),
+    ).resolves.toMatchObject({ success: false, error: "invalidItemType" });
+    expect(await prisma.item.count({ where: { userId: t.a.userId } })).toBe(
+      count,
+    );
+    expect(await snapshotTenant(t.b.userId)).toEqual(before);
   });
 });

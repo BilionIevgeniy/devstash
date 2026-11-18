@@ -1,0 +1,53 @@
+{
+  "title": "Eigene Typen",
+  "lead": "Deine eigenen Eintragstypen für Text: Inhalt und seine Sprache, wie bei einem Snippet. Sie stehen in der Seitenleiste unter den eingebauten Typen.",
+  "new": "Neuer Typ",
+  "empty": "Du hast noch keine eigenen Typen.",
+  "locked": "Eigene Typen sind eine Pro-Funktion.",
+  "upgrade": "Auf Pro upgraden",
+  "lockedWithTypes": "Dein Tarif enthält keine eigenen Typen mehr. Sie bleiben, wie sie sind, und du kannst sie löschen.",
+  "editLabel": "{name} bearbeiten",
+  "deleteLabel": "{name} löschen",
+  "form": {
+    "createTitle": "Neuer eigener Typ",
+    "createDescription": "Wähle einen Namen, ein Symbol und eine Farbe. Die Adresse seiner Seite entsteht aus dem Namen und bleibt gleich, wenn du ihn umbenennst.",
+    "editTitle": "Eigenen Typ bearbeiten",
+    "editDescription": "Beim Umbenennen bleibt die Adresse seiner Seite und seiner Einträge gleich.",
+    "name": "Name",
+    "icon": "Symbol",
+    "color": "Farbe"
+  },
+  "icons": {
+    "Code": "Code",
+    "Sparkles": "Funken",
+    "Terminal": "Terminal",
+    "StickyNote": "Notizzettel",
+    "File": "Datei",
+    "Image": "Bild",
+    "Link": "Link"
+  },
+  "colors": {
+    "blue": "Blau",
+    "violet": "Violett",
+    "orange": "Orange",
+    "yellow": "Gelb",
+    "gray": "Grau",
+    "pink": "Pink",
+    "green": "Grün",
+    "red": "Rot",
+    "amber": "Bernstein",
+    "lime": "Limette",
+    "cyan": "Cyan",
+    "indigo": "Indigo"
+  },
+  "delete": {
+    "title": "Diesen Typ löschen?",
+    "description": "„{name}“ wird gelöscht. Das kann nicht rückgängig gemacht werden.",
+    "hasItems": "„{name}“ hat noch {count, plural, one {# Eintrag} other {# Einträge}}. Verschiebe oder lösche sie zuerst, dann lösche den Typ."
+  },
+  "toasts": {
+    "created": "Typ erstellt",
+    "updated": "Typ gespeichert",
+    "deleted": "Typ gelöscht"
+  }
+}

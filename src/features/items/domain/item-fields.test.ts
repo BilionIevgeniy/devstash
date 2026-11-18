@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   aiSource,
   appendTag,
-  canCreateType,
   canUseType,
   CONTENT_MAX,
   contentError,
@@ -11,25 +10,11 @@ import {
   editableFields,
   editableUpdate,
   hasTag,
-  isCreatableType,
   parseTagInput,
   requiresPro,
   TAGS_MAX,
   typeListing,
 } from "@/features/items/domain/item-fields";
-
-describe("isCreatableType", () => {
-  it.each(["snippet", "prompt", "command", "note", "link", "file", "image"])(
-    "accepts a %s",
-    (typeName) => {
-      expect(isCreatableType(typeName)).toBe(true);
-    },
-  );
-
-  it.each(["recipe", ""])("rejects %j", (typeName) => {
-    expect(isCreatableType(typeName)).toBe(false);
-  });
-});
 
 describe("requiresPro", () => {
   it.each([
@@ -65,18 +50,6 @@ describe("canUseType", () => {
     ["snippet", true, true],
   ])("%s with isPro %s: %s", (typeName, isPro, expected) => {
     expect(canUseType(typeName, isPro)).toBe(expected);
-  });
-});
-
-describe("canCreateType", () => {
-  it("lets a Free user create the text types but not file or image", () => {
-    expect(canCreateType("note", false)).toBe(true);
-    expect(canCreateType("file", false)).toBe(false);
-    expect(canCreateType("image", false)).toBe(false);
-  });
-
-  it("lets a Pro user create every type", () => {
-    expect(canCreateType("image", true)).toBe(true);
   });
 });
 
@@ -141,8 +114,14 @@ describe("editableFields", () => {
     expect(editableFields(typeName)).toEqual(fields);
   });
 
-  it("gives no type-specific fields to a type it does not know", () => {
-    expect(editableFields("recipe")).toEqual(none);
+  it("gives a custom type the fields of a snippet: content and language", () => {
+    expect(editableFields("Recipes")).toEqual({
+      content: true,
+      codeEditor: true,
+      language: true,
+      url: false,
+      file: null,
+    });
   });
 });
 
@@ -186,10 +165,10 @@ describe("aiSource", () => {
     },
   );
 
-  it("sends nothing besides the title for a custom type", () => {
-    expect(aiSource(editableFields("recipe"), values)).toEqual({
-      kind: "none",
-      text: "",
+  it("reads the content of a custom type", () => {
+    expect(aiSource(editableFields("Recipes"), values)).toEqual({
+      kind: "content",
+      text: values.content,
     });
   });
 });

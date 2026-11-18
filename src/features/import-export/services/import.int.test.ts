@@ -10,6 +10,7 @@ import { exportUserData } from "@/features/import-export/services/export";
 import {
   importUserCollections,
   importUserItems,
+  importUserTypes,
 } from "@/features/import-export/services/import";
 import type { CollectionImportData } from "@/features/import-export/types";
 import { setUserItemAiContent } from "@/features/items/services/item";
@@ -114,6 +115,59 @@ it("keeps the AI marks through an export and an import", async () => {
       { aiGenerated: true, tag: { name: "react" } },
       { aiGenerated: false, tag: { name: "shared" } },
     ],
+  });
+});
+
+describe("custom types", () => {
+  const RECIPES = { name: "Recipes", icon: "Code", color: "#3b82f6" };
+
+  it("creates the importer's missing types first, so their items find them", async () => {
+    const types = await importUserTypes(t.b.userId, [RECIPES]);
+    expect(types).toMatchObject({ status: "ok", data: { created: 1 } });
+    const items = await importUserItems(t.b.userId, [
+      { type: "recipes", title: "Pancakes", content: "flour" },
+    ]);
+    expect(items).toMatchObject({ status: "ok", data: { created: 1 } });
+    const again = await importUserItems(t.b.userId, [
+      { type: "Recipes", title: "Pancakes", content: "flour" },
+    ]);
+    expect(again).toMatchObject({ status: "ok", data: { duplicates: 1 } });
+  });
+
+  it("counts a type the importer has, in any case, as already there", async () => {
+    await importUserTypes(t.b.userId, [RECIPES]);
+    const before = await snapshotTenant(t.b.userId);
+    const again = await importUserTypes(t.b.userId, [
+      { ...RECIPES, name: "RECIPES" },
+    ]);
+    expect(again).toMatchObject({ status: "ok", data: { duplicates: 1 } });
+    expect(await snapshotTenant(t.b.userId)).toEqual(before);
+  });
+
+  it("creates B's own type when only A has one of the name, and leaves A", async () => {
+    await prisma.itemType.create({
+      data: { name: "Recipes", slug: "recipes", userId: t.a.userId },
+    });
+    const before = await snapshotTenant(t.a.userId);
+    const result = await importUserTypes(t.b.userId, [RECIPES]);
+    expect(result).toMatchObject({ status: "ok", data: { created: 1 } });
+    await expect(
+      prisma.itemType.count({ where: { userId: t.b.userId, name: "Recipes" } }),
+    ).resolves.toBe(1);
+    expect(await snapshotTenant(t.a.userId)).toEqual(before);
+  });
+
+  it("refuses an item of a type the importer lacks, even if another user has it", async () => {
+    await prisma.itemType.create({
+      data: { name: "Recipes", slug: "recipes", userId: t.a.userId },
+    });
+    const result = await importUserItems(t.b.userId, [
+      { type: "Recipes", title: "Pancakes", content: "flour" },
+    ]);
+    expect(result).toMatchObject({
+      status: "ok",
+      data: { created: 0, failed: [{ reason: { error: "invalidItemType" } }] },
+    });
   });
 });
 

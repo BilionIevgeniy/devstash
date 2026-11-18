@@ -1,6 +1,11 @@
 import { z } from "zod";
 
 import { createCollectionSchema } from "@/features/collections/schemas";
+import { CUSTOM_TYPES_MAX } from "@/features/item-types/domain/custom-type";
+import {
+  customTypeInputSchema,
+  type CustomTypeInput,
+} from "@/features/item-types/schemas";
 import { EXPORT_VERSION } from "@/features/import-export/domain/export-format";
 import {
   isImportRecord,
@@ -11,10 +16,7 @@ import {
   IMPORT_MAX_COLLECTIONS,
   IMPORT_MAX_ITEMS,
 } from "@/features/import-export/domain/limits";
-import {
-  editableFields,
-  isCreatableType,
-} from "@/features/items/domain/item-fields";
+import { editableFields } from "@/features/items/domain/item-fields";
 import {
   createItemSchema,
   type CreateItemInput,
@@ -32,6 +34,11 @@ const NOT_AN_EXPORT = "notAnExport" satisfies ErrorCode;
 export const importFileSchema = z.object(
   {
     version: z.literal(EXPORT_VERSION, UNSUPPORTED_VERSION),
+    // Added to version 1 with custom types (ADR 0031): an older file has none.
+    types: z
+      .array(z.unknown(), NOT_AN_EXPORT)
+      .max(CUSTOM_TYPES_MAX, "importTooManyTypes")
+      .default([]),
     collections: z
       .array(z.unknown(), NOT_AN_EXPORT)
       .max(IMPORT_MAX_COLLECTIONS, "importTooManyCollections"),
@@ -105,13 +112,25 @@ export function parseImportedItem(
   if (!isImportRecord(record)) {
     return { kind: "invalid", reason: { error: "recordNotAnItem" } };
   }
+  // A system type or a custom type: the create finds which among the
+  // importer's types, and refuses a name it does not have (invalidItemType).
   const typeName = record.type;
-  if (typeof typeName !== "string" || !isCreatableType(typeName)) {
+  if (typeof typeName !== "string" || typeName.trim() === "") {
     return { kind: "invalid", reason: { error: "unknownItemType" } };
   }
   if (editableFields(typeName).file) return { kind: "file" };
 
   const parsed = createItemSchema.safeParse(toCreateItemCandidate(record));
+  return parsed.success
+    ? { kind: "ok", data: parsed.data }
+    : { kind: "invalid", reason: recordIssue(parsed.error) };
+}
+
+// A custom type record through the same schema as the settings dialog.
+export function parseImportedType(
+  record: unknown,
+): ParsedRecord<CustomTypeInput> {
+  const parsed = customTypeInputSchema.safeParse(record);
   return parsed.success
     ? { kind: "ok", data: parsed.data }
     : { kind: "invalid", reason: recordIssue(parsed.error) };

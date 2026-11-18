@@ -38,7 +38,7 @@ describe("item-detail", () => {
       getUserItemDetail(t.a.userId, required(t.b.items.file)),
     ).resolves.toBeNull();
     await expect(
-      getUserItemDetailOfType(t.a.userId, t.b.items.note, "note"),
+      getUserItemDetailOfType(t.a.userId, t.b.items.note, "notes"),
     ).resolves.toBeNull();
   });
 

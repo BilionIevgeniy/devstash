@@ -1,6 +1,9 @@
 import "server-only";
 
-import { Prisma } from "@/generated/prisma/client";
+import {
+  hasPrismaCode,
+  UNIQUE_VIOLATION_CODE,
+} from "@/lib/postgres/prisma-errors";
 import { hashPassword } from "@/features/auth/_internal/password";
 import { VERIFICATION_EMAIL_BY_ADDRESS } from "@/features/auth/domain/rate-limits";
 import { shouldResendVerification } from "@/features/auth/domain/registration";
@@ -14,13 +17,6 @@ interface RegistrationInput {
   name: string;
   email: string;
   password: string;
-}
-
-function isUniqueViolation(error: unknown): boolean {
-  return (
-    error instanceof Prisma.PrismaClientKnownRequestError &&
-    error.code === "P2002"
-  );
 }
 
 // The outcome never tells a new address from a registered one, and the result
@@ -55,7 +51,7 @@ export async function registerAccount(
     });
   } catch (error) {
     // A parallel registration of the same address won the race and sent the link.
-    if (isUniqueViolation(error)) return;
+    if (hasPrismaCode(error, UNIQUE_VIOLATION_CODE)) return;
     throw error;
   }
 

@@ -224,10 +224,10 @@ model ItemTag {
 
 ## 💰 Monetization
 
-| Plan | Price           | Limits                  | Features                                                                       |
-| ---- | --------------- | ----------------------- | ------------------------------------------------------------------------------ |
-| Free | $0              | 50 items, 3 collections | Basic search, no AI                                                            |
-| Pro  | $8/mo or $72/yr | Unlimited               | File and image uploads, custom types (coming soon), AI features, export (JSON) |
+| Plan | Price           | Limits                  | Features                                                         |
+| ---- | --------------- | ----------------------- | ---------------------------------------------------------------- |
+| Free | $0              | 50 items, 3 collections | Basic search, no AI                                              |
+| Pro  | $8/mo or $72/yr | Unlimited               | File and image uploads, custom types, AI features, export (JSON) |
 
 > Stripe for subscriptions + webhooks for syncing
 
@@ -337,7 +337,7 @@ git switch -c lesson-01-setup
 
 ## 📌 Status
 
-- In development: MVP features and the start of the Pro phase are built (items CRUD, collections, auth, editors, file and image uploads, billing groundwork)
+- In development: MVP features and the start of the Pro phase are built (items CRUD, collections, auth, editors, file and image uploads, billing groundwork, custom item types)
 - Completed features are logged in `context/feature-history.md`; deferred work is in `context/todo.md`
 
 ---

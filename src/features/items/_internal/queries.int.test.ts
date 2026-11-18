@@ -34,10 +34,10 @@ describe("reads of one item by id", () => {
   });
 
   it("getItemDetailOfType", async () => {
-    const own = await getItemDetailOfType(t.b.userId, t.b.items.note, "note");
+    const own = await getItemDetailOfType(t.b.userId, t.b.items.note, "notes");
     expect(own?.id).toBe(t.b.items.note);
     await expect(
-      getItemDetailOfType(t.a.userId, t.b.items.note, "note"),
+      getItemDetailOfType(t.a.userId, t.b.items.note, "notes"),
     ).resolves.toBeNull();
   });
 

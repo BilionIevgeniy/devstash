@@ -3,6 +3,8 @@ import "server-only";
 import { getEntitlements } from "@/features/billing/queries";
 import { getExportCollections } from "@/features/collections/queries/export";
 import type { ExportedCollection } from "@/features/collections/types";
+import { getExportCustomTypes } from "@/features/item-types/queries";
+import type { ExportedCustomType } from "@/features/item-types/types";
 import {
   EXPORT_CLOSING,
   exportFileName,
@@ -28,7 +30,7 @@ export type ExportResult =
 function exportStream(
   userId: string,
   now: Date,
-  collections: ExportedCollection[],
+  head: { types: ExportedCustomType[]; collections: ExportedCollection[] },
 ): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
   let cursor: string | null = null;
@@ -37,7 +39,9 @@ function exportStream(
   return new ReadableStream<Uint8Array>({
     start(controller) {
       const meta = { exportedAt: now, linksExpireAt: exportLinksExpireAt(now) };
-      controller.enqueue(encoder.encode(exportOpening(meta, collections)));
+      controller.enqueue(
+        encoder.encode(exportOpening(meta, head.types, head.collections)),
+      );
     },
     async pull(controller) {
       try {
@@ -73,10 +77,13 @@ export async function exportUserData(
   const limit = await consumeRateLimit(EXPORT_BY_USER, userId);
   if (!limit.success) return { status: "rate-limited", reset: limit.reset };
 
-  const collections = await getExportCollections(userId);
+  const [types, collections] = await Promise.all([
+    getExportCustomTypes(userId),
+    getExportCollections(userId),
+  ]);
   return {
     status: "ok",
     fileName: exportFileName(now),
-    stream: exportStream(userId, now, collections),
+    stream: exportStream(userId, now, { types, collections }),
   };
 }

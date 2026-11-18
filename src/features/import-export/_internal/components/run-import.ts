@@ -3,6 +3,7 @@ import "client-only";
 import {
   importCollections,
   importItems,
+  importTypes,
 } from "@/features/import-export/actions/import";
 import { toBatches } from "@/features/import-export/domain/import-batches";
 import {
@@ -93,15 +94,25 @@ async function sendAll<T>(
   return { summary, error: null };
 }
 
-// Collections first, so each item is sent with the ids its collections have in
-// this account (ADR 0020). Stops at the first batch that fails.
+// Custom types first, so the items find them by name, then the collections,
+// so each item is sent with the ids its collections have in this account
+// (ADR 0020). Stops at the first batch that fails.
 export async function runImport(
   file: ImportFile,
   options: ImportRunOptions,
 ): Promise<ImportRun | null> {
-  const total = file.collections.length + file.items.length;
+  const total = file.types.length + file.collections.length + file.items.length;
   const progressed = { ...options, progress: { done: 0, total } };
   const idMap: Record<string, string> = {};
+
+  const afterTypes = await sendAll(
+    file.types,
+    importTypes,
+    (summary) => summary,
+    { summary: emptyImportSummary(), error: null },
+    progressed,
+  );
+  if (!afterTypes || afterTypes.error) return afterTypes;
 
   const afterCollections = await sendAll(
     file.collections,
@@ -110,7 +121,7 @@ export async function runImport(
       Object.assign(idMap, data.idMap);
       return data.summary;
     },
-    { summary: emptyImportSummary(), error: null },
+    afterTypes,
     progressed,
   );
   if (!afterCollections || afterCollections.error) return afterCollections;

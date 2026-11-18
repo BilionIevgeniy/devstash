@@ -3,16 +3,22 @@ import { typeLabel } from "@/features/item-types/domain/item-type";
 import { useTranslations } from "next-intl";
 import type { ItemTypeInfo } from "@/features/item-types/types";
 import { CreateItemDialog } from "@/features/items/components/CreateItemDialog";
-import { isCreatableType } from "@/features/items/domain/item-fields";
 
 interface ItemsHeaderProps {
   type: ItemTypeInfo;
   totalCount: number;
   isPro: boolean;
+  /** The user's custom types, for the create dialog. */
+  customTypeNames: readonly string[];
 }
 
 // Outside the list's Suspense, so it stays put while the rows change.
-export function ItemsHeader({ type, totalCount, isPro }: ItemsHeaderProps) {
+export function ItemsHeader({
+  type,
+  totalCount,
+  isPro,
+  customTypeNames,
+}: ItemsHeaderProps) {
   const typeName = useTranslations("itemTypes");
   const t = useTranslations("common");
 
@@ -31,9 +37,11 @@ export function ItemsHeader({ type, totalCount, isPro }: ItemsHeaderProps) {
           {t("itemCount", { count: totalCount })}
         </p>
       </div>
-      {isCreatableType(type.name) && (
-        <CreateItemDialog defaultType={type.name} isPro={isPro} />
-      )}
+      <CreateItemDialog
+        defaultType={type.name}
+        customTypeNames={customTypeNames}
+        isPro={isPro}
+      />
     </header>
   );
 }

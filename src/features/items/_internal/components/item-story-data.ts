@@ -15,7 +15,13 @@ export const SNIPPET_ITEM: ItemCardData = {
   aiTags: [],
   createdAt: CREATED_AT,
   tags: ["react", "hooks"],
-  type: { id: "type-snippet", name: "snippet", icon: "Code", color: "#3b82f6" },
+  type: {
+    id: "type-snippet",
+    name: "snippet",
+    slug: "snippets",
+    icon: "Code",
+    color: "#3b82f6",
+  },
   canCopy: true,
 };
 
@@ -29,6 +35,7 @@ export const PINNED_COMMAND_ITEM: ItemCardData = {
   type: {
     id: "type-command",
     name: "command",
+    slug: "commands",
     icon: "Terminal",
     color: "#f97316",
   },
@@ -44,6 +51,7 @@ export const LONG_TITLE_ITEM: ItemCardData = {
   type: {
     id: "type-prompt",
     name: "prompt",
+    slug: "prompts",
     icon: "Sparkles",
     color: "#8b5cf6",
   },

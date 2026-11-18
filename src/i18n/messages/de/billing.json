@@ -30,7 +30,7 @@
     "aiSummaries": "KI-Zusammenfassungen",
     "aiExplain": "KI-Code-Erklärungen",
     "aiOptimize": "KI-Prompt-Optimierung",
-    "customTypes": "Eigene Eintragstypen (bald verfügbar)",
+    "customTypes": "Eigene Eintragstypen",
     "exportJson": "Export (JSON)"
   },
   "testModeHint": "Demo-Modus: keine echten Zahlungen. Zahl mit der Karte 4242 4242 4242 4242, einem beliebigen künftigen Datum und beliebiger CVC.",

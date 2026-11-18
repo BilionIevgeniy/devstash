@@ -24,10 +24,11 @@ export const PRO_PLAN_FEATURES = [
   "aiSummaries",
   "aiExplain",
   "aiOptimize",
+  "customTypes",
 ] as const;
 
 /** The roadmap lines the homepage adds to the Pro card. */
-export const PRO_ROADMAP_FEATURES = ["customTypes", "exportJson"] as const;
+export const PRO_ROADMAP_FEATURES = ["exportJson"] as const;
 
 export type PlanFeature =
   | (typeof FREE_PLAN_FEATURES)[number]

@@ -1,9 +1,11 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
-// Block heights approximate EditorPreferencesSection, BillingSection on the
+// Block heights approximate EditorPreferencesSection, CustomTypesSection with
+// no types, BillingSection on the
 // Free plan, DataSection and AccountActions for a user with a password, so the page does not
 // shift much when the real content streams in.
 const EDITOR_PREFERENCES_HEIGHT = "h-72";
+const CUSTOM_TYPES_HEIGHT = "h-32";
 const BILLING_HEIGHT = "h-40";
 const DATA_HEIGHT = "h-36";
 const CHANGE_PASSWORD_HEIGHT = "h-95";
@@ -19,6 +21,10 @@ export default function SettingsLoading() {
       <section className="space-y-4">
         <Skeleton className="h-7 w-32" />
         <Skeleton className={`${EDITOR_PREFERENCES_HEIGHT} rounded-lg`} />
+      </section>
+      <section className="space-y-4">
+        <Skeleton className="h-7 w-32" />
+        <Skeleton className={`${CUSTOM_TYPES_HEIGHT} rounded-lg`} />
       </section>
       <section className="space-y-4">
         <Skeleton className="h-7 w-32" />

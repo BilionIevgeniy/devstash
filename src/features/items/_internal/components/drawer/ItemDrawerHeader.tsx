@@ -2,9 +2,10 @@ import { Badge } from "@/components/ui/badge";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useLanguageLabel } from "@/features/editor/components/hooks/use-language-label";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
-import { typeSlug } from "@/features/item-types/domain/item-type";
+import { typeLabel } from "@/features/item-types/domain/item-type";
 import type { DashboardItem } from "@/features/items/types";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface ItemDrawerHeaderProps {
   item: DashboardItem;
@@ -19,6 +20,7 @@ export function ItemDrawerHeader({
   variant,
 }: ItemDrawerHeaderProps) {
   const languageLabel = useLanguageLabel();
+  const typeName = useTranslations("itemTypes");
   const { type } = item;
   const iconBackground = type.color
     ? `color-mix(in oklab, ${type.color} 10%, transparent)`
@@ -50,8 +52,8 @@ export function ItemDrawerHeader({
           </h1>
         )}
         <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary" className="capitalize">
-            {typeSlug(type.name)}
+          <Badge variant="secondary">
+            {typeLabel(typeName, type.name, "one")}
           </Badge>
           {language?.trim() && (
             <Badge variant="outline">{languageLabel(language)}</Badge>

@@ -1,0 +1,53 @@
+{
+  "title": "Custom types",
+  "lead": "Your own item types for text: content and its language, like a snippet. They show in the sidebar below the built-in types.",
+  "new": "New type",
+  "empty": "You have no custom types yet.",
+  "locked": "Custom types are a Pro feature.",
+  "upgrade": "Upgrade to Pro",
+  "lockedWithTypes": "Your plan no longer includes custom types. They stay as they are, and you can delete them.",
+  "editLabel": "Edit {name}",
+  "deleteLabel": "Delete {name}",
+  "form": {
+    "createTitle": "New custom type",
+    "createDescription": "Pick a name, an icon and a color. The address of its page is made from the name and stays the same when you rename it.",
+    "editTitle": "Edit custom type",
+    "editDescription": "Renaming keeps the address of its page and its items.",
+    "name": "Name",
+    "icon": "Icon",
+    "color": "Color"
+  },
+  "icons": {
+    "Code": "Code",
+    "Sparkles": "Sparkles",
+    "Terminal": "Terminal",
+    "StickyNote": "Sticky note",
+    "File": "File",
+    "Image": "Image",
+    "Link": "Link"
+  },
+  "colors": {
+    "blue": "Blue",
+    "violet": "Violet",
+    "orange": "Orange",
+    "yellow": "Yellow",
+    "gray": "Gray",
+    "pink": "Pink",
+    "green": "Green",
+    "red": "Red",
+    "amber": "Amber",
+    "lime": "Lime",
+    "cyan": "Cyan",
+    "indigo": "Indigo"
+  },
+  "delete": {
+    "title": "Delete this type?",
+    "description": "“{name}” will be deleted. This cannot be undone.",
+    "hasItems": "“{name}” still has {count, plural, one {# item} other {# items}}. Move or delete them first, then delete the type."
+  },
+  "toasts": {
+    "created": "Type created",
+    "updated": "Type saved",
+    "deleted": "Type deleted"
+  }
+}

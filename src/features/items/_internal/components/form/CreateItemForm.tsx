@@ -14,11 +14,11 @@ import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogFooter } from "@/components/ui/dialog";
 import type { EditorHandle } from "@/features/editor/types";
-import type { UploadedFile } from "@/features/files/types";
 import { CollectionSelect } from "@/features/items/_internal/components/fields/CollectionSelect";
 import { ItemFileField } from "@/features/items/_internal/components/fields/ItemFileField";
 import { ItemFields } from "@/features/items/_internal/components/fields/ItemFields";
 import { useAcceptedAi } from "@/features/items/_internal/components/hooks/use-accepted-ai";
+import { useTypeChoice } from "@/features/items/_internal/components/hooks/use-type-choice";
 import { ItemTypeSelect } from "@/features/items/_internal/components/fields/ItemTypeSelect";
 import { submitNewItem } from "@/features/items/_internal/components/form/submit-new-item";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
@@ -26,10 +26,7 @@ import {
   isMissingRequired,
   type ItemFormValues,
 } from "@/features/items/domain/item-changes";
-import {
-  editableFields,
-  type CreatableTypeName,
-} from "@/features/items/domain/item-fields";
+import { editableFields } from "@/features/items/domain/item-fields";
 
 const EMPTY_VALUES: ItemFormValues = {
   title: "",
@@ -45,7 +42,10 @@ const FOCUSABLE =
   "button:not([disabled]), input:not([disabled]), textarea:not([disabled])";
 
 export interface CreateItemFormProps {
-  initialType: CreatableTypeName;
+  /** A system type's name or one of the user's custom types. */
+  initialType: string;
+  /** The user's custom types, offered after the system types. */
+  customTypeNames: readonly string[];
   isPro: boolean;
   isCreating: boolean;
   run: SubmitRun;
@@ -57,14 +57,15 @@ export interface CreateItemFormProps {
 // parts do not ship with every page.
 export function CreateItemForm({
   initialType,
+  customTypeNames,
   isPro,
   isCreating,
   run,
   onCreated,
 }: CreateItemFormProps) {
-  const [typeName, setTypeName] = useState<CreatableTypeName>(initialType);
+  const { typeName, changeType, upload, setUpload } =
+    useTypeChoice(initialType);
   const [values, setValues] = useState<ItemFormValues>(EMPTY_VALUES);
-  const [upload, setUpload] = useState<UploadedFile | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const contentRef = useRef<EditorHandle>(null);
   const acceptedAi = useAcceptedAi();
@@ -79,13 +80,6 @@ export function CreateItemForm({
     value: ItemFormValues[K],
   ) {
     setValues((current) => ({ ...current, [name]: value }));
-  }
-
-  // An upload belongs to the kind it was made for, so a type switch drops it;
-  // the key on FileUpload remounts it, which aborts a running PUT.
-  function handleTypeChange(value: CreatableTypeName) {
-    setTypeName(value);
-    setUpload(null);
   }
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
@@ -108,7 +102,8 @@ export function CreateItemForm({
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
       <ItemTypeSelect
         value={typeName}
-        onChange={handleTypeChange}
+        onChange={changeType}
+        customTypeNames={customTypeNames}
         isPro={isPro}
         disabled={isCreating}
       />

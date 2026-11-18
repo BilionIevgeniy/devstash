@@ -71,7 +71,12 @@ function favorite(n: number): FavoriteItem {
     createdAt: new Date("2026-01-01T00:00:00Z"),
     favoritedAt: new Date(Date.UTC(2026, 2, 1) - n * 60_000),
     tags: [],
-    type: { id: "type-snippet", name: "snippet", icon: "Code" },
+    type: {
+      id: "type-snippet",
+      name: "snippet",
+      slug: "snippets",
+      icon: "Code",
+    },
   };
 }
 

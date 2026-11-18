@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { groupItemsByType } from "@/features/items/domain/list/group-by-type";
 
-const NOTE = { id: "t-note", name: "note", icon: "StickyNote" };
-const IMAGE = { id: "t-image", name: "image", icon: "Image" };
+const NOTE = { id: "t-note", name: "note", slug: "notes", icon: "StickyNote" };
+const IMAGE = { id: "t-image", name: "image", slug: "images", icon: "Image" };
 
 describe("groupItemsByType", () => {
   it("puts the type with the most items first", () => {

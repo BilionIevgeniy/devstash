@@ -36,7 +36,8 @@ export type ItemChange =
   | { kind: "removed"; id: string }
   | { kind: "saved"; detail: ItemDetailJson }
   | { kind: "created" }
-  | { kind: "collections" };
+  | { kind: "collections" }
+  | { kind: "types" };
 
 type RowPatch = (row: DashboardItem) => DashboardItem | null;
 
@@ -200,6 +201,12 @@ export async function syncItemQueries(
         queryKey: itemKeys.collectionOptions(),
       });
       void queryClient.invalidateQueries({ queryKey: itemKeys.details() });
+      return;
+    case "types":
+      // A custom type renamed or recoloured: every cached detail and list row
+      // carries its type's name, icon and colour.
+      void queryClient.invalidateQueries({ queryKey: itemKeys.details() });
+      void queryClient.invalidateQueries({ queryKey: itemKeys.lists() });
       return;
   }
 }

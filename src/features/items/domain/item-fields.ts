@@ -1,4 +1,5 @@
 import type { FileKind } from "@/features/files/domain/file-rules";
+import { isSystemTypeName } from "@/features/item-types/domain/item-type";
 
 export interface EditableFields {
   content: boolean;
@@ -33,7 +34,8 @@ export const TAGS_MAX = 20;
 export const TAG_MAX = 50;
 export const COLLECTIONS_MAX = 100;
 
-// The types the create dialog offers. File and image need Pro (requiresPro).
+// The system types the create dialog offers, in its order; the user's custom
+// types follow them. File and image need Pro (requiresPro).
 export const CREATABLE_TYPES = [
   "snippet",
   "prompt",
@@ -44,22 +46,16 @@ export const CREATABLE_TYPES = [
   "image",
 ] as const;
 
-export type CreatableTypeName = (typeof CREATABLE_TYPES)[number];
-
-export function isCreatableType(
-  typeName: string,
-): typeName is CreatableTypeName {
-  return (CREATABLE_TYPES as readonly string[]).includes(typeName);
-}
-
 // Which type-specific fields the forms show. The upload of a file or image is
-// set when the item is created and is not edited afterwards; custom types
-// edit only the fields every item has.
+// set when the item is created and is not edited afterwards. A custom type
+// (any name that is not a system type's, isReservedTypeName) is a text type
+// like a snippet: content in the code editor with its language (ADR 0031).
 export function editableFields(typeName: string): EditableFields {
+  const custom = !isSystemTypeName(typeName);
   return {
-    content: CONTENT_TYPES.includes(typeName),
-    codeEditor: CODE_TYPES.includes(typeName),
-    language: LANGUAGE_TYPES.includes(typeName),
+    content: custom || CONTENT_TYPES.includes(typeName),
+    codeEditor: custom || CODE_TYPES.includes(typeName),
+    language: custom || LANGUAGE_TYPES.includes(typeName),
     url: URL_TYPES.includes(typeName),
     file: FILE_TYPES[typeName] ?? null,
   };
@@ -121,8 +117,7 @@ const FILE_SOURCE_LABELS: Record<FileKind, string> = {
 
 // What the AI reads besides the title: only a field this type shows, so text
 // left from another type in the create dialog is not sent. A file or image
-// has no text, so its file name stands in ("Image: diagram.png"). A custom
-// type edits no content, so it sends the title alone.
+// has no text, so its file name stands in ("Image: diagram.png").
 export function aiSource(
   fields: EditableFields,
   values: { content: string; url: string; fileName?: string | null },
@@ -159,15 +154,6 @@ export const LOCKED_FILES_PATH = "/settings/locked-files";
 // Whether the plan gives the user this type: a Pro type only on the Pro plan.
 export function canUseType(typeName: string, isPro: boolean): boolean {
   return isPro || !requiresPro(typeName);
-}
-
-// Whether the user may create an item of this type now: a type the dialog
-// offers, and one their plan gives them.
-export function canCreateType(
-  typeName: CreatableTypeName,
-  isPro: boolean,
-): boolean {
-  return canUseType(typeName, isPro);
 }
 
 // The contentType column of a new item: a link stores a URL, a file or image

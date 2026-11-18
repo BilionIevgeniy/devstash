@@ -13,9 +13,13 @@ const meta = {
 };
 
 // What the stream writes: the opening, then one chunk per page, then the end.
-function file(collections: unknown[], pages: unknown[][]): string {
+function file(
+  collections: unknown[],
+  pages: unknown[][],
+  types: unknown[] = [],
+): string {
   let afterItems = false;
-  let text = exportOpening(meta, collections);
+  let text = exportOpening(meta, types, collections);
   for (const page of pages) {
     text += exportItemsChunk(page, afterItems);
     afterItems ||= page.length > 0;
@@ -24,11 +28,13 @@ function file(collections: unknown[], pages: unknown[][]): string {
 }
 
 describe("export file", () => {
-  it("is one JSON document with the version, the dates and both lists", () => {
-    expect(JSON.parse(file([{ id: "c1" }], [[{ id: "i1" }]]))).toEqual({
+  it("is one JSON document with the version, the dates and the three lists", () => {
+    const types = [{ name: "Recipes", icon: "Code", color: "#3b82f6" }];
+    expect(JSON.parse(file([{ id: "c1" }], [[{ id: "i1" }]], types))).toEqual({
       version: 1,
       exportedAt: "2026-11-12T10:30:00.000Z",
       linksExpireAt: "2026-11-12T12:00:00.000Z",
+      types,
       collections: [{ id: "c1" }],
       items: [{ id: "i1" }],
     });

@@ -6,19 +6,22 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { ProBadge } from "@/features/billing/components/ProBadge";
 import {
-  canCreateType,
+  canUseType,
   CREATABLE_TYPES,
-  type CreatableTypeName,
 } from "@/features/items/domain/item-fields";
 
 interface ItemTypeSelectProps {
-  value: CreatableTypeName;
-  onChange: (value: CreatableTypeName) => void;
+  /** A system type's name or one of the user's custom types. */
+  value: string;
+  onChange: (value: string) => void;
+  /** The user's custom types, after the system types, by their own names. */
+  customTypeNames: readonly string[];
   isPro: boolean;
   disabled?: boolean;
 }
@@ -27,6 +30,7 @@ interface ItemTypeSelectProps {
 export function ItemTypeSelect({
   value,
   onChange,
+  customTypeNames,
   isPro,
   disabled,
 }: ItemTypeSelectProps) {
@@ -35,17 +39,13 @@ export function ItemTypeSelect({
   return (
     <Field label={t("type")}>
       {(id) => (
-        <Select
-          value={value}
-          onValueChange={(next) => onChange(next as CreatableTypeName)}
-          disabled={disabled}
-        >
+        <Select value={value} onValueChange={onChange} disabled={disabled}>
           <SelectTrigger id={id} className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {CREATABLE_TYPES.map((type) => {
-              const isAllowed = canCreateType(type, isPro);
+              const isAllowed = canUseType(type, isPro);
               return (
                 <SelectItem key={type} value={type} disabled={!isAllowed}>
                   {typeName(`${type}.one`)}
@@ -53,6 +53,12 @@ export function ItemTypeSelect({
                 </SelectItem>
               );
             })}
+            {customTypeNames.length > 0 && <SelectSeparator />}
+            {customTypeNames.map((name) => (
+              <SelectItem key={name} value={name}>
+                {name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       )}

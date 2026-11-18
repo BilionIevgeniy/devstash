@@ -145,6 +145,48 @@ describe("the pages of an endless list", () => {
     expect(snippets?.first.page.nextCursor).not.toBeNull();
   });
 
+  it.each(PINNED_ITEM_SORTS)(
+    "gives each type the same first page and cursor as a group read (%s)",
+    async (sort) => {
+      const groups = await getPinnedFirstPages(t.b.userId, sort);
+      for (const group of groups) {
+        const own = await getPinnedGroupPage(
+          t.b.userId,
+          group.type.id,
+          sort,
+          null,
+        );
+        expect(group.first.page).toEqual(own);
+      }
+    },
+  );
+
+  it("reads a custom type's pins with the others, and only the caller's", async () => {
+    const custom = await prisma.itemType.create({
+      data: { name: "Recipes", slug: "recipes", userId: t.b.userId },
+    });
+    await prisma.item.create({
+      data: {
+        userId: t.b.userId,
+        typeId: custom.id,
+        contentType: "TEXT",
+        title: "Pancakes",
+        isPinned: true,
+      },
+    });
+    const ofB = await getPinnedFirstPages(t.b.userId, "a-z");
+    expect(ofB.find((group) => group.type.name === "Recipes")?.count).toBe(1);
+    const ofA = await getPinnedFirstPages(t.a.userId, "a-z");
+    expect(ofA.map((group) => group.type.name)).not.toContain("Recipes");
+    const shownToA = ofA.flatMap((group) =>
+      group.first.page.rows.map((row) => row.id),
+    );
+    const ofAOwner = await prisma.item.count({
+      where: { id: { in: shownToA }, userId: t.a.userId },
+    });
+    expect(ofAOwner).toBe(shownToA.length);
+  });
+
   it("counts every favorite, not one page", async () => {
     expect(await countFavoriteItems(t.b.userId)).toBe(BULK_COUNT + 1);
   });

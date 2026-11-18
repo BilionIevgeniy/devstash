@@ -16,14 +16,6 @@ model User {
   password       String?
   sessionVersion Int       @default(0)
 
-  // Superseded by Subscription. @ignore keeps the columns in the database and
-  // out of the client (no migration): the deployment that is live before this
-  // one still selects them by name. Feature 18 drops them once this deploy is
-  // live (expand/contract, ADR 0013). Code must not read them again.
-  isPro                Boolean @default(false) @ignore
-  stripeCustomerId     String? @ignore
-  stripeSubscriptionId String? @ignore
-
   accounts     Account[]
   sessions     Session[]
   items        Item[]
@@ -114,9 +106,6 @@ model Item {
   title                  String
   contentType            String
   content                String?
-  // Superseded by fileKey; @ignore keeps the column until feature 18 drops it
-  // (see User.isPro).
-  fileUrl                String?   @ignore
   // The R2 object key under users/<userId>/, never a URL. Unique, so one
   // upload cannot back two items.
   fileKey                String?   @unique
@@ -171,6 +160,12 @@ model Item {
 model ItemType {
   id       String  @id @default(cuid())
   name     String
+  // The URL segment of the type page, set once at creation: a rename keeps it,
+  // so bookmarked URLs keep working (ADR 0031). A system type's is its name
+  // plus "s"; a custom one never equals a system name or slug
+  // (item-types/domain/custom-type.ts), which the index cannot see because a
+  // system type has no userId.
+  slug     String
   icon     String?
   color    String?
   isSystem Boolean @default(false)
@@ -180,6 +175,7 @@ model ItemType {
 
   items Item[]
 
+  @@unique([userId, slug])
   @@index([userId])
 }
 

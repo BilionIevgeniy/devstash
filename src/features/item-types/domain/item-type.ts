@@ -1,7 +1,8 @@
 import type { ItemTypeInfo } from "@/features/item-types/types";
 
 const DEFAULT_TYPE_ICON = "File";
-const SYSTEM_TYPE_ORDER = [
+// The system types, in the order the sidebar and the forms show them.
+export const SYSTEM_TYPE_NAMES = [
   "snippet",
   "prompt",
   "command",
@@ -10,6 +11,7 @@ const SYSTEM_TYPE_ORDER = [
   "image",
   "link",
 ] as const;
+const SYSTEM_TYPE_ORDER = SYSTEM_TYPE_NAMES;
 
 export type SystemTypeName = (typeof SYSTEM_TYPE_ORDER)[number];
 
@@ -31,11 +33,10 @@ export function typeLabel(
 ): string {
   return isSystemTypeName(name) ? t(`${name}.${form}`) : name;
 }
-const TYPE_SLUG_SUFFIX = "s";
-
 export interface ItemTypeRow {
   id: string;
   name: string;
+  slug: string;
   icon: string | null;
   color: string | null;
 }
@@ -44,6 +45,7 @@ export function toItemTypeInfo(type: ItemTypeRow): ItemTypeInfo {
   return {
     id: type.id,
     name: type.name,
+    slug: type.slug,
     icon: type.icon ?? DEFAULT_TYPE_ICON,
     color: type.color ?? undefined,
   };
@@ -60,12 +62,17 @@ export function sortBySystemOrder<T extends { name: string }>(types: T[]): T[] {
   );
 }
 
-export function typeSlug(name: string): string {
-  return `${name}${TYPE_SLUG_SUFFIX}`;
+// The slug of a system type: its name plus "s" (the backfill of the migration
+// item_type_slug and the seeds). A custom type's slug is stored with it.
+export function systemTypeSlug(name: SystemTypeName): string {
+  return `${name}s`;
 }
 
-export function parseTypeSlug(slug: string): string | null {
-  if (!slug.endsWith(TYPE_SLUG_SUFFIX) || slug === TYPE_SLUG_SUFFIX)
-    return null;
-  return slug.slice(0, -TYPE_SLUG_SUFFIX.length);
+// The system type a URL segment names, or null for a custom type's slug. Only
+// for what renders before the type is read (the skeletons of loading.tsx and
+// the drawer); a page reads the type by its slug.
+export function systemTypeNameForSlug(slug: string): SystemTypeName | null {
+  return (
+    SYSTEM_TYPE_ORDER.find((name) => systemTypeSlug(name) === slug) ?? null
+  );
 }

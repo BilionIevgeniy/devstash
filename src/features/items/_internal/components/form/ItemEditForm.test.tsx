@@ -100,7 +100,13 @@ vi.mock("@/features/items/_internal/components/fields/ItemFields", () => ({
 import { ItemEditForm } from "@/features/items/_internal/components/form/ItemEditForm";
 import { CONTENT_MAX } from "@/features/items/domain/item-fields";
 
-const TYPE = { id: "type-1", name: "snippet", icon: "Code", color: "#3b82f6" };
+const TYPE = {
+  id: "type-1",
+  name: "snippet",
+  slug: "snippets",
+  icon: "Code",
+  color: "#3b82f6",
+};
 
 const ITEM: DashboardItem = {
   id: "item-1",

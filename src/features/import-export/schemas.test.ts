@@ -51,6 +51,20 @@ describe("parseImportFile", () => {
       params: { max: 10_000 },
     });
   });
+
+  it("reads a file without custom types, and refuses more than 50 by name", () => {
+    expect(parseImportFile(file({}))).toMatchObject({
+      success: true,
+      data: { types: [] },
+    });
+    const types = Array.from({ length: 51 }, () => ({}));
+    expect(parseImportFile(file({ types }))).toEqual({
+      success: false,
+      data: null,
+      error: "importTooManyTypes",
+      params: { max: 50 },
+    });
+  });
 });
 
 describe("parseImportedItem", () => {
@@ -77,9 +91,16 @@ describe("parseImportedItem", () => {
       kind: "invalid",
       reason: { error: "titleRequired" },
     });
-    expect(parseImportedItem({ ...snippet, type: "custom" })).toEqual({
+    expect(parseImportedItem({ ...snippet, type: " " })).toEqual({
       kind: "invalid",
       reason: { error: "unknownItemType" },
+    });
+  });
+
+  it("passes a custom type's name on to the create, which finds it", () => {
+    expect(parseImportedItem({ ...snippet, type: "Recipes" })).toMatchObject({
+      kind: "ok",
+      data: { typeName: "Recipes" },
     });
   });
 

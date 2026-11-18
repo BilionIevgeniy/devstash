@@ -51,14 +51,14 @@ The cost argument is weaker than ADR 0005 suggests. `getSessionUser` is wrapped 
 
 ## 3. Feature gating
 
-| Feature                  | State         | Where                                                               |
-| ------------------------ | ------------- | ------------------------------------------------------------------- |
-| File and image upload    | **Enforced**  | `files/services/presign-upload.ts`                                  |
-| File and image items     | **Enforced**  | `confirmFileColumns` in `items/services/item.ts`                    |
-| File and image in the UI | **Done**      | `ItemTypeSelect` (disabled, `ProBadge`), the sidebar, the type page |
-| 50 items                 | Not enforced  | `createUserItem`, the only `item.create`                            |
-| 3 collections            | Not enforced  | `createUserCollection`, the only `collection.create`                |
-| Custom types, AI, export | **Not built** | Each gates itself when built (`docs/modules.md`)                    |
+| Feature                  | State        | Where                                                               |
+| ------------------------ | ------------ | ------------------------------------------------------------------- |
+| File and image upload    | **Enforced** | `files/services/presign-upload.ts`                                  |
+| File and image items     | **Enforced** | `confirmFileColumns` in `items/services/item.ts`                    |
+| File and image in the UI | **Done**     | `ItemTypeSelect` (disabled, `ProBadge`), the sidebar, the type page |
+| 50 items                 | Not enforced | `createUserItem`, the only `item.create`                            |
+| 3 collections            | Not enforced | `createUserCollection`, the only `collection.create`                |
+| Custom types, AI, export | Built        | Each gates itself in its service (`docs/modules.md`)                |
 
 Counts for the UI come from `getItemStats` and `getCollectionStats`, which already exist.
 
@@ -294,7 +294,7 @@ Mocks cannot prove these.
 
 ## 10. Known risks and open decisions
 
-- **Decide before live mode: unbuilt features are on sale.** `PricingSection` lists Custom item types, AI features and Export under Pro. None exist. Feature 18 builds custom types (`context/features/plan/18.custom-item-types.md`); the AI features and the export exist
+- **Settled: no unbuilt feature is on sale.** `PricingSection` lists Custom item types, AI features and Export under Pro, and all three exist (custom types since feature 18, ADR 0031)
 - **Decide before live mode: German tax and consumer law.** VAT, the cancellation button (§ 312k BGB), withdrawal and the other consumer duties are not part of these two phases. Feature 19 builds them in test mode (`context/features/plan/19.real-shop-in-test-mode.md`); the sign-offs are in `context/todo-before-live.md`. The cancellation button will probably need code, and `automatic_tax` is one parameter on the session
 - **Two open Checkout tabs can still create two subscriptions.** The service refuses a user who is already Pro, and the Dashboard setting redirects existing subscribers, but neither covers two sessions opened before either completes. The second live subscription wins the row and the first keeps billing until cancelled in the Dashboard. Rare, and visible in Stripe
 - **Two open tabs on a dead customer.** Both replace it, and the later save wins the row. A payment on the earlier customer then matches no row, so the user has paid and stays Free until it is fixed by hand. It needs a dead customer and two open tabs, so the risk is accepted

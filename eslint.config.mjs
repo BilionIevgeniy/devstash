@@ -434,15 +434,17 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    // The full-text ranking of search (ADR 0018): Prisma cannot match or rank a
-    // tsvector, so these files alone may call prisma.$queryRaw, the tagged
-    // template that sends every value as a parameter. Writes, transactions,
+    // The reads Prisma cannot express: the full-text ranking of search (ADR
+    // 0018, a tsvector) and the first pages of /pinned (ADR 0031, N rows per
+    // type). These files alone may call prisma.$queryRaw, the tagged template
+    // that sends every value as a parameter. Writes, transactions,
     // $executeRaw, $queryRawUnsafe, $queryRawTyped and Prisma.raw stay
-    // forbidden. The two files are named: a third needs a new ADR, not a wider
+    // forbidden. The files are named: another needs a new ADR, not a wider
     // glob. This block comes after the one above and replaces its rule there.
     files: [
       "src/features/items/_internal/queries/search-ranking.ts",
       "src/features/collections/_internal/queries/search-ranking.ts",
+      "src/features/items/_internal/queries/pinned-first-pages.ts",
     ],
     rules: {
       "no-restricted-syntax": restrictSyntax(
@@ -451,7 +453,7 @@ const eslintConfig = defineConfig([
           "MemberExpression[object.name='prisma'][property.name=/^\\$(transaction|executeRaw|queryRawUnsafe|queryRawTyped)/]",
           "MemberExpression[object.name='Prisma'][property.name='raw']",
         ],
-        "A search ranking file only reads, through the prisma.$queryRaw tagged template (ADR 0018).",
+        "A raw read file only reads, through the prisma.$queryRaw tagged template (ADR 0018, ADR 0031).",
       ),
     },
   },

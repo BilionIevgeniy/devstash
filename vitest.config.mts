@@ -12,6 +12,13 @@ import { sharedResolve } from "./vitest.shared.mjs";
 // `.int.test.ts` files need a database and have their own config,
 // vitest.integration.config.mts, so `npm run test` and `test:watch` never run
 // them.
+// The unit and dom projects run with no database, as in CI: a test that
+// forgets to mock a query fails here too, instead of reading the development
+// database that .env names (found in feature 18).
+const NO_DATABASE = {
+  DATABASE_URL: "postgresql://no-database@127.0.0.1:1/unit-tests-have-none",
+};
+
 export default defineConfig({
   resolve: sharedResolve,
   test: {
@@ -21,6 +28,7 @@ export default defineConfig({
         test: {
           name: "unit",
           environment: "node",
+          env: NO_DATABASE,
           include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
           exclude: [...configDefaults.exclude, "**/*.int.test.ts"],
         },
@@ -40,6 +48,7 @@ export default defineConfig({
         test: {
           name: "dom",
           environment: "jsdom",
+          env: NO_DATABASE,
           // Queued answers (`mockReturnValueOnce`) survive `clearAllMocks`; a
           // test that fails early would hand its leftovers to the next one.
           mockReset: true,

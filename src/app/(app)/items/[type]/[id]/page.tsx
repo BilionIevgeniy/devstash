@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import { getEntitlements } from "@/features/billing/queries";
-import { parseTypeSlug } from "@/features/item-types/domain/item-type";
+import { systemTypeNameForSlug } from "@/features/item-types/domain/item-type";
 import { ItemDetailPage } from "@/features/items/components/drawer/ItemDetailPage";
 import { toItemDetailJson } from "@/features/items/domain/item-detail";
 import { getUserItemDetailOfType } from "@/features/items/services/item-detail";
@@ -13,17 +13,17 @@ export default async function ItemPage({
   params,
 }: PageProps<"/items/[type]/[id]">) {
   const { type: slug, id } = await params;
-  const typeName = parseTypeSlug(slug);
-  if (!typeName) notFound();
-
   const { id: userId } = await getSessionUser();
-  if (!(await userCanUseType(userId, typeName))) {
+  // A custom type is open to every plan; only a Pro system type is checked
+  // before the read (feature 19 decides the downgrade of custom types).
+  const systemName = systemTypeNameForSlug(slug);
+  if (systemName && !(await userCanUseType(userId, systemName))) {
     redirect(UPGRADE_PATH);
   }
 
   // cache() shares this read with the plan check above.
   const [item, { isPro }] = await Promise.all([
-    getUserItemDetailOfType(userId, id, typeName),
+    getUserItemDetailOfType(userId, id, slug),
     getEntitlements(userId),
   ]);
   if (!item) notFound();

@@ -1,16 +1,14 @@
 import { useTranslations } from "next-intl";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  editableFields,
-  type CreatableTypeName,
-} from "@/features/items/domain/item-fields";
+import { editableFields } from "@/features/items/domain/item-fields";
 
 // The upload field's DropZone: `py-6`, its icon and two lines of text.
 const DROP_ZONE_HEIGHT = "h-28";
 
 interface CreateItemFormSkeletonProps {
-  typeName: CreatableTypeName;
+  /** A system type's name or one of the user's custom types. */
+  typeName: string;
 }
 
 // Stands for CreateItemForm while its chunk loads, with the blocks the type's

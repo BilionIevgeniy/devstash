@@ -1,8 +1,11 @@
+import { CUSTOM_TYPES_MAX } from "@/features/item-types/domain/custom-type";
+
 // How large a file the browser reads for an import.
 export const IMPORT_FILE_MAX_BYTES = 5 * 1024 * 1024;
 export const IMPORT_FILE_MAX_MB = 5;
 
-// Records one file may hold, far above a real account.
+// Records one file may hold, far above a real account. The custom types are
+// capped by CUSTOM_TYPES_MAX (item-types).
 export const IMPORT_MAX_ITEMS = 10_000;
 export const IMPORT_MAX_COLLECTIONS = 1_000;
 
@@ -22,11 +25,12 @@ export const EXPORT_BY_USER = {
 } as const;
 
 // The batches of the largest file the browser takes: cut by count, plus at
-// most one more cut per 512 KB of the file in each list.
+// most one more cut per 512 KB of the file in each of the three lists.
 export const IMPORT_MAX_BATCHES =
   Math.ceil(IMPORT_MAX_ITEMS / IMPORT_BATCH_MAX_RECORDS) +
   Math.ceil(IMPORT_MAX_COLLECTIONS / IMPORT_BATCH_MAX_RECORDS) +
-  2 * Math.ceil(IMPORT_FILE_MAX_BYTES / IMPORT_BATCH_MAX_BYTES);
+  Math.ceil(CUSTOM_TYPES_MAX / IMPORT_BATCH_MAX_RECORDS) +
+  3 * Math.ceil(IMPORT_FILE_MAX_BYTES / IMPORT_BATCH_MAX_BYTES);
 
 // Every batch counts, a batch of duplicates too, so the window must take a
 // whole file: a rerun of a large import answers its duplicate batches in

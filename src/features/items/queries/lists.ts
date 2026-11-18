@@ -9,9 +9,10 @@ import {
   pinnedKeyset,
 } from "@/features/items/_internal/queries/list-keyset";
 import {
-  compareNames,
-  type FavoriteItemSort,
-} from "@/features/items/domain/list/favorite-sort";
+  getPinnedRankedRows,
+  type PinnedRankedRow,
+} from "@/features/items/_internal/queries/pinned-first-pages";
+import type { FavoriteItemSort } from "@/features/items/domain/list/favorite-sort";
 import { encodeListCursor } from "@/features/items/domain/list/list-cursor";
 import {
   FAVORITES_PAGE_SIZE,
@@ -29,6 +30,7 @@ import type {
   PinnedGroupPage,
 } from "@/features/items/types";
 import { prisma } from "@/lib/postgres/prisma";
+import { compareNames } from "@/lib/utils";
 
 // The endless lists of /favorites and /pinned (ADR 0025): one page at a time,
 // read with one row more than the page holds to know whether more exist. The
@@ -114,32 +116,48 @@ export async function getPinnedGroupPage(
   };
 }
 
-// Every type with pins, by name, each with its count and its first page. One
-// read per type (the system types are seven); custom types would make this
-// grow (feature 18, context/features/plan/18.custom-item-types.md).
+// Every type with pins, by name, each with its count and its first page: one
+// ranked read for all types (pinned-first-pages.ts) and one read of those
+// rows, whatever the number of types. Whether a type has more and its count
+// come from the ranked read, not from the rows found: a pin removed between
+// the two reads only shortens its page.
 export async function getPinnedFirstPages(
   userId: string,
   sort: PinnedItemSort,
 ): Promise<PinnedGroupPage[]> {
-  const counts = await prisma.item.groupBy({
-    by: ["typeId"],
-    where: { userId, isPinned: true },
-    _count: { _all: true },
+  const ranked = await getPinnedRankedRows(userId, sort);
+  const found = await prisma.item.findMany({
+    where: { userId, id: { in: ranked.map((row) => row.id) } },
+    select: dashboardItemSelect,
   });
-  const groups = await Promise.all(
-    counts.map(async ({ typeId, _count }) => ({
-      count: _count._all,
-      page: await getPinnedGroupPage(userId, typeId, sort, null),
-    })),
-  );
+  const byId = new Map(found.map((item) => [item.id, toDashboardItem(item)]));
   const renderedAt = Date.now();
-  // A type whose last pin went between the two reads has no row to name it.
-  return groups
-    .flatMap(({ count, page }) => {
-      const first = page.rows.at(0);
-      return first
-        ? [{ type: first.type, count, first: { sort, page, renderedAt } }]
-        : [];
+  return groupByType(ranked)
+    .flatMap(({ count, ids }) => {
+      const { rows: pageIds, hasMore } = splitPage(ids, PINNED_GROUP_PAGE_SIZE);
+      const rows = pageIds.flatMap((id) => byId.get(id) ?? []);
+      const first = rows.at(0);
+      const last = rows.at(-1);
+      // A type whose pins all went between the two reads has no row to name it.
+      if (!first || !last) return [];
+      const nextCursor = hasMore
+        ? encodeListCursor(sort, pinnedCursorValues(last, sort))
+        : null;
+      const page = { rows, nextCursor };
+      return [{ type: first.type, count, first: { sort, page, renderedAt } }];
     })
     .toSorted((a, b) => compareNames(a.type.name, b.type.name));
+}
+
+// The ranked rows come ordered by type, then by position.
+function groupByType(
+  ranked: PinnedRankedRow[],
+): { count: number; ids: string[] }[] {
+  const groups = new Map<string, { count: number; ids: string[] }>();
+  for (const row of ranked) {
+    const group = groups.get(row.typeId) ?? { count: row.count, ids: [] };
+    group.ids.push(row.id);
+    groups.set(row.typeId, group);
+  }
+  return [...groups.values()];
 }

@@ -10,7 +10,9 @@ import {
   type LucideProps,
 } from "lucide-react";
 
-const TYPE_ICONS: Record<string, LucideIcon> = {
+import type { TypeIconName } from "@/features/item-types/domain/custom-type";
+
+const TYPE_ICONS: Record<TypeIconName, LucideIcon> = {
   Code,
   Sparkles,
   Terminal,
@@ -25,6 +27,6 @@ interface TypeIconProps extends LucideProps {
 }
 
 export function TypeIcon({ name, ...props }: TypeIconProps) {
-  const Icon = TYPE_ICONS[name] ?? File;
+  const Icon = TYPE_ICONS[name as TypeIconName] ?? File;
   return <Icon {...props} />;
 }

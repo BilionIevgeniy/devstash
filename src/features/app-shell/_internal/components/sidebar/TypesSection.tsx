@@ -8,7 +8,7 @@ import {
 import { ProBadge } from "@/features/billing/components/ProBadge";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
-import { typeLabel, typeSlug } from "@/features/item-types/domain/item-type";
+import { typeLabel } from "@/features/item-types/domain/item-type";
 import { canUseType, requiresPro } from "@/features/items/domain/item-fields";
 import type { SidebarItemType } from "@/features/item-types/types";
 
@@ -30,7 +30,7 @@ export function TypesSection({ itemTypes, isPro }: TypesSectionProps) {
           return (
             <li key={type.id}>
               <SidebarNavLink
-                href={canUse ? `/items/${typeSlug(type.name)}` : UPGRADE_PATH}
+                href={canUse ? `/items/${type.slug}` : UPGRADE_PATH}
                 match={canUse ? "prefix" : undefined}
                 className={LINK_CLASS}
               >
