@@ -1,6 +1,7 @@
 import "server-only";
 
 import { hashToken } from "@/features/auth/_internal/token";
+import { getAccountDeletionIdentifier } from "@/features/auth/domain/account-deletion";
 import { getPasswordResetIdentifier } from "@/features/auth/domain/password-reset";
 import { isTokenExpired } from "@/features/auth/domain/verification-token";
 import type { AccountState, UserProfile } from "@/features/auth/types";
@@ -81,4 +82,13 @@ export function isPasswordResetTokenValid(
   token: string,
 ): Promise<boolean> {
   return isTokenValid(getPasswordResetIdentifier(email), token);
+}
+
+// Read-only, so opening the deletion link changes nothing: the delete is a
+// separate click on the page it opens.
+export function isAccountDeletionTokenValid(
+  email: string,
+  token: string,
+): Promise<boolean> {
+  return isTokenValid(getAccountDeletionIdentifier(email), token);
 }

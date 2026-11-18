@@ -33,6 +33,7 @@
   "noPasswordToChange": "Dieses Konto hat kein Passwort, das geändert werden kann",
   "incorrectCurrentPassword": "Das aktuelle Passwort ist falsch",
   "incorrectPassword": "Das Passwort ist falsch",
+  "invalidDeletionLink": "Dieser Bestätigungslink ist ungültig oder abgelaufen. Fordere in den Einstellungen einen neuen an",
 
   "uploadsProOnly": "Datei-Uploads sind eine Pro-Funktion",
   "chooseFileKind": "Wähle eine Dateiart",

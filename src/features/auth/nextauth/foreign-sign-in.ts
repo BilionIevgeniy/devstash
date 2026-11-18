@@ -3,14 +3,13 @@ import "server-only";
 import { headers } from "next/headers";
 import { getToken, type JWT } from "next-auth/jwt";
 
-import {
-  isForeignSignIn,
-  REAUTH_WRONG_ACCOUNT,
-} from "@/features/auth/domain/reauth";
+import { switchAccountHref } from "@/features/auth/domain/account-switch";
+import { isForeignSignIn } from "@/features/auth/domain/foreign-sign-in";
 import { getSessionVersion } from "@/features/auth/queries";
 import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
-const WRONG_ACCOUNT_URL = `/settings?reauth=${REAUTH_WRONG_ACCOUNT}`;
+// Says that another account is signed in here and offers to sign out first.
+const WRONG_ACCOUNT_URL = switchAccountHref("github");
 const REVOKED_SESSION_URL = `${SIGN_IN_PATH}?error=OAuthAccountNotLinked`;
 
 // Reads the raw cookie and not auth(): Auth.js links an account to whatever the

@@ -85,7 +85,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user?.id) {
         token.sv = (await getSessionVersion(user.id)) ?? 0;
-        token.authAt = Date.now();
         return token;
       }
       if (!token.sub) return null;
@@ -108,10 +107,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
     },
     session({ session, token }) {
-      if (token.sub) {
-        session.user.id = token.sub;
-        session.user.authenticatedAt = token.authAt;
-      }
+      if (token.sub) session.user.id = token.sub;
       return session;
     },
   },

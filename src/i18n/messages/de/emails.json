@@ -13,5 +13,12 @@
     "intro": "Wir haben eine Anfrage erhalten, das Passwort deines DevStash-Kontos zurückzusetzen. Wähle über den Link unten ein neues",
     "button": "Passwort zurücksetzen",
     "ignore": "Wenn du das nicht angefordert hast, kannst du diese E-Mail ignorieren."
+  },
+  "deletion": {
+    "subject": "Löschen deines DevStash-Kontos bestätigen",
+    "heading": "Konto löschen",
+    "intro": "Wir haben eine Anfrage erhalten, dein DevStash-Konto zu löschen. Öffne den Link unten, während du bei DevStash angemeldet bist, und bestätige dort. Das Löschen entfernt deine Einträge, Sammlungen und Dateien endgültig",
+    "button": "Löschen bestätigen",
+    "ignore": "Wenn du das nicht angefordert hast, ignoriere diese E-Mail: Ohne Bestätigung wird nichts gelöscht."
   }
 }

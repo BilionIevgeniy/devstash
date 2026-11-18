@@ -28,7 +28,6 @@ import { fail, ok, type Failure } from "@/lib/errors/action-result";
 import { firstIssue } from "@/lib/errors/validation";
 
 const HOME_URL = "/";
-const SETTINGS_URL = "/settings";
 
 // The sign-in error only carries a code, so the time to wait is read from the
 // counters; when none can be read the message simply has no time in it.
@@ -79,18 +78,6 @@ export async function signInWithCredentials(
 export async function signInWithGitHub(formData: FormData): Promise<void> {
   const redirectTo = callbackPathSchema.parse(formData.get("callbackUrl"));
   await signIn("github", { redirectTo });
-}
-
-// A fresh GitHub sign-in confirms the owner before a destructive action on an
-// account that has no password to type. Only this sign-in asks for GitHub's
-// account picker: a usual one finishes with no screen, and here the user should
-// see which GitHub account is about to confirm.
-export async function reauthenticateWithGitHub(): Promise<void> {
-  await signIn(
-    "github",
-    { redirectTo: SETTINGS_URL },
-    { prompt: "select_account" },
-  );
 }
 
 export async function signOutUser(): Promise<void> {

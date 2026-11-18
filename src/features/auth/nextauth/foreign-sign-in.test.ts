@@ -14,7 +14,7 @@ vi.mock("@/features/auth/queries", () => ({ getSessionVersion }));
 const SECRET = "test-secret";
 const SECURE_COOKIE = "__Secure-authjs.session-token";
 const PLAIN_COOKIE = "authjs.session-token";
-const WRONG_ACCOUNT_URL = "/settings?reauth=wrong-account";
+const WRONG_ACCOUNT_URL = "/switch-account?reason=github";
 const REVOKED_SESSION_URL = "/sign-in?error=OAuthAccountNotLinked";
 
 async function sendCookie(name: string) {

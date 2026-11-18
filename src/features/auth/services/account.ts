@@ -12,15 +12,13 @@ import {
   getPasswordHashByEmail,
 } from "@/features/auth/_internal/queries";
 import { revokeGitHubGrant } from "@/features/auth/_internal/services/github-grant";
+import { getAccountDeletionIdentifier } from "@/features/auth/domain/account-deletion";
 import { getPasswordResetIdentifier } from "@/features/auth/domain/password-reset";
 import {
   tooManyAttemptsParams,
   PASSWORD_CHECK_BY_USER,
 } from "@/features/auth/domain/rate-limits";
-import {
-  isRecentlyAuthenticated,
-  requiresReauthentication,
-} from "@/features/auth/domain/reauth";
+import { isAccountDeletionTokenValid } from "@/features/auth/queries";
 import {
   fail,
   ok,
@@ -33,8 +31,8 @@ import { consumeRateLimit, resetRateLimit } from "@/lib/vendors/rate-limit";
 export interface DeleteAccountProof {
   /** Required for accounts that have a password. */
   password?: string;
-  /** Epoch ms of the session's sign-in; checked for accounts without one. */
-  authenticatedAt?: number;
+  /** The token of the emailed deletion link; required for accounts without one. */
+  deletionToken?: string;
 }
 
 // Not exported: only verifyAccountDeletion can build a VerifiedDeletion, so
@@ -97,17 +95,12 @@ export async function verifyPasswordByEmail(
   return verifyPassword(password, await getPasswordHashByEmail(email));
 }
 
-// The clock is read here and not in the settings component, which must stay pure.
-export function needsReauthentication(
-  hasPassword: boolean,
-  authenticatedAt: number | undefined,
-): boolean {
-  return requiresReauthentication(hasPassword, authenticatedAt, Date.now());
-}
-
 // A valid session alone is not enough to delete an account: the caller proves
-// it is the owner with the password, or with a recent sign-in when the account
-// has none. A passed check resets the shared counter, as a password change
+// it is the owner with the password, or, when the account has none, with the
+// token of the link emailed to the account's own address. The token is checked
+// against the address read here by the user id, never the one in the link, and
+// it is not used up: the rows delete takes every token of the address with the
+// user, so a delete that fails later (R2 down) can be retried from the link. A passed check resets the shared counter, as a password change
 // does, so a delete that fails later (R2 down) and is retried with the right
 // password cannot lock the user out.
 export async function verifyAccountDeletion(
@@ -127,8 +120,11 @@ export async function verifyAccountDeletion(
     ) {
       return fail("incorrectPassword");
     }
-  } else if (!isRecentlyAuthenticated(proof.authenticatedAt, Date.now())) {
-    return fail("reauthRequired");
+  } else if (
+    !proof.deletionToken ||
+    !(await isAccountDeletionTokenValid(user.email, proof.deletionToken))
+  ) {
+    return fail("invalidDeletionLink");
   }
 
   await resetRateLimit(PASSWORD_CHECK_BY_USER, userId);
@@ -154,7 +150,13 @@ export async function deleteVerifiedUserRows({
   await prisma.$transaction([
     prisma.verificationToken.deleteMany({
       where: {
-        identifier: { in: [email, getPasswordResetIdentifier(email)] },
+        identifier: {
+          in: [
+            email,
+            getPasswordResetIdentifier(email),
+            getAccountDeletionIdentifier(email),
+          ],
+        },
       },
     }),
     prisma.user.delete({ where: { id: userId } }),

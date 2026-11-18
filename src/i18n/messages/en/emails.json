@@ -13,5 +13,12 @@
     "intro": "We received a request to reset the password for your DevStash account. Use the link below to choose a new one",
     "button": "Reset password",
     "ignore": "If you didn't request this, you can ignore this email."
+  },
+  "deletion": {
+    "subject": "Confirm deleting your DevStash account",
+    "heading": "Delete your account",
+    "intro": "We received a request to delete your DevStash account. Open the link below while signed in to DevStash and confirm there. Deleting removes your items, collections and files for good",
+    "button": "Confirm deletion",
+    "ignore": "If you didn't ask for this, ignore this email: nothing is deleted without the confirmation."
   }
 }
