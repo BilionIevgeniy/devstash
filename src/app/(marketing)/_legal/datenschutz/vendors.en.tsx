@@ -13,7 +13,7 @@ const TEXTS: Record<VendorId, string> = {
   stripe:
     "Handling the Pro subscription through Stripe hosted payment page. We pass on your email address and user id; you enter payment details at Stripe and we never see them. Stripe processes some data on our behalf and some under its own responsibility, for example to prevent fraud. Currently test mode. Legal basis: Art. 6 (1) b GDPR.",
   resend:
-    "Sending the emails that confirm your address and reset your password. Resend receives the recipient address and the content of the email. Legal basis: Art. 6 (1) b GDPR.",
+    "Sending the emails that confirm your address, reset your password and confirm a contract or a cancellation. Resend receives the recipient address and the content of the email. Legal basis: Art. 6 (1) b GDPR.",
   upstash:
     "Redis database for limiting requests. Upstash receives only SHA-256 hashes of email addresses, IP addresses and user ids, and counters. Legal basis: Art. 6 (1) f GDPR.",
   sentry:
