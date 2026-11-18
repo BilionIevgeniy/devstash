@@ -34,7 +34,7 @@ describe("deleteAccount", () => {
       data: verified,
     });
     purgeUserObjects.mockResolvedValue(undefined);
-    deleteVerifiedUserRows.mockResolvedValue(undefined);
+    deleteVerifiedUserRows.mockResolvedValue(true);
     deleteBillingCustomer.mockResolvedValue(undefined);
   });
 
