@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isAccountSwitchReason } from "@/features/auth/domain/account-switch";
 import { safeCallbackPath } from "@/features/auth/domain/callback-url";
 import {
   MAX_PASSWORD_BYTES,
@@ -44,6 +45,12 @@ export const signInSchema = z.object({
 
 // Never fails: a bad value becomes the default path, not a sign-in error.
 export const callbackPathSchema = z.unknown().transform(safeCallbackPath);
+
+// The `reason` of the account-switch page. Never fails: an unknown value shows
+// the page's general text.
+export const accountSwitchReasonSchema = z
+  .unknown()
+  .transform((value) => (isAccountSwitchReason(value) ? value : null));
 
 export const registerSchema = z
   .object({

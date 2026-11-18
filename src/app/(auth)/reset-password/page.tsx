@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
+import { auth } from "@/features/auth/nextauth/auth";
 import { AuthCard } from "@/features/auth/components/AuthCard";
+import { isOtherAccount } from "@/features/auth/domain/account-switch";
 import { ResetPasswordForm } from "@/features/auth/components/ResetPasswordForm";
 import { Button } from "@/components/ui/button";
 import { isPasswordResetTokenValid } from "@/features/auth/queries";
@@ -35,10 +37,21 @@ export default async function ResetPasswordPage({
     );
   }
 
-  const t = await getTranslations("auth.reset");
+  const [t, session] = await Promise.all([
+    getTranslations("auth.reset"),
+    auth(),
+  ]);
   return (
     <AuthCard title={t("title")} description={t("description")}>
-      <ResetPasswordForm email={parsed.data.email} token={parsed.data.token} />
+      <ResetPasswordForm
+        email={parsed.data.email}
+        token={parsed.data.token}
+        switchReason={
+          isOtherAccount(session?.user?.email, parsed.data.email)
+            ? "password"
+            : null
+        }
+      />
     </AuthCard>
   );
 }

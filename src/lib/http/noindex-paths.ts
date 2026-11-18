@@ -18,4 +18,5 @@ export const NOINDEX_PATHS = [
   "/forgot-password",
   "/reset-password",
   "/verify-email",
+  "/switch-account",
 ];

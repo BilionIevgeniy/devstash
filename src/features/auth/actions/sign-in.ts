@@ -2,6 +2,7 @@
 
 import { AuthError, CredentialsSignin } from "next-auth";
 import { headers } from "next/headers";
+import { redirect, RedirectType } from "next/navigation";
 import { signIn, signOut } from "@/features/auth/nextauth/auth";
 import {
   EMAIL_NOT_VERIFIED_CODE,
@@ -15,6 +16,7 @@ import {
   loginEmailKey,
   tooManyAttemptsParams,
 } from "@/features/auth/domain/rate-limits";
+import { signInHref } from "@/features/auth/domain/callback-url";
 import { callbackPathSchema, signInSchema } from "@/features/auth/schemas";
 import type { AuthActionState } from "@/features/auth/types";
 import { getClientIp } from "@/lib/http/client-ip";
@@ -93,4 +95,13 @@ export async function reauthenticateWithGitHub(): Promise<void> {
 
 export async function signOutUser(): Promise<void> {
   await signOut({ redirectTo: HOME_URL });
+}
+
+// Signs out so the user can sign in with another account, then leads to the
+// sign-in page, which continues to the form's path. Replace and not signOut's
+// own redirect, a push: Back must not lead to a page of the old session.
+export async function switchAccount(formData: FormData): Promise<void> {
+  const callbackPath = callbackPathSchema.parse(formData.get("callbackUrl"));
+  await signOut({ redirect: false });
+  redirect(signInHref(callbackPath), RedirectType.replace);
 }
