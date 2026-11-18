@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { Logo } from "@/components/common/Logo";
 import { homePath, type Locale } from "@/i18n/config";
-import { IMPRINT_PATH, PRIVACY_PATH } from "@/lib/http/legal-paths";
+import { IMPRINT_PATH, PRIVACY_PATH, TERMS_PATH } from "@/lib/http/legal-paths";
 
 import { LanguageLink } from "./LanguageLink";
 
@@ -30,6 +30,7 @@ export async function Footer({ locale }: { locale: Locale }) {
     {
       heading: t("footer.legal"),
       entries: [
+        { label: t("footer.terms"), href: TERMS_PATH },
         { label: t("footer.privacy"), href: PRIVACY_PATH },
         { label: t("footer.imprint"), href: IMPRINT_PATH },
       ],

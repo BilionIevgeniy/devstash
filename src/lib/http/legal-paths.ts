@@ -2,3 +2,4 @@
 // the sign-in cards and the app shell's user menu.
 export const PRIVACY_PATH = "/datenschutz";
 export const IMPRINT_PATH = "/impressum";
+export const TERMS_PATH = "/agb";

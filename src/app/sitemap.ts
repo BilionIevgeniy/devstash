@@ -4,7 +4,7 @@ import { homePath, LOCALES } from "@/i18n/config";
 import { getSiteOrigin } from "@/lib/http/app-url";
 
 // The legal pages: German and English on one URL each.
-const LEGAL_PATHS = ["/impressum", "/datenschutz"];
+const LEGAL_PATHS = ["/impressum", "/datenschutz", "/agb"];
 
 // The public pages only; everything behind sign-in is noindex. Built once at
 // build time from the site's origin (getSiteOrigin), so it stays static.

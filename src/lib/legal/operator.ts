@@ -1,5 +1,5 @@
-import { assertOperatorComplete } from "./operator-guard";
-import type { LegalLang } from "./types";
+import { assertOperatorComplete } from "@/lib/legal/operator-guard";
+import type { LegalLang } from "@/lib/legal/types";
 
 interface Operator {
   name: string;

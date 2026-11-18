@@ -20,6 +20,7 @@ describe("sitemap", () => {
       `${ORIGIN}/de`,
       `${ORIGIN}/impressum`,
       `${ORIGIN}/datenschutz`,
+      `${ORIGIN}/agb`,
     ]);
     expect(entries[1].alternates?.languages).toEqual({
       en: `${ORIGIN}/`,
