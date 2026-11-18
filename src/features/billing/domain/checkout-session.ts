@@ -54,13 +54,12 @@ export function checkoutSessionParams(input: CheckoutSessionInput) {
     // The subscription keeps the consent, so the sync and the confirmation
     // read it from there long after the session is gone.
     subscription_data: { metadata },
-    payment_method_types: ["card" as const],
+    allowed_payment_method_types: ["card" as const],
     automatic_tax: { enabled: true },
     tax_id_collection: { enabled: true },
     billing_address_collection: "required" as const,
     // Stripe Tax needs the address on the customer, and tax ids its name.
     customer_update: { address: "auto" as const, name: "auto" as const },
-    submit_type: "pay" as const,
     custom_text: { submit: { message: input.submitNote } },
     locale: input.locale === "de" ? ("de" as const) : ("en" as const),
     expires_at: Math.floor(

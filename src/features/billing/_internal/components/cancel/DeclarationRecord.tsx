@@ -1,9 +1,10 @@
 "use client";
 
 import { Printer } from "lucide-react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
+import { bilingualDate } from "@/features/billing/_internal/components/cancel/bilingual-date";
 import type { CancellationValues } from "@/features/billing/_internal/components/hooks/use-cancellation";
 
 interface DeclarationRecordProps {
@@ -20,14 +21,8 @@ export function DeclarationRecord({
   signedIn,
 }: DeclarationRecordProps) {
   const t = useTranslations("billing.cancel");
-  const format = useFormatter();
   const lines = [
-    t("doneAt", {
-      date: format.dateTime(new Date(declaredAt), {
-        dateStyle: "long",
-        timeStyle: "medium",
-      }),
-    }),
+    t("doneAt", bilingualDate(new Date(declaredAt), "longWithTime")),
     t("contract"),
     t("doneKind", { kind: values.kind }),
     ...(signedIn

@@ -22,7 +22,7 @@
     "ignore": "If you didn't ask for this, ignore this email: nothing is deleted without the confirmation."
   },
   "checkout": {
-    "submitNote": "By clicking “Pay” you place an order with an obligation to pay. Pro starts at once; you agreed that your right of withdrawal ends with that."
+    "submitNote": "By clicking “Subscribe with obligation to pay” you place an order you must pay for. Pro starts at once; you agreed that your right of withdrawal ends with that."
   },
   "contract": {
     "subject": "Your DevStash Pro contract",

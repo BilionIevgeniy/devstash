@@ -261,7 +261,7 @@ Mocks cannot prove these.
 
 - [ ] Two parallel creates at 49 items: one succeeds. Same at 2 collections
 - [ ] `$executeRaw` runs the lock through the pg adapter on the Neon `development` branch
-- [ ] Upgrade with `4242 4242 4242 4242`, monthly and yearly: the row is `active`, with both ids and `currentPeriodEnd`
+- [x] Upgrade with `4242 4242 4242 4242`, monthly and yearly: the row is `active`, with both ids and `currentPeriodEnd`
 - [ ] Declined card `4000 0000 0000 0002` and 3D Secure `4000 0000 0000 3220`
 - [ ] Cancel in the portal: Pro until the period ends, then Free. A test clock moves time
 - [ ] Failed renewal with a test clock: `past_due` keeps Pro and shows the warning, and the subscription is cancelled after the retries
@@ -278,11 +278,23 @@ Mocks cannot prove these.
 - [ ] Return without `stripe listen` running: "Confirming…", then Pro through the action
 - [ ] Reload with `session_id` in the URL: no second toast, and the URL is cleaned
 - [ ] Another account returns with someone else's `session_id`: the plain message, no upgrade
-- [ ] Back from Stripe: the Upgrade buttons work again, and the order step comes back closed with its boxes clear (`usePageRestoreKey`, feature 19)
+- [x] Back from Stripe: the Upgrade buttons work again, and the order step comes back closed with its boxes clear (`usePageRestoreKey`, feature 19)
 - [ ] Feature 19: a purchase through the order step shows gross EUR prices with Stripe Tax and the payable button; the row gets the consent; the § 312f email arrives once; the § 312k page cancels signed in and signed out, each with its email; the reconciliation corrects a row edited by hand
 - [ ] Free at the limit: the plain error, and the form stays open
-- [ ] Pro user sees Manage Billing, Free sees usage and Upgrade, the demo user sees neither
+- [ ] Pro user sees Manage Billing (Pro and Free checked on 2026-11-18; the demo user is still open), Free sees usage and Upgrade, the demo user sees neither
 - [ ] `/settings` does not shift while loading
+
+### Results in test mode (2026-11-18)
+
+Run by hand against the dev server, `stripe listen` and the Neon `development` branch, as `demo@devstash.io` (its earlier test subscriptions were ended in the sandbox first).
+
+- **Two bugs that only a real Checkout session shows** (the unit and e2e tests stub Stripe): API `2026-10-28.endive` refuses `payment_method_types` and refuses `submit_type` in subscription mode, so every purchase failed with `generic`. Cards only is now `allowed_payment_method_types: ["card"]`; the button label is Stripe's own (ADR 0032, ADR 0033)
+- **Stripe's button** reads "Subscribe with obligation to pay" / "Kostenpflichtig abonnieren", and the `custom_text.submit` note above it now names that label. Whether it satisfies § 312j (3) stays on the lawyer's list
+- **Monthly and yearly:** €8.00 with VAT €1.28, €72.00 with VAT €11.50 (19 %, Germany); after `checkout.session.completed` the row is `active` with `termsVersion`, `withdrawalWaiverAt` and `confirmedSubscriptionId`, which is set only after Resend accepted the § 312f email (the inbox itself was not read)
+- **Return and Back:** the return URL shows Pro and Manage Billing at once; Back from Stripe closes the order step with clear boxes, and ordering again reuses the open session instead of opening a second one. A reused session keeps its language, so a user who switched to German in between sees Stripe in English
+- **§ 312k:** signed in and signed out, the declaration is recorded with Berlin time, Stripe sets `cancel_at_period_end`, the webhook sets `cancelAtPeriodEnd`; an unknown email gets the same receipt, so the page does not tell whether an account exists. The German half of the bilingual lines showed English dates; each half now formats its own date
+- **German copy:** the renewal line said "jeden Jahr"; it now says "jedes Jahr"
+- **Not run by hand:** the reconciliation of a row edited by hand (it needs the cron secret; `reconciliation.int.test.ts` covers it), the declined and 3D Secure cards, test clocks, and the emails in an inbox
 
 ## 9. Implementation order
 

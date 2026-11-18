@@ -44,11 +44,11 @@ describe("checkoutSessionParams", () => {
     expect(params.tax_id_collection).toEqual({ enabled: true });
     expect(params.billing_address_collection).toBe("required");
     expect(params.customer_update).toEqual({ address: "auto", name: "auto" });
-    expect(params.payment_method_types).toEqual(["card"]);
+    expect(params.allowed_payment_method_types).toEqual(["card"]);
   });
 
-  it("labels the button as a payment and puts the note next to it", () => {
-    expect(params.submit_type).toBe("pay");
+  it("puts the note next to the button Stripe labels itself", () => {
+    expect(params).not.toHaveProperty("submit_type");
     expect(params.custom_text).toEqual({
       submit: { message: INPUT.submitNote },
     });
