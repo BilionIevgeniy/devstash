@@ -1,5 +1,4 @@
 import { ArrowRight } from "lucide-react";
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import type { Locale } from "@/i18n/config";
 
 import { ChaosAnimation } from "../chaos/ChaosAnimation";
 import { DashboardPreview } from "./DashboardPreview";
+import { StartAction } from "./StartAction";
 
 const PANEL_LABEL =
   "mb-3 font-mono text-[13px] leading-[1.4] font-medium text-dim";
@@ -24,9 +24,7 @@ export async function HeroSection({ locale }: { locale: Locale }) {
           </h1>
           <p className="marketing-lead mt-6">{t("lead")}</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button asChild size="lg" className="h-11 px-5 text-[15px]">
-              <Link href="/register">{t("getStarted")}</Link>
-            </Button>
+            <StartAction label={t("getStarted")} />
             <Button
               asChild
               variant="outline"

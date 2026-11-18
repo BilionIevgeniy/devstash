@@ -6,6 +6,7 @@ import { auth } from "@/features/auth/nextauth/auth";
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { GitHubAuthSection } from "@/features/auth/components/GitHubAuthSection";
 import { SignInForm } from "@/features/auth/components/SignInForm";
+import { PASSWORD_CHANGED_NOTICE } from "@/features/auth/domain/auth-paths";
 import { safeCallbackPath } from "@/features/auth/domain/callback-url";
 import type { ErrorCode } from "@/i18n/error-codes";
 
@@ -31,7 +32,7 @@ function getErrorCode(
 export default async function SignInPage({
   searchParams,
 }: PageProps<"/sign-in">) {
-  const { error, callbackUrl } = await searchParams;
+  const { error, callbackUrl, notice } = await searchParams;
   const callbackPath = safeCallbackPath(callbackUrl);
 
   const session = await auth();
@@ -40,6 +41,14 @@ export default async function SignInPage({
 
   return (
     <AuthCard title={t("title")} description={t("description")}>
+      {notice === PASSWORD_CHANGED_NOTICE && (
+        <p
+          role="status"
+          className="rounded-md border bg-muted/50 px-3 py-2 text-sm"
+        >
+          {t("passwordChanged")}
+        </p>
+      )}
       <SignInForm
         callbackUrl={callbackPath}
         initialError={getErrorCode(error)}

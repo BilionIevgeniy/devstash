@@ -127,16 +127,43 @@ export const GENERAL_EN: LegalSection[] = [
     ),
   },
   {
+    id: "measurement",
+    heading: "Performance measurement (only with your consent)",
+    body: (
+      <>
+        <p>
+          If you allow it in the banner, your browser measures how fast our
+          pages load and respond (the Web Vitals LCP, INP and CLS) and sends
+          these numbers to our server, each with the kind of page it was
+          measured on (for example &quot;an item page&quot;), never the address
+          of the page or anything you stored. Our hosting provider Vercel (see
+          Recipients) receives your IP address with the request, as with any
+          request; we use it only to limit the number of requests and do not
+          store it. The numbers are written to our server log and kept there for
+          as long as the log is kept. No cookie is set, and nothing is linked to
+          your account.
+        </p>
+        <p>
+          Legal basis: your consent (Art. 6 (1) a GDPR, § 25 (1) TDDDG). Without
+          it nothing is measured. You can withdraw it at any time, as easily as
+          you gave it, under &quot;Privacy settings&quot; at the bottom of every
+          page; nothing is sent after that.
+        </p>
+      </>
+    ),
+  },
+  {
     id: "cookies",
-    heading: "Cookies",
+    heading: "Cookies and storage in your browser",
     body: (
       <>
         <p>
           We set only cookies that the service technically needs or that you
           trigger yourself with a setting (§ 25 (2) no. 2 TDDDG). That is why we
-          do not ask for consent. We do not set analytics, advertising or
-          tracking cookies. The error monitoring (see Recipients) sets no
-          cookies and stores nothing in your browser.
+          do not ask for consent for them; the only consent we ask for is the
+          one for the performance measurement above. We do not set analytics,
+          advertising or tracking cookies. The error monitoring (see Recipients)
+          sets no cookies and stores nothing in your browser.
         </p>
         <ul>
           <li>
@@ -165,6 +192,12 @@ export const GENERAL_EN: LegalSection[] = [
             the app follows your browser&apos;s language.
           </li>
         </ul>
+        <p>
+          In your browser&apos;s local storage (not a cookie) we keep{" "}
+          <code>devstash-consent</code>: your answer to the banner, so we do not
+          ask again, until you change it or clear the storage. It never leaves
+          your browser.
+        </p>
         <p>
           On the website the sign-in cookies also carry the prefix{" "}
           <code>__Secure-</code> or <code>__Host-</code>.

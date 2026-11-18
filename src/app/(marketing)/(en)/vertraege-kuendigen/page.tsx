@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { CancelContractForm } from "@/features/billing/components/CancelContractForm";
 import { getContractState } from "@/features/billing/queries";
+import { MAIN_CONTENT_ID } from "@/app/(marketing)/_components/SkipLink";
 
 export const metadata: Metadata = {
   title: "Verträge hier kündigen / Cancel contracts here - DevStash",
@@ -24,7 +25,11 @@ export default async function CancelContractsPage() {
   const contract = userId ? await getContractState(userId) : null;
 
   return (
-    <main className="marketing-container pt-28 pb-20">
+    <main
+      id={MAIN_CONTENT_ID}
+      tabIndex={-1}
+      className="marketing-container pt-28 pb-20 outline-none"
+    >
       <div className="mx-auto max-w-xl space-y-6">
         <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
         <p className="text-muted-foreground">{t("lead")}</p>

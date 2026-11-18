@@ -1,12 +1,7 @@
 import "client-only";
 
-import type { RefObject } from "react";
-
 import type { SubmitRun } from "@/components/common/hooks/use-submit-dialog";
-import type { EditorHandle } from "@/features/editor/types";
 import type { UploadedFile } from "@/features/files/types";
-import type { ErrorText } from "@/i18n/error-text";
-import { rejectInvalidContent } from "@/features/items/_internal/components/form/reject-invalid-content";
 import { createItem } from "@/features/items/actions/item";
 import type { ItemChange } from "@/features/items/components/item-queries";
 import type { AiGeneratedClaims } from "@/features/items/domain/ai-marks";
@@ -26,9 +21,9 @@ export interface NewItemSubmission {
   /** What the form claims came from the AI unchanged (ADR 0027). */
   aiGenerated: AiGeneratedClaims;
   upload: UploadedFile | null;
-  contentRef: RefObject<EditorHandle | null>;
+  /** Stops a form the server would refuse, at the field (useItemFormCheck). */
+  rejectInvalid: (values: ItemFormValues) => boolean;
   run: SubmitRun;
-  errorText: ErrorText;
   /** The cache follows the new item (useSyncItemQueries of the dialog). */
   syncItems: (change: ItemChange) => Promise<void>;
   /** Called in the commit that brings the refreshed page with the new item. */
@@ -60,14 +55,11 @@ function createPayload({
   };
 }
 
-// The create dialog's submit: content the server would refuse stops here, the
+// The create dialog's submit: a field the server would refuse stops here, the
 // rest goes to the action through the dialog's run (useSubmitDialog).
 export function submitNewItem(submission: NewItemSubmission): void {
-  const { fields, values, contentRef, run, errorText, syncItems, onCreated } =
-    submission;
-  if (rejectInvalidContent(fields, values.content, contentRef, errorText)) {
-    return;
-  }
+  const { values, rejectInvalid, run, syncItems, onCreated } = submission;
+  if (rejectInvalid(values)) return;
 
   run(() => createItem(createPayload(submission)), {
     onSuccess: onCreated,

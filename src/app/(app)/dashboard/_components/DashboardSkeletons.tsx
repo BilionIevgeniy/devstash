@@ -7,7 +7,7 @@ export const RECENT_SKELETON_ROWS = 5;
 
 // Block heights mirror the rendered cards (StatsCards, ItemRow) so the page
 // does not shift when the real content streams in.
-const STAT_CARD_HEIGHT = "h-22";
+const STAT_CARD_HEIGHT = "h-22.5";
 const ITEM_ROW_HEIGHT = "h-26";
 
 function SkeletonBlocks({
@@ -28,7 +28,7 @@ function SkeletonBlocks({
 
 export function StatsSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
       <SkeletonBlocks
         count={STAT_CARDS}
         className={`${STAT_CARD_HEIGHT} rounded-lg`}

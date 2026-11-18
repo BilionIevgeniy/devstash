@@ -2,22 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ItemFormValues } from "@/features/items/domain/item-changes";
 
-const { createItem, toastError } = vi.hoisted(() => ({
-  createItem: vi.fn(),
-  toastError: vi.fn(),
-}));
+const { createItem } = vi.hoisted(() => ({ createItem: vi.fn() }));
 vi.mock("@/features/items/actions/item", () => ({ createItem }));
-vi.mock("sonner", () => ({ toast: { error: toastError } }));
 
 import {
   submitNewItem,
   type NewItemSubmission,
 } from "@/features/items/_internal/components/form/submit-new-item";
-import {
-  CONTENT_MAX,
-  editableFields,
-} from "@/features/items/domain/item-fields";
-import { createErrorText } from "../../../../../../test/error-text";
+import { editableFields } from "@/features/items/domain/item-fields";
 import { NO_AI_CLAIMS } from "@/features/items/domain/ai-marks";
 
 const VALUES: ItemFormValues = {
@@ -30,7 +22,7 @@ const VALUES: ItemFormValues = {
   collectionIds: ["col-1"],
 };
 
-const focus = vi.fn();
+const rejectInvalid = vi.fn<NewItemSubmission["rejectInvalid"]>();
 const run = vi.fn<NewItemSubmission["run"]>();
 const onCreated = vi.fn();
 const syncItems = vi.fn<NewItemSubmission["syncItems"]>();
@@ -44,9 +36,8 @@ function submission(
     values: VALUES,
     aiGenerated: NO_AI_CLAIMS,
     upload: null,
-    contentRef: { current: { focus } },
+    rejectInvalid,
     run,
-    errorText: createErrorText(),
     syncItems,
     onCreated,
     ...overrides,
@@ -63,21 +54,18 @@ async function submitAndSend(overrides?: Partial<NewItemSubmission>) {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  rejectInvalid.mockReturnValue(false);
   createItem.mockResolvedValue({ success: true, data: null, error: null });
 });
 
 describe("submitNewItem", () => {
-  it("stops content over the limit before any request, with a toast and the focus", () => {
-    submitNewItem(
-      submission({
-        values: { ...VALUES, content: "x".repeat(CONTENT_MAX + 1) },
-      }),
-    );
+  it("sends nothing when the check refuses a field", () => {
+    rejectInvalid.mockReturnValue(true);
+    submitNewItem(submission());
 
+    expect(rejectInvalid).toHaveBeenCalledExactlyOnceWith(VALUES);
     expect(createItem).not.toHaveBeenCalled();
     expect(run).not.toHaveBeenCalled();
-    expect(toastError).toHaveBeenCalledOnce();
-    expect(focus).toHaveBeenCalledOnce();
   });
 
   it("sends the fields of a snippet and leaves the URL out", async () => {

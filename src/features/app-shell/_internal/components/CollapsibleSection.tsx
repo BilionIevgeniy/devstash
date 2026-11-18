@@ -22,7 +22,7 @@ export function CollapsibleSection({
         type="button"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((open) => !open)}
-        className="flex w-full items-center gap-1 rounded-md px-2 py-1 text-sm font-semibold text-foreground hover:bg-accent"
+        className="flex w-full items-center gap-1 rounded-md px-2 py-1 text-sm max-md:min-h-11 font-semibold text-foreground hover:bg-accent"
       >
         {title}
         <ChevronDown

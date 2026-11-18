@@ -28,9 +28,11 @@ CHROME_PATH=<a Chromium> npx lighthouse@13.6.0 http://localhost:3100/ --only-cat
 
 The app pages need a session, so their layout shift and the create dialog were measured from Playwright on the same build (a `PerformanceObserver` for `layout-shift`, and the time from the click to an editable Title field).
 
-### No real-user Web Vitals
+### Field data (real-user Web Vitals)
 
-DevStash does not report Web Vitals from visitors' browsers (no `useReportWebVitals`, no Vercel Speed Insights). Reading performance data on a visitor's device may need consent under §25 TDDDG, and there is no consent banner. Decided 2026-11-14; revisit with a consent decision (feature 20, `context/features/plan/20.ux-a11y-and-consent.md`).
+Since feature 20, a visitor who allows it in the consent banner reports LCP, INP and CLS from their browser ([ADR 0034](adr/0034-consent-and-field-measurement.md)): `useReportWebVitals` in `components/common/consent/WebVitalsReporter.tsx`, mounted only after Allow, sends each metric once with the group of its page (`/items/[type]`, never the URL) to `POST /api/vitals`, which writes one log line per metric. Read them in the Vercel runtime logs: search for `Web Vital`, the value is under `numbers.value` (milliseconds for LCP and INP, unitless for CLS). No Vercel Speed Insights.
+
+A portfolio has few visitors, so the field numbers prove the pipeline; the before/after numbers of a change stay the lab numbers above.
 
 ## Feature 13 (2026-11-14)
 

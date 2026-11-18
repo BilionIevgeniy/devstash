@@ -98,7 +98,7 @@ export function DashboardShell({
           upgradeButton={upgradeButton}
           newItemButton={newItemButton}
         />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 scroll-pb-(--consent-inset) overflow-y-auto p-6 pb-[calc(--spacing(6)+var(--consent-inset,0px))]">
           {children}
           <AppFooter />
         </main>

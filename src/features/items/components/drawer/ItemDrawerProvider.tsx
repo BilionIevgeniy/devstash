@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
 
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/form/DiscardChangesDialog";
@@ -14,6 +13,12 @@ import { useItemFavorites } from "@/features/items/_internal/components/hooks/us
 import { useItemPins } from "@/features/items/_internal/components/hooks/use-item-pins";
 import { useItemRemoval } from "@/features/items/_internal/components/hooks/use-item-removal";
 import { useItemSheet } from "@/features/items/_internal/components/hooks/use-item-sheet";
+import {
+  captureFocusTargets,
+  NO_FOCUS_TARGETS,
+  restoreFocus,
+  type FocusTargets,
+} from "@/features/items/_internal/components/drawer/focus-targets";
 import { ItemDrawerContext } from "@/features/items/components/hooks/use-item-drawer";
 import { requiresPro } from "@/features/items/domain/item-fields";
 import type { DashboardItem } from "@/features/items/types";
@@ -23,8 +28,8 @@ const NO_SCROLL = { preventScroll: true };
 
 interface ItemDrawerProviderProps {
   /**
-   * When set, opening an item navigates to `${basePath}/${id}` and the route
-   * draws the drawer; this provider then renders no sheet of its own.
+   * When set, every card is a link to `${basePath}/${id}` and the route draws
+   * the drawer; this provider then renders no sheet of its own.
    */
   basePath?: string;
   /**
@@ -46,23 +51,15 @@ export function ItemDrawerProvider({
   lockProItems = false,
   children,
 }: ItemDrawerProviderProps) {
-  const router = useRouter();
   const focusSentinelRef = useRef<HTMLDivElement>(null);
+  const routeTargetsRef = useRef<FocusTargets>(NO_FOCUS_TARGETS);
   const sheet = useItemSheet(focusSentinelRef);
   const guard = useDirtyCloseGuard(sheet.onOpenChange);
   const favorites = useItemFavorites(sheet.handleFavoriteSaved);
   const pins = useItemPins(sheet.handlePinSaved);
   const { hiddenIds, remove } = useItemRemoval();
 
-  function open(next: DashboardItem) {
-    if (basePath === undefined) {
-      void sheet.openSheet(next);
-      return;
-    }
-    router.push(`${basePath}/${encodeURIComponent(next.id)}`, {
-      scroll: false,
-    });
-  }
+  const focusListTop = () => focusSentinelRef.current?.focus(NO_SCROLL);
 
   function handleDelete(id: string) {
     sheet.onOpenChange(false);
@@ -72,8 +69,16 @@ export function ItemDrawerProvider({
   const value = {
     isLocked: (item: Pick<DashboardItem, "type">) =>
       lockProItems && requiresPro(item.type.name),
-    focusListTop: () => focusSentinelRef.current?.focus(NO_SCROLL),
-    open,
+    focusListTop,
+    hrefFor: ({ id }: Pick<DashboardItem, "id">) =>
+      basePath === undefined ? null : `${basePath}/${encodeURIComponent(id)}`,
+    open: (next: DashboardItem, opener?: HTMLElement | null) =>
+      sheet.openSheet(next, opener),
+    rememberOpener: (opener: HTMLElement) => {
+      routeTargetsRef.current = captureFocusTargets(opener);
+    },
+    restoreFocus: (options?: { skipOpener?: boolean }) =>
+      restoreFocus(routeTargetsRef.current, focusListTop, options),
     remove,
     hiddenIds,
     ...favorites,
@@ -83,6 +88,7 @@ export function ItemDrawerProvider({
   if (basePath !== undefined) {
     return (
       <ItemDrawerContext.Provider value={value}>
+        <div ref={focusSentinelRef} tabIndex={-1} className="sr-only" />
         {children}
       </ItemDrawerContext.Provider>
     );

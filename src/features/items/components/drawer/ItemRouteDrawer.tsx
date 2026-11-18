@@ -40,21 +40,29 @@ const RouteDrawerContext = createContext<RouteDrawerContextValue | null>(null);
 //
 // Radix also calls it when the route itself goes away (browser Back), with
 // the sheet still open: the history has already moved, so going back again
-// would leave the list. Unsaved edits are lost on that Back, since the route
+// would leave the list; only the focus goes back. Unsaved edits are lost on that Back, since the route
 // is already gone when the sheet hears of it.
 export function ItemRouteDrawer({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(true);
   const pendingDeleteRef = useRef<string | null>(null);
   const { guardOpenChange, setDirty, discardDialogProps } =
     useDirtyCloseGuard(setIsOpen);
-  const { remove } = useItemDrawer();
+  const { remove, restoreFocus } = useItemDrawer();
   const router = useRouter();
 
+  // The list stays mounted behind the route, so the card that opened the
+  // drawer is still there to take the focus back. A deleted card leaves only
+  // in the next commit, so it is passed over for the row next to it.
   function handleCloseAutoFocus(event: Event) {
     event.preventDefault();
-    if (isOpen) return;
+    if (isOpen) {
+      restoreFocus();
+      return;
+    }
     router.back();
-    if (pendingDeleteRef.current) remove(pendingDeleteRef.current);
+    const deletedId = pendingDeleteRef.current;
+    if (deletedId) remove(deletedId);
+    restoreFocus({ skipOpener: deletedId !== null });
   }
 
   function closeAndDelete(id: string) {

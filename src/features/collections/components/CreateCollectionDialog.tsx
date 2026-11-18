@@ -62,9 +62,13 @@ export function CreateCollectionDialog({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       {!controlled && (
         <DialogTrigger asChild>
-          <Button variant="outline">
+          <Button
+            variant="outline"
+            aria-label={t("create.title")}
+            className="max-xl:size-8 max-xl:px-0"
+          >
             <Plus />
-            {t("create.title")}
+            <span className="hidden xl:inline">{t("create.title")}</span>
           </Button>
         </DialogTrigger>
       )}

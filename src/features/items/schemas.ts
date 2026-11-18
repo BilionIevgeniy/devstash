@@ -13,6 +13,7 @@ import {
   CONTENT_MAX,
   DESCRIPTION_MAX,
   editableFields,
+  isHttpUrl,
   LANGUAGE_MAX,
   TAG_MAX,
   TAGS_MAX,
@@ -87,7 +88,7 @@ const optionalUrl = z
   .trim()
   .max(URL_MAX, "urlTooLong")
   .transform(emptyToNull)
-  .pipe(z.url({ protocol: /^https?$/, error: "invalidUrl" }).nullable())
+  .refine((url) => url === null || isHttpUrl(url), "invalidUrl")
   .nullable()
   .optional();
 

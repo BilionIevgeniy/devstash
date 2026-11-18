@@ -12,11 +12,12 @@ interface SectionSkeletonProps {
 }
 
 // The same heights as the real parts: a 28px header, a 20px group label and
-// 32px rows that touch.
+// 32px rows that touch; on a phone the header and the rows are 44px, the touch
+// target of the real links.
 function SectionSkeleton({ rows, hasLabel = false }: SectionSkeletonProps) {
   return (
     <div>
-      <div className="flex h-7 items-center px-2">
+      <div className="flex h-7 items-center px-2 max-md:h-11">
         <Skeleton className="h-4 w-24" />
       </div>
       <div className="mt-1">
@@ -26,8 +27,8 @@ function SectionSkeleton({ rows, hasLabel = false }: SectionSkeletonProps) {
           </div>
         )}
         {Array.from({ length: rows }, (_, index) => (
-          <div key={index} className="flex h-8 items-center">
-            <Skeleton className="h-6 w-full" />
+          <div key={index} className="flex h-8 items-center max-md:h-11">
+            <Skeleton className="h-6 w-full max-md:h-9" />
           </div>
         ))}
       </div>

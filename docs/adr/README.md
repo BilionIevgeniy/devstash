@@ -37,6 +37,7 @@ One short file per decision that shapes the structure of the code, in the [MADR]
 | [0031](0031-custom-item-types.md)                                  | Custom item types: a slug fixed at creation, a fixed palette, owner-scoped lookups           | accepted           |
 | [0032](0032-consumer-flow.md)                                      | The consumer flow: order step, consent, terms, confirmation, cancellation, downgrade         | accepted           |
 | [0033](0033-tax-prices-and-payment-policy.md)                      | Tax, prices in euros, the failed-payment policy and a daily reconciliation                   | accepted           |
+| [0034](0034-consent-and-field-measurement.md)                      | Consent in the browser, and real-user Web Vitals behind it                                   | accepted           |
 
 Records up to 0026 that name `context/todo.md` mean the deferred list that was split on 2026-11-14 into the specs of `context/features/plan/` and `context/todo-before-live.md`; the table "Where the former `context/todo.md` went" in `context/features/plan/README.md` says where each item is now.
 

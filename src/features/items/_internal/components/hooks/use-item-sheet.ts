@@ -1,6 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRef, useState, type RefObject } from "react";
 
+import {
+  captureFocusTargets,
+  NO_FOCUS_TARGETS,
+  restoreFocus,
+  type FocusTargets,
+} from "@/features/items/_internal/components/drawer/focus-targets";
 import { itemDetailQuery } from "@/features/items/_internal/components/fetch/fetch-item-detail";
 import { savedRowFields } from "@/features/items/domain/item-detail";
 import type {
@@ -51,14 +57,15 @@ function detailState({
 // its own id, so it can never show in the sheet of another item.
 //
 // The sheet has no SheetTrigger, so Radix has nothing to give the focus back
-// to: the hook remembers the opener. A delete or an unpin can take the opener
-// off the page, and then the focus goes to the sentinel the provider renders.
+// to: the hook remembers the opener and the rows around it. A delete or an
+// unpin can take the opener off the page, and then the focus goes to the row
+// next to it, or to the sentinel the provider renders when none is left.
 export function useItemSheet(focusSentinelRef: RefObject<HTMLElement | null>) {
   const [isOpen, setIsOpen] = useState(false);
   const [item, setItem] = useState<DashboardItem | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const openItemIdRef = useRef<string | null>(null);
-  const openerRef = useRef<HTMLElement | null>(null);
+  const focusTargetsRef = useRef<FocusTargets>(NO_FOCUS_TARGETS);
 
   const detail = useQuery({
     ...itemDetailQuery(item?.id ?? ""),
@@ -66,10 +73,16 @@ export function useItemSheet(focusSentinelRef: RefObject<HTMLElement | null>) {
   });
   const state = detailState(detail);
 
-  function openSheet(next: DashboardItem) {
+  // The trigger passes itself: Safari does not focus what is clicked, so the
+  // active element would be the body.
+  function openSheet(next: DashboardItem, opener?: HTMLElement | null) {
     const active = document.activeElement;
-    openerRef.current =
-      active instanceof HTMLElement && active !== document.body ? active : null;
+    focusTargetsRef.current = captureFocusTargets(
+      opener ??
+        (active instanceof HTMLElement && active !== document.body
+          ? active
+          : null),
+    );
 
     openItemIdRef.current = next.id;
     setItem(next);
@@ -85,9 +98,9 @@ export function useItemSheet(focusSentinelRef: RefObject<HTMLElement | null>) {
 
   function handleCloseAutoFocus(event: Event) {
     event.preventDefault();
-    const opener = openerRef.current;
-    if (opener?.isConnected) opener.focus();
-    else focusSentinelRef.current?.focus({ preventScroll: true });
+    restoreFocus(focusTargetsRef.current, () =>
+      focusSentinelRef.current?.focus({ preventScroll: true }),
+    );
   }
 
   // The header, description and tags come from the card's item, so it is

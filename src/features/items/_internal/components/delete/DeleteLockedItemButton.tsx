@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type MouseEvent } from "react";
+import { useRef, useState, type MouseEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -9,6 +9,12 @@ import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
 import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { DeleteItemConfirm } from "@/features/items/_internal/components/delete/DeleteItemConfirm";
+import {
+  captureFocusTargets,
+  NO_FOCUS_TARGETS,
+  restoreFocus,
+  type FocusTargets,
+} from "@/features/items/_internal/components/drawer/focus-targets";
 import { deleteItem } from "@/features/items/actions/item";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import { cn } from "@/lib/utils";
@@ -16,7 +22,10 @@ import { cn } from "@/lib/utils";
 interface DeleteLockedItemButtonProps {
   itemId: string;
   title: string;
-  /** Where the focus goes once the deleted row is gone. */
+  /**
+   * Where the focus goes once the deleted row is gone and no row is left
+   * beside it.
+   */
   returnFocus: () => void;
   className?: string;
 }
@@ -32,6 +41,7 @@ export function DeleteLockedItemButton({
 }: DeleteLockedItemButtonProps) {
   const t = useTranslations("items");
   const [isOpen, setIsOpen] = useState(false);
+  const focusTargetsRef = useRef<FocusTargets>(NO_FOCUS_TARGETS);
   const { isPending: isDeleting, run, takeDone } = useSubmitDialog();
   const syncItems = useSyncItemQueries();
 
@@ -46,11 +56,12 @@ export function DeleteLockedItemButton({
 
   // Radix calls this after a close and after an unmount. Cancel and Esc keep its
   // default, which returns the focus to the button. The toast waits for here,
-  // so it does not run ahead of the page without the item.
+  // so it does not run ahead of the page without the item. The rows around
+  // this one were read when the dialog opened, while the row was still there.
   function handleCloseAutoFocus(event: Event) {
     if (!takeDone()) return;
     event.preventDefault();
-    returnFocus();
+    restoreFocus(focusTargetsRef.current, returnFocus, { skipOpener: true });
     toast.success(t("toasts.deleted"));
   }
 
@@ -68,6 +79,9 @@ export function DeleteLockedItemButton({
           size="icon"
           className={cn("text-destructive hover:text-destructive", className)}
           aria-label={t("actions.deleteNamed", { title })}
+          onClick={(event) => {
+            focusTargetsRef.current = captureFocusTargets(event.currentTarget);
+          }}
         >
           <Trash2 />
         </Button>

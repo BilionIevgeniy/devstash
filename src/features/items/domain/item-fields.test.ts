@@ -11,8 +11,11 @@ import {
   editableFields,
   editableUpdate,
   hasTag,
+  isHttpUrl,
+  itemFormError,
   parseTagInput,
   requiresPro,
+  TAG_MAX,
   TAGS_MAX,
   typeListing,
 } from "@/features/items/domain/item-fields";
@@ -303,5 +306,92 @@ describe("canCreateOfType", () => {
     expect(canCreateOfType("Recipe", false)).toBe(false);
     expect(canCreateOfType("Recipe", true)).toBe(true);
     expect(canCreateOfType("image", true)).toBe(true);
+  });
+});
+
+describe("isHttpUrl", () => {
+  it("takes http and https addresses", () => {
+    expect(isHttpUrl("https://example.com/a?b=1")).toBe(true);
+    expect(isHttpUrl("http://localhost:3000")).toBe(true);
+  });
+
+  it("refuses other schemes and text that is no URL", () => {
+    expect(isHttpUrl("ftp://example.com")).toBe(false);
+    expect(isHttpUrl("javascript:alert(1)")).toBe(false);
+    expect(isHttpUrl("example.com")).toBe(false);
+  });
+});
+
+describe("itemFormError", () => {
+  const link = editableFields("link");
+  const snippet = editableFields("snippet");
+  const valid = { url: "", content: "", tags: "" };
+
+  it("passes a form the server would take", () => {
+    expect(
+      itemFormError(link, { ...valid, url: " https://example.com " }),
+    ).toBeNull();
+  });
+
+  it("leaves an empty URL to the input's required", () => {
+    expect(itemFormError(link, valid)).toBeNull();
+  });
+
+  it("refuses a URL that is not http(s), only for a type with one", () => {
+    const ftp = { ...valid, url: "ftp://x" };
+    expect(itemFormError(link, ftp)).toEqual({
+      field: "url",
+      error: "invalidUrl",
+    });
+    expect(itemFormError(snippet, ftp)).toBeNull();
+  });
+
+  it("refuses content over the limit", () => {
+    expect(
+      itemFormError(snippet, {
+        ...valid,
+        content: "x".repeat(CONTENT_MAX + 1),
+      }),
+    ).toEqual({
+      field: "content",
+      error: "contentTooLong",
+      params: { max: CONTENT_MAX },
+    });
+  });
+
+  it("counts the tags as the schema does: duplicates and blanks drop out", () => {
+    const tags = Array.from({ length: TAGS_MAX }, (_, i) => `t${i}`);
+    expect(
+      itemFormError(snippet, {
+        ...valid,
+        tags: [...tags, "t0", " "].join(","),
+      }),
+    ).toBeNull();
+    expect(
+      itemFormError(snippet, { ...valid, tags: [...tags, "extra"].join(",") }),
+    ).toEqual({
+      field: "tags",
+      error: "tooManyTags",
+      params: { max: TAGS_MAX },
+    });
+  });
+
+  it("refuses a tag over its length", () => {
+    expect(
+      itemFormError(snippet, {
+        ...valid,
+        tags: `ok, ${"x".repeat(TAG_MAX + 1)}`,
+      }),
+    ).toEqual({ field: "tags", error: "tagTooLong", params: { max: TAG_MAX } });
+  });
+
+  it("names the first refused field in the order of the form", () => {
+    expect(
+      itemFormError(link, {
+        url: "ftp://x",
+        content: "",
+        tags: "x".repeat(99),
+      }),
+    ).toMatchObject({ field: "url" });
   });
 });

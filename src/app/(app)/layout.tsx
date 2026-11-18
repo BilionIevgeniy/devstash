@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { ConsentRoot } from "@/components/common/consent/ConsentRoot";
+import { AppToaster } from "@/components/common/providers/AppToaster";
 import { I18nProvider } from "@/components/common/providers/I18nProvider";
 import { QueryProvider } from "@/components/common/providers/QueryProvider";
 import { DashboardShell } from "@/features/app-shell/components/DashboardShell";
@@ -77,6 +79,8 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           </DashboardShell>
         </EditorPreferencesProvider>
       </QueryProvider>
+      <AppToaster />
+      <ConsentRoot />
     </I18nProvider>
   );
 }

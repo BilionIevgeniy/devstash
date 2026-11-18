@@ -11,6 +11,7 @@ import {
 } from "react";
 import { flushSync } from "react-dom";
 
+import type { FieldErrorProps } from "@/components/common/Field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EditorHeader } from "@/features/editor/_internal/components/EditorHeader";
@@ -35,6 +36,8 @@ interface MarkdownEditorProps {
   onChange?: (value: string) => void;
   /** The id of the textarea, so the field label focuses it. */
   id?: string;
+  /** The error state of the field around it (Field). */
+  errorProps?: FieldErrorProps;
   ariaLabel?: string;
   /** Read view only: controls after the "markdown" label. */
   headerActions?: ReactNode;
@@ -52,6 +55,7 @@ export function MarkdownEditor({
   readOnly = false,
   onChange,
   id,
+  errorProps,
   ariaLabel,
   headerActions,
   view,
@@ -119,6 +123,7 @@ export function MarkdownEditor({
         <textarea
           ref={textareaRef}
           id={id}
+          {...errorProps}
           value={value}
           onChange={(event) => onChange?.(event.target.value)}
           aria-label={ariaLabel ?? t("content")}

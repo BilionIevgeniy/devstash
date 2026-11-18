@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { ConsentRoot } from "@/components/common/consent/ConsentRoot";
+import { PrivacySettingsButton } from "@/components/common/consent/PrivacySettingsButton";
+import { AppToaster } from "@/components/common/providers/AppToaster";
 import { I18nProvider } from "@/components/common/providers/I18nProvider";
 import { messagesFor } from "@/i18n/messages";
 
@@ -25,9 +28,15 @@ export default async function AuthLayout({ children }: LayoutProps<"/">) {
 
   return (
     <I18nProvider locale={locale} messages={messagesFor(locale)}>
-      <div lang={locale} className="flex flex-1 flex-col">
+      <div lang={locale} className="flex flex-1 flex-col pb-(--consent-inset)">
         {children}
+        {/* Withdrawing consent is as easy here as on every other page. */}
+        <footer className="flex justify-center pb-6 text-xs text-muted-foreground">
+          <PrivacySettingsButton className="inline-flex items-center underline-offset-4 hover:text-foreground hover:underline max-md:min-h-11" />
+        </footer>
       </div>
+      <AppToaster />
+      <ConsentRoot />
     </I18nProvider>
   );
 }

@@ -1,7 +1,5 @@
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
-import { Button } from "@/components/ui/button";
 import {
   FREE_COLLECTION_LIMIT,
   FREE_ITEM_LIMIT,
@@ -9,6 +7,7 @@ import {
 import type { Locale } from "@/i18n/config";
 
 import { ScrollFadeIn } from "./ScrollFadeIn";
+import { StartAction } from "./StartAction";
 
 export async function CTASection({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "marketing.cta" });
@@ -25,9 +24,7 @@ export async function CTASection({ locale }: { locale: Locale }) {
             collections: FREE_COLLECTION_LIMIT,
           })}
         </p>
-        <Button asChild size="lg" className="h-11 px-5 text-[15px]">
-          <Link href="/register">{t("button")}</Link>
-        </Button>
+        <StartAction label={t("button")} className="justify-center" />
       </ScrollFadeIn>
     </section>
   );

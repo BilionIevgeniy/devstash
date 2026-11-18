@@ -68,3 +68,7 @@ Before Stripe goes to live mode (also in `context/todo.md`, "Germany: tax and le
 - The pages are built at deploy time, and a preview build is not rebuilt when it is promoted to production, so a preview with placeholders must never be promoted. After the first production deploy, check the built homepage for the demo hint: it is decided from `STRIPE_SECRET_KEY` at build time and disappears silently if the key is missing from the build environment.
 - Sentry (feature 6) is in the record as planned and not in the published notice; enabling it, or any analytics, changes the cookie and consent position and needs a new record.
 - The static pages cost nothing at runtime. `Navbar` and `Footer` move to a `(marketing)/layout.tsx` so a signed-in visitor does not see the header flash between the homepage and the legal pages.
+
+## Addendum (2026-11-19)
+
+The consequence on Sentry and analytics is answered by [ADR 0016](0016-error-monitoring-with-sentry.md) for Sentry and [ADR 0034](0034-consent-and-field-measurement.md) for the first measurement: the real-user Web Vitals run only after consent in a banner, and the record and both languages of the notice name them.

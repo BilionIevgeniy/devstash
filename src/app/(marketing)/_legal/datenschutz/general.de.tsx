@@ -132,17 +132,45 @@ export const GENERAL_DE: LegalSection[] = [
     ),
   },
   {
+    id: "measurement",
+    heading: "Leistungsmessung (nur mit Ihrer Einwilligung)",
+    body: (
+      <>
+        <p>
+          Wenn Sie es im Banner erlauben, misst Ihr Browser, wie schnell unsere
+          Seiten laden und reagieren (die Web Vitals LCP, INP und CLS), und
+          sendet diese Werte an unseren Server, jeweils mit der Art der Seite,
+          auf der gemessen wurde (zum Beispiel „eine Eintragsseite“), nie mit
+          der Adresse der Seite oder mit etwas, das Sie gespeichert haben. Unser
+          Hosting-Anbieter Vercel (siehe „Empfänger“) erhält mit der Anfrage wie
+          bei jeder Anfrage Ihre IP-Adresse; wir nutzen sie nur, um die Zahl der
+          Anfragen zu begrenzen, und speichern sie nicht. Die Werte werden in
+          unser Server-Protokoll geschrieben und so lange aufbewahrt wie dieses.
+          Es wird kein Cookie gesetzt und nichts mit Ihrem Konto verknüpft.
+        </p>
+        <p>
+          Rechtsgrundlage: Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO, § 25
+          Abs. 1 TDDDG). Ohne sie wird nichts gemessen. Sie können sie jederzeit
+          so einfach widerrufen, wie Sie sie erteilt haben, unter
+          „Datenschutzeinstellungen“ unten auf jeder Seite; danach wird nichts
+          mehr gesendet.
+        </p>
+      </>
+    ),
+  },
+  {
     id: "cookies",
-    heading: "Cookies",
+    heading: "Cookies und Speicher in Ihrem Browser",
     body: (
       <>
         <p>
           Wir setzen nur Cookies, die für den Dienst technisch erforderlich sind
           oder die Sie selbst durch eine Einstellung auslösen (§ 25 Abs. 2 Nr. 2
-          TDDDG). Deshalb fragen wir nicht nach einer Einwilligung. Wir setzen
-          keine Analyse-, Werbe- oder Tracking-Cookies. Die Fehlerüberwachung
-          (siehe „Empfänger“) setzt keine Cookies und speichert nichts in Ihrem
-          Browser.
+          TDDDG). Deshalb fragen wir für sie nicht nach einer Einwilligung; die
+          einzige Einwilligung, um die wir bitten, ist die für die
+          Leistungsmessung oben. Wir setzen keine Analyse-, Werbe- oder
+          Tracking-Cookies. Die Fehlerüberwachung (siehe „Empfänger“) setzt
+          keine Cookies und speichert nichts in Ihrem Browser.
         </p>
         <ul>
           <li>
@@ -172,6 +200,12 @@ export const GENERAL_DE: LegalSection[] = [
             Ihres Browsers.
           </li>
         </ul>
+        <p>
+          Im lokalen Speicher Ihres Browsers (kein Cookie) halten wir{" "}
+          <code>devstash-consent</code>: Ihre Antwort auf das Banner, damit wir
+          nicht erneut fragen, bis Sie sie ändern oder den Speicher löschen. Sie
+          verlässt Ihren Browser nie.
+        </p>
         <p>
           Auf der Website tragen die Anmelde-Cookies zusätzlich das Präfix{" "}
           <code>__Secure-</code> oder <code>__Host-</code>.

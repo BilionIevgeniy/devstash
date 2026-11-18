@@ -1,11 +1,9 @@
 import { useTranslations } from "next-intl";
-import { useTransition, type RefObject } from "react";
+import { useTransition } from "react";
 import { toast } from "sonner";
 
 import { useErrorText } from "@/components/common/hooks/use-error-text";
-import type { EditorHandle } from "@/features/editor/types";
 import { callAction } from "@/features/items/_internal/components/form/call-action";
-import { rejectInvalidContent } from "@/features/items/_internal/components/form/reject-invalid-content";
 import { updateItem } from "@/features/items/actions/item";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import type { AiGeneratedClaims } from "@/features/items/domain/ai-marks";
@@ -35,13 +33,14 @@ function updatePayload(
   };
 }
 
-// The save of the edit form: content the server would refuse stops here, the
+// The save of the edit form: a field the server would refuse stops here, the
 // rest goes to the action, and the form closes in the commit that brings the
 // refreshed page.
 export function useItemSave(
   itemId: string,
   fields: EditableFields,
-  contentRef: RefObject<EditorHandle | null>,
+  /** Stops a form the server would refuse, at the field (useItemFormCheck). */
+  rejectInvalid: (values: ItemFormValues) => boolean,
   onSaved: (detail: ItemDetailJson) => void,
 ) {
   const t = useTranslations("items.toasts");
@@ -51,9 +50,7 @@ export function useItemSave(
 
   /** aiGenerated: what the form claims came from the AI unchanged (ADR 0027). */
   function save(values: ItemFormValues, aiGenerated: AiGeneratedClaims) {
-    if (rejectInvalidContent(fields, values.content, contentRef, errorText)) {
-      return;
-    }
+    if (rejectInvalid(values)) return;
     startSaving(async () => {
       const saved = await callAction(
         () => updateItem(itemId, updatePayload(fields, values, aiGenerated)),

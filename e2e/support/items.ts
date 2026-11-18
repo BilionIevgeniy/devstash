@@ -12,6 +12,11 @@ export function itemHeading(page: Page, title: string) {
   return page.getByRole("heading", { level: 2, name: title, exact: true });
 }
 
+// The card of an item on a type page, which is a link to the item.
+export function itemLink(page: Page, title: string) {
+  return page.getByRole("link").filter({ has: itemHeading(page, title) });
+}
+
 // Opens the create dialog from the "New <type>" button of a type page. A click
 // before React has hydrated the button does nothing, so it is repeated until
 // the dialog is open.

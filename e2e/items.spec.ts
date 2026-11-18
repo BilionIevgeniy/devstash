@@ -3,6 +3,7 @@ import { CONTENT_MAX } from "../src/features/items/domain/item-fields";
 import {
   createSnippet,
   itemHeading,
+  itemLink,
   openCreateDialog,
   uniqueTitle,
 } from "./support/items";
@@ -16,15 +17,18 @@ test("a created snippet shows in the snippets list", async ({ page }) => {
   await expect(itemHeading(page, title)).toBeVisible();
 });
 
-// Focus returning to the card after the route drawer closes is a known open
-// bug (fixed in feature 20, context/features/plan/20.ux-a11y-and-consent.md): it is not asserted here.
-test("an item opens in the drawer and Esc closes it", async ({ page }) => {
+// The card of a type page is a link to the item: the click goes through the
+// intercepting route (the list stays behind the drawer, the URL is the item's),
+// and the focus comes back to the card when the drawer closes.
+test("an item opens in the drawer and Esc gives the focus back to its card", async ({
+  page,
+}) => {
   const title = uniqueTitle("Drawer snippet");
   await createSnippet(page, title);
+  const card = itemLink(page, title);
+  await expect(card).toHaveAttribute("href", /^\/items\/snippets\/[^/]+$/);
 
-  // The click goes through the intercepting route: the list stays behind the
-  // drawer, and the URL is the one of the item.
-  await itemHeading(page, title).click();
+  await card.click();
   const drawer = page.getByRole("dialog", { name: title, exact: true });
   await expect(drawer).toBeVisible();
   await expect(page).toHaveURL(/\/items\/snippets\/[^/]+$/);
@@ -33,6 +37,52 @@ test("an item opens in the drawer and Esc closes it", async ({ page }) => {
 
   await expect(drawer).toBeHidden();
   await expect(page).toHaveURL(/\/items\/snippets$/);
+  await expect(card).toBeFocused();
+});
+
+test("Cmd/Ctrl+click on a card opens the item in a new tab", async ({
+  page,
+  context,
+}) => {
+  const title = uniqueTitle("New tab snippet");
+  await createSnippet(page, title);
+  const href = await itemLink(page, title).getAttribute("href");
+
+  const [tab] = await Promise.all([
+    context.waitForEvent("page"),
+    itemLink(page, title).click({ modifiers: ["ControlOrMeta"] }),
+  ]);
+
+  await tab.waitForLoadState();
+  expect(new URL(tab.url()).pathname).toBe(href);
+  await expect(tab.getByRole("heading", { name: title })).toBeVisible();
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await tab.close();
+});
+
+// The deleted card is gone, so the focus goes to the card that followed it
+// (the list is newest first: the older snippet).
+test("a delete from the drawer gives the focus to the next card", async ({
+  page,
+}) => {
+  const older = uniqueTitle("Older snippet");
+  const newer = uniqueTitle("Newer snippet");
+  await createSnippet(page, older);
+  await createSnippet(page, newer);
+
+  await itemLink(page, newer).click();
+  const drawer = page.getByRole("dialog", { name: newer, exact: true });
+  await drawer
+    .getByRole("button", { name: `Delete ${newer}`, exact: true })
+    .click();
+  await page
+    .getByRole("alertdialog")
+    .getByRole("button", { name: "Delete", exact: true })
+    .click();
+
+  await expect(drawer).toBeHidden();
+  await expect(itemHeading(page, newer)).toBeHidden();
+  await expect(itemLink(page, older)).toBeFocused();
 });
 
 // Monaco keeps its textarea to itself, so the label cannot point at it: the

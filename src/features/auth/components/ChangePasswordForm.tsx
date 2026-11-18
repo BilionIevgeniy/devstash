@@ -3,7 +3,6 @@
 import { unstable_rethrow } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useActionState } from "react";
-import { toast } from "sonner";
 
 import {
   changePassword,
@@ -53,10 +52,11 @@ const INITIAL_STATE: State = {
 };
 
 // Runs in the browser, since the answer decides what the page does next: a
-// toast and a sign-out that redirects. The values come back with the state, so
+// sign-out that redirects to the sign-in page, which says that the password
+// changed. The values come back with the state, so
 // the form keeps what the user typed, and are dropped once the password is
 // changed.
-async function submit(successText: string, formData: FormData): Promise<State> {
+async function submit(formData: FormData): Promise<State> {
   const values = formValues(formData, FIELD_NAMES);
   if (values.newPassword !== values.confirmPassword) {
     return { error: { error: "passwordsDoNotMatch" }, values };
@@ -73,8 +73,8 @@ async function submit(successText: string, formData: FormData): Promise<State> {
   }
 
   // The change revoked every session, this one included; signing out clears
-  // the cookie and redirects to /sign-in.
-  toast.success(successText);
+  // the cookie and redirects to /sign-in, which says that the password
+  // changed: a toast here would leave with this layout's toast region.
   try {
     await signOutAfterPasswordChange();
   } catch (error) {
@@ -91,8 +91,7 @@ async function submit(successText: string, formData: FormData): Promise<State> {
 export function ChangePasswordForm() {
   const t = useTranslations("auth");
   const [state, formAction, isPending] = useActionState(
-    (_previous: State, formData: FormData) =>
-      submit(t("changePassword.success"), formData),
+    (_previous: State, formData: FormData) => submit(formData),
     INITIAL_STATE,
   );
   // Gone while a new attempt runs, so a repeated error is announced again.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useRef, useState, type SubmitEvent, type ReactNode } from "react";
+import { useState, type SubmitEvent, type ReactNode } from "react";
 import { Check, X } from "lucide-react";
 
 import Link from "next/link";
@@ -9,11 +9,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FREE_ITEM_LIMIT } from "@/features/billing/domain/limits";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
-import type { EditorHandle } from "@/features/editor/types";
 import { CollectionSelect } from "@/features/items/_internal/components/fields/CollectionSelect";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/form/DiscardChangesDialog";
 import { ItemFields } from "@/features/items/_internal/components/fields/ItemFields";
 import { useAcceptedAi } from "@/features/items/_internal/components/hooks/use-accepted-ai";
+import { useItemFormCheck } from "@/features/items/_internal/components/hooks/use-item-form-check";
 import { useItemSave } from "@/features/items/_internal/components/hooks/use-item-save";
 import { useUnsavedChanges } from "@/features/items/_internal/components/hooks/use-unsaved-changes";
 import {
@@ -77,9 +77,16 @@ export function ItemEditForm({
   const initial = initialValues(item, detail);
   const [values, setValues] = useState(initial);
   const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
-  const contentRef = useRef<EditorHandle>(null);
   const acceptedAi = useAcceptedAi();
-  const { isSaving, save } = useItemSave(item.id, fields, contentRef, onSaved);
+  const check = useItemFormCheck(fields);
+  // Only the collections can change while the text is locked, so its fields,
+  // which are not shown, are not checked.
+  const { isSaving, save } = useItemSave(
+    item.id,
+    fields,
+    collectionsOnly ? () => false : check.reject,
+    onSaved,
+  );
   const isChanged = hasItemChanges(fields, initial, values);
   useUnsavedChanges(isChanged, onDirtyChange);
 
@@ -88,6 +95,7 @@ export function ItemEditForm({
     value: ItemFormValues[K],
   ) {
     setValues((current) => ({ ...current, [name]: value }));
+    check.clear(name);
   }
 
   function handleCancel() {
@@ -123,7 +131,7 @@ export function ItemEditForm({
             onChange={setField}
             canUseAi={canUseAi}
             fileName={detail.file?.name}
-            contentRef={contentRef}
+            check={check}
             acceptedAi={acceptedAi}
           />
         )}

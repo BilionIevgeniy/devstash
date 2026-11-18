@@ -51,5 +51,16 @@
   "removedFromFavorites": "Removed from favorites",
   "copied": "Copied to clipboard",
   "logoHome": "DevStash home",
-  "itemCount": "{count, plural, one {# item} other {# items}}"
+  "itemCount": "{count, plural, one {# item} other {# items}}",
+  "notifications": "Notifications",
+  "consent": {
+    "title": "Performance measurement",
+    "body": "With your consent, DevStash measures in your browser how fast its pages load and respond (LCP, INP and CLS) and sends these three numbers with the kind of page: never its address, nothing you stored, no cookie, no tracking across sites. You can change your answer at any time under Privacy settings.",
+    "currentGranted": "Currently allowed.",
+    "currentDenied": "Currently declined.",
+    "privacyNotice": "Privacy notice",
+    "accept": "Allow",
+    "decline": "Decline",
+    "settings": "Privacy settings"
+  }
 }

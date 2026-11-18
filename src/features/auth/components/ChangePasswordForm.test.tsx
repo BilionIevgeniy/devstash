@@ -10,19 +10,18 @@ import type { AuthActionState } from "@/features/auth/types";
 
 import { CatchBoundary } from "../../../../test/catch-boundary";
 
-const { changePassword, signOutAfterPasswordChange, toastSuccess, rethrow } =
-  vi.hoisted(() => ({
+const { changePassword, signOutAfterPasswordChange, rethrow } = vi.hoisted(
+  () => ({
     changePassword: vi.fn(),
     signOutAfterPasswordChange: vi.fn(),
-    toastSuccess: vi.fn(),
     rethrow: vi.fn(),
-  }));
+  }),
+);
 vi.mock("@/features/auth/_internal/actions/account", () => ({
   changePassword,
   signOutAfterPasswordChange,
 }));
 vi.mock("next/navigation", () => ({ unstable_rethrow: rethrow }));
-vi.mock("sonner", () => ({ toast: { success: toastSuccess } }));
 
 import { ChangePasswordForm } from "@/features/auth/components/ChangePasswordForm";
 
@@ -165,7 +164,7 @@ describe("ChangePasswordForm", () => {
     expect(await screen.findByRole("alert")).toBeInTheDocument();
   });
 
-  it("toasts and signs the user out once the password changed", async () => {
+  it("signs the user out once the password changed; the sign-in page confirms it", async () => {
     changePassword.mockResolvedValue(SUCCESS);
     signOutAfterPasswordChange.mockResolvedValue(undefined);
     const user = userEvent.setup();
@@ -174,9 +173,6 @@ describe("ChangePasswordForm", () => {
     await fillAndSubmit(user);
 
     await waitFor(() => expect(signOutAfterPasswordChange).toHaveBeenCalled());
-    expect(toastSuccess).toHaveBeenCalledExactlyOnceWith(
-      "Password updated. Please sign in again.",
-    );
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
@@ -208,7 +204,6 @@ describe("ChangePasswordForm", () => {
     );
     expect(screen.getByLabelText("New password")).toHaveValue("");
     expect(screen.getByLabelText("Current password")).toHaveValue("");
-    expect(toastSuccess).toHaveBeenCalledOnce();
   });
 
   it("lets the sign-out's redirect leave the form instead of showing an alert", async () => {
@@ -246,6 +241,5 @@ describe("ChangePasswordForm", () => {
       "Something went wrong. Please try again.",
     );
     expect(rethrow).toHaveBeenCalledWith(failure);
-    expect(toastSuccess).not.toHaveBeenCalled();
   });
 });
