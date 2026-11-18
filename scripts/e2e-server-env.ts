@@ -46,6 +46,7 @@ export function buildE2eServerEnv({
     EMAIL_FROM: "DevStash <noreply@devstash.test>",
     UPSTASH_REDIS_REST_URL: upstashUrl,
     UPSTASH_REDIS_REST_TOKEN: upstashToken,
+    RATE_LIMIT_HASH_KEY: "e2e-rate-limit-hash-key-not-used-anywhere",
     R2_ACCOUNT_ID: DUMMY,
     R2_ACCESS_KEY_ID: DUMMY,
     R2_SECRET_ACCESS_KEY: DUMMY,

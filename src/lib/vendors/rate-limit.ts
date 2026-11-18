@@ -2,7 +2,7 @@ import "server-only";
 
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import { sha256Hex } from "@/lib/hash";
+import { hmacSha256Hex } from "@/lib/hash";
 import { logger } from "@/lib/observability/logger";
 
 export interface RateLimitPolicy {
@@ -66,9 +66,20 @@ function getLimiter(policy: RateLimitPolicy): Ratelimit {
   return limiter;
 }
 
+// Shorter keys are refused: an HMAC is only as hard to reverse as its key.
+const MIN_HASH_KEY_LENGTH = 32;
+
+// Upstash never holds plain emails, IP addresses or user ids, and a leaked copy
+// of it cannot be reversed by trying them without the server's key. Throws
+// inside the callers' try, so a missing key fails closed like an outage.
 function toIdentifier(identifier: string): string {
-  // Hashed so Upstash never holds plain emails or IP addresses.
-  return sha256Hex(identifier);
+  const key = process.env.RATE_LIMIT_HASH_KEY;
+  if (!key || key.length < MIN_HASH_KEY_LENGTH) {
+    throw new Error(
+      `RATE_LIMIT_HASH_KEY must be set to at least ${MIN_HASH_KEY_LENGTH} characters`,
+    );
+  }
+  return hmacSha256Hex(key, identifier);
 }
 
 // Sliding-window counter on Upstash, so parallel requests and separate
