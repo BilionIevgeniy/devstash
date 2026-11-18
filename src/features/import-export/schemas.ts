@@ -37,7 +37,7 @@ export const importFileSchema = z.object(
     // Added to version 1 with custom types (ADR 0031): an older file has none.
     types: z
       .array(z.unknown(), NOT_AN_EXPORT)
-      .max(CUSTOM_TYPES_MAX, NOT_AN_EXPORT)
+      .max(CUSTOM_TYPES_MAX, "importTooManyTypes")
       .default([]),
     collections: z
       .array(z.unknown(), NOT_AN_EXPORT)

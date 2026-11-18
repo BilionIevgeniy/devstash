@@ -153,5 +153,6 @@
   "customTypesProOnly": "Eigene Typen sind eine Pro-Funktion",
   "customTypeLimitReached": "Du kannst bis zu {limit} eigene Typen haben",
   "customTypeSaveFailed": "Der Typ konnte nicht gespeichert werden. Versuch es noch einmal.",
-  "customTypeDeleteFailed": "Der Typ konnte nicht gelöscht werden. Versuch es noch einmal."
+  "customTypeDeleteFailed": "Der Typ konnte nicht gelöscht werden. Versuch es noch einmal.",
+  "importTooManyTypes": "Eine Datei kann höchstens {max} eigene Typen enthalten"
 }

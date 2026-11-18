@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { ProBadge } from "@/features/billing/components/ProBadge";
 import {
-  canCreateType,
+  canUseType,
   CREATABLE_TYPES,
 } from "@/features/items/domain/item-fields";
 
@@ -45,7 +45,7 @@ export function ItemTypeSelect({
           </SelectTrigger>
           <SelectContent>
             {CREATABLE_TYPES.map((type) => {
-              const isAllowed = canCreateType(type, isPro);
+              const isAllowed = canUseType(type, isPro);
               return (
                 <SelectItem key={type} value={type} disabled={!isAllowed}>
                   {typeName(`${type}.one`)}

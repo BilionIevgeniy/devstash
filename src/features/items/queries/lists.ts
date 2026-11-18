@@ -12,10 +12,7 @@ import {
   getPinnedRankedRows,
   type PinnedRankedRow,
 } from "@/features/items/_internal/queries/pinned-first-pages";
-import {
-  compareNames,
-  type FavoriteItemSort,
-} from "@/features/items/domain/list/favorite-sort";
+import type { FavoriteItemSort } from "@/features/items/domain/list/favorite-sort";
 import { encodeListCursor } from "@/features/items/domain/list/list-cursor";
 import {
   FAVORITES_PAGE_SIZE,
@@ -33,6 +30,7 @@ import type {
   PinnedGroupPage,
 } from "@/features/items/types";
 import { prisma } from "@/lib/postgres/prisma";
+import { compareNames } from "@/lib/utils";
 
 // The endless lists of /favorites and /pinned (ADR 0025): one page at a time,
 // read with one row more than the page holds to know whether more exist. The

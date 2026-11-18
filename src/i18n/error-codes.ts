@@ -30,6 +30,7 @@ export const ERROR_PARAM_NAMES = {
   aiInputTooLong: ["max"],
   importTooManyItems: ["max"],
   importTooManyCollections: ["max"],
+  importTooManyTypes: ["max"],
   importFileTooLarge: ["max"],
   typeNameTooLong: ["max"],
   customTypeLimitReached: ["limit"],

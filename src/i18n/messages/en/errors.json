@@ -153,5 +153,6 @@
   "customTypesProOnly": "Custom types are a Pro feature",
   "customTypeLimitReached": "You can have up to {limit} custom types",
   "customTypeSaveFailed": "Couldn't save the type. Try again.",
-  "customTypeDeleteFailed": "Couldn't delete the type. Try again."
+  "customTypeDeleteFailed": "Couldn't delete the type. Try again.",
+  "importTooManyTypes": "A file can hold up to {max} custom types"
 }

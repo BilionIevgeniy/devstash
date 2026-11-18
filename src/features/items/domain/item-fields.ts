@@ -34,7 +34,8 @@ export const TAGS_MAX = 20;
 export const TAG_MAX = 50;
 export const COLLECTIONS_MAX = 100;
 
-// The types the create dialog offers. File and image need Pro (requiresPro).
+// The system types the create dialog offers, in its order; the user's custom
+// types follow them. File and image need Pro (requiresPro).
 export const CREATABLE_TYPES = [
   "snippet",
   "prompt",
@@ -44,14 +45,6 @@ export const CREATABLE_TYPES = [
   "file",
   "image",
 ] as const;
-
-export type CreatableTypeName = (typeof CREATABLE_TYPES)[number];
-
-export function isCreatableType(
-  typeName: string,
-): typeName is CreatableTypeName {
-  return (CREATABLE_TYPES as readonly string[]).includes(typeName);
-}
 
 // Which type-specific fields the forms show. The upload of a file or image is
 // set when the item is created and is not edited afterwards. A custom type
@@ -161,12 +154,6 @@ export const LOCKED_FILES_PATH = "/settings/locked-files";
 // Whether the plan gives the user this type: a Pro type only on the Pro plan.
 export function canUseType(typeName: string, isPro: boolean): boolean {
   return isPro || !requiresPro(typeName);
-}
-
-// Whether the user may create an item of this type now: a type the dialog
-// offers, and one their plan gives them.
-export function canCreateType(typeName: string, isPro: boolean): boolean {
-  return canUseType(typeName, isPro);
 }
 
 // The contentType column of a new item: a link stores a URL, a file or image

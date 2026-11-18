@@ -20,7 +20,7 @@ import { ProBadge } from "@/features/billing/components/ProBadge";
 import type { CreateItemForm as CreateItemFormComponent } from "@/features/items/_internal/components/form/CreateItemForm";
 import { CreateItemFormSkeleton } from "@/features/items/_internal/components/form/CreateItemFormSkeleton";
 import { typeLabel } from "@/features/item-types/domain/item-type";
-import { canCreateType } from "@/features/items/domain/item-fields";
+import { canUseType } from "@/features/items/domain/item-fields";
 
 const DEFAULT_TYPE = "snippet";
 const NO_CUSTOM_TYPES: readonly string[] = [];
@@ -145,8 +145,7 @@ export function CreateItemDialog({
     ? t("create.newType", { type: typeLabel(typeName, defaultType, "one") })
     : t("create.newItem");
   // A type page of a Pro type keeps its button for a Free user, disabled.
-  const isLocked =
-    defaultType !== undefined && !canCreateType(defaultType, isPro);
+  const isLocked = defaultType !== undefined && !canUseType(defaultType, isPro);
 
   // Esc, the overlay and the X wait for the result: closing now would lose
   // the input on a failure and let the form be sent twice.

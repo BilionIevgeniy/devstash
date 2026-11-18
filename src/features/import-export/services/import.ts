@@ -4,7 +4,7 @@ import { getEntitlements } from "@/features/billing/queries";
 import { getCollectionIdsByName } from "@/features/collections/queries/import";
 import { createUserCollection } from "@/features/collections/services/collection";
 import { sameTypeName } from "@/features/item-types/domain/custom-type";
-import { getCustomTypes } from "@/features/item-types/queries";
+import { getCustomTypeNames } from "@/features/item-types/queries";
 import { createCustomType } from "@/features/item-types/services/custom-types";
 import {
   emptyImportSummary,
@@ -70,7 +70,7 @@ export async function importUserTypes(
   const refusal = await refuseImport(userId);
   if (refusal) return refusal;
 
-  const known = (await getCustomTypes(userId)).map((type) => type.name);
+  const known = await getCustomTypeNames(userId);
   const summary = emptyImportSummary();
   for (const [index, record] of records.map(parseImportedType).entries()) {
     const title = recordLabel(records[index]);
