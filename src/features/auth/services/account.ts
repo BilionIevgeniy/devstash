@@ -10,8 +10,7 @@ import {
   getPasswordHash,
   getPasswordHashByEmail,
 } from "@/features/auth/_internal/queries";
-import { getAccountDeletionIdentifier } from "@/features/auth/domain/account-deletion";
-import { getPasswordResetIdentifier } from "@/features/auth/domain/password-reset";
+import { addressTokenIdentifiers } from "@/features/auth/domain/token-identifiers";
 import {
   tooManyAttemptsParams,
   PASSWORD_CHECK_BY_USER,
@@ -141,13 +140,7 @@ export async function deleteVerifiedUserRows({
   await prisma.$transaction([
     prisma.verificationToken.deleteMany({
       where: {
-        identifier: {
-          in: [
-            email,
-            getPasswordResetIdentifier(email),
-            getAccountDeletionIdentifier(email),
-          ],
-        },
+        identifier: { in: addressTokenIdentifiers(email) },
       },
     }),
     prisma.user.delete({ where: { id: userId } }),

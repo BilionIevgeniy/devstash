@@ -2,7 +2,7 @@ import "server-only";
 
 import { buildAccountDeletionEmail } from "@/features/auth/_internal/emails/account-deletion-email";
 import { getDeletionCredentials } from "@/features/auth/_internal/queries";
-import { generateToken, hashToken } from "@/features/auth/_internal/token";
+import { replaceToken } from "@/features/auth/_internal/services/token-store";
 import {
   ACCOUNT_DELETION_TOKEN_TTL_HOURS,
   buildAccountDeletionUrl,
@@ -15,23 +15,8 @@ import {
 } from "@/features/auth/domain/rate-limits";
 import { fail, ok, type OperationResult } from "@/lib/errors/action-result";
 import type { Locale } from "@/i18n/config";
-import { prisma } from "@/lib/postgres/prisma";
 import { sendEmail } from "@/lib/vendors/email";
 import { consumeRateLimit } from "@/lib/vendors/rate-limit";
-
-async function createAccountDeletionToken(email: string): Promise<string> {
-  const identifier = getAccountDeletionIdentifier(email);
-  const token = generateToken();
-  const expires = getAccountDeletionExpiry(new Date());
-
-  await prisma.$transaction([
-    prisma.verificationToken.deleteMany({ where: { identifier } }),
-    prisma.verificationToken.create({
-      data: { identifier, token: hashToken(token), expires },
-    }),
-  ]);
-  return token;
-}
 
 // Emails the signed-in user the link that confirms deleting an account with no
 // password. The address is the account's own, read here by its id: the caller
@@ -54,7 +39,13 @@ export async function sendAccountDeletionLink(
     );
   }
 
-  const token = await createAccountDeletionToken(user.email);
+  const now = new Date();
+  const token = await replaceToken(
+    getAccountDeletionIdentifier(user.email),
+    user.email,
+    getAccountDeletionExpiry(now),
+    now,
+  );
   const result = await sendEmail({
     to: user.email,
     ...buildAccountDeletionEmail(
