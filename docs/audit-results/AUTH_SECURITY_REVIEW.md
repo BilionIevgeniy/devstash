@@ -363,7 +363,7 @@ if (existing) {
 
 #### 6. Account deletion requires no re-authentication
 
-(Update 2026-11-18: fixed. An account with a password confirms with it; one without (GitHub only) confirms with a link emailed to its own address and opened while signed in, since a GitHub sign-in can finish with no screen and so no longer proves the owner is present.)
+(Update 2026-11-18: fixed. An account with a password confirms with it; one without (GitHub only) confirms with a link emailed to its own address and opened while signed in, since a GitHub sign-in can finish with no screen and so no longer proves the owner is present. A new GitHub user gets only an address GitHub has verified, and is refused without one.)
 
 **Severity**: Medium
 **File**: `src/features/auth/_internal/actions/account.ts`, `src/features/auth/account.ts`

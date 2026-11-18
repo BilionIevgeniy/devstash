@@ -34,6 +34,7 @@
   "incorrectCurrentPassword": "Das aktuelle Passwort ist falsch",
   "incorrectPassword": "Das Passwort ist falsch",
   "invalidDeletionLink": "Dieser Bestätigungslink ist ungültig oder abgelaufen. Fordere in den Einstellungen einen neuen an",
+  "githubEmailUnverified": "Dein GitHub-Konto hat keine bestätigte primäre E-Mail-Adresse. Bestätige sie bei GitHub und melde dich dann erneut an",
 
   "uploadsProOnly": "Datei-Uploads sind eine Pro-Funktion",
   "chooseFileKind": "Wähle eine Dateiart",

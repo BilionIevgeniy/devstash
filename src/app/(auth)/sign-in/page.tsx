@@ -13,6 +13,7 @@ import type { ErrorCode } from "@/i18n/error-codes";
 const AUTH_ERROR_CODES = new Map<string, ErrorCode>([
   ["CredentialsSignin", "invalidCredentials"],
   ["OAuthAccountNotLinked", "oauthAccountNotLinked"],
+  ["GitHubEmailUnverified", "githubEmailUnverified"],
 ]);
 
 function getErrorCode(
