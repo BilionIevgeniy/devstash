@@ -20,5 +20,32 @@
     "intro": "Wir haben eine Anfrage erhalten, dein DevStash-Konto zu löschen. Öffne den Link unten, während du bei DevStash angemeldet bist, und bestätige dort. Das Löschen entfernt deine Einträge, Sammlungen und Dateien endgültig",
     "button": "Löschen bestätigen",
     "ignore": "Wenn du das nicht angefordert hast, ignoriere diese E-Mail: Ohne Bestätigung wird nichts gelöscht."
+  },
+  "checkout": {
+    "submitNote": "Mit Klick auf „Zahlen“ bestellst du zahlungspflichtig. Pro beginnt sofort; du hast zugestimmt, dass dein Widerrufsrecht damit erlischt."
+  },
+  "contract": {
+    "subject": "Dein Vertrag über DevStash Pro",
+    "heading": "Dein Vertrag über DevStash Pro",
+    "intro": "Danke für deine Bestellung. Diese E-Mail bestätigt deinen Vertrag und enthält die AGB und die Widerrufsbelehrung vollständig; bitte bewahre sie auf.",
+    "provider": "Anbieter: {name}, {address}, {email}",
+    "plan": "Plan: DevStash Pro, {period, select, yearly {jährliche Abrechnung} other {monatliche Abrechnung}}",
+    "price": "Preis: {price} {period, select, yearly {pro Jahr} other {pro Monat}}, inklusive Umsatzsteuer",
+    "start": "Beginn: {date}",
+    "renewal": "Der Vertrag verlängert sich jeden {period, select, yearly {Jahr} other {Monat}}, bis du kündigst. Du kannst jederzeit zum Ende der laufenden Laufzeit kündigen: über „Verträge hier kündigen“ unten auf jeder Seite von DevStash oder über „Abrechnung verwalten“ in den Einstellungen.",
+    "consent": "Am {date} hast du ausdrücklich zugestimmt, dass wir vor Ablauf der Widerrufsfrist mit der Leistung beginnen, und bestätigt, dass du weißt, dass dein Widerrufsrecht damit erlischt (§ 356 Abs. 5 BGB). Version der AGB: {version}.",
+    "texts": "Die AGB und die Widerrufsbelehrung, die du akzeptiert hast:"
+  },
+  "cancellation": {
+    "subject": "Deine Kündigung von DevStash Pro",
+    "heading": "Wir haben deine Kündigung erhalten",
+    "received": "Wir haben deine Kündigungserklärung am {date} erhalten.",
+    "contract": "Vertrag: DevStash Pro",
+    "kind": "Art: {kind, select, extraordinary {außerordentliche Kündigung} other {ordentliche Kündigung}}",
+    "name": "Name: {name}",
+    "reason": "Grund: {reason}",
+    "endsOn": "Dein Abonnement endet am {date}. Bis dahin behältst du Pro, danach wird nichts mehr abgerechnet.",
+    "endsAtTerm": "Dein Abonnement endet zum Ende der laufenden Laufzeit, danach wird nichts mehr abgerechnet.",
+    "resume": "Wenn du das nicht warst, öffne „Abrechnung verwalten“ in den Einstellungen von DevStash und setze dein Abonnement fort, bevor es endet."
   }
 }

@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 
-import type { LegalContent, LegalLang } from "../../_legal/types";
+import type { LegalLang } from "@/lib/legal/types";
+
+import type { LegalContent } from "../../_legal/types";
 
 // Only the document itself is a landmark (a region named by its title). The
 // sections inside carry no name: about twenty more regions would only clutter
@@ -35,7 +37,11 @@ export function LegalDocument({
         {title}
       </h1>
       {sections.map((section) => (
-        <section key={section.id} className="mt-10">
+        <section
+          key={section.id}
+          id={`${id}-${section.id}`}
+          className="mt-10 scroll-mt-24"
+        >
           <h2 className="text-xl font-semibold">{section.heading}</h2>
           <div className={BODY_CLASS}>{section.body}</div>
         </section>

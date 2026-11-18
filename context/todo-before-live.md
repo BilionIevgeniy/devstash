@@ -19,10 +19,12 @@ Researched only briefly on 2026-11-06, from secondary sources ([ADR 0014](../doc
 
 Feature 19 writes these texts and flows in test mode; before live a lawyer signs them off.
 
-- The terms (AGB), the withdrawal wording and the § 356 (5) BGB consent for the digital service, the order button (§ 312j BGB)
-- The cancellation flow (§ 312k BGB), in particular that a signed-out cancellation takes effect on submission with the confirmation sent to the address on file
+- The terms (AGB, `lib/legal/terms.*.ts`), the withdrawal wording and the § 356 (5) BGB consent for the digital service, the order button (§ 312j BGB): ours says "Zahlungspflichtig bestellen" and opens Stripe, whose own button is labelled "Pay"/"Zahlen" (`submit_type: "pay"`) with a note beside it; is Stripe's label enough, or must the order be placed on our button (Payment Element, [ADR 0032](../docs/adr/0032-consumer-flow.md))
+- The cancellation flow (§ 312k BGB), in particular that a signed-out cancellation takes effect on submission with the confirmation sent to the address on file, that it ends the subscription at the period end, that the German label is linked on every page, that the declaration is kept only in the emails, at Stripe and on the consumer's screen, and the abuse case of a stranger cancelling someone's subscription ([ADR 0032](../docs/adr/0032-consumer-flow.md))
 - The contract confirmation on a durable medium (§ 312f BGB): what it must carry
-- The failed-payment policy: whether two weeks of arrears supports ending the contract, and whether the terms must say so (`docs/stripe-integration-plan.md`, "`past_due` keeps Pro")
+- The signed-out cancellation's confirmation: it goes out only when a running contract was ended, at most once a day per account, and carries none of the visitor's free text; whether a declaration against an account with no running contract still needs one
+- The failed-payment policy: whether two weeks of arrears supports ending the contract; the AGB now say so (section 6, [ADR 0033](../docs/adr/0033-tax-prices-and-payment-policy.md))
+- The downgrade terms: text read-only over the Free limit, custom types kept read-only (AGB section 7)
 - The AI Act decision of feature 15
 
 ## Vendors and privacy
@@ -36,6 +38,8 @@ Feature 19 writes these texts and flows in test mode; before live a lawyer signs
 - **Live payment methods.** Test mode sells with cards only (feature 19). SEPA Direct Debit and PayPal are common in Germany, but SEPA settles late and can be reversed: turn them on only with the processing state decided (Pro while the payment is pending or not, what a late failure revokes) and tested in the sandbox first.
 
 ## Real numbers
+
+- **Signed-out cancellations a day.** Anyone who knows an address can end that account's subscription at the period end (ADR 0032). Once there is traffic to compare with, add an alert on the daily count of signed-out cancellations, so a run against many accounts is seen.
 
 - **The homepage has no social proof.** No testimonials, user counts or logos. Only real numbers: a strip under the hero once there are some; until then "Free forever · 50 items · no card" is honest.
 

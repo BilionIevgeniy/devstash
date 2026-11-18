@@ -13,7 +13,7 @@ const TEXTS: Record<VendorId, string> = {
   stripe:
     "Abwicklung des Pro-Abonnements über die gehostete Bezahlseite von Stripe. Wir geben E-Mail-Adresse und Nutzer-ID weiter; Zahlungsdaten geben Sie bei Stripe ein, wir sehen sie nicht. Stripe verarbeitet Daten teils in unserem Auftrag und teils in eigener Verantwortung, zum Beispiel zur Betrugsprävention. Derzeit Testmodus. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.",
   resend:
-    "Versand der E-Mails zur Bestätigung Ihrer Adresse und zum Zurücksetzen des Passworts. Resend erhält die Empfängeradresse und den Inhalt der E-Mail. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.",
+    "Versand der E-Mails zur Bestätigung Ihrer Adresse, zum Zurücksetzen des Passworts und der Bestätigungen von Vertrag und Kündigung. Resend erhält die Empfängeradresse und den Inhalt der E-Mail. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.",
   upstash:
     "Redis-Datenbank für die Begrenzung von Anfragen. Upstash erhält nur SHA-256-Hashes von E-Mail-Adressen, IP-Adressen und Nutzer-IDs sowie Zähler. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.",
   sentry:

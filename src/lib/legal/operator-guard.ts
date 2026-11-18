@@ -21,6 +21,6 @@ export function assertOperatorComplete(
   const missing = findPlaceholders(facts);
   if (missing.length === 0) return;
   throw new Error(
-    `The legal pages still hold placeholders for: ${missing.join(", ")}. Fill them in src/app/(marketing)/_legal/operator.ts.`,
+    `The legal pages still hold placeholders for: ${missing.join(", ")}. Fill them in src/lib/legal/operator.ts.`,
   );
 }

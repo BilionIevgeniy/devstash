@@ -7,10 +7,20 @@ import {
 import { signItemFile } from "@/features/items/_internal/services/file-urls";
 import { getEntitlements } from "@/features/billing/queries";
 import { canUseType } from "@/features/items/domain/item-fields";
-import type { ItemDetail, ItemDetailRecord } from "@/features/items/types";
+import { getItemEditMode } from "@/features/items/services/text-access";
+import type {
+  ItemDetail,
+  ItemDetailRecord,
+  ItemEditMode,
+} from "@/features/items/types";
 
 export type OpenItemResult =
-  | { status: "ok"; item: ItemDetail; canUseAi: boolean }
+  | {
+      status: "ok";
+      item: ItemDetail;
+      canUseAi: boolean;
+      editMode: ItemEditMode;
+    }
   | { status: "locked" }
   | { status: "missing" };
 
@@ -50,7 +60,12 @@ export async function openUserItem(
 
   const { isPro } = await getEntitlements(userId);
   if (!canUseType(record.type.name, isPro)) return { status: "locked" };
-  return { status: "ok", item: await toItemDetail(record), canUseAi: isPro };
+  return {
+    status: "ok",
+    item: await toItemDetail(record),
+    canUseAi: isPro,
+    editMode: await getItemEditMode(userId),
+  };
 }
 
 // The full item page carries the type in the URL: an item of another type is

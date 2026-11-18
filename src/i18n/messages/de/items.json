@@ -64,5 +64,8 @@
     "manage": "Herunterladen oder löschen",
     "label": "Verlängere dein Abo, um ihn zu öffnen",
     "named": "{title}: Verlängere dein Abo, um ihn zu öffnen"
+  },
+  "edit": {
+    "textLocked": "Du hast mehr als {limit} Einträge, deshalb ist ihr Text im Free-Plan schreibgeschützt. Die Sammlungen kannst du hier weiter ändern, oder du <link>upgradest auf Pro</link>, um zu bearbeiten."
   }
 }

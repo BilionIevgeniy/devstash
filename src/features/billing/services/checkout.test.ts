@@ -8,6 +8,9 @@ const mocks = vi.hoisted(() => ({
   getEntitlements: vi.fn(),
   getStripeCustomerId: vi.fn(),
   retrieveCheckout: vi.fn(),
+  listCheckout: vi.fn(),
+  expireCheckout: vi.fn(),
+  listSubscriptions: vi.fn(),
   syncSubscription: vi.fn(),
 }));
 
@@ -22,15 +25,25 @@ vi.mock("@/lib/vendors/stripe", () => ({
       sessions: {
         create: mocks.createCheckout,
         retrieve: mocks.retrieveCheckout,
+        list: mocks.listCheckout,
+        expire: mocks.expireCheckout,
       },
     },
     billingPortal: { sessions: { create: mocks.createPortal } },
+    subscriptions: { list: mocks.listSubscriptions },
   }),
   isStripeCustomerMissing: (error: unknown) => error === DEAD_CUSTOMER,
   isStripeNotFound: (error: unknown) => error === MISSING_SESSION,
 }));
 vi.mock("@/lib/postgres/prisma", () => ({
-  prisma: { subscription: { upsert: mocks.upsert } },
+  prisma: {
+    subscription: { upsert: mocks.upsert },
+    $transaction: (run: (tx: object) => unknown) => run({}),
+  },
+}));
+vi.mock("@/lib/postgres/advisory-lock", () => ({
+  LOCKED_TRANSACTION: {},
+  lockForTransaction: vi.fn(),
 }));
 vi.mock("@/features/billing/queries", () => ({
   getEntitlements: mocks.getEntitlements,
@@ -46,6 +59,7 @@ vi.mock("@/features/billing/_internal/services/subscription-sync", () => ({
 vi.stubEnv("STRIPE_PRICE_ID_MONTHLY", "price_monthly");
 vi.stubEnv("STRIPE_PRICE_ID_YEARLY", "price_yearly");
 
+import { TERMS_VERSION } from "@/lib/legal/terms";
 import {
   confirmCheckoutSession,
   createCheckoutSession,
@@ -62,13 +76,18 @@ beforeEach(() => {
   mocks.getStripeCustomerId.mockResolvedValue("cus_stored");
   mocks.createCustomer.mockResolvedValue({ id: "cus_new" });
   mocks.createCheckout.mockResolvedValue({ url: CHECKOUT_URL });
+  mocks.listCheckout.mockResolvedValue({ data: [] });
+  mocks.listSubscriptions.mockResolvedValue({ data: [] });
 });
+
+const MONTHLY = { plan: "monthly", locale: "de" } as const;
+const YEARLY = { plan: "yearly", locale: "en" } as const;
 
 describe("createCheckoutSession", () => {
   it("refuses a Pro user without calling Stripe", async () => {
     mocks.getEntitlements.mockResolvedValue({ isPro: true });
 
-    const result = await createCheckoutSession(USER, "monthly", ORIGIN);
+    const result = await createCheckoutSession(USER, MONTHLY, ORIGIN);
 
     expect(result.success).toBe(false);
     expect(mocks.createCustomer).not.toHaveBeenCalled();
@@ -76,7 +95,7 @@ describe("createCheckoutSession", () => {
   });
 
   it("reuses a stored customer", async () => {
-    const result = await createCheckoutSession(USER, "yearly", ORIGIN);
+    const result = await createCheckoutSession(USER, YEARLY, ORIGIN);
 
     expect(result.data?.url).toBe(CHECKOUT_URL);
     expect(mocks.createCustomer).not.toHaveBeenCalled();
@@ -90,7 +109,7 @@ describe("createCheckoutSession", () => {
   it("creates a first customer with an idempotency key", async () => {
     mocks.getStripeCustomerId.mockResolvedValue(null);
 
-    await createCheckoutSession(USER, "monthly", ORIGIN);
+    await createCheckoutSession(USER, MONTHLY, ORIGIN);
 
     expect(mocks.createCustomer.mock.calls[0][1]).toEqual({
       idempotencyKey: "customer-user-1",
@@ -101,7 +120,7 @@ describe("createCheckoutSession", () => {
   it("writes only the customer on an existing row", async () => {
     mocks.getStripeCustomerId.mockResolvedValue(null);
 
-    await createCheckoutSession(USER, "monthly", ORIGIN);
+    await createCheckoutSession(USER, MONTHLY, ORIGIN);
 
     expect(mocks.upsert.mock.calls[0][0].update).toEqual({
       stripeCustomerId: "cus_new",
@@ -111,7 +130,7 @@ describe("createCheckoutSession", () => {
   it("replaces a dead customer without an idempotency key", async () => {
     mocks.createCheckout.mockRejectedValueOnce(DEAD_CUSTOMER);
 
-    const result = await createCheckoutSession(USER, "monthly", ORIGIN);
+    const result = await createCheckoutSession(USER, MONTHLY, ORIGIN);
 
     expect(result.data?.url).toBe(CHECKOUT_URL);
     expect(mocks.createCustomer).toHaveBeenCalledTimes(1);
@@ -124,9 +143,9 @@ describe("createCheckoutSession", () => {
   it("throws when the session fails a second time", async () => {
     mocks.createCheckout.mockRejectedValue(DEAD_CUSTOMER);
 
-    await expect(
-      createCheckoutSession(USER, "monthly", ORIGIN),
-    ).rejects.toThrow(DEAD_CUSTOMER);
+    await expect(createCheckoutSession(USER, MONTHLY, ORIGIN)).rejects.toThrow(
+      DEAD_CUSTOMER,
+    );
     expect(mocks.createCheckout).toHaveBeenCalledTimes(2);
   });
 
@@ -134,9 +153,9 @@ describe("createCheckoutSession", () => {
     const badPrice = new Error("No such price");
     mocks.createCheckout.mockRejectedValue(badPrice);
 
-    await expect(
-      createCheckoutSession(USER, "monthly", ORIGIN),
-    ).rejects.toThrow(badPrice);
+    await expect(createCheckoutSession(USER, MONTHLY, ORIGIN)).rejects.toThrow(
+      badPrice,
+    );
     expect(mocks.createCustomer).not.toHaveBeenCalled();
     expect(mocks.upsert).not.toHaveBeenCalled();
   });
@@ -145,12 +164,79 @@ describe("createCheckoutSession", () => {
     mocks.getStripeCustomerId.mockResolvedValue(null);
     vi.stubEnv("STRIPE_PRICE_ID_MONTHLY", "");
 
-    await expect(
-      createCheckoutSession(USER, "monthly", ORIGIN),
-    ).rejects.toThrow("not set");
+    await expect(createCheckoutSession(USER, MONTHLY, ORIGIN)).rejects.toThrow(
+      "not set",
+    );
     expect(mocks.createCustomer).not.toHaveBeenCalled();
 
     vi.stubEnv("STRIPE_PRICE_ID_MONTHLY", "price_monthly");
+  });
+});
+
+describe("createCheckoutSession with open sessions", () => {
+  it("refuses when the customer already pays in Stripe, before the row knows", async () => {
+    mocks.listSubscriptions.mockResolvedValue({
+      data: [{ id: "sub_1", status: "active" }],
+    });
+
+    const result = await createCheckoutSession(USER, MONTHLY, ORIGIN);
+
+    expect(result.error).toBe("alreadyPro");
+    expect(mocks.createCheckout).not.toHaveBeenCalled();
+  });
+
+  const open = (id: string, plan: string) => ({
+    id,
+    url: `https://checkout.stripe.test/${id}`,
+    metadata: { plan, termsVersion: TERMS_VERSION },
+  });
+
+  it("hands out the open session of the same plan again", async () => {
+    mocks.listCheckout.mockResolvedValue({ data: [open("cs_1", "monthly")] });
+
+    const result = await createCheckoutSession(USER, MONTHLY, ORIGIN);
+
+    expect(result.data?.url).toBe("https://checkout.stripe.test/cs_1");
+    expect(mocks.createCheckout).not.toHaveBeenCalled();
+    expect(mocks.listCheckout.mock.calls[0][0]).toMatchObject({
+      customer: "cus_stored",
+      status: "open",
+    });
+  });
+
+  it("expires the open session of another plan before a new one", async () => {
+    mocks.listCheckout.mockResolvedValue({ data: [open("cs_1", "yearly")] });
+
+    const result = await createCheckoutSession(USER, MONTHLY, ORIGIN);
+
+    expect(mocks.expireCheckout).toHaveBeenCalledWith("cs_1");
+    expect(result.data?.url).toBe(CHECKOUT_URL);
+  });
+
+  it("still makes the new session when an expiry fails", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    mocks.listCheckout.mockResolvedValue({ data: [open("cs_1", "yearly")] });
+    mocks.expireCheckout.mockRejectedValue(new Error("not expirable"));
+
+    const result = await createCheckoutSession(USER, MONTHLY, ORIGIN);
+
+    expect(result.data?.url).toBe(CHECKOUT_URL);
+  });
+
+  it("stamps the consent and the note in the order's language", async () => {
+    await createCheckoutSession(USER, MONTHLY, ORIGIN);
+
+    const params = mocks.createCheckout.mock.calls[0][0];
+    expect(params.subscription_data.metadata).toMatchObject({
+      userId: USER.id,
+      plan: "monthly",
+      locale: "de",
+      termsVersion: TERMS_VERSION,
+    });
+    expect(params.subscription_data.metadata.withdrawalWaiverAt).toMatch(
+      /^\d{4}-\d{2}-\d{2}T/,
+    );
+    expect(params.custom_text.submit.message).toContain("zahlungspflichtig");
   });
 });
 

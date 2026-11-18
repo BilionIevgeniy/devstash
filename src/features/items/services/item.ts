@@ -13,11 +13,14 @@ import {
 } from "@/features/items/domain/item-fields";
 import { toSearchTags } from "@/features/items/domain/search-text";
 import { getItemFileKey } from "@/features/items/_internal/queries";
+import { userCanEditText } from "@/features/items/services/text-access";
+import { FREE_ITEM_LIMIT } from "@/features/billing/domain/limits";
+import { changesOnlyCollections } from "@/features/items/domain/text-lock";
 import { getItemEditState } from "@/features/items/queries";
 import type { UpdateItemInput } from "@/features/items/schemas";
 import { getUserItemDetail } from "@/features/items/services/item-detail";
 import { userCanUseType } from "@/features/items/services/type-access";
-import type { ItemDetail } from "@/features/items/types";
+import type { ItemDetail, ItemEditState } from "@/features/items/types";
 import { fail, ok, type OperationResult } from "@/lib/errors/action-result";
 import { logger } from "@/lib/observability/logger";
 import { prisma } from "@/lib/postgres/prisma";
@@ -39,6 +42,43 @@ async function deleteOrphanTags(userId: string): Promise<void> {
   }
 }
 
+type TextFields = Omit<UpdateItemInput, "collectionIds" | "aiGenerated">;
+
+// What a save writes besides the fields: the AI marks and the tags. Over the
+// Free limit only the collections may change (ADR 0032), and the marks and
+// tags then stay as stored, whatever the save claims, so not even a tag's
+// case changes. The marks come from the filtered fields, so a claim on a
+// field the type lacks marks nothing (ADR 0027).
+async function planTextWrite(
+  userId: string,
+  current: ItemEditState,
+  fields: TextFields,
+  aiGenerated: UpdateItemInput["aiGenerated"],
+) {
+  if (await userCanEditText(userId)) {
+    const { aiTags, ...marks } = nextAiMarks(
+      current.ai,
+      {
+        description: fields.description,
+        content: fields.content,
+        tags: fields.tags,
+      },
+      aiGenerated,
+    );
+    return { aiTags, marks, savedTags: fields.tags };
+  }
+  if (
+    !changesOnlyCollections(
+      editableFields(current.typeName),
+      current.text,
+      fields,
+    )
+  ) {
+    return fail("itemsReadOnlyOverLimit", { limit: FREE_ITEM_LIMIT });
+  }
+  return { aiTags: current.ai.aiTags, marks: {}, savedTags: current.text.tags };
+}
+
 // The owner is part of the where, so an id of someone else's item fails the
 // same way as a missing one. Only the fields of the item's type are written;
 // fields left out of the input stay as they are; the tags and collections are
@@ -57,19 +97,18 @@ export async function updateUserItem(
   }
 
   const update = editableUpdate(current.typeName, input);
-  if ("error" in update) {
-    return fail(update.error);
-  }
+  if ("error" in update) return fail(update.error);
   const { tags, collectionIds, aiGenerated, ...fields } = update.data;
-  const linked = new Set(current.collectionIds);
-  const added = collectionIds.filter((id) => !linked.has(id));
-  // From the filtered fields, so a claim on a field the type lacks marks
-  // nothing (ADR 0027).
-  const { aiTags, ...marks } = nextAiMarks(
-    current.ai,
-    { description: fields.description, content: fields.content, tags },
+  const text = await planTextWrite(
+    userId,
+    current,
+    { ...fields, tags },
     aiGenerated,
   );
+  if ("error" in text) return text;
+  const { aiTags, savedTags, marks } = text;
+  const linked = new Set(current.collectionIds);
+  const added = collectionIds.filter((id) => !linked.has(id));
 
   // A delete of the item or a collection can win between the read and here:
   // P2025 below.
@@ -79,8 +118,8 @@ export async function updateUserItem(
       data: {
         ...fields,
         ...marks,
-        tags: { deleteMany: {}, create: tagLinks(userId, tags, aiTags) },
-        searchTags: toSearchTags(tags),
+        tags: { deleteMany: {}, create: tagLinks(userId, savedTags, aiTags) },
+        searchTags: toSearchTags(savedTags),
         collections: {
           deleteMany: { collectionId: { notIn: collectionIds } },
           create: collectionLinks(userId, added),
@@ -114,6 +153,9 @@ export async function setUserItemAiContent(
   if (!current) return fail("itemNotFound");
   if (!editableFields(current.typeName).content) {
     return fail("noTextContent");
+  }
+  if (!(await userCanEditText(userId))) {
+    return fail("itemsReadOnlyOverLimit", { limit: FREE_ITEM_LIMIT });
   }
 
   try {

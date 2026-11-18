@@ -148,8 +148,11 @@ export async function getItemEditState(
   const item = await prisma.item.findFirst({
     where: { id, userId },
     select: {
+      title: true,
       description: true,
       content: true,
+      language: true,
+      url: true,
       descriptionAiGenerated: true,
       contentAiGenerated: true,
       type: { select: { name: true } },
@@ -159,17 +162,31 @@ export async function getItemEditState(
   });
   if (!item) return null;
 
+  const { tags, aiTags } = toTagFields(item.tags);
   return {
     typeName: item.type.name,
     collectionIds: item.collections.map((row) => row.collectionId),
+    text: {
+      title: item.title,
+      description: item.description,
+      content: item.content,
+      language: item.language,
+      url: item.url,
+      tags,
+    },
     ai: {
       description: item.description,
       content: item.content,
       descriptionAiGenerated: item.descriptionAiGenerated,
       contentAiGenerated: item.contentAiGenerated,
-      aiTags: toTagFields(item.tags).aiTags,
+      aiTags,
     },
   };
+}
+
+/** How many items the user has, for the text lock over the Free limit. */
+export async function getItemCount(userId: string): Promise<number> {
+  return prisma.item.count({ where: { userId } });
 }
 
 export async function getItemStats(userId: string): Promise<ItemStats> {

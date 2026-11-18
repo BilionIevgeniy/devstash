@@ -52,14 +52,28 @@ export const GENERAL_DE: LegalSection[] = [
         </li>
         <li>
           <strong>E-Mails:</strong> Wir senden Ihnen eine E-Mail, um Ihre
-          Adresse zu bestätigen oder Ihr Passwort zurückzusetzen.
-          Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
+          Adresse zu bestätigen oder Ihr Passwort zurückzusetzen
+          (Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO), und nach einer
+          Bestellung oder Kündigung die gesetzlich vorgeschriebene Bestätigung
+          mit ihrem Inhalt (§§ 312f, 312k BGB; Rechtsgrundlage: Art. 6 Abs. 1
+          lit. c DSGVO).
         </li>
         <li>
           <strong>Abrechnung:</strong> Stripe-Kundendaten (E-Mail-Adresse,
-          Nutzer-ID) und der Status Ihres Abonnements. Zahlungsdaten geben Sie
-          direkt bei Stripe ein. Derzeit Testmodus. Rechtsgrundlage: Art. 6 Abs.
-          1 lit. b DSGVO.
+          Nutzer-ID) und der Status Ihres Abonnements, dazu Ihre Zustimmung zum
+          sofortigen Beginn (§ 356 Abs. 5 BGB) mit Zeitpunkt und der Version der
+          AGB. Zahlungsdaten geben Sie direkt bei Stripe ein. Derzeit Testmodus.
+          Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
+        </li>
+        <li>
+          <strong>Kündigung:</strong> Wenn Sie über „Verträge hier kündigen“
+          ohne Anmeldung kündigen, verarbeiten wir Name, E-Mail-Adresse, Art und
+          Grund der Kündigung, um das Abonnement des Kontos zu dieser Adresse zu
+          beenden und die Kündigung zu bestätigen. Wir speichern die Erklärung
+          nicht in einer eigenen Tabelle; sie steht danach nur in den
+          Bestätigungs-E-Mails und bei Stripe. Eine außerordentliche Kündigung
+          geht mit ihrem Grund an unsere E-Mail-Adresse. Rechtsgrundlage: Art. 6
+          Abs. 1 lit. c DSGVO (§ 312k BGB).
         </li>
         <li>
           <strong>Sicherheit und Missbrauchsschutz:</strong> Wir begrenzen

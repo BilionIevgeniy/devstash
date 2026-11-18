@@ -14,6 +14,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { AppFooter } from "@/features/app-shell/_internal/components/AppFooter";
 
 interface DashboardShellProps {
   sidebar: ReactNode;
@@ -97,7 +98,10 @@ export function DashboardShell({
           upgradeButton={upgradeButton}
           newItemButton={newItemButton}
         />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6">
+          {children}
+          <AppFooter />
+        </main>
       </div>
     </div>
   );

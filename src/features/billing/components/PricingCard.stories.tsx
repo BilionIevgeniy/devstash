@@ -36,7 +36,7 @@ export const Free: Story = {};
 export const Pro: Story = {
   args: {
     name: "Pro",
-    price: "$8",
+    price: "€8",
     note: "Billed monthly",
     features: [
       "Unlimited items and collections",

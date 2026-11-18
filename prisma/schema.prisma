@@ -47,12 +47,19 @@ model UserPreference {
 
 // Owned by billing. A user with no row is on the Free plan.
 model Subscription {
-  id                   String    @id @default(cuid())
-  userId               String    @unique
-  status               String
-  stripeCustomerId     String?   @unique
-  stripeSubscriptionId String?   @unique
-  currentPeriodEnd     DateTime?
+  id                      String    @id @default(cuid())
+  userId                  String    @unique
+  status                  String
+  stripeCustomerId        String?   @unique
+  stripeSubscriptionId    String?   @unique
+  currentPeriodEnd        DateTime?
+  cancelAtPeriodEnd       Boolean   @default(false)
+  // The § 356 (5) BGB consent and the AGB version of the live subscription,
+  // copied from its Stripe metadata by the sync (ADR 0032).
+  withdrawalWaiverAt      DateTime?
+  termsVersion            String?
+  // The subscription whose § 312f confirmation was sent: claimed once (ADR 0032).
+  confirmedSubscriptionId String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

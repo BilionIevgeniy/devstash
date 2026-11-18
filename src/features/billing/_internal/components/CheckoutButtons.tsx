@@ -3,9 +3,9 @@ import { useFormatter, useTranslations } from "next-intl";
 
 import { useState } from "react";
 
-import { BillingButton } from "@/features/billing/_internal/components/BillingButton";
-import { useBillingRedirect } from "@/features/billing/_internal/components/hooks/use-billing-redirect";
-import { startCheckout } from "@/features/billing/actions/checkout";
+import { Button } from "@/components/ui/button";
+import { OrderReview } from "@/features/billing/_internal/components/OrderReview";
+import { usePageRestoreKey } from "@/features/billing/_internal/components/hooks/use-page-restore-key";
 import {
   PRO_MONTHLY_PRICE,
   PRO_YEARLY_PRICE,
@@ -19,42 +19,38 @@ interface CheckoutButtonsProps {
   testMode: boolean;
 }
 
-// The choice of a plan in the billing section. /upgrade chooses by its switch.
-export function CheckoutButtons({ testMode }: CheckoutButtonsProps) {
+function PlanButtons({ testMode }: CheckoutButtonsProps) {
   const format = useFormatter();
   const t = useTranslations("billing.settings");
-  const { isPending, run } = useBillingRedirect();
-  const [active, setActive] = useState<Plan | null>(null);
-
-  function start(plan: Plan) {
-    setActive(plan);
-    run(() => startCheckout(plan));
-  }
+  const [ordering, setOrdering] = useState<Plan | null>(null);
 
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
-        <BillingButton
-          label={t("upgradeMonthly", {
+        <Button onClick={() => setOrdering("monthly")}>
+          {t("upgradeMonthly", {
             price: format.number(PRO_MONTHLY_PRICE, "price"),
           })}
-          variant="default"
-          isPending={isPending}
-          isActive={active === "monthly"}
-          onClick={() => start("monthly")}
-        />
-        <BillingButton
-          label={t("upgradeYearly", {
+        </Button>
+        <Button variant="outline" onClick={() => setOrdering("yearly")}>
+          {t("upgradeYearly", {
             price: format.number(PRO_YEARLY_PRICE, "price"),
             percent: proYearlySavingsPercent(),
           })}
-          variant="outline"
-          isPending={isPending}
-          isActive={active === "yearly"}
-          onClick={() => start("yearly")}
-        />
+        </Button>
       </div>
       {testMode && <TestModeHint />}
+      <OrderReview
+        plan={ordering}
+        onClose={() => setOrdering(null)}
+        testMode={testMode}
+      />
     </div>
   );
+}
+
+// The choice of a plan in the billing section, then the order step. /upgrade
+// chooses by its switch. Mounted fresh after Back from Stripe.
+export function CheckoutButtons({ testMode }: CheckoutButtonsProps) {
+  return <PlanButtons key={usePageRestoreKey()} testMode={testMode} />;
 }

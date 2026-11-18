@@ -25,7 +25,11 @@ export async function GET(
     if (result.status === "locked") {
       return jsonError(fail("itemLocked"), 403);
     }
-    return jsonOk({ item: result.item, canUseAi: result.canUseAi });
+    return jsonOk({
+      item: result.item,
+      canUseAi: result.canUseAi,
+      editMode: result.editMode,
+    });
   } catch (error) {
     await logger.error("Item detail failed", { error, userId });
     return jsonError(fail("serverError"), 500);

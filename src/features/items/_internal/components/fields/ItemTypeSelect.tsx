@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { ProBadge } from "@/features/billing/components/ProBadge";
 import {
-  canUseType,
+  canCreateOfType,
   CREATABLE_TYPES,
 } from "@/features/items/domain/item-fields";
 
@@ -27,6 +27,8 @@ interface ItemTypeSelectProps {
 }
 
 // A Pro type stays in the list for a Free user, disabled with a Pro badge.
+// So do the custom types a former Pro user keeps (ADR 0032): no new item of
+// one until Pro again.
 export function ItemTypeSelect({
   value,
   onChange,
@@ -45,7 +47,7 @@ export function ItemTypeSelect({
           </SelectTrigger>
           <SelectContent>
             {CREATABLE_TYPES.map((type) => {
-              const isAllowed = canUseType(type, isPro);
+              const isAllowed = canCreateOfType(type, isPro);
               return (
                 <SelectItem key={type} value={type} disabled={!isAllowed}>
                   {typeName(`${type}.one`)}
@@ -54,11 +56,15 @@ export function ItemTypeSelect({
               );
             })}
             {customTypeNames.length > 0 && <SelectSeparator />}
-            {customTypeNames.map((name) => (
-              <SelectItem key={name} value={name}>
-                {name}
-              </SelectItem>
-            ))}
+            {customTypeNames.map((name) => {
+              const isAllowed = canCreateOfType(name, isPro);
+              return (
+                <SelectItem key={name} value={name} disabled={!isAllowed}>
+                  {name}
+                  {!isAllowed && <ProBadge />}
+                </SelectItem>
+              );
+            })}
           </SelectContent>
         </Select>
       )}

@@ -53,13 +53,26 @@ export const GENERAL_EN: LegalSection[] = [
         </li>
         <li>
           <strong>Emails:</strong> we email you to confirm your address or to
-          reset your password. Legal basis: Art. 6 (1) b GDPR.
+          reset your password (legal basis: Art. 6 (1) b GDPR), and after an
+          order or a cancellation the confirmation the law requires, with its
+          content (§§ 312f, 312k BGB; legal basis: Art. 6 (1) c GDPR).
         </li>
         <li>
           <strong>Billing:</strong> Stripe customer data (email address, user
-          id) and the status of your subscription. You enter payment details
-          directly at Stripe. Currently test mode. Legal basis: Art. 6 (1) b
-          GDPR.
+          id) and the status of your subscription, with your consent to the
+          immediate start (§ 356 (5) BGB), its time and the version of the
+          terms. You enter payment details directly at Stripe. Currently test
+          mode. Legal basis: Art. 6 (1) b GDPR.
+        </li>
+        <li>
+          <strong>Cancellation:</strong> when you cancel through “Verträge hier
+          kündigen” without signing in, we process your name, email address and
+          the type and reason of the cancellation to end the subscription of the
+          account with that address and to confirm the cancellation. We do not
+          keep the declaration in a table of its own; afterwards it exists only
+          in the confirmation emails and at Stripe. A cancellation for good
+          cause goes to our email address with its reason. Legal basis: Art. 6
+          (1) c GDPR (§ 312k BGB).
         </li>
         <li>
           <strong>Security and abuse protection:</strong> we limit sign-ins,

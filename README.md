@@ -131,9 +131,19 @@ Vercel. A push to `main` deploys production. Vercel runs `npm run vercel-build`:
 
 Two secrets have no default and are set in Vercel for Production and Preview, a different value in each (`openssl rand -hex 32`), and in `.env` locally: `RATE_LIMIT_HASH_KEY` keys the HMAC that names the rate-limit counters in Upstash (without it rate limiting fails closed and sign-in stops working; a new value resets every counter once), and `CRON_SECRET` signs the calls of Vercel Cron.
 
+### Stripe in test mode
+
+The shop sells in EUR with VAT included and Stripe Tax ([ADR 0033](docs/adr/0033-tax-prices-and-payment-policy.md)). Before a purchase works in a sandbox, the account owner makes these Dashboard settings (all steps in [docs/stripe-integration-plan.md](docs/stripe-integration-plan.md), section 7):
+
+1. Two recurring prices of "DevStash Pro" in EUR with tax behaviour "inclusive": €8 monthly and €72 yearly; their ids go to `STRIPE_PRICE_ID_MONTHLY` and `STRIPE_PRICE_ID_YEARLY` in `.env` and in Vercel
+2. Stripe Tax: the origin address, the product tax code for SaaS, and a registration. Without the origin address Checkout refuses every session
+3. The customer portal allows reactivating a subscription set to end, which the § 312k cancellation email points to
+
+The consumer flow (order step, AGB, § 312f confirmation, § 312k cancellation at `/vertraege-kuendigen`) is in [ADR 0032](docs/adr/0032-consumer-flow.md).
+
 ### Scheduled jobs
 
-`vercel.json` calls `GET /api/cron/daily` once a day at 03:00 UTC (Hobby allows no more, and runs it some time within that hour) with `Authorization: Bearer <CRON_SECRET>`. It deletes expired tokens, uploads no item holds after 24 hours and registrations never verified within 7 days ([ADR 0030](docs/adr/0030-daily-cron-and-retention.md)). Cron runs only on Production; a run and its counts are in the runtime logs (`Cron job … finished`). To run it by hand: `curl -H "Authorization: Bearer $CRON_SECRET" https://<host>/api/cron/daily`.
+`vercel.json` calls `GET /api/cron/daily` once a day at 03:00 UTC (Hobby allows no more, and runs it some time within that hour) with `Authorization: Bearer <CRON_SECRET>`. It deletes expired tokens, uploads no item holds after 24 hours and registrations never verified within 7 days ([ADR 0030](docs/adr/0030-daily-cron-and-retention.md)), and last compares every subscription with Stripe ([ADR 0033](docs/adr/0033-tax-prices-and-payment-policy.md)). Cron runs only on Production; a run and its counts are in the runtime logs (`Cron job … finished`). To run it by hand: `curl -H "Authorization: Bearer $CRON_SECRET" https://<host>/api/cron/daily`.
 
 ### Error monitoring
 

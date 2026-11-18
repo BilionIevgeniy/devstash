@@ -13,6 +13,7 @@ export type ErrorCode = keyof typeof errors;
 export const ERROR_PARAM_NAMES = {
   tooManyAttempts: ["minutes"],
   itemLimitReached: ["limit"],
+  itemsReadOnlyOverLimit: ["limit"],
   collectionLimitReached: ["limit"],
   passwordTooShort: ["min"],
   passwordTooLong: ["max"],

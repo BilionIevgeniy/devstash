@@ -57,9 +57,9 @@ export function proYearlySavingsPercent(): number {
   return Math.round((1 - PRO_YEARLY_PRICE / fullYear) * 100);
 }
 
-// What the Pro card of a pricing table shows for the chosen period, in
-// dollars: the price per month, and the yearly total when billed yearly. The
-// component formats them for the locale.
+// What the Pro card of a pricing table shows for the chosen period, in euros
+// including VAT: the price per month, and the yearly total when billed yearly.
+// The component formats them for the locale.
 export function proPriceDisplay(yearly: boolean): {
   perMonth: number;
   yearlyTotal: number | null;
@@ -95,6 +95,13 @@ export function reachedFreeLimit(
     !withinFreeItemLimit(itemCount) ||
     !withinFreeCollectionLimit(collectionCount)
   );
+}
+
+// After Pro ends, an account over the Free limit may no longer rewrite its
+// items' text (ADR 0032): rewriting an old item would get around the limit.
+// At the limit or under it nothing changes.
+export function textEditsAllowed(isPro: boolean, itemCount: number): boolean {
+  return isPro || itemCount <= FREE_ITEM_LIMIT;
 }
 
 export function isProStatus(status: string): boolean {

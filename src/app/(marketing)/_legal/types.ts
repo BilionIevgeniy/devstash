@@ -1,7 +1,5 @@
 import type { ReactNode } from "react";
 
-export type LegalLang = "de" | "en";
-
 export interface LegalSection {
   /** Unique within a document; builds the heading's id. */
   id: string;

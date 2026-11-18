@@ -215,7 +215,7 @@ Reasoning tokens bill as output: 500 of them on an Explain call adds about $0.00
 
 ### Why a daily limit
 
-The spec's 20 requests an hour looks tight but allows 14,400 requests in a 30-day month. Pro brings in $8 a month, or $6 on the yearly plan, before Stripe's fee.
+The spec's 20 requests an hour looks tight but allows 14,400 requests in a 30-day month. Pro brings in €8 a month, or €6 on the yearly plan, including VAT and before Stripe's fee.
 
 | Limits                   | Requests a month at most | All Explain, `gpt-6-luna` | All Explain, `gpt-5.6-luna` |
 | ------------------------ | ------------------------ | ------------------------- | --------------------------- |

@@ -18,7 +18,11 @@ import { ITEM_SHEET_CLASS } from "@/features/items/_internal/components/drawer/I
 import { ItemDrawerSkeleton } from "@/features/items/_internal/components/drawer/ItemDrawerSkeleton";
 import { useDirtyCloseGuard } from "@/features/items/_internal/components/hooks/use-dirty-close-guard";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
-import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
+import type {
+  DashboardItem,
+  ItemDetailJson,
+  ItemEditMode,
+} from "@/features/items/types";
 
 interface RouteDrawerContextValue {
   closeAndDelete: (id: string) => void;
@@ -80,12 +84,14 @@ interface ItemRouteDrawerViewProps {
   item: DashboardItem;
   detail: ItemDetailJson;
   canUseAi: boolean;
+  editMode: ItemEditMode;
 }
 
 export function ItemRouteDrawerView({
   item,
   detail,
   canUseAi,
+  editMode,
 }: ItemRouteDrawerViewProps) {
   const context = useContext(RouteDrawerContext);
   if (!context) {
@@ -97,6 +103,7 @@ export function ItemRouteDrawerView({
       item={item}
       detail={detail}
       canUseAi={canUseAi}
+      editMode={editMode}
       variant="sheet"
       onDelete={context.closeAndDelete}
       onDirtyChange={context.setDirty}

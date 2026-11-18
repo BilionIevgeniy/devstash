@@ -25,11 +25,14 @@ beforeEach(async () => {
   });
 });
 
-function stripeSubscription(status: string) {
+function stripeSubscription(status: string, metadata = {}) {
   const retrieve = vi.fn(async () => ({
     id: "sub_test_pro",
     customer: "cus_test_pro",
     status,
+    cancel_at_period_end: false,
+    start_date: 1_790_000_000,
+    metadata,
     items: { data: [] },
   }));
   vi.mocked(getStripe).mockReturnValue({
@@ -48,6 +51,25 @@ describe("syncSubscription", () => {
       where: { userId: t.b.userId },
     });
     expect(b.status).toBe("canceled");
+    expect(await snapshotTenant(t.a.userId)).toEqual(before);
+  });
+
+  it("claims the confirmation on the customer's row only", async () => {
+    stripeSubscription("active", {
+      locale: "en",
+      plan: "monthly",
+      termsVersion: "2026-11-18",
+      withdrawalWaiverAt: "2026-11-18T09:00:00.000Z",
+    });
+    const before = await snapshotTenant(t.a.userId);
+
+    await syncSubscription("cus_test_pro", "sub_test_pro");
+
+    const b = await prisma.subscription.findUniqueOrThrow({
+      where: { userId: t.b.userId },
+    });
+    expect(b.confirmedSubscriptionId).toBe("sub_test_pro");
+    expect(b.termsVersion).toBe("2026-11-18");
     expect(await snapshotTenant(t.a.userId)).toEqual(before);
   });
 });

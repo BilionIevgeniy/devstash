@@ -3,7 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   lock: vi.fn(),
   retrieve: vi.fn(),
+  findUnique: vi.fn(),
   updateMany: vi.fn(),
+  sendContractConfirmation: vi.fn(),
 }));
 
 // The real check is pinned in lib/vendors/stripe.test.ts; here only this error is one.
@@ -19,25 +21,63 @@ vi.mock("@/lib/vendors/stripe", () => ({
 }));
 vi.mock("@/lib/postgres/prisma", () => ({
   prisma: {
-    $transaction: (run: (tx: unknown) => Promise<void>) =>
-      run({ subscription: { updateMany: mocks.updateMany } }),
+    $transaction: (run: (tx: unknown) => Promise<unknown>) =>
+      run({
+        subscription: {
+          findUnique: mocks.findUnique,
+          updateMany: mocks.updateMany,
+        },
+      }),
   },
+}));
+vi.mock("@/features/billing/_internal/services/contract-confirmation", () => ({
+  sendContractConfirmation: mocks.sendContractConfirmation,
 }));
 
 import { syncSubscription } from "@/features/billing/_internal/services/subscription-sync";
 
 const PERIOD_END_SECONDS = 1_800_000_000;
+const START_SECONDS = 1_790_000_000;
+const WAIVER = "2026-11-18T09:00:00.000Z";
+const CONSENT_METADATA = {
+  userId: "user-1",
+  locale: "de",
+  plan: "monthly",
+  termsVersion: "2026-11-18",
+  withdrawalWaiverAt: WAIVER,
+};
+
+function stripeSubscription(overrides: object = {}) {
+  return {
+    id: "sub_1",
+    customer: "cus_1",
+    status: "active",
+    cancel_at_period_end: false,
+    start_date: START_SECONDS,
+    metadata: {},
+    items: { data: [{ current_period_end: PERIOD_END_SECONDS }] },
+    ...overrides,
+  };
+}
+
+const STALE_ROW = {
+  userId: "user-1",
+  status: "incomplete",
+  stripeSubscriptionId: null,
+  currentPeriodEnd: null,
+  cancelAtPeriodEnd: false,
+  withdrawalWaiverAt: null,
+  termsVersion: null,
+  confirmedSubscriptionId: null,
+};
 
 beforeEach(() => {
   vi.resetAllMocks();
   vi.spyOn(console, "warn").mockImplementation(() => {});
   mocks.updateMany.mockResolvedValue({ count: 1 });
-  mocks.retrieve.mockResolvedValue({
-    id: "sub_1",
-    customer: "cus_1",
-    status: "active",
-    items: { data: [{ current_period_end: PERIOD_END_SECONDS }] },
-  });
+  mocks.findUnique.mockResolvedValue(STALE_ROW);
+  mocks.retrieve.mockResolvedValue(stripeSubscription());
+  mocks.sendContractConfirmation.mockResolvedValue(true);
 });
 
 describe("syncSubscription", () => {
@@ -51,7 +91,7 @@ describe("syncSubscription", () => {
   });
 
   it("saves the state Stripe reports, with the period of its item", async () => {
-    await syncSubscription("cus_1", "sub_1");
+    await expect(syncSubscription("cus_1", "sub_1")).resolves.toBe("corrected");
 
     expect(mocks.updateMany).toHaveBeenCalledWith({
       where: { stripeCustomerId: "cus_1" },
@@ -59,17 +99,15 @@ describe("syncSubscription", () => {
         status: "active",
         stripeSubscriptionId: "sub_1",
         currentPeriodEnd: new Date(PERIOD_END_SECONDS * 1000),
+        cancelAtPeriodEnd: false,
       },
     });
   });
 
   it("reads the customer of an expanded subscription", async () => {
-    mocks.retrieve.mockResolvedValue({
-      id: "sub_1",
-      customer: { id: "cus_1" },
-      status: "active",
-      items: { data: [] },
-    });
+    mocks.retrieve.mockResolvedValue(
+      stripeSubscription({ customer: { id: "cus_1" }, items: { data: [] } }),
+    );
 
     await syncSubscription("cus_1", "sub_1");
 
@@ -79,12 +117,30 @@ describe("syncSubscription", () => {
     });
   });
 
-  it("writes nothing for a subscription Stripe no longer has", async () => {
+  it("writes nothing when the row is already right", async () => {
+    mocks.findUnique.mockResolvedValue({
+      ...STALE_ROW,
+      status: "active",
+      stripeSubscriptionId: "sub_1",
+      currentPeriodEnd: new Date(PERIOD_END_SECONDS * 1000),
+    });
+
+    await expect(syncSubscription("cus_1", "sub_1")).resolves.toBe("unchanged");
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("ends the row of a subscription Stripe no longer has", async () => {
     mocks.retrieve.mockRejectedValue(NOT_FOUND);
 
-    await expect(syncSubscription("cus_1", "sub_1")).resolves.toBeUndefined();
-
-    expect(mocks.updateMany).not.toHaveBeenCalled();
+    await expect(syncSubscription("cus_1", "sub_1")).resolves.toBe("corrected");
+    expect(mocks.updateMany).toHaveBeenCalledWith({
+      where: { stripeCustomerId: "cus_1", stripeSubscriptionId: "sub_1" },
+      data: {
+        status: "canceled",
+        stripeSubscriptionId: null,
+        cancelAtPeriodEnd: false,
+      },
+    });
   });
 
   it("throws any other Stripe failure, so the webhook is retried", async () => {
@@ -95,11 +151,55 @@ describe("syncSubscription", () => {
     );
   });
 
-  it("succeeds when no row matches: a deleted account", async () => {
-    mocks.updateMany.mockResolvedValue({ count: 0 });
+  it("answers noRow when no row has the customer: a deleted account", async () => {
+    mocks.findUnique.mockResolvedValue(null);
 
-    await expect(syncSubscription("cus_1", "sub_1")).resolves.toBeUndefined();
-
+    await expect(syncSubscription("cus_1", "sub_1")).resolves.toBe("noRow");
     expect(console.warn).toHaveBeenCalled();
+  });
+});
+
+describe("syncSubscription and the contract confirmation", () => {
+  it("sends the confirmation of a subscription with consent, then marks it", async () => {
+    mocks.retrieve.mockResolvedValue(
+      stripeSubscription({ metadata: CONSENT_METADATA }),
+    );
+
+    await syncSubscription("cus_1", "sub_1");
+
+    expect(mocks.sendContractConfirmation).toHaveBeenCalledWith({
+      userId: "user-1",
+      subscriptionId: "sub_1",
+      startedAt: new Date(START_SECONDS * 1000),
+      consent: {
+        withdrawalWaiverAt: new Date(WAIVER),
+        termsVersion: "2026-11-18",
+      },
+      metadata: CONSENT_METADATA,
+    });
+    expect(mocks.updateMany).toHaveBeenLastCalledWith({
+      where: { stripeCustomerId: "cus_1" },
+      data: { confirmedSubscriptionId: "sub_1" },
+    });
+  });
+
+  it("leaves the row unmarked when the email fails, so the next sync sends", async () => {
+    mocks.retrieve.mockResolvedValue(
+      stripeSubscription({ metadata: CONSENT_METADATA }),
+    );
+    mocks.sendContractConfirmation.mockResolvedValue(false);
+
+    await syncSubscription("cus_1", "sub_1");
+
+    const marks = mocks.updateMany.mock.calls.filter(
+      ([args]) => "confirmedSubscriptionId" in args.data,
+    );
+    expect(marks).toHaveLength(0);
+  });
+
+  it("sends nothing for a subscription bought before the order step", async () => {
+    await syncSubscription("cus_1", "sub_1");
+
+    expect(mocks.sendContractConfirmation).not.toHaveBeenCalled();
   });
 });

@@ -20,5 +20,32 @@
     "intro": "We received a request to delete your DevStash account. Open the link below while signed in to DevStash and confirm there. Deleting removes your items, collections and files for good",
     "button": "Confirm deletion",
     "ignore": "If you didn't ask for this, ignore this email: nothing is deleted without the confirmation."
+  },
+  "checkout": {
+    "submitNote": "By clicking “Pay” you place an order with an obligation to pay. Pro starts at once; you agreed that your right of withdrawal ends with that."
+  },
+  "contract": {
+    "subject": "Your DevStash Pro contract",
+    "heading": "Your DevStash Pro contract",
+    "intro": "Thank you for your order. This email confirms your contract and carries the terms and the withdrawal information in full; please keep it.",
+    "provider": "Provider: {name}, {address}, {email}",
+    "plan": "Plan: DevStash Pro, {period, select, yearly {billed yearly} other {billed monthly}}",
+    "price": "Price: {price} {period, select, yearly {per year} other {per month}}, including VAT",
+    "start": "Start: {date}",
+    "renewal": "It renews every {period, select, yearly {year} other {month}} until you cancel. You can cancel at any time with effect at the end of the current term: through “Verträge hier kündigen” (cancel contracts here) at the bottom of every DevStash page, or Manage Billing in the settings.",
+    "consent": "On {date} you expressly agreed that we begin the service before the withdrawal period ends, and confirmed that you know your right of withdrawal ends with that (§ 356 (5) BGB). Terms version: {version}.",
+    "texts": "The terms and the withdrawal information you accepted:"
+  },
+  "cancellation": {
+    "subject": "Your cancellation of DevStash Pro",
+    "heading": "We received your cancellation",
+    "received": "We received your cancellation declaration on {date}.",
+    "contract": "Contract: DevStash Pro",
+    "kind": "Type: {kind, select, extraordinary {cancellation for good cause} other {ordinary cancellation}}",
+    "name": "Name: {name}",
+    "reason": "Reason: {reason}",
+    "endsOn": "Your subscription ends on {date}. You keep Pro until then, and nothing more is billed.",
+    "endsAtTerm": "Your subscription ends at the end of the current term, and nothing more is billed.",
+    "resume": "If you did not send this, open Manage Billing in the DevStash settings and resume your subscription before it ends."
   }
 }

@@ -14,7 +14,7 @@ export interface PlanCardText {
 
 // The words of the pricing cards in the locale of the page: the homepage and
 // the upgrade page show the same plans. Prices are formatted for the locale
-// ("$8", "8 $").
+// ("€8", "8 €"), gross including VAT.
 export function usePlanText() {
   const t = useTranslations("billing");
   const format = useFormatter();

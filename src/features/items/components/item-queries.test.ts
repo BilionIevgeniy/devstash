@@ -82,6 +82,7 @@ function seeded(): QueryClient {
   client.setQueryData<OpenedItemJson>(itemKeys.detail("a"), {
     item: detailOf("a"),
     canUseAi: true,
+    editMode: "full",
   });
   return client;
 }

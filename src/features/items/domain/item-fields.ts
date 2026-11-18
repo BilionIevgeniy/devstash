@@ -156,6 +156,13 @@ export function canUseType(typeName: string, isPro: boolean): boolean {
   return isPro || !requiresPro(typeName);
 }
 
+// Whether the plan lets the user create an item of this type: a Pro system
+// type, and every custom type, only on Pro. A former Pro user keeps reading
+// their custom types (canUseType), but adds nothing to them (ADR 0032).
+export function canCreateOfType(typeName: string, isPro: boolean): boolean {
+  return isPro || (isSystemTypeName(typeName) && !requiresPro(typeName));
+}
+
 // The contentType column of a new item: a link stores a URL, a file or image
 // an upload, the rest text.
 export function contentTypeFor(typeName: string): string {

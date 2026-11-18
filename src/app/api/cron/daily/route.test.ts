@@ -16,6 +16,12 @@ vi.mock("@/features/items/services/upload-sweep", () => ({
     stoppedEarly: false,
   })),
 }));
+vi.mock("@/features/billing/services/reconciliation", () => ({
+  reconcileSubscriptions: vi.fn(async () => ({
+    counts: { checked: 1, corrected: 0, missingRow: 0 },
+    stoppedEarly: false,
+  })),
+}));
 vi.mock("@/lib/observability/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(async () => {}) },
 }));
@@ -63,6 +69,10 @@ describe("GET /api/cron/daily", () => {
       success: true,
       data: {
         "expired-tokens": { counts: { deleted: 3 }, stoppedEarly: false },
+        "stripe-reconciliation": {
+          counts: { checked: 1, corrected: 0, missingRow: 0 },
+          stoppedEarly: false,
+        },
       },
     });
   });

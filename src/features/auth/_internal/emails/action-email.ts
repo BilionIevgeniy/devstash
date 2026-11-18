@@ -1,3 +1,5 @@
+import { escapeHtml, type BuiltEmail } from "@/lib/html";
+
 export interface ActionEmailCopy {
   subject: string;
   heading: string;
@@ -6,20 +8,6 @@ export interface ActionEmailCopy {
   ignoreNote: string;
   /** "This link expires in 24 hours.", in the email's language. */
   expiry: string;
-}
-
-export interface BuiltEmail {
-  subject: string;
-  html: string;
-  text: string;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
 }
 
 function buildActionHtml(copy: ActionEmailCopy, actionUrl: string) {

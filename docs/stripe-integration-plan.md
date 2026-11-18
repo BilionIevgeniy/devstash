@@ -1,6 +1,6 @@
 # Stripe Integration Plan
 
-The plan for DevStash Pro ($8 a month, $72 a year). Phases 1 and 2 are built. Section 2 describes the code as it was before Phase 1. The steps to follow are in two specs:
+The plan for DevStash Pro (€8 a month, €72 a year, including VAT since feature 19). Phases 1 and 2 are built. Section 2 describes the code as it was before Phase 1. The steps to follow are in two specs:
 
 - [context/features/stripe-phase-1-spec.md](../context/features/stripe-phase-1-spec.md): SDK, limits, checkout, portal, ADR 0011
 - [context/features/stripe-phase-2-spec.md](../context/features/stripe-phase-2-spec.md): webhook, gating, billing UI, account deletion
@@ -230,13 +230,14 @@ Full steps and code are in the specs.
 
 Do this in a sandbox first, then again in live mode.
 
-1. **Product:** create "DevStash Pro" with two recurring prices, $8 monthly and $72 yearly. Copy the ids to `STRIPE_PRICE_ID_MONTHLY` and `STRIPE_PRICE_ID_YEARLY`
+1. **Product:** create "DevStash Pro" with two recurring prices in EUR with `tax_behavior: inclusive`, €8 monthly and €72 yearly. Copy the ids to `STRIPE_PRICE_ID_MONTHLY` and `STRIPE_PRICE_ID_YEARLY`
 2. **Keys:** copy the secret key to `STRIPE_SECRET_KEY`
 3. **One subscription per customer:** Settings > Checkout and Payment Links > Subscriptions: redirect customers who already have one to the portal. Keep the portal login link on, or the setting stops working
-4. **Customer portal:** activate it. Allow updating the payment method, viewing invoices, cancelling at period end, and switching between the two prices
-5. **Failed payments:** Billing > Revenue recovery: Smart Retries with **8 tries in 2 weeks**, then **cancel the subscription** (see "`past_due` keeps Pro"). Turn on the failed-payment emails, and the email with the authentication link if it is a separate setting: an EU card can fail because the bank wants authentication, and retries do not fix that. Check this setting by hand in live mode, since a test clock proves only the sandbox
-6. **Webhook:** add an endpoint at `https://devstash.ievgenbilion.de/api/webhooks/stripe` for the three events, on the **account, not an organization**: Checkout does not wait for organization endpoints. Use API version `2026-10-28.endive`. Copy the signing secret to `STRIPE_WEBHOOK_SECRET`
-7. **Vercel:** set the four variables for Production, with test keys for Preview. `APP_URL` is already required
+4. **Customer portal:** activate it. Allow updating the payment method, viewing invoices, cancelling at period end, **reactivating a subscription set to end** (the § 312k confirmation tells a holder who did not cancel to resume there, ADR 0032), and switching between the two prices
+5. **Stripe Tax** (feature 19, ADR 0033): Settings > Tax: the origin address, the default product tax code for a digital service (SaaS), and a registration (in a sandbox any EU country works). Without the origin address Checkout refuses a session with `automatic_tax`
+6. **Failed payments:** Billing > Revenue recovery: Smart Retries with **8 tries in 2 weeks**, then **cancel the subscription** (see "`past_due` keeps Pro"). Turn on the failed-payment emails, and the email with the authentication link if it is a separate setting: an EU card can fail because the bank wants authentication, and retries do not fix that. Check this setting by hand in live mode, since a test clock proves only the sandbox
+7. **Webhook:** add an endpoint at `https://devstash.ievgenbilion.de/api/webhooks/stripe` for the three events, on the **account, not an organization**: Checkout does not wait for organization endpoints. Use API version `2026-10-28.endive`. Copy the signing secret to `STRIPE_WEBHOOK_SECRET`
+8. **Vercel:** set the four variables for Production, with test keys for Preview. `APP_URL` is already required
 
 Locally: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`, and copy the secret it prints.
 
@@ -277,14 +278,15 @@ Mocks cannot prove these.
 - [ ] Return without `stripe listen` running: "Confirming…", then Pro through the action
 - [ ] Reload with `session_id` in the URL: no second toast, and the URL is cleaned
 - [ ] Another account returns with someone else's `session_id`: the plain message, no upgrade
-- [ ] Back from Stripe: the Upgrade buttons work again
+- [ ] Back from Stripe: the Upgrade buttons work again, and the order step comes back closed with its boxes clear (`usePageRestoreKey`, feature 19)
+- [ ] Feature 19: a purchase through the order step shows gross EUR prices with Stripe Tax and the payable button; the row gets the consent; the § 312f email arrives once; the § 312k page cancels signed in and signed out, each with its email; the reconciliation corrects a row edited by hand
 - [ ] Free at the limit: the plain error, and the form stays open
 - [ ] Pro user sees Manage Billing, Free sees usage and Upgrade, the demo user sees neither
 - [ ] `/settings` does not shift while loading
 
 ## 9. Implementation order
 
-1. **Dashboard** (sandbox), section 7, steps 1 to 5
+1. **Dashboard** (sandbox), section 7, steps 1 to 6
 2. **Phase 1**: the ADR first, then SDK, limits, overview, checkout and portal. Nothing changes for users
 3. **Phase 2, server:** lock, sync, webhook, then `stripe listen`
 4. **Phase 2, gating:** the `item.ts` split on its own, with tests green, then the limits. Moving code and changing behaviour stay in separate steps
@@ -295,14 +297,14 @@ Mocks cannot prove these.
 ## 10. Known risks and open decisions
 
 - **Settled: no unbuilt feature is on sale.** `PricingSection` lists Custom item types, AI features and Export under Pro, and all three exist (custom types since feature 18, ADR 0031)
-- **Decide before live mode: German tax and consumer law.** VAT, the cancellation button (§ 312k BGB), withdrawal and the other consumer duties are not part of these two phases. Feature 19 builds them in test mode (`context/features/plan/19.real-shop-in-test-mode.md`); the sign-offs are in `context/todo-before-live.md`. The cancellation button will probably need code, and `automatic_tax` is one parameter on the session
-- **Two open Checkout tabs can still create two subscriptions.** The service refuses a user who is already Pro, and the Dashboard setting redirects existing subscribers, but neither covers two sessions opened before either completes. The second live subscription wins the row and the first keeps billing until cancelled in the Dashboard. Rare, and visible in Stripe
+- **Built in test mode by feature 19: German tax and consumer law.** Gross EUR prices with Stripe Tax, the order step (§ 312j BGB), the § 356 (5) consent, the AGB, the § 312f confirmation and the § 312k cancellation ([ADR 0032](adr/0032-consumer-flow.md), [ADR 0033](adr/0033-tax-prices-and-payment-policy.md)); the sign-offs stay in `context/todo-before-live.md`
+- **Two open Checkout tabs.** Narrowed by feature 19: a session is made under a lock per user, which reuses an open session of the same plan and expires any other. What remains is a session completed in one tab while the other still shows Stripe's page ([ADR 0032](adr/0032-consumer-flow.md))
 - **Two open tabs on a dead customer.** Both replace it, and the later save wins the row. A payment on the earlier customer then matches no row, so the user has paid and stays Free until it is fixed by hand. It needs a dead customer and two open tabs, so the risk is accepted
 - **Stripe behaviour not proven by the docs:** see the bold items in section 8
 - **`subscriptionWrite` reuses `isProStatus`** for its live class, so a change to the grace policy also changes which subscription may write. A comment in the code says so
 - **When `ai` lands,** `past_due` users get paid-for usage during the grace period. Decide that together with the quota
-- **Reconciliation:** a webhook lost for longer than Stripe's 3 days of retries leaves the row stale. There is no periodic sync, and at this size the Dashboard's failed deliveries are enough. Feature 19 adds a daily reconciliation
-- **Not in scope:** `cancelAtPeriodEnd` on the row (the portal shows it), trials, coupons, and the contract migration for the `User` columns
+- **Reconciliation:** built by feature 19 as a daily job of the cron route ([ADR 0033](adr/0033-tax-prices-and-payment-policy.md)): every row that names a subscription and every live Stripe subscription is synced, so a webhook lost past Stripe's 3 days of retries is corrected within a day
+- **Not in scope:** trials, coupons. `cancelAtPeriodEnd` is on the row since feature 19, for the § 312k page
 
 ## Sources
 

@@ -4,6 +4,7 @@ import type {
   AiGeneratedClaims,
   StoredAiFields,
 } from "@/features/items/domain/ai-marks";
+import type { StoredText } from "@/features/items/domain/text-lock";
 
 export interface DashboardItem {
   id: string;
@@ -195,7 +196,12 @@ export interface OpenedItemJson {
   item: ItemDetailJson;
   /** Pro: the forms offer the AI features. */
   canUseAi: boolean;
+  /** Over the Free limit the edit form changes the collections only (ADR 0032). */
+  editMode: ItemEditMode;
 }
+
+/** How the edit form opens: the text too, or the collections only (ADR 0032). */
+export type ItemEditMode = "full" | "collectionsOnly";
 
 // What the update service reads before it writes: the type decides the editable
 // fields, and only collections not yet linked are checked and added.
@@ -203,6 +209,8 @@ export interface OpenedItemJson {
 export interface ItemEditState {
   typeName: string;
   collectionIds: string[];
+  /** The stored text, which a save over the Free limit may not change. */
+  text: StoredText;
   ai: StoredAiFields;
 }
 

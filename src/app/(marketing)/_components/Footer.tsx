@@ -3,13 +3,20 @@ import { getTranslations } from "next-intl/server";
 
 import { Logo } from "@/components/common/Logo";
 import { homePath, type Locale } from "@/i18n/config";
-import { IMPRINT_PATH, PRIVACY_PATH } from "@/lib/http/legal-paths";
+import {
+  CANCEL_CONTRACTS_PATH,
+  IMPRINT_PATH,
+  PRIVACY_PATH,
+  TERMS_PATH,
+} from "@/lib/http/legal-paths";
 
 import { LanguageLink } from "./LanguageLink";
 
 interface FooterEntry {
   label: string;
   href: string;
+  /** Set when the label is in another language than the page. */
+  lang?: string;
 }
 
 const FOOTER_LINK = "transition-colors hover:text-foreground";
@@ -30,8 +37,15 @@ export async function Footer({ locale }: { locale: Locale }) {
     {
       heading: t("footer.legal"),
       entries: [
+        { label: t("footer.terms"), href: TERMS_PATH },
         { label: t("footer.privacy"), href: PRIVACY_PATH },
         { label: t("footer.imprint"), href: IMPRINT_PATH },
+        // § 312k BGB: on every page, in German whatever the page's language.
+        {
+          label: t("footer.cancelContracts"),
+          href: CANCEL_CONTRACTS_PATH,
+          lang: "de",
+        },
       ],
     },
   ];
@@ -50,9 +64,9 @@ export async function Footer({ locale }: { locale: Locale }) {
             <nav key={heading} aria-label={heading}>
               <h3 className="font-mono text-[13px] font-medium">{heading}</h3>
               <ul className="mt-3 grid gap-2 text-sm text-muted-foreground">
-                {entries.map(({ label, href }) => (
+                {entries.map(({ label, href, lang }) => (
                   <li key={label}>
-                    <Link href={href} className={FOOTER_LINK}>
+                    <Link href={href} lang={lang} className={FOOTER_LINK}>
                       {label}
                     </Link>
                   </li>

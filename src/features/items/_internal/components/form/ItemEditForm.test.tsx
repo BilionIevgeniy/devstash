@@ -32,7 +32,11 @@ vi.mock("next/navigation", () => ({ unstable_rethrow: vi.fn() }));
 vi.mock(
   "@/features/items/_internal/components/fields/CollectionSelect",
   () => ({
-    CollectionSelect: () => null,
+    CollectionSelect: ({ onChange }: { onChange: (ids: string[]) => void }) => (
+      <button type="button" onClick={() => onChange(["col-new"])}>
+        Add to a collection
+      </button>
+    ),
   }),
 );
 vi.mock(
@@ -230,5 +234,50 @@ describe("ItemEditForm AI claims", () => {
       user.type(screen.getByLabelText("Title"), " v2"),
     );
     expect(claims).toEqual({ description: false, content: false, tags: [] });
+  });
+});
+
+describe("ItemEditForm over the Free limit", () => {
+  function renderCollectionsOnly() {
+    render(
+      <ItemEditForm
+        item={ITEM}
+        detail={DETAIL}
+        canUseAi={false}
+        collectionsOnly
+        onCancel={() => undefined}
+        onSaved={vi.fn()}
+      />,
+    );
+  }
+
+  it("shows the text as locked, with the way to Pro", () => {
+    renderCollectionsOnly();
+
+    expect(screen.queryByLabelText("Title")).not.toBeInTheDocument();
+    expect(screen.getByText(/more than 50 items/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "upgrade to Pro" }),
+    ).toHaveAttribute("href", "/upgrade");
+  });
+
+  it("saves a change of the collections with the stored text", async () => {
+    updateItem.mockResolvedValue({ success: true, data: DETAIL, error: null });
+    const user = userEvent.setup();
+    renderCollectionsOnly();
+    const save = screen.getByRole("button", { name: "Save" });
+
+    expect(save).toBeDisabled();
+    await user.click(
+      screen.getByRole("button", { name: "Add to a collection" }),
+    );
+    await user.click(save);
+
+    await waitFor(() => expect(updateItem).toHaveBeenCalled());
+    expect(updateItem.mock.calls[0][1]).toMatchObject({
+      title: "Debounce",
+      content: "const a = 1;",
+      collectionIds: ["col-new"],
+    });
   });
 });

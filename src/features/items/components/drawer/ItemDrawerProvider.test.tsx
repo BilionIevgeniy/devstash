@@ -102,6 +102,7 @@ function openedFor(card: DashboardItem): OpenedItemJson {
       file: null,
     },
     canUseAi: false,
+    editMode: "full",
   };
 }
 

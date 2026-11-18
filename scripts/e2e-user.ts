@@ -29,3 +29,13 @@ export function requireE2eUserEmail(): string {
 export function proUserEmail(runEmail: string): string {
   return `pro-${runEmail}`;
 }
+
+// A fourth user, a former Pro user over the Free item limit with a custom
+// type, for the downgrade journey (e2e/downgrade.spec.ts). Its own account, so
+// the run's user stays under the limit for the create journeys.
+export const E2E_OVER_LIMIT_ROWS = 51;
+export const E2E_KEPT_TYPE = "Recipe";
+
+export function overLimitUserEmail(runEmail: string): string {
+  return `over-${runEmail}`;
+}

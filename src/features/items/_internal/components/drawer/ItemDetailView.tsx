@@ -5,13 +5,19 @@ import { useState } from "react";
 import type { ItemDeleteHandler } from "@/features/items/_internal/components/delete/DeleteItemDialog";
 import { ItemDrawerContent } from "@/features/items/_internal/components/drawer/ItemDrawerContent";
 import { savedRowFields } from "@/features/items/domain/item-detail";
-import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
+import type {
+  DashboardItem,
+  ItemDetailJson,
+  ItemEditMode,
+} from "@/features/items/types";
 
 interface ItemDetailViewProps {
   item: DashboardItem;
   detail: ItemDetailJson;
   /** Pro: the edit form offers the AI features. */
   canUseAi: boolean;
+  /** Over the Free limit the edit form changes the collections only. */
+  editMode: ItemEditMode;
   variant: "sheet" | "page";
   onDelete: ItemDeleteHandler;
   /** Whether the edit form holds unsaved edits (see ItemEditForm). */
@@ -27,6 +33,7 @@ export function ItemDetailView({
   item: initialItem,
   detail: initialDetail,
   canUseAi,
+  editMode,
   variant,
   onDelete,
   onDirtyChange,
@@ -48,7 +55,7 @@ export function ItemDetailView({
         isFavorite: initialItem.isFavorite,
         isPinned: initialItem.isPinned,
       }}
-      state={{ status: "ready", detail, canUseAi }}
+      state={{ status: "ready", detail, canUseAi, editMode }}
       isEditing={isEditing}
       onEdit={() => setIsEditing(true)}
       onCancelEdit={() => setIsEditing(false)}

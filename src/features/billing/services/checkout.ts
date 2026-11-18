@@ -2,11 +2,25 @@ import "server-only";
 
 import { getStripeCustomerId } from "@/features/billing/_internal/queries";
 import { syncSubscription } from "@/features/billing/_internal/services/subscription-sync";
+import {
+  checkoutSessionParams,
+  planOpenSessions,
+  type CheckoutSessionInput,
+  type OpenCheckoutSession,
+} from "@/features/billing/domain/checkout-session";
+import { isProStatus } from "@/features/billing/domain/limits";
 import { stripeIdOf } from "@/features/billing/domain/subscription";
 import { getEntitlements } from "@/features/billing/queries";
 import type { Plan } from "@/features/billing/schemas";
+import type { Locale } from "@/i18n/config";
+import { emailTranslator } from "@/i18n/email-translator";
 import { fail, ok, type OperationResult } from "@/lib/errors/action-result";
+import { TERMS_VERSION } from "@/lib/legal/terms";
 import { logger } from "@/lib/observability/logger";
+import {
+  LOCKED_TRANSACTION,
+  lockForTransaction,
+} from "@/lib/postgres/advisory-lock";
 import { prisma } from "@/lib/postgres/prisma";
 import {
   getStripe,
@@ -21,11 +35,13 @@ interface CheckoutUser {
   email?: string | null;
 }
 
-interface SessionInput {
-  userId: string;
-  priceId: string;
-  origin: string;
+/** What the order step sends: the plan, and the language Stripe's page and the emails use. */
+export interface CheckoutOrder {
+  plan: Plan;
+  locale: Locale;
 }
+
+type SessionInput = Omit<CheckoutSessionInput, "customer">;
 
 function redirectTo(url: string): RedirectResult {
   return ok({ url });
@@ -70,43 +86,99 @@ async function findOrCreateCustomer(user: CheckoutUser): Promise<string> {
   return stored ?? createCustomer(user, `customer-${user.id}`);
 }
 
-async function createSession(
+async function listOpenSessions(
   customer: string,
-  { userId, priceId, origin }: SessionInput,
-): Promise<string> {
-  const session = await getStripe().checkout.sessions.create({
-    mode: "subscription",
+): Promise<OpenCheckoutSession[]> {
+  const { data } = await getStripe().checkout.sessions.list({
     customer,
-    line_items: [{ price: priceId, quantity: 1 }],
-    metadata: { userId },
-    success_url: `${origin}/settings?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/settings`,
+    status: "open",
+    limit: 10,
   });
-  if (!session.url) throw new Error("The Checkout session has no URL");
-  return session.url;
+  return data.map(({ id, url, metadata }) => ({ id, url, metadata }));
+}
+
+// A session that completed or expired in the meantime cannot be expired; the
+// new one is made anyway, so a failure here only leaves the old risk.
+async function expireSession(id: string): Promise<void> {
+  try {
+    await getStripe().checkout.sessions.expire(id);
+  } catch (error) {
+    logger.warn("Expiring an open Checkout session failed", {
+      error,
+      checkoutSessionId: id,
+    });
+  }
+}
+
+// Stripe is asked, not the row: a payment in another tab can be complete
+// before its webhook or the return from Checkout has written the row.
+async function hasLiveSubscription(customer: string): Promise<boolean> {
+  const { data } = await getStripe().subscriptions.list({
+    customer,
+    limit: 10,
+  });
+  return data.some((subscription) => isProStatus(subscription.status));
+}
+
+// Under a lock per user, so two tabs that order at once see each other's
+// session: the same plan reuses it, another plan expires it, and a customer
+// who paid in another tab is refused (ADR 0032). Null: already Pro.
+async function openSession(
+  customer: string,
+  input: SessionInput,
+): Promise<string | null> {
+  return prisma.$transaction(async (tx) => {
+    await lockForTransaction(tx, `checkout:${input.userId}`);
+    if (await hasLiveSubscription(customer)) return null;
+    const { reuse, expire } = planOpenSessions(
+      await listOpenSessions(customer),
+      input.plan,
+      input.consent.termsVersion,
+    );
+    if (reuse?.url) return reuse.url;
+    await Promise.all(expire.map(expireSession));
+
+    const session = await getStripe().checkout.sessions.create(
+      checkoutSessionParams({ ...input, customer }),
+    );
+    if (!session.url) throw new Error("The Checkout session has no URL");
+    return session.url;
+  }, LOCKED_TRANSACTION);
 }
 
 export async function createCheckoutSession(
   user: CheckoutUser,
-  plan: Plan,
+  order: CheckoutOrder,
   origin: string,
 ): Promise<RedirectResult> {
   const { isPro } = await getEntitlements(user.id);
   if (isPro) return fail("alreadyPro");
 
   // Before any customer write: a missing price must leave nothing behind.
-  const input = { userId: user.id, priceId: priceIdFor(plan), origin };
+  const now = new Date();
+  const input: SessionInput = {
+    userId: user.id,
+    priceId: priceIdFor(order.plan),
+    plan: order.plan,
+    locale: order.locale,
+    origin,
+    // The schema let the order through only with the consent ticked.
+    consent: { withdrawalWaiverAt: now, termsVersion: TERMS_VERSION },
+    submitNote: emailTranslator(order.locale)("checkout.submitNote"),
+    now,
+  };
   const customer = await findOrCreateCustomer(user);
 
+  let url: string | null;
   try {
-    return redirectTo(await createSession(customer, input));
+    url = await openSession(customer, input);
   } catch (error) {
     if (!isStripeCustomerMissing(error)) throw error;
+    // The stored customer is dead. No idempotency key, so customer-<userId>
+    // cannot replay it, and saving the new id replaces the dead one.
+    url = await openSession(await createCustomer(user), input);
   }
-
-  // The stored customer is dead. No idempotency key, so customer-<userId>
-  // cannot replay it, and saving the new id replaces the dead one.
-  return redirectTo(await createSession(await createCustomer(user), input));
+  return url ? redirectTo(url) : fail("alreadyPro");
 }
 
 export async function createPortalSession(

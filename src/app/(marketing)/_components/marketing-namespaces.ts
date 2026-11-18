@@ -4,6 +4,9 @@ import type { Namespace } from "@/i18n/messages";
 // (Navbar, Logo, PricingSection and what they render). A static page sends
 // only these (ADR 0024); a namespace missing here shows its raw key, so
 // marketing-namespaces.test.tsx renders the navbar with exactly this list.
+// `billing.cancel` holds the same bilingual words (German / English) in both
+// locales on purpose: the § 312k page is one page for every visitor, like the
+// legal pages (ADR 0032).
 export const MARKETING_NAMESPACES = [
   "marketing",
   "billing",

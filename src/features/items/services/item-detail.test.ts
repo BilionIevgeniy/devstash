@@ -8,6 +8,9 @@ const { getEntitlements, getItemDetail, getItemDetailOfType, signFileUrls } =
     signFileUrls: vi.fn(),
   }));
 vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
+vi.mock("@/features/items/services/text-access", () => ({
+  getItemEditMode: vi.fn(async () => "full"),
+}));
 vi.mock("@/features/items/_internal/queries", () => ({
   getItemDetail,
   getItemDetailOfType,

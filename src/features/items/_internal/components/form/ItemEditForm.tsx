@@ -4,7 +4,11 @@ import { useTranslations } from "next-intl";
 import { useRef, useState, type SubmitEvent, type ReactNode } from "react";
 import { Check, X } from "lucide-react";
 
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
+import { FREE_ITEM_LIMIT } from "@/features/billing/domain/limits";
+import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import type { EditorHandle } from "@/features/editor/types";
 import { CollectionSelect } from "@/features/items/_internal/components/fields/CollectionSelect";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/form/DiscardChangesDialog";
@@ -28,6 +32,11 @@ interface ItemEditFormProps {
   detail: ItemDetailJson;
   /** Shows the AI buttons of the description and the tags (Pro). */
   canUseAi: boolean;
+  /**
+   * Over the Free limit (ADR 0032): the text stays as it is and only the
+   * collections can change, which the server allows too.
+   */
+  collectionsOnly?: boolean;
   onCancel: () => void;
   onSaved: (detail: ItemDetailJson) => void;
   /**
@@ -58,6 +67,7 @@ export function ItemEditForm({
   item,
   detail,
   canUseAi,
+  collectionsOnly = false,
   onCancel,
   onSaved,
   onDirtyChange,
@@ -104,15 +114,19 @@ export function ItemEditForm({
         />
       </EditToolbar>
       <div className="flex-1 space-y-6 overflow-y-auto p-6">
-        <ItemFields
-          fields={fields}
-          values={values}
-          onChange={setField}
-          canUseAi={canUseAi}
-          fileName={detail.file?.name}
-          contentRef={contentRef}
-          acceptedAi={acceptedAi}
-        />
+        {collectionsOnly ? (
+          <TextLockedNote />
+        ) : (
+          <ItemFields
+            fields={fields}
+            values={values}
+            onChange={setField}
+            canUseAi={canUseAi}
+            fileName={detail.file?.name}
+            contentRef={contentRef}
+            acceptedAi={acceptedAi}
+          />
+        )}
         <CollectionSelect
           value={values.collectionIds}
           linked={detail.collections}
@@ -156,5 +170,23 @@ function EditToolbar({
       </Button>
       {children}
     </div>
+  );
+}
+
+// The text of an account over the Free limit is read-only: the note says why
+// and where it opens again; the drawer behind shows the text itself.
+function TextLockedNote() {
+  const t = useTranslations("items.edit");
+  return (
+    <p className="rounded-md border p-3 text-sm text-muted-foreground">
+      {t.rich("textLocked", {
+        limit: FREE_ITEM_LIMIT,
+        link: (chunks) => (
+          <Link href={UPGRADE_PATH} className="underline underline-offset-4">
+            {chunks}
+          </Link>
+        ),
+      })}
+    </p>
   );
 }

@@ -21,8 +21,13 @@ export const FORMATS = {
     numeric: { year: "numeric", month: "2-digit", day: "2-digit" },
   },
   number: {
-    // Prices are in US dollars, whole amounts.
-    price: { style: "currency", currency: "USD", maximumFractionDigits: 0 },
+    // Prices are gross euro amounts, including VAT (ADR 0033).
+    price: {
+      style: "currency",
+      currency: "EUR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    },
   },
 } as const;
 

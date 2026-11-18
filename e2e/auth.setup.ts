@@ -3,12 +3,14 @@ import { dirname } from "node:path";
 import { expect, test as setup } from "@playwright/test";
 import {
   listsUserEmail,
+  overLimitUserEmail,
   proUserEmail,
   requireE2eUserEmail,
 } from "../scripts/e2e-user";
 import {
   AUTH_FILE,
   LISTS_AUTH_FILE,
+  OVER_LIMIT_AUTH_FILE,
   PRO_AUTH_FILE,
 } from "./support/storage-state";
 import { signInThroughForm } from "./support/sign-in";
@@ -37,4 +39,12 @@ setup("sign in the Pro user", async ({ page }) => {
 
   await mkdir(dirname(PRO_AUTH_FILE), { recursive: true });
   await page.context().storageState({ path: PRO_AUTH_FILE });
+});
+
+setup("sign in the former Pro user over the limit", async ({ page }) => {
+  await signInThroughForm(page, overLimitUserEmail(requireE2eUserEmail()));
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  await mkdir(dirname(OVER_LIMIT_AUTH_FILE), { recursive: true });
+  await page.context().storageState({ path: OVER_LIMIT_AUTH_FILE });
 });

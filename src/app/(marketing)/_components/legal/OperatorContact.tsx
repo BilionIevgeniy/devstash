@@ -1,5 +1,5 @@
-import { OPERATOR } from "../../_legal/operator";
-import type { LegalLang } from "../../_legal/types";
+import { OPERATOR } from "@/lib/legal/operator";
+import type { LegalLang } from "@/lib/legal/types";
 
 const LABELS: Record<
   LegalLang,

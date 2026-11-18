@@ -6,6 +6,10 @@ import {
   entitlementsFor,
   type Entitlements,
 } from "@/features/billing/domain/limits";
+import {
+  contractStateFor,
+  type ContractState,
+} from "@/features/billing/domain/cancellation";
 import type { BillingOverview } from "@/features/billing/types";
 import { prisma } from "@/lib/postgres/prisma";
 
@@ -30,3 +34,17 @@ export const getBillingOverview = cache(
     return billingOverviewFor(subscription);
   },
 );
+
+// What the cancellation page offers a signed-in user (§ 312k BGB).
+export async function getContractState(userId: string): Promise<ContractState> {
+  const subscription = await prisma.subscription.findUnique({
+    where: { userId },
+    select: {
+      status: true,
+      cancelAtPeriodEnd: true,
+      currentPeriodEnd: true,
+      stripeSubscriptionId: true,
+    },
+  });
+  return contractStateFor(subscription);
+}
