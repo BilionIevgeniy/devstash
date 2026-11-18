@@ -7,11 +7,12 @@ import {
 import { signItemFile } from "@/features/items/_internal/services/file-urls";
 import { getEntitlements } from "@/features/billing/queries";
 import { canUseType } from "@/features/items/domain/item-fields";
-import {
-  getItemEditMode,
-  type ItemEditMode,
-} from "@/features/items/services/text-access";
-import type { ItemDetail, ItemDetailRecord } from "@/features/items/types";
+import { getItemEditMode } from "@/features/items/services/text-access";
+import type {
+  ItemDetail,
+  ItemDetailRecord,
+  ItemEditMode,
+} from "@/features/items/types";
 
 export type OpenItemResult =
   | {

@@ -197,8 +197,11 @@ export interface OpenedItemJson {
   /** Pro: the forms offer the AI features. */
   canUseAi: boolean;
   /** Over the Free limit the edit form changes the collections only (ADR 0032). */
-  editMode: "full" | "collectionsOnly";
+  editMode: ItemEditMode;
 }
+
+/** How the edit form opens: the text too, or the collections only (ADR 0032). */
+export type ItemEditMode = "full" | "collectionsOnly";
 
 // What the update service reads before it writes: the type decides the editable
 // fields, and only collections not yet linked are checked and added.

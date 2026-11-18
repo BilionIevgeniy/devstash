@@ -77,6 +77,7 @@ beforeEach(() => {
   mocks.updateMany.mockResolvedValue({ count: 1 });
   mocks.findUnique.mockResolvedValue(STALE_ROW);
   mocks.retrieve.mockResolvedValue(stripeSubscription());
+  mocks.sendContractConfirmation.mockResolvedValue(true);
 });
 
 describe("syncSubscription", () => {
@@ -128,11 +129,18 @@ describe("syncSubscription", () => {
     expect(mocks.updateMany).not.toHaveBeenCalled();
   });
 
-  it("writes nothing for a subscription Stripe no longer has", async () => {
+  it("ends the row of a subscription Stripe no longer has", async () => {
     mocks.retrieve.mockRejectedValue(NOT_FOUND);
 
-    await expect(syncSubscription("cus_1", "sub_1")).resolves.toBe("unchanged");
-    expect(mocks.updateMany).not.toHaveBeenCalled();
+    await expect(syncSubscription("cus_1", "sub_1")).resolves.toBe("corrected");
+    expect(mocks.updateMany).toHaveBeenCalledWith({
+      where: { stripeCustomerId: "cus_1", stripeSubscriptionId: "sub_1" },
+      data: {
+        status: "canceled",
+        stripeSubscriptionId: null,
+        cancelAtPeriodEnd: false,
+      },
+    });
   });
 
   it("throws any other Stripe failure, so the webhook is retried", async () => {
@@ -152,23 +160,13 @@ describe("syncSubscription", () => {
 });
 
 describe("syncSubscription and the contract confirmation", () => {
-  it("claims and sends the confirmation of a subscription with consent", async () => {
+  it("sends the confirmation of a subscription with consent, then marks it", async () => {
     mocks.retrieve.mockResolvedValue(
       stripeSubscription({ metadata: CONSENT_METADATA }),
     );
 
     await syncSubscription("cus_1", "sub_1");
 
-    expect(mocks.updateMany).toHaveBeenLastCalledWith({
-      where: {
-        stripeCustomerId: "cus_1",
-        OR: [
-          { confirmedSubscriptionId: null },
-          { confirmedSubscriptionId: { not: "sub_1" } },
-        ],
-      },
-      data: { confirmedSubscriptionId: "sub_1" },
-    });
     expect(mocks.sendContractConfirmation).toHaveBeenCalledWith({
       userId: "user-1",
       subscriptionId: "sub_1",
@@ -179,19 +177,24 @@ describe("syncSubscription and the contract confirmation", () => {
       },
       metadata: CONSENT_METADATA,
     });
+    expect(mocks.updateMany).toHaveBeenLastCalledWith({
+      where: { stripeCustomerId: "cus_1" },
+      data: { confirmedSubscriptionId: "sub_1" },
+    });
   });
 
-  it("sends nothing when another sync won the claim", async () => {
+  it("leaves the row unmarked when the email fails, so the next sync sends", async () => {
     mocks.retrieve.mockResolvedValue(
       stripeSubscription({ metadata: CONSENT_METADATA }),
     );
-    mocks.updateMany
-      .mockResolvedValueOnce({ count: 1 })
-      .mockResolvedValueOnce({ count: 0 });
+    mocks.sendContractConfirmation.mockResolvedValue(false);
 
     await syncSubscription("cus_1", "sub_1");
 
-    expect(mocks.sendContractConfirmation).not.toHaveBeenCalled();
+    const marks = mocks.updateMany.mock.calls.filter(
+      ([args]) => "confirmedSubscriptionId" in args.data,
+    );
+    expect(marks).toHaveLength(0);
   });
 
   it("sends nothing for a subscription bought before the order step", async () => {

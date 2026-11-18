@@ -3,16 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   getUserProfile: vi.fn(),
   sendEmail: vi.fn(),
-  updateMany: vi.fn(),
 }));
 
 vi.mock("@/features/auth/queries", () => ({
   getUserProfile: mocks.getUserProfile,
 }));
 vi.mock("@/lib/vendors/email", () => ({ sendEmail: mocks.sendEmail }));
-vi.mock("@/lib/postgres/prisma", () => ({
-  prisma: { subscription: { updateMany: mocks.updateMany } },
-}));
 vi.mock("@/lib/observability/logger", () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));
@@ -38,46 +34,38 @@ beforeEach(() => {
 
 describe("sendContractConfirmation", () => {
   it("sends once per subscription, in the language of the order", async () => {
-    await sendContractConfirmation(CLAIMED);
+    await expect(sendContractConfirmation(CLAIMED)).resolves.toBe(true);
 
     const email = mocks.sendEmail.mock.calls[0][0];
     expect(email.to).toBe("dev@example.com");
     expect(email.idempotencyKey).toBe("contract-confirmation/sub_1");
     expect(email.subject).toBe("Dein Vertrag über DevStash Pro");
-    expect(mocks.updateMany).not.toHaveBeenCalled();
   });
 
-  it("gives the claim back when the email fails, so it is sent again", async () => {
+  it("answers false when the email fails, so the row stays unmarked", async () => {
     mocks.sendEmail.mockResolvedValue({
       success: false,
       data: null,
       error: "emailSendFailed",
     });
 
-    await sendContractConfirmation(CLAIMED);
-
-    expect(mocks.updateMany).toHaveBeenCalledWith({
-      where: { userId: "user-1", confirmedSubscriptionId: "sub_1" },
-      data: { confirmedSubscriptionId: null },
-    });
+    await expect(sendContractConfirmation(CLAIMED)).resolves.toBe(false);
   });
 
-  it("gives the claim back when the text cannot be built", async () => {
-    await sendContractConfirmation({
-      ...CLAIMED,
-      consent: { ...CLAIMED.consent, termsVersion: "never-published" },
-    });
-
+  it("answers false when the text cannot be built", async () => {
+    await expect(
+      sendContractConfirmation({
+        ...CLAIMED,
+        consent: { ...CLAIMED.consent, termsVersion: "never-published" },
+      }),
+    ).resolves.toBe(false);
     expect(mocks.sendEmail).not.toHaveBeenCalled();
-    expect(mocks.updateMany).toHaveBeenCalled();
   });
 
-  it("keeps the claim when the account is gone", async () => {
+  it("counts a deleted account as done: nobody to confirm to", async () => {
     mocks.getUserProfile.mockResolvedValue(null);
 
-    await sendContractConfirmation(CLAIMED);
-
+    await expect(sendContractConfirmation(CLAIMED)).resolves.toBe(true);
     expect(mocks.sendEmail).not.toHaveBeenCalled();
-    expect(mocks.updateMany).not.toHaveBeenCalled();
   });
 });

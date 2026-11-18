@@ -189,21 +189,38 @@ describe("consentFromMetadata", () => {
 });
 
 describe("liveSubscriptionCheck", () => {
+  const row = (subscriptionId: string | null, status: string) => ({
+    subscriptionId,
+    status,
+  });
+
   it("syncs a live subscription its row does not name", () => {
     expect(
-      liveSubscriptionCheck({ id: "sub_2", status: "active" }, "sub_1"),
+      liveSubscriptionCheck(
+        { id: "sub_2", status: "active" },
+        row(null, "canceled"),
+      ),
     ).toBe("sync");
     expect(
-      liveSubscriptionCheck({ id: "sub_2", status: "past_due" }, null),
+      liveSubscriptionCheck(
+        { id: "sub_2", status: "active" },
+        row("sub_1", "incomplete"),
+      ),
     ).toBe("sync");
   });
 
   it("skips one the row names, or one that is not live", () => {
     expect(
-      liveSubscriptionCheck({ id: "sub_1", status: "active" }, "sub_1"),
+      liveSubscriptionCheck(
+        { id: "sub_1", status: "active" },
+        row("sub_1", "active"),
+      ),
     ).toBe("skip");
     expect(
-      liveSubscriptionCheck({ id: "sub_1", status: "incomplete" }, null),
+      liveSubscriptionCheck(
+        { id: "sub_1", status: "incomplete" },
+        row(null, "canceled"),
+      ),
     ).toBe("skip");
   });
 
@@ -211,5 +228,14 @@ describe("liveSubscriptionCheck", () => {
     expect(
       liveSubscriptionCheck({ id: "sub_1", status: "active" }, undefined),
     ).toBe("noRow");
+  });
+
+  it("flags a second live subscription instead of flipping the row", () => {
+    expect(
+      liveSubscriptionCheck(
+        { id: "sub_2", status: "active" },
+        row("sub_1", "past_due"),
+      ),
+    ).toBe("duplicate");
   });
 });

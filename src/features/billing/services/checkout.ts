@@ -8,6 +8,7 @@ import {
   type CheckoutSessionInput,
   type OpenCheckoutSession,
 } from "@/features/billing/domain/checkout-session";
+import { isProStatus } from "@/features/billing/domain/limits";
 import { stripeIdOf } from "@/features/billing/domain/subscription";
 import { getEntitlements } from "@/features/billing/queries";
 import type { Plan } from "@/features/billing/schemas";
@@ -109,14 +110,26 @@ async function expireSession(id: string): Promise<void> {
   }
 }
 
+// Stripe is asked, not the row: a payment in another tab can be complete
+// before its webhook or the return from Checkout has written the row.
+async function hasLiveSubscription(customer: string): Promise<boolean> {
+  const { data } = await getStripe().subscriptions.list({
+    customer,
+    limit: 10,
+  });
+  return data.some((subscription) => isProStatus(subscription.status));
+}
+
 // Under a lock per user, so two tabs that order at once see each other's
-// session: the same plan reuses it, another plan expires it (ADR 0032).
+// session: the same plan reuses it, another plan expires it, and a customer
+// who paid in another tab is refused (ADR 0032). Null: already Pro.
 async function openSession(
   customer: string,
   input: SessionInput,
-): Promise<string> {
+): Promise<string | null> {
   return prisma.$transaction(async (tx) => {
     await lockForTransaction(tx, `checkout:${input.userId}`);
+    if (await hasLiveSubscription(customer)) return null;
     const { reuse, expire } = planOpenSessions(
       await listOpenSessions(customer),
       input.plan,
@@ -156,15 +169,16 @@ export async function createCheckoutSession(
   };
   const customer = await findOrCreateCustomer(user);
 
+  let url: string | null;
   try {
-    return redirectTo(await openSession(customer, input));
+    url = await openSession(customer, input);
   } catch (error) {
     if (!isStripeCustomerMissing(error)) throw error;
+    // The stored customer is dead. No idempotency key, so customer-<userId>
+    // cannot replay it, and saving the new id replaces the dead one.
+    url = await openSession(await createCustomer(user), input);
   }
-
-  // The stored customer is dead. No idempotency key, so customer-<userId>
-  // cannot replay it, and saving the new id replaces the dead one.
-  return redirectTo(await openSession(await createCustomer(user), input));
+  return url ? redirectTo(url) : fail("alreadyPro");
 }
 
 export async function createPortalSession(

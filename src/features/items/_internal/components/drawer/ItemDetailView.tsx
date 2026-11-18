@@ -8,7 +8,7 @@ import { savedRowFields } from "@/features/items/domain/item-detail";
 import type {
   DashboardItem,
   ItemDetailJson,
-  OpenedItemJson,
+  ItemEditMode,
 } from "@/features/items/types";
 
 interface ItemDetailViewProps {
@@ -17,7 +17,7 @@ interface ItemDetailViewProps {
   /** Pro: the edit form offers the AI features. */
   canUseAi: boolean;
   /** Over the Free limit the edit form changes the collections only. */
-  editMode: OpenedItemJson["editMode"];
+  editMode: ItemEditMode;
   variant: "sheet" | "page";
   onDelete: ItemDeleteHandler;
   /** Whether the edit form holds unsaved edits (see ItemEditForm). */

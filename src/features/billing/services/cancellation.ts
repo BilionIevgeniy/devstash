@@ -8,7 +8,6 @@ import {
   type CancellationRecord,
 } from "@/features/billing/_internal/emails/cancellation-email";
 import { getLiveSubscriptionRef } from "@/features/billing/_internal/queries";
-import { consumeLocalLimit } from "@/features/billing/_internal/services/local-limit";
 import { syncSubscription } from "@/features/billing/_internal/services/subscription-sync";
 import {
   CANCEL_BY_EMAIL,
@@ -29,6 +28,7 @@ import {
   isRateLimitConfigured,
   RateLimitUnavailableError,
 } from "@/lib/vendors/rate-limit";
+import { consumeLocalRateLimit } from "@/lib/vendors/local-rate-limit";
 import { getStripe } from "@/lib/vendors/stripe";
 import { sendEmail } from "@/lib/vendors/email";
 
@@ -64,19 +64,17 @@ async function cancelAtPeriodEnd(userId: string): Promise<Effect> {
   return { status: "cancelled", periodEnd: periodEndOf(after.periodEnd) };
 }
 
-// One confirmation per account and day at most (Resend's idempotency key), so
-// the holder cannot be flooded through the form.
+// Sent only when a running contract was ended (cancelAtPeriodEnd), which is
+// what keeps the holder from being flooded through the form.
 async function confirmToHolder(
   userId: string,
   record: CancellationRecord,
 ): Promise<void> {
   const profile = await getUserProfile(userId);
   if (!profile) return;
-  const day = record.declaredAt.toISOString().slice(0, 10);
   const result = await sendEmail({
     to: profile.email,
     ...buildCancellationEmail(record),
-    idempotencyKey: `cancellation/${userId}/${day}`,
   });
   if (!result.success) {
     await logger.error("The cancellation confirmation was not sent", {
@@ -85,14 +83,22 @@ async function confirmToHolder(
   }
 }
 
+// The operator's inbox is where a declaration is finished by hand, so a notice
+// that does not go out is an error: Sentry gets the ids, and the caller of the
+// deferred work rethrows, so the platform records the failed task too.
 async function notifyOperator(
   subject: string,
   facts: Record<string, string>,
-): Promise<void> {
-  await sendEmail({
+  userId?: string,
+): Promise<boolean> {
+  const result = await sendEmail({
     to: OPERATOR.email,
     ...buildOperatorNotice({ subject, facts }),
   });
+  if (!result.success) {
+    await logger.error("Notifying the operator failed", { userId });
+  }
+  return result.success;
 }
 
 function extraordinaryFacts(
@@ -118,8 +124,21 @@ export async function cancelOwnSubscription(
 ): Promise<OperationResult<{ declaredAt: string }>> {
   const effect = await cancelAtPeriodEnd(userId);
   if (effect.status === "none") return fail("noLiveContract");
-  // Already ending: the first declaration was confirmed; nothing more to do.
-  if (effect.status === "already") return ok({ declaredAt: now.toISOString() });
+  // Already ending: the first declaration was confirmed. One for good cause
+  // asks for an earlier end, which the operator decides by hand.
+  if (effect.status === "already") {
+    if (input.kind === "extraordinary") {
+      await notifyOperator(
+        "Extraordinary cancellation of a contract already ending",
+        extraordinaryFacts(
+          { locale, ...input, declaredAt: now, periodEnd: effect.periodEnd },
+          { userId },
+        ),
+        userId,
+      );
+    }
+    return ok({ declaredAt: now.toISOString() });
+  }
 
   const record: CancellationRecord = {
     locale,
@@ -132,6 +151,7 @@ export async function cancelOwnSubscription(
     await notifyOperator(
       "Extraordinary cancellation",
       extraordinaryFacts(record, { userId }),
+      userId,
     );
   }
   return ok({ declaredAt: now.toISOString() });
@@ -144,8 +164,8 @@ const OUTAGE_LIMIT_FAILED = fail("tooManyAttemptsNoTime");
 function checkLocally(email: string, ip: string | null, now: Date) {
   const time = now.getTime();
   const allowed =
-    (!ip || consumeLocalLimit(CANCEL_BY_IP, ip, time)) &&
-    consumeLocalLimit(CANCEL_BY_EMAIL, email, time);
+    (!ip || consumeLocalRateLimit(CANCEL_BY_IP, ip, time)) &&
+    consumeLocalRateLimit(CANCEL_BY_EMAIL, email, time);
   return allowed ? ok() : OUTAGE_LIMIT_FAILED;
 }
 
@@ -197,20 +217,27 @@ async function processDeclaration(
   if (!userId) return; // Nobody to confirm to; the screen holds the record.
 
   const effect = await cancelAtPeriodEnd(userId);
-  if (effect.status !== "cancelled") return;
+  if (effect.status === "none") return;
   const record: CancellationRecord = {
     locale,
     kind: input.kind,
     declaredAt,
     periodEnd: effect.periodEnd,
   };
-  await confirmToHolder(userId, record);
+  if (effect.status === "cancelled") await confirmToHolder(userId, record);
+  // For good cause the operator decides, also on a contract already ending.
   if (input.kind === "extraordinary") {
-    await notifyOperator("Extraordinary cancellation", {
-      ...extraordinaryFacts(record, { userId, email: input.email }),
-      name: input.name,
-      reason: input.reason ?? "",
-    });
+    await notifyOperator(
+      effect.status === "cancelled"
+        ? "Extraordinary cancellation"
+        : "Extraordinary cancellation of a contract already ending",
+      {
+        ...extraordinaryFacts(record, { userId, email: input.email }),
+        name: input.name,
+        reason: input.reason ?? "",
+      },
+      userId,
+    );
   }
 }
 
@@ -236,5 +263,7 @@ export async function processCancellationDeclaration(
       email: input.email,
       reason: input.reason ?? "",
     });
+    // after() reports the failed task as well.
+    throw error;
   }
 }

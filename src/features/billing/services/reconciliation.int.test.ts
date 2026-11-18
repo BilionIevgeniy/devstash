@@ -11,6 +11,7 @@ import { getStripe } from "@/lib/vendors/stripe";
 // The reconciliation reads every row, but writes each only through the sync of
 // its own customer: A's stale row is corrected, B's right row stays as it is.
 let t: Tenants;
+let listMock: ReturnType<typeof vi.fn>;
 
 beforeEach(async () => {
   t = await seedTenants();
@@ -51,7 +52,11 @@ beforeEach(async () => {
     items: { data: [] },
     ...states[id],
   }));
-  const list = vi.fn(async () => ({ data: [], has_more: false }));
+  const list = vi.fn(async (): Promise<object> => ({
+    data: [],
+    has_more: false,
+  }));
+  listMock = list;
   vi.mocked(getStripe).mockReturnValue({
     subscriptions: { retrieve, list },
   } as unknown as ReturnType<typeof getStripe>);
@@ -71,7 +76,28 @@ describe("reconcileSubscriptions", () => {
     });
     expect(a.status).toBe("canceled");
     expect(a.stripeSubscriptionId).toBeNull();
-    expect(report.counts).toEqual({ checked: 2, corrected: 1, missingRow: 0 });
+    expect(report.counts).toEqual({
+      checked: 2,
+      corrected: 1,
+      missingRow: 0,
+      duplicate: 0,
+    });
+    expect(await snapshotTenant(t.b.userId)).toEqual(before);
+  });
+
+  it("never flips a row to a second live subscription of its customer", async () => {
+    listMock.mockResolvedValue({
+      data: [{ id: "sub_second", customer: "cus_test_pro", status: "active" }],
+      has_more: false,
+    });
+    const before = await snapshotTenant(t.b.userId);
+
+    const report = await reconcileSubscriptions({
+      now: new Date(),
+      deadline: Date.now() + 60_000,
+    });
+
+    expect(report.counts.duplicate).toBe(1);
     expect(await snapshotTenant(t.b.userId)).toEqual(before);
   });
 });

@@ -6,6 +6,7 @@ import { savedRowFields } from "@/features/items/domain/item-detail";
 import type {
   DashboardItem,
   ItemDetailJson,
+  ItemEditMode,
   OpenedItemJson,
 } from "@/features/items/types";
 
@@ -16,7 +17,7 @@ export type ItemDetailState =
       status: "ready";
       detail: ItemDetailJson;
       canUseAi: boolean;
-      editMode: OpenedItemJson["editMode"];
+      editMode: ItemEditMode;
     };
 
 interface DetailQuery {

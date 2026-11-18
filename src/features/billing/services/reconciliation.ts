@@ -2,7 +2,7 @@ import "server-only";
 
 import {
   getReconcileRows,
-  getRowSubscriptionIds,
+  getRowSubscriptions,
 } from "@/features/billing/_internal/queries";
 import {
   syncSubscription,
@@ -22,6 +22,7 @@ interface Counts {
   checked: number;
   corrected: number;
   missingRow: number;
+  duplicate: number;
 }
 
 function count(counts: Counts, outcome: SyncOutcome) {
@@ -60,12 +61,19 @@ async function reconcileLive(
       ...(startingAfter ? { starting_after: startingAfter } : {}),
     });
     const customers = page.data.flatMap((s) => stripeIdOf(s.customer) ?? []);
-    const rows = await getRowSubscriptionIds(customers);
+    const rows = await getRowSubscriptions(customers);
     for (const subscription of page.data) {
       const customerId = stripeIdOf(subscription.customer);
       if (!customerId) continue;
       const check = liveSubscriptionCheck(subscription, rows.get(customerId));
       if (check === "noRow") counts.missingRow += 1;
+      if (check === "duplicate") {
+        counts.duplicate += 1;
+        await logger.error("A customer has two live subscriptions", {
+          customerId,
+          subscriptionId: subscription.id,
+        });
+      }
       if (check === "sync") {
         count(
           counts,
@@ -86,7 +94,12 @@ async function reconcileLive(
 export async function reconcileSubscriptions({
   deadline,
 }: CronContext): Promise<CronJobReport> {
-  const counts: Counts = { checked: 0, corrected: 0, missingRow: 0 };
+  const counts: Counts = {
+    checked: 0,
+    corrected: 0,
+    missingRow: 0,
+    duplicate: 0,
+  };
   const finished =
     (await reconcileRows(counts, deadline)) &&
     (await reconcileLive(counts, deadline));

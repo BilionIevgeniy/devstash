@@ -76,6 +76,35 @@ describe("OrderReview", () => {
     ).toHaveAttribute("href", "/agb#agb-en-right");
   });
 
+  it("clears both consents when the dialog closes", async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    const { rerender } = render(
+      <OrderReview plan="monthly" onClose={onClose} testMode={false} />,
+    );
+    await user.click(
+      screen.getByRole("checkbox", { name: /terms and conditions/ }),
+    );
+    await user.click(
+      screen.getByRole("checkbox", { name: /start right away/ }),
+    );
+
+    await user.keyboard("{Escape}");
+    expect(onClose).toHaveBeenCalled();
+    rerender(<OrderReview plan={null} onClose={onClose} testMode={false} />);
+    rerender(<OrderReview plan="yearly" onClose={onClose} testMode={false} />);
+
+    expect(
+      screen.getByRole("checkbox", { name: /terms and conditions/ }),
+    ).not.toBeChecked();
+    expect(
+      screen.getByRole("checkbox", { name: /start right away/ }),
+    ).not.toBeChecked();
+    expect(
+      screen.getByRole("button", { name: "Order and pay" }),
+    ).toBeDisabled();
+  });
+
   it("stays closed with no plan", () => {
     renderOrder(null);
 

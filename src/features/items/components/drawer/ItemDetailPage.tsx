@@ -14,7 +14,7 @@ import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-q
 import type {
   DashboardItem,
   ItemDetailJson,
-  OpenedItemJson,
+  ItemEditMode,
 } from "@/features/items/types";
 import { isNavigationError } from "@/lib/errors/navigation-error";
 
@@ -22,7 +22,7 @@ interface ItemDetailPageProps {
   item: DashboardItem;
   detail: ItemDetailJson;
   canUseAi: boolean;
-  editMode: OpenedItemJson["editMode"];
+  editMode: ItemEditMode;
   listHref: string;
 }
 

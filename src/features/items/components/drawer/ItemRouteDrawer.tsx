@@ -21,7 +21,7 @@ import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer
 import type {
   DashboardItem,
   ItemDetailJson,
-  OpenedItemJson,
+  ItemEditMode,
 } from "@/features/items/types";
 
 interface RouteDrawerContextValue {
@@ -84,7 +84,7 @@ interface ItemRouteDrawerViewProps {
   item: DashboardItem;
   detail: ItemDetailJson;
   canUseAi: boolean;
-  editMode: OpenedItemJson["editMode"];
+  editMode: ItemEditMode;
 }
 
 export function ItemRouteDrawerView({

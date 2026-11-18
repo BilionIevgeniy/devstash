@@ -1,6 +1,7 @@
 import "server-only";
 
 import { sha256Hex } from "@/lib/hash";
+import type { RateLimitPolicy } from "@/lib/vendors/rate-limit";
 
 interface Window {
   count: number;
@@ -13,13 +14,13 @@ const MAX_KEYS = 10_000;
 
 const windows = new Map<string, Window>();
 
-// A fixed-window counter in the memory of this instance, for the § 312k form
-// while Upstash is down (ADR 0032): the declaration is still taken, but not
-// without any bound. Weaker than Upstash (one counter per instance, gone on a
-// cold start) on purpose: it only covers an outage. Keys are hashed, so the
-// memory holds no address.
-export function consumeLocalLimit(
-  policy: { name: string; limit: number; windowSeconds: number },
+// A fixed-window counter in the memory of this instance, for a caller that
+// keeps taking requests while Upstash is down (the § 312k form, ADR 0032):
+// still bounded, not unbounded. Weaker than Upstash (one counter per instance,
+// gone on a cold start) on purpose: it only covers an outage. Keys are hashed,
+// so the memory holds no address.
+export function consumeLocalRateLimit(
+  policy: RateLimitPolicy,
   identifier: string,
   now: number,
 ): boolean {

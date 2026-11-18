@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   getReconcileRows: vi.fn(),
-  getRowSubscriptionIds: vi.fn(),
+  getRowSubscriptions: vi.fn(),
   syncSubscription: vi.fn(),
   list: vi.fn(),
   warn: vi.fn(),
@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/features/billing/_internal/queries", () => ({
   getReconcileRows: mocks.getReconcileRows,
-  getRowSubscriptionIds: mocks.getRowSubscriptionIds,
+  getRowSubscriptions: mocks.getRowSubscriptions,
 }));
 vi.mock("@/features/billing/_internal/services/subscription-sync", () => ({
   syncSubscription: mocks.syncSubscription,
@@ -19,7 +19,7 @@ vi.mock("@/lib/vendors/stripe", () => ({
   getStripe: () => ({ subscriptions: { list: mocks.list } }),
 }));
 vi.mock("@/lib/observability/logger", () => ({
-  logger: { error: vi.fn(), warn: mocks.warn, info: vi.fn() },
+  logger: { error: vi.fn(async () => {}), warn: mocks.warn, info: vi.fn() },
 }));
 
 import { reconcileSubscriptions } from "@/features/billing/services/reconciliation";
@@ -35,7 +35,7 @@ beforeEach(() => {
   ]);
   mocks.syncSubscription.mockResolvedValue("unchanged");
   mocks.list.mockResolvedValue({ data: [], has_more: false });
-  mocks.getRowSubscriptionIds.mockResolvedValue(new Map());
+  mocks.getRowSubscriptions.mockResolvedValue(new Map());
 });
 
 describe("reconcileSubscriptions", () => {
@@ -50,7 +50,7 @@ describe("reconcileSubscriptions", () => {
       quiet: true,
     });
     expect(report).toEqual({
-      counts: { checked: 2, corrected: 1, missingRow: 0 },
+      counts: { checked: 2, corrected: 1, missingRow: 0, duplicate: 0 },
       stoppedEarly: false,
     });
   });
@@ -65,11 +65,11 @@ describe("reconcileSubscriptions", () => {
       ],
       has_more: false,
     });
-    mocks.getRowSubscriptionIds.mockResolvedValue(
+    mocks.getRowSubscriptions.mockResolvedValue(
       new Map([
-        ["cus_1", null],
-        ["cus_2", "sub_2"],
-        ["cus_3", null],
+        ["cus_1", { subscriptionId: null, status: "incomplete" }],
+        ["cus_2", { subscriptionId: "sub_2", status: "active" }],
+        ["cus_3", { subscriptionId: null, status: "canceled" }],
       ]),
     );
 
@@ -95,6 +95,22 @@ describe("reconcileSubscriptions", () => {
 
     expect(report.counts.missingRow).toBe(2);
     expect(mocks.warn).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves a second live subscription to a person and never syncs it", async () => {
+    mocks.getReconcileRows.mockResolvedValue([]);
+    mocks.list.mockResolvedValue({
+      data: [{ id: "sub_2", customer: "cus_1", status: "active" }],
+      has_more: false,
+    });
+    mocks.getRowSubscriptions.mockResolvedValue(
+      new Map([["cus_1", { subscriptionId: "sub_1", status: "active" }]]),
+    );
+
+    const report = await reconcileSubscriptions({ now: NOW, deadline: LATER });
+
+    expect(mocks.syncSubscription).not.toHaveBeenCalled();
+    expect(report.counts.duplicate).toBe(1);
   });
 
   it("pages through Stripe", async () => {

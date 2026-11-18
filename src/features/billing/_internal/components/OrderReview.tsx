@@ -90,8 +90,13 @@ export function OrderReview({ plan, onClose, testMode }: OrderReviewProps) {
   const [waiveWithdrawal, setWaiveWithdrawal] = useState(false);
   const period = plan ?? "monthly";
 
+  // A consent never comes back ticked: closing clears both boxes, so another
+  // plan, or the same one again, is agreed to afresh.
   function handleOpenChange(open: boolean) {
-    if (!open && !isPending) onClose();
+    if (open || isPending) return;
+    setAcceptTerms(false);
+    setWaiveWithdrawal(false);
+    onClose();
   }
 
   function order() {

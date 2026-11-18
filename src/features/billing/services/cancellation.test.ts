@@ -50,6 +50,7 @@ import {
   processCancellationDeclaration,
 } from "@/features/billing/services/cancellation";
 import { OPERATOR } from "@/lib/legal/operator";
+import { logger } from "@/lib/observability/logger";
 
 const NOW = new Date("2026-11-18T10:00:00.000Z");
 const PERIOD_END = "2026-12-18T00:00:00.000Z";
@@ -127,7 +128,7 @@ describe("cancelOwnSubscription", () => {
 
     const result = await cancelOwnSubscription(
       "user-1",
-      { kind: "extraordinary", reason: "x" },
+      { kind: "ordinary" },
       "en",
       NOW,
     );
@@ -137,12 +138,22 @@ describe("cancelOwnSubscription", () => {
     expect(mocks.sendEmail).not.toHaveBeenCalled();
   });
 
-  it("sends at most one confirmation per account and day", async () => {
-    await cancelOwnSubscription("user-1", { kind: "ordinary" }, "en", NOW);
+  it("tells the operator about good cause on a contract already ending", async () => {
+    mocks.getContractState.mockReset().mockResolvedValue({
+      status: "cancelling",
+      periodEnd: PERIOD_END,
+    });
 
-    expect(mocks.sendEmail.mock.calls[0][0].idempotencyKey).toBe(
-      "cancellation/user-1/2026-11-18",
+    await cancelOwnSubscription(
+      "user-1",
+      { kind: "extraordinary", reason: "Moving abroad" },
+      "en",
+      NOW,
     );
+
+    expect(mocks.updateSubscription).not.toHaveBeenCalled();
+    expect(mocks.sendEmail).toHaveBeenCalledOnce();
+    expect(mocks.sendEmail.mock.calls[0][0].to).toBe(OPERATOR.email);
   });
 
   it("tells the operator about a cancellation for good cause", async () => {
@@ -265,10 +276,46 @@ describe("processCancellationDeclaration", () => {
   it("hands a failed declaration to the operator, never losing it", async () => {
     mocks.updateSubscription.mockRejectedValue(new Error("Stripe is down"));
 
-    await processCancellationDeclaration(DECLARATION, "en", NOW);
+    await expect(
+      processCancellationDeclaration(DECLARATION, "en", NOW),
+    ).rejects.toThrow("Stripe is down");
 
     const notice = mocks.sendEmail.mock.calls[0][0];
     expect(notice.to).toBe(OPERATOR.email);
     expect(notice.text).toContain("ada@example.com");
+  });
+
+  it("reports an operator notice that did not go out", async () => {
+    mocks.updateSubscription.mockRejectedValue(new Error("Stripe is down"));
+    mocks.sendEmail.mockResolvedValue({
+      success: false,
+      data: null,
+      error: "emailSendFailed",
+    });
+
+    await expect(
+      processCancellationDeclaration(DECLARATION, "en", NOW),
+    ).rejects.toThrow();
+
+    expect(logger.error).toHaveBeenCalledWith(
+      "Notifying the operator failed",
+      expect.anything(),
+    );
+  });
+
+  it("tells the operator about good cause filed against a contract already ending", async () => {
+    mocks.getContractState.mockReset().mockResolvedValue({
+      status: "cancelling",
+      periodEnd: PERIOD_END,
+    });
+
+    await processCancellationDeclaration(
+      { ...DECLARATION, kind: "extraordinary", reason: "Moved" },
+      "en",
+      NOW,
+    );
+
+    expect(mocks.sendEmail).toHaveBeenCalledOnce();
+    expect(mocks.sendEmail.mock.calls[0][0].to).toBe(OPERATOR.email);
   });
 });

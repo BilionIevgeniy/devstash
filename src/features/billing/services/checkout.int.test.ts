@@ -70,6 +70,7 @@ describe("createCheckoutSession", () => {
     stripeWith({
       customers: { create: createCustomer },
       checkout: { sessions: { create: createSession, list } },
+      subscriptions: { list },
     });
     vi.stubEnv("STRIPE_PRICE_ID_MONTHLY", "price_test_monthly");
     return { createCustomer, createSession };

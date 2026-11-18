@@ -1,4 +1,3 @@
-import { isSystemTypeName } from "@/features/item-types/domain/item-type";
 import "server-only";
 
 import {
@@ -20,8 +19,10 @@ import {
 } from "@/lib/postgres/prisma-errors";
 import { nextAiMarks } from "@/features/items/domain/ai-marks";
 import {
+  canCreateOfType,
   contentTypeFor,
   editableFields,
+  requiresPro,
 } from "@/features/items/domain/item-fields";
 import { toSearchTags } from "@/features/items/domain/search-text";
 import type { CreateItemInput } from "@/features/items/schemas";
@@ -141,7 +142,8 @@ export async function createUserItem(
   const { isPro } = await getEntitlements(userId);
   // A former Pro user keeps their custom types, read-only (ADR 0032): no new
   // item of one until Pro again.
-  if (!isPro && !isSystemTypeName(type.name)) {
+  // File and image are refused with their upload below (filesProOnly).
+  if (!canCreateOfType(type.name, isPro) && !requiresPro(type.name)) {
     return fail("customTypesProOnly");
   }
   const { file: fileKind } = editableFields(type.name);

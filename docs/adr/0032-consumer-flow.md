@@ -50,11 +50,11 @@ This record is the design and our reading of the law. It is not legal advice: a 
 ### One session builder; two open tabs
 
 - `billing/domain/checkout-session.ts` `checkoutSessionParams` is the one place the session is shaped: consent, button, `automatic_tax`, tax id collection, cards only, `expires_at` 60 minutes ahead (Stripe needs at least 30).
-- The service creates the session under an advisory lock per user. It lists the customer's open sessions first:
+- The service creates the session under an advisory lock per user. Inside it, Stripe is asked whether the customer already has a live subscription (the row can lag behind a payment whose webhook has not arrived), and the order is refused as "already Pro" if so. Then it lists the customer's open sessions:
   - an open session for the same plan and terms is handed out again;
   - any other open session is expired before a new one is made.
 - So two tabs that order at once end on one session, and on one subscription.
-- What remains: a session completed in one tab while the other still shows Stripe's page can lead to a second subscription. The other tab can still pay until its next request expires the session, and the "already Pro" refusal covers only new sessions.
+- What remains: a session completed in one tab while the other still shows Stripe's page can lead to a second subscription, since Stripe's page in the other tab is already open. The daily reconciliation never syncs such a second live subscription over the first (that would flip the row every day and re-send the confirmation): it reports it as an error with both ids, for a refund by hand (ADR 0033).
 - A reused session keeps the first tab's locale and consent time.
 
 ### Terms as data (AGB)
@@ -68,19 +68,18 @@ This record is the design and our reading of the law. It is not legal advice: a 
 
 ### Contract confirmation (§ 312f)
 
-- Sent once per subscription, using the "claim a business fact on the row" pattern (`docs/stripe-integration-plan.md`, section 5).
-- The claim:
+- Sent at least once per subscription, and through Resend's idempotency key not twice:
   - The sync reads the row through `tx` inside its lock.
-  - For a live subscription that carries the consent in its metadata, it sets `confirmedSubscriptionId` with an `updateMany` that only a different or empty value matches.
-  - `count === 1` sends.
+  - For a live subscription that carries the consent in its metadata and is not yet marked in `confirmedSubscriptionId`, it sends the email inside the lock, and marks the row only when the send succeeded.
+  - A failed send, a timeout or a frozen instance leaves the row unmarked, so the next webhook or the daily reconciliation sends again; a repeat after a send that did go out is answered by Resend from the key `contract-confirmation/<subscriptionId>` (the payload is the same).
+  - The lock is held during one email call, which is acceptable at this volume, like the Stripe read already held there.
 - A subscription without consent metadata never gets one: it was bought before the order step. The migration also marks every existing subscription as confirmed, so a renewal of an older subscription cannot send a consent its customer never gave.
-- After the commit, the email goes out through Resend with the idempotency key `contract-confirmation/<subscriptionId>`. It contains:
+- The email contains:
   - the provider;
   - the plan and the price;
   - the start date;
   - the consent with its time in Berlin;
   - the AGB and the withdrawal information in full.
-- A failed send releases the claim. The next webhook or the daily reconciliation sends again; the key keeps a timeout that did deliver from sending twice.
 
 ### Cancellation button (§ 312k)
 
@@ -105,13 +104,13 @@ This record is the design and our reading of the law. It is not legal advice: a 
   - The holder's email repeats none of the visitor's free text (name, reason): the form is open to anyone, and DevStash must not carry a stranger's words, a phishing link say, from its own domain. A cancellation for good cause goes with its text to the operator.
 - **Both:**
   - The screen then shows the declaration with its date and time, ready to print or save (§ 312k (3)).
-  - The confirmation email (§ 312k (4)) states the time in Berlin and tells the holder how to resume in the portal if they did not send it. At most one goes to an account per day (Resend's idempotency key `cancellation/<userId>/<day>`).
-  - A cancellation for good cause also goes to the operator's address with its reason.
+  - The confirmation email (§ 312k (4)) states the time in Berlin and tells the holder how to resume in the portal if they did not send it.
+  - A cancellation for good cause also goes to the operator's address with its reason, also when the contract already ends: it asks for an earlier end, which the operator decides.
 - **Limits:** `cancel:ip` and `cancel:email` (HMAC identifiers):
   - A refusal shows "try again in N minutes". The limits count requests, not accounts, so the refusal reveals nothing.
-  - When Upstash is down, the declaration is taken anyway: a consumer's cancellation must never be lost to our outage. It is still bounded, by the same limits counted in the memory of the instance (`_internal/services/local-limit.ts`).
+  - When Upstash is down, the declaration is taken anyway: a consumer's cancellation must never be lost to our outage. It is still bounded, by the same limits counted in the memory of the instance (`lib/vendors/local-rate-limit.ts`).
   - A missing Upstash setting or HMAC key is not an outage: `isRateLimitConfigured` is checked first, and the form answers with an error, so the mistake shows at once instead of turning the limits off.
-  - A failure of the deferred work goes to Sentry with ids only, and the full declaration goes to the operator's address to be finished by hand.
+  - A failure of the deferred work goes to Sentry with ids only, and the full declaration goes to the operator's address to be finished by hand. An operator notice that does not go out is an error of its own, and the deferred task rethrows, so the platform records it too.
 - **No declaration table:**
   - The screen record, the emails and Stripe's subscription carry what happened.
   - A table would hold personal data of people who may have no account, and would need its own retention rule.

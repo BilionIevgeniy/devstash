@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   aiSource,
   appendTag,
+  canCreateOfType,
   canUseType,
   CONTENT_MAX,
   contentError,
@@ -289,5 +290,18 @@ describe("contentError", () => {
     expect(
       contentError(editableFields("link"), "x".repeat(CONTENT_MAX + 1)),
     ).toBeNull();
+  });
+});
+
+describe("canCreateOfType", () => {
+  it("opens the free system types to everyone", () => {
+    expect(canCreateOfType("snippet", false)).toBe(true);
+  });
+
+  it("keeps the upload types and the custom types for Pro", () => {
+    expect(canCreateOfType("file", false)).toBe(false);
+    expect(canCreateOfType("Recipe", false)).toBe(false);
+    expect(canCreateOfType("Recipe", true)).toBe(true);
+    expect(canCreateOfType("image", true)).toBe(true);
   });
 });

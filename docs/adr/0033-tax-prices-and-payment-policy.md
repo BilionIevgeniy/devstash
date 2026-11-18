@@ -45,12 +45,13 @@ The AGB state the policy (section 6). The lawyer checks whether two weeks suppor
 `billing/services/reconciliation.ts` runs last in the daily cron (ADR 0030). It makes two passes:
 
 1. **Every row that names a subscription,** the least recently written first, read once before any write. Each is synced (`syncSubscription`), which ends a Pro row whose cancellation was lost.
-2. **Stripe's subscriptions that are not canceled** (paged, at the deadline it stops). A live one whose row does not name it is synced, which grants Pro after a lost `checkout.session.completed`.
+2. **Stripe's subscriptions that are not canceled** (paged, at the deadline it stops). A live one whose row does not name it is synced, which grants Pro after a lost `checkout.session.completed`. A live one whose row already names another live subscription is not synced: the customer pays twice, which is logged as an error with both ids for a refund by hand, and counted as `duplicate`.
 
 How the job behaves:
 
 - **The write:** it stays the sync's (the lock, the read inside it, written by customer, ADR 0012). So the job is idempotent, and a row that is right costs one Stripe read and no write.
-- **The report:** `checked`, `corrected` and `missingRow`.
+- **The report:** `checked`, `corrected`, `missingRow` and `duplicate`.
+- **A subscription Stripe no longer has** (test data cleared, a deleted object) ends the row that names it, like an ended status, so a Pro row cannot outlive its subscription.
 - **Foreign subscriptions:** a subscription of a customer with no row (a deleted account, or another project on a shared test account) is counted, and the job warns once per run.
 - **Confirmations:** the job also sends a § 312f confirmation whose email failed before (ADR 0032).
 

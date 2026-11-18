@@ -1,9 +1,6 @@
 import "server-only";
 
-import {
-  sendContractConfirmation,
-  type ClaimedConfirmation,
-} from "@/features/billing/_internal/services/contract-confirmation";
+import { sendContractConfirmation } from "@/features/billing/_internal/services/contract-confirmation";
 import {
   consentFromMetadata,
   syncPlan,
@@ -60,44 +57,55 @@ async function retrieveSubscription(id: string) {
   }
 }
 
-// One row claims a confirmation once per subscription; count 1 means this
-// sync won the claim and sends.
-async function claimConfirmation(
+// Marks the row once the confirmation of this subscription went out.
+async function markConfirmed(
   tx: Prisma.TransactionClient,
   customerId: string,
   subscriptionId: string,
-): Promise<boolean> {
+): Promise<void> {
+  await tx.subscription.updateMany({
+    where: { stripeCustomerId: customerId },
+    data: { confirmedSubscriptionId: subscriptionId },
+  });
+}
+
+// A subscription Stripe no longer has (test data cleared, a deleted object)
+// ends the row that names it, like an ended status would, so a Pro row cannot
+// outlive its subscription.
+async function endMissing(
+  tx: Prisma.TransactionClient,
+  customerId: string,
+  subscriptionId: string,
+): Promise<SyncOutcome> {
   const { count } = await tx.subscription.updateMany({
     where: {
       stripeCustomerId: customerId,
-      OR: [
-        { confirmedSubscriptionId: null },
-        { confirmedSubscriptionId: { not: subscriptionId } },
-      ],
+      stripeSubscriptionId: subscriptionId,
     },
-    data: { confirmedSubscriptionId: subscriptionId },
+    data: {
+      status: "canceled",
+      stripeSubscriptionId: null,
+      cancelAtPeriodEnd: false,
+    },
   });
-  return count === 1;
-}
-
-interface SyncResult {
-  outcome: SyncOutcome;
-  claimed: ClaimedConfirmation | null;
+  return count > 0 ? "corrected" : "unchanged";
 }
 
 // The read is inside the lock, so an older state can never commit last. Safe
 // to run many times and at once: webhook retries, the return from Checkout and
 // the daily reconciliation. The signed event, a checked session or the cron
 // secret is the authority for this write, which is why it is scoped by the
-// customer, not by userId (ADR 0012).
+// customer, not by userId (ADR 0012). The § 312f confirmation is sent inside
+// the lock and only then marked, so it goes out at least once and, through
+// Resend's idempotency key, not twice (ADR 0032).
 async function syncInLock(
   customerId: string,
   subscriptionId: string,
-): Promise<SyncResult> {
+): Promise<SyncOutcome> {
   return prisma.$transaction(async (tx) => {
     await lockForTransaction(tx, `stripe-customer:${customerId}`);
     const subscription = await retrieveSubscription(subscriptionId);
-    if (!subscription) return { outcome: "unchanged", claimed: null };
+    if (!subscription) return endMissing(tx, customerId, subscriptionId);
 
     const snapshot = toSnapshot(subscription);
     const row = await tx.subscription.findUnique({
@@ -105,38 +113,32 @@ async function syncInLock(
       select: ROW_STATE,
     });
     // No row: a deleted account or a customer that is not ours.
-    if (!row) return { outcome: "noRow", claimed: null };
+    if (!row) return "noRow";
 
     const plan = syncPlan(row, snapshot);
     if (plan.write) await tx.subscription.updateMany(plan.write);
-    const claimed =
-      plan.confirm &&
-      snapshot.consent &&
-      (await claimConfirmation(tx, customerId, snapshot.id))
-        ? {
-            userId: row.userId,
-            subscriptionId: snapshot.id,
-            startedAt: new Date(subscription.start_date * 1000),
-            consent: snapshot.consent,
-            metadata: subscription.metadata,
-          }
-        : null;
-    return { outcome: plan.write ? "corrected" : "unchanged", claimed };
+    if (plan.confirm && snapshot.consent) {
+      const sent = await sendContractConfirmation({
+        userId: row.userId,
+        subscriptionId: snapshot.id,
+        startedAt: new Date(subscription.start_date * 1000),
+        consent: snapshot.consent,
+        metadata: subscription.metadata,
+      });
+      if (sent) await markConfirmed(tx, customerId, snapshot.id);
+    }
+    return plan.write ? "corrected" : "unchanged";
   }, LOCKED_TRANSACTION);
 }
 
-// `quiet` leaves the warning for a missing row to the caller: the daily job
-// warns once per run, not once per foreign subscription.
 export async function syncSubscription(
   customerId: string,
   subscriptionId: string,
   { quiet = false }: { quiet?: boolean } = {},
 ): Promise<SyncOutcome> {
-  const { outcome, claimed } = await syncInLock(customerId, subscriptionId);
+  const outcome = await syncInLock(customerId, subscriptionId);
   if (outcome === "noRow" && !quiet) {
     logger.warn("No row took a subscription", { customerId, subscriptionId });
   }
-  // After the commit: the email never waits inside the lock.
-  if (claimed) await sendContractConfirmation(claimed);
   return outcome;
 }

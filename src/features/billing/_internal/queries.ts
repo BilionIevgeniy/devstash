@@ -55,19 +55,28 @@ export async function getReconcileRows(): Promise<ReconcileRow[]> {
   );
 }
 
-// The subscription each customer's row holds, for the reconciliation's second
-// pass; a customer with no row is missing from the map.
-export async function getRowSubscriptionIds(
+// The subscription each customer's row holds and its status, for the
+// reconciliation's second pass; a customer with no row is missing from the map.
+export async function getRowSubscriptions(
   customerIds: string[],
-): Promise<Map<string, string | null>> {
+): Promise<Map<string, { subscriptionId: string | null; status: string }>> {
   const rows = await prisma.subscription.findMany({
     where: { stripeCustomerId: { in: customerIds } },
-    select: { stripeCustomerId: true, stripeSubscriptionId: true },
+    select: {
+      stripeCustomerId: true,
+      stripeSubscriptionId: true,
+      status: true,
+    },
   });
   return new Map(
-    rows.flatMap(({ stripeCustomerId, stripeSubscriptionId }) =>
+    rows.flatMap(({ stripeCustomerId, stripeSubscriptionId, status }) =>
       stripeCustomerId
-        ? [[stripeCustomerId, stripeSubscriptionId] as const]
+        ? [
+            [
+              stripeCustomerId,
+              { subscriptionId: stripeSubscriptionId, status },
+            ] as const,
+          ]
         : [],
     ),
   );

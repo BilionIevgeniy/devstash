@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   retrieveCheckout: vi.fn(),
   listCheckout: vi.fn(),
   expireCheckout: vi.fn(),
+  listSubscriptions: vi.fn(),
   syncSubscription: vi.fn(),
 }));
 
@@ -29,6 +30,7 @@ vi.mock("@/lib/vendors/stripe", () => ({
       },
     },
     billingPortal: { sessions: { create: mocks.createPortal } },
+    subscriptions: { list: mocks.listSubscriptions },
   }),
   isStripeCustomerMissing: (error: unknown) => error === DEAD_CUSTOMER,
   isStripeNotFound: (error: unknown) => error === MISSING_SESSION,
@@ -75,6 +77,7 @@ beforeEach(() => {
   mocks.createCustomer.mockResolvedValue({ id: "cus_new" });
   mocks.createCheckout.mockResolvedValue({ url: CHECKOUT_URL });
   mocks.listCheckout.mockResolvedValue({ data: [] });
+  mocks.listSubscriptions.mockResolvedValue({ data: [] });
 });
 
 const MONTHLY = { plan: "monthly", locale: "de" } as const;
@@ -171,6 +174,17 @@ describe("createCheckoutSession", () => {
 });
 
 describe("createCheckoutSession with open sessions", () => {
+  it("refuses when the customer already pays in Stripe, before the row knows", async () => {
+    mocks.listSubscriptions.mockResolvedValue({
+      data: [{ id: "sub_1", status: "active" }],
+    });
+
+    const result = await createCheckoutSession(USER, MONTHLY, ORIGIN);
+
+    expect(result.error).toBe("alreadyPro");
+    expect(mocks.createCheckout).not.toHaveBeenCalled();
+  });
+
   const open = (id: string, plan: string) => ({
     id,
     url: `https://checkout.stripe.test/${id}`,

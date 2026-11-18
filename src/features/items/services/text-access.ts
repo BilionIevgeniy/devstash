@@ -3,6 +3,7 @@ import "server-only";
 import { getEntitlements } from "@/features/billing/queries";
 import { textEditsAllowed } from "@/features/billing/domain/limits";
 import { getItemCount } from "@/features/items/queries";
+import type { ItemEditMode } from "@/features/items/types";
 
 // Whether the user may rewrite the text of their items (ADR 0032): always on
 // Pro, and on Free only at or under the item limit. Shared by every writer of
@@ -12,9 +13,6 @@ export async function userCanEditText(userId: string): Promise<boolean> {
   if (isPro) return true;
   return textEditsAllowed(false, await getItemCount(userId));
 }
-
-/** How the edit form opens: the text too, or the collections only (ADR 0032). */
-export type ItemEditMode = "full" | "collectionsOnly";
 
 export async function getItemEditMode(userId: string): Promise<ItemEditMode> {
   return (await userCanEditText(userId)) ? "full" : "collectionsOnly";
