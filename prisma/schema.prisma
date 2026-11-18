@@ -16,14 +16,6 @@ model User {
   password       String?
   sessionVersion Int       @default(0)
 
-  // Superseded by Subscription. @ignore keeps the columns in the database and
-  // out of the client (no migration): the deployment that is live before this
-  // one still selects them by name. Feature 18 drops them once this deploy is
-  // live (expand/contract, ADR 0013). Code must not read them again.
-  isPro                Boolean @default(false) @ignore
-  stripeCustomerId     String? @ignore
-  stripeSubscriptionId String? @ignore
-
   accounts     Account[]
   sessions     Session[]
   items        Item[]
@@ -114,9 +106,6 @@ model Item {
   title                  String
   contentType            String
   content                String?
-  // Superseded by fileKey; @ignore keeps the column until feature 18 drops it
-  // (see User.isPro).
-  fileUrl                String?   @ignore
   // The R2 object key under users/<userId>/, never a URL. Unique, so one
   // upload cannot back two items.
   fileKey                String?   @unique
