@@ -1,5 +1,7 @@
 // The export file (ADR 0019):
-// {"version":1,"exportedAt":…,"linksExpireAt":…,"collections":[…],"items":[…]}
+// {"version":1,"exportedAt":…,"linksExpireAt":…,"types":[…],"collections":[…],"items":[…]}
+// "types" (the custom types, ADR 0031) came later in version 1: a file without
+// it imports as before.
 // written in pieces, so the server holds one page of items at a time.
 
 export const EXPORT_VERSION = 1;
@@ -17,16 +19,18 @@ export function exportFileName(now: Date): string {
   return `devstash-export-${now.toISOString().slice(0, 10)}.json`;
 }
 
-// Everything before the first item: the version, the dates and every
-// collection, then the opening bracket of the items.
+// Everything before the first item: the version, the dates, every custom
+// type and every collection, then the opening bracket of the items.
 export function exportOpening(
   { exportedAt, linksExpireAt }: ExportMeta,
+  types: readonly unknown[],
   collections: readonly unknown[],
 ): string {
   const head = JSON.stringify({
     version: EXPORT_VERSION,
     exportedAt,
     linksExpireAt,
+    types,
     collections,
   });
   return `${head.slice(0, -1)},"items":[`;

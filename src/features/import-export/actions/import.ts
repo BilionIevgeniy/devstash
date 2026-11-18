@@ -5,6 +5,7 @@ import { importBatchSchema } from "@/features/import-export/schemas";
 import {
   importUserCollections,
   importUserItems,
+  importUserTypes,
   type ImportBatchResult,
 } from "@/features/import-export/services/import";
 import type {
@@ -39,6 +40,12 @@ async function runBatch<T>(
     await logger.error("Importing a batch failed", { error, userId });
     return fail("generic");
   }
+}
+
+export async function importTypes(
+  records: unknown,
+): Promise<ActionResult<ImportSummary>> {
+  return runBatch(records, importUserTypes);
 }
 
 export async function importCollections(

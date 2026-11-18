@@ -77,9 +77,16 @@ describe("parseImportedItem", () => {
       kind: "invalid",
       reason: { error: "titleRequired" },
     });
-    expect(parseImportedItem({ ...snippet, type: "custom" })).toEqual({
+    expect(parseImportedItem({ ...snippet, type: " " })).toEqual({
       kind: "invalid",
       reason: { error: "unknownItemType" },
+    });
+  });
+
+  it("passes a custom type's name on to the create, which finds it", () => {
+    expect(parseImportedItem({ ...snippet, type: "Recipes" })).toMatchObject({
+      kind: "ok",
+      data: { typeName: "Recipes" },
     });
   });
 

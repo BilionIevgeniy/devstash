@@ -82,10 +82,13 @@ export function toCreateItemCandidate(record: ImportRecord) {
 
 // Two items are the same when their type, title and the text their type stores
 // match: two snippets with one title but different code are both kept.
+// The type name is compared in lower case: a custom type's name is unique per
+// user whatever its case, and a record may name it in another case than the
+// account stores (system names are lower case already).
 export function itemDuplicateKey(item: ItemIdentity): string {
   const fields = editableFields(item.typeName);
   return JSON.stringify([
-    item.typeName,
+    item.typeName.toLowerCase(),
     item.title,
     fields.content ? item.content : null,
     fields.url ? item.url : null,

@@ -2,12 +2,16 @@ import { act, render, screen } from "../../../../../test/intl";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { importCollections, importItems, refresh } = vi.hoisted(() => ({
-  importCollections: vi.fn(),
-  importItems: vi.fn(),
-  refresh: vi.fn(),
-}));
+const { importTypes, importCollections, importItems, refresh } = vi.hoisted(
+  () => ({
+    importTypes: vi.fn(),
+    importCollections: vi.fn(),
+    importItems: vi.fn(),
+    refresh: vi.fn(),
+  }),
+);
 vi.mock("@/features/import-export/actions/import", () => ({
+  importTypes,
   importCollections,
   importItems,
 }));
@@ -93,6 +97,26 @@ describe("ImportButton", () => {
       importItems.mock.invocationCallOrder[0],
     );
     expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("sends the custom types before the collections and the items", async () => {
+    importTypes.mockResolvedValue({
+      success: true,
+      error: null,
+      data: summary({ created: 1 }),
+    });
+    const types = [{ name: "Recipes", icon: "Code", color: "#3b82f6" }];
+    render(<ImportButton />);
+
+    await choose(jsonFile({ ...exportFile, types }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Import finished. 3 created",
+    );
+    expect(importTypes).toHaveBeenCalledWith(types);
+    expect(importTypes.mock.invocationCallOrder[0]).toBeLessThan(
+      importCollections.mock.invocationCallOrder[0],
+    );
   });
 
   it("rejects a malformed or newer file in plain words and sends nothing", async () => {

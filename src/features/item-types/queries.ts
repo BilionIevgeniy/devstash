@@ -9,6 +9,7 @@ import {
 } from "@/features/item-types/domain/item-type";
 import type {
   CustomTypeRow,
+  ExportedCustomType,
   ItemTypeInfo,
   SidebarItemType,
 } from "@/features/item-types/types";
@@ -122,4 +123,15 @@ export async function getCustomTypes(userId: string): Promise<CustomTypeRow[]> {
       itemCount: _count.items,
     }))
     .toSorted((a, b) => a.name.localeCompare(b.name));
+}
+
+// The caller's custom types for the export, by name.
+export function getExportCustomTypes(
+  userId: string,
+): Promise<ExportedCustomType[]> {
+  return prisma.itemType.findMany({
+    where: { userId, isSystem: false },
+    orderBy: { name: "asc" },
+    select: { name: true, icon: true, color: true },
+  });
 }

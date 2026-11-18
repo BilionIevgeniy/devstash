@@ -3,6 +3,9 @@ import "server-only";
 import { getEntitlements } from "@/features/billing/queries";
 import { getCollectionIdsByName } from "@/features/collections/queries/import";
 import { createUserCollection } from "@/features/collections/services/collection";
+import { sameTypeName } from "@/features/item-types/domain/custom-type";
+import { getCustomTypes } from "@/features/item-types/queries";
+import { createCustomType } from "@/features/item-types/services/custom-types";
 import {
   emptyImportSummary,
   itemDuplicateKey,
@@ -12,6 +15,7 @@ import { IMPORT_BY_USER } from "@/features/import-export/domain/limits";
 import {
   parseImportedCollection,
   parseImportedItem,
+  parseImportedType,
 } from "@/features/import-export/schemas";
 import type {
   CollectionImportData,
@@ -54,6 +58,41 @@ async function createRecord(
     await logger.error("Importing a record failed", { error, userId });
     return { error: { error: "importRecordFailed" } };
   }
+}
+
+// The custom types go first (ADR 0020, ADR 0031), so the items that name them
+// find them by name. A type whose name the account already has, in any case,
+// is not created again: its items go into the one that is there.
+export async function importUserTypes(
+  userId: string,
+  records: unknown[],
+): Promise<ImportBatchResult<ImportSummary>> {
+  const refusal = await refuseImport(userId);
+  if (refusal) return refusal;
+
+  const known = (await getCustomTypes(userId)).map((type) => type.name);
+  const summary = emptyImportSummary();
+  for (const [index, record] of records.map(parseImportedType).entries()) {
+    const title = recordLabel(records[index]);
+    if (record.kind === "invalid") {
+      summary.failed.push({ title, reason: record.reason });
+      continue;
+    }
+    if (known.some((name) => sameTypeName(name, record.data.name))) {
+      summary.duplicates += 1;
+      continue;
+    }
+    const created = await createRecord(userId, () =>
+      createCustomType(userId, record.data),
+    );
+    if ("error" in created) {
+      summary.failed.push({ title, reason: created.error });
+      continue;
+    }
+    known.push(record.data.name);
+    summary.created += 1;
+  }
+  return { status: "ok", data: summary };
 }
 
 // A collection whose name the account already has (the oldest of that name)
