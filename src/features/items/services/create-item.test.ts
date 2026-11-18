@@ -5,7 +5,7 @@ const {
   count,
   transaction,
   lock,
-  getItemTypeByName,
+  getUserItemTypeByName,
   getEntitlements,
   confirmUpload,
 } = vi.hoisted(() => ({
@@ -13,7 +13,7 @@ const {
   count: vi.fn(),
   transaction: vi.fn(),
   lock: vi.fn(),
-  getItemTypeByName: vi.fn(),
+  getUserItemTypeByName: vi.fn(),
   getEntitlements: vi.fn(),
   confirmUpload: vi.fn(),
 }));
@@ -26,7 +26,7 @@ vi.mock("@/lib/postgres/advisory-lock", () => ({
 }));
 vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
 vi.mock("@/features/files/services/objects", () => ({ confirmUpload }));
-vi.mock("@/features/item-types/queries", () => ({ getItemTypeByName }));
+vi.mock("@/features/item-types/queries", () => ({ getUserItemTypeByName }));
 
 import { NO_AI_CLAIMS } from "@/features/items/domain/ai-marks";
 import { Prisma } from "@/generated/prisma/client";
@@ -62,11 +62,13 @@ describe("createUserItem", () => {
       .mockImplementation((run: (tx: unknown) => unknown) =>
         run({ item: { create, count } }),
       );
-    getItemTypeByName.mockReset().mockImplementation(async (name: string) => ({
-      id: `type-${name}`,
-      name,
-      icon: "Code",
-    }));
+    getUserItemTypeByName
+      .mockReset()
+      .mockImplementation(async (_userId: string, name: string) => ({
+        id: `type-${name}`,
+        name,
+        icon: "Code",
+      }));
   });
 
   it("writes the item for the caller with its type and content type", async () => {
@@ -176,7 +178,7 @@ describe("createUserItem", () => {
   });
 
   it("writes nothing when the system type is missing", async () => {
-    getItemTypeByName.mockResolvedValue(null);
+    getUserItemTypeByName.mockResolvedValue(null);
 
     const result = await createUserItem("user-1", snippet);
 

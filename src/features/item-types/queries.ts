@@ -1,10 +1,13 @@
 import "server-only";
 
+import { cache } from "react";
+
 import {
   sortBySystemOrder,
   toItemTypeInfo,
 } from "@/features/item-types/domain/item-type";
 import type {
+  CustomTypeRow,
   ItemTypeInfo,
   SidebarItemType,
 } from "@/features/item-types/types";
@@ -19,14 +22,25 @@ export const itemTypeSelect = {
   color: true,
 } satisfies Prisma.ItemTypeSelect;
 
-// System types only, shared by every user, so no owner in the where. When
-// custom types arrive, a lookup by name must add the caller (see "Known risks"
-// in docs/architecture.md).
-export async function getItemTypeByName(
+// The type an item names: a system type by its exact name, else the caller's
+// own custom type, whatever the case. A custom name is never a system name
+// (isReservedTypeName), and another user's type is never read, so nobody can
+// create items of someone else's type.
+export async function getUserItemTypeByName(
+  userId: string,
   name: string,
 ): Promise<ItemTypeInfo | null> {
   const type = await prisma.itemType.findFirst({
-    where: { name, isSystem: true },
+    where: {
+      OR: [
+        { isSystem: true, userId: null, name },
+        {
+          userId,
+          isSystem: false,
+          name: { equals: name, mode: "insensitive" },
+        },
+      ],
+    },
     select: itemTypeSelect,
   });
   return type ? toItemTypeInfo(type) : null;
@@ -59,21 +73,43 @@ export async function getItemTypesById(
   return new Map(types.map((type) => [type.id, toItemTypeInfo(type)]));
 }
 
-export async function getSidebarItemTypes(
-  userId: string,
-): Promise<SidebarItemType[]> {
+// The system types in their order, then the caller's own types by name, each
+// with the caller's item count. cache(): the sidebar, the create button and
+// the profile read it in one request.
+export const getSidebarItemTypes = cache(
+  async (userId: string): Promise<SidebarItemType[]> => {
+    const types = await prisma.itemType.findMany({
+      where: { OR: [{ isSystem: true, userId: null }, { userId }] },
+      select: {
+        ...itemTypeSelect,
+        _count: { select: { items: { where: { userId } } } },
+      },
+    });
+
+    return sortBySystemOrder(
+      types
+        .map(({ _count, ...type }) => ({
+          ...toItemTypeInfo(type),
+          itemCount: _count.items,
+        }))
+        .toSorted((a, b) => a.name.localeCompare(b.name)),
+    );
+  },
+);
+
+// The settings list of the caller's custom types, by name.
+export async function getCustomTypes(userId: string): Promise<CustomTypeRow[]> {
   const types = await prisma.itemType.findMany({
-    where: { isSystem: true },
+    where: { userId, isSystem: false },
     select: {
       ...itemTypeSelect,
-      _count: { select: { items: { where: { userId } } } },
+      _count: { select: { items: true } },
     },
   });
-
-  return sortBySystemOrder(
-    types.map(({ _count, ...type }) => ({
+  return types
+    .map(({ _count, ...type }) => ({
       ...toItemTypeInfo(type),
       itemCount: _count.items,
-    })),
-  );
+    }))
+    .toSorted((a, b) => a.name.localeCompare(b.name));
 }

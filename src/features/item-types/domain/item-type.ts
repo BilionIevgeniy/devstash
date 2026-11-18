@@ -1,7 +1,8 @@
 import type { ItemTypeInfo } from "@/features/item-types/types";
 
 const DEFAULT_TYPE_ICON = "File";
-const SYSTEM_TYPE_ORDER = [
+// The system types, in the order the sidebar and the forms show them.
+export const SYSTEM_TYPE_NAMES = [
   "snippet",
   "prompt",
   "command",
@@ -10,6 +11,7 @@ const SYSTEM_TYPE_ORDER = [
   "image",
   "link",
 ] as const;
+const SYSTEM_TYPE_ORDER = SYSTEM_TYPE_NAMES;
 
 export type SystemTypeName = (typeof SYSTEM_TYPE_ORDER)[number];
 

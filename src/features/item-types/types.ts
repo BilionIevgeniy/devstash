@@ -10,3 +10,6 @@ export interface ItemTypeInfo {
 export interface SidebarItemType extends ItemTypeInfo {
   itemCount: number;
 }
+
+/** A custom type in the settings list: all its items, of any state. */
+export type CustomTypeRow = SidebarItemType;

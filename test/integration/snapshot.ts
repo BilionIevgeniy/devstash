@@ -13,26 +13,35 @@ export async function snapshotTenant(userId: string) {
       updatedAt: true,
     },
   });
-  const [items, collections, tags, subscription, preference, accounts, tokens] =
-    await Promise.all([
-      prisma.item.findMany({
-        where: { userId },
-        orderBy: { id: "asc" },
-        include: {
-          tags: { orderBy: { tagId: "asc" } },
-          collections: { orderBy: { collectionId: "asc" } },
-        },
-      }),
-      prisma.collection.findMany({ where: { userId }, orderBy: { id: "asc" } }),
-      prisma.tag.findMany({ where: { userId }, orderBy: { id: "asc" } }),
-      prisma.subscription.findUnique({ where: { userId } }),
-      prisma.userPreference.findUnique({ where: { userId } }),
-      prisma.account.findMany({ where: { userId }, orderBy: { id: "asc" } }),
-      prisma.verificationToken.findMany({
-        where: { identifier: user.email },
-        orderBy: { token: "asc" },
-      }),
-    ]);
+  const [
+    items,
+    collections,
+    tags,
+    subscription,
+    preference,
+    accounts,
+    tokens,
+    itemTypes,
+  ] = await Promise.all([
+    prisma.item.findMany({
+      where: { userId },
+      orderBy: { id: "asc" },
+      include: {
+        tags: { orderBy: { tagId: "asc" } },
+        collections: { orderBy: { collectionId: "asc" } },
+      },
+    }),
+    prisma.collection.findMany({ where: { userId }, orderBy: { id: "asc" } }),
+    prisma.tag.findMany({ where: { userId }, orderBy: { id: "asc" } }),
+    prisma.subscription.findUnique({ where: { userId } }),
+    prisma.userPreference.findUnique({ where: { userId } }),
+    prisma.account.findMany({ where: { userId }, orderBy: { id: "asc" } }),
+    prisma.verificationToken.findMany({
+      where: { identifier: user.email },
+      orderBy: { token: "asc" },
+    }),
+    prisma.itemType.findMany({ where: { userId }, orderBy: { id: "asc" } }),
+  ]);
   return {
     user,
     items,
@@ -42,5 +51,6 @@ export async function snapshotTenant(userId: string) {
     preference,
     accounts,
     tokens,
+    itemTypes,
   };
 }

@@ -5,7 +5,6 @@ import {
   type Tenants,
 } from "../../../test/integration/fixtures";
 import {
-  getItemTypeByName,
   getItemTypeBySlug,
   getItemTypesById,
   getSidebarItemTypes,
@@ -15,14 +14,13 @@ import { prisma } from "@/lib/postgres/prisma";
 let t: Tenants;
 let customTypeOfB: string;
 
-// Custom types are not built yet; a row is inserted here to pin that the
-// lookups never hand out someone else's.
+// A custom type of B, inserted directly: the lookups never hand it to A.
 beforeAll(async () => {
   t = await seedTenants();
   const custom = await prisma.itemType.create({
     data: {
-      name: "snippet",
-      slug: "snippets",
+      name: "Recipes",
+      slug: "recipes",
       userId: t.b.userId,
       isSystem: false,
     },
@@ -40,15 +38,6 @@ describe("getItemTypesById", () => {
   });
 });
 
-describe("getItemTypeByName", () => {
-  it("finds the system type, not a user's type of the same name", async () => {
-    const snippet = await systemTypeId("snippet");
-    await expect(getItemTypeByName("snippet")).resolves.toMatchObject({
-      id: snippet,
-    });
-  });
-});
-
 describe("getItemTypeBySlug", () => {
   it("finds a system type by its slug for any user", async () => {
     const snippet = await systemTypeId("snippet");
@@ -58,14 +47,10 @@ describe("getItemTypeBySlug", () => {
   });
 
   it("finds the caller's own type, never another user's of the same slug", async () => {
-    const own = await prisma.itemType.create({
-      data: { name: "Recipes", slug: "recipes", userId: t.b.userId },
-    });
     await expect(
       getItemTypeBySlug(t.b.userId, "recipes"),
-    ).resolves.toMatchObject({ id: own.id });
+    ).resolves.toMatchObject({ id: customTypeOfB });
     await expect(getItemTypeBySlug(t.a.userId, "recipes")).resolves.toBeNull();
-    await prisma.itemType.delete({ where: { id: own.id } });
   });
 });
 

@@ -11,7 +11,6 @@
   "tooManyAttemptsNoTime": "Too many attempts. Try again later.",
   "emailSendFailed": "We couldn't send the email. Please try again later.",
   "copyFailed": "Couldn't copy to the clipboard",
-
   "invalidEmail": "Invalid email address",
   "passwordTooShort": "Password must be at least {min} characters",
   "passwordTooLong": "Password must be at most {max} characters",
@@ -35,7 +34,6 @@
   "incorrectPassword": "Password is incorrect",
   "invalidDeletionLink": "This confirmation link is invalid or has expired. Request a new one from the settings",
   "githubEmailUnverified": "Your GitHub account has no verified primary email. Verify it on GitHub, then sign in again",
-
   "uploadsProOnly": "File uploads are a Pro feature",
   "chooseFileKind": "Choose a file kind",
   "fileNameRequired": "The file needs a name",
@@ -48,7 +46,6 @@
   "wrongFileType": "The uploaded file does not match its type",
   "uploadStartFailed": "The upload could not start. Please try again.",
   "uploadFailed": "The upload failed. Check your connection and try again.",
-
   "invalidItemId": "Invalid item id",
   "invalidFavoriteValue": "Invalid favorite value",
   "invalidPinValue": "Invalid pin value",
@@ -88,7 +85,6 @@
   "promptSaveFailed": "Couldn't save the prompt",
   "favoriteFailed": "Couldn't update the favorite.",
   "pinFailed": "Couldn't update the pin.",
-
   "enterName": "Enter a name",
   "nameTooLong": "The name can be up to {max} characters",
   "collectionNotFound": "This collection no longer exists.",
@@ -96,11 +92,9 @@
   "collectionCreateFailed": "Couldn't create the collection",
   "collectionSaveFailed": "Couldn't update the collection",
   "collectionDeleteFailed": "Couldn't delete the collection",
-
   "invalidFontSize": "Invalid font size",
   "invalidTabSize": "Invalid tab size",
   "preferencesSaveFailed": "Your preferences could not be saved. Please try again.",
-
   "aiInputTooLong": "Up to {max} characters",
   "nothingToRead": "Add a title or content first",
   "nothingToExplain": "There is no code to explain",
@@ -114,12 +108,10 @@
   "aiRefused": "AI could not answer this item.",
   "aiFailed": "AI could not finish the answer. Try again.",
   "aiSignedOut": "Your session ended. Sign in again.",
-
   "alreadyPro": "You are already on the Pro plan.",
   "noBillingAccount": "No billing account was found.",
   "paymentNotConfirmed": "This payment could not be confirmed.",
   "billingUnreachable": "Couldn't reach billing. Please try again.",
-
   "importProOnly": "Import is a Pro feature",
   "importRateLimited": "Too many import requests. Wait a minute and try again.",
   "importUnavailable": "Import is unavailable right now. Please try again later.",
@@ -142,13 +134,24 @@
   "exportUnavailable": "Export is unavailable right now",
   "exportDownloadFailed": "The export could not be downloaded. Check your connection and try again.",
   "exportInterrupted": "The export was interrupted. You can export again in a minute.",
-
   "subscriptionCancelFailed": "Your subscription could not be cancelled, so nothing was removed. Please try again.",
   "filesPurgeFailed": "Your files could not be deleted, so your account was not removed. Any active subscription has been cancelled. Please try again.",
-
   "invalidSearch": "Invalid search",
   "tooManySearches": "Too many searches",
   "searchUnavailable": "Search is unavailable right now",
   "searchFailed": "Couldn't search. Try again.",
-  "searchRateLimited": "Too many searches. Wait a moment and try again."
+  "searchRateLimited": "Too many searches. Wait a moment and try again.",
+  "invalidTypeId": "Invalid type",
+  "typeNameRequired": "Give the type a name",
+  "typeNameTooLong": "A type name can be up to {max} characters",
+  "typeNameReserved": "This name belongs to a built-in type. Choose another one.",
+  "typeNameTaken": "You already have a type with this name",
+  "invalidTypeIcon": "Choose one of the icons",
+  "invalidTypeColor": "Choose one of the colors",
+  "typeNotFound": "This type no longer exists.",
+  "typeHasItems": "This type still has items. Move or delete them first.",
+  "customTypesProOnly": "Custom types are a Pro feature",
+  "customTypeLimitReached": "You can have up to {limit} custom types",
+  "customTypeSaveFailed": "Couldn't save the type. Try again.",
+  "customTypeDeleteFailed": "Couldn't delete the type. Try again."
 }

@@ -17,6 +17,7 @@ import "../src/app/globals.css";
 // resolves it with require.resolve, and `import("….ts")` would need
 // allowImportingTsExtensions in tsconfig.json.
 sb.mock("../src/features/collections/actions/collection.ts");
+sb.mock("../src/features/item-types/actions/custom-type.ts");
 
 // The theme and the fonts go on <html>, as in src/app/layout.tsx: the dark
 // variant matches `.dark *` and `html` reads the font variables, so a menu, a

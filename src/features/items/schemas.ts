@@ -5,12 +5,12 @@ import {
   FILE_NAME_MAX,
   type FileKind,
 } from "@/features/files/domain/file-rules";
+import { TYPE_NAME_MAX } from "@/features/item-types/domain/custom-type";
 import { NO_AI_CLAIMS } from "@/features/items/domain/ai-marks";
 import { FAVORITE_ITEM_SORTS } from "@/features/items/domain/list/favorite-sort";
 import {
   COLLECTIONS_MAX,
   CONTENT_MAX,
-  CREATABLE_TYPES,
   DESCRIPTION_MAX,
   editableFields,
   LANGUAGE_MAX,
@@ -152,7 +152,13 @@ const uploadedFile = z.object({
 // carry one; other fields its type does not have are dropped by the service.
 export const createItemSchema = updateItemSchema
   .extend({
-    typeName: z.enum(CREATABLE_TYPES, "chooseItemType"),
+    // A system type's name or one of the caller's custom types; the service
+    // finds which, and refuses another user's (getUserItemTypeByName).
+    typeName: z
+      .string("chooseItemType")
+      .trim()
+      .min(1, "chooseItemType")
+      .max(TYPE_NAME_MAX, "chooseItemType"),
     file: uploadedFile.optional(),
   })
   .superRefine((input, ctx) => {

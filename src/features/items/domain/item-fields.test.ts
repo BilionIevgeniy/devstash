@@ -141,8 +141,14 @@ describe("editableFields", () => {
     expect(editableFields(typeName)).toEqual(fields);
   });
 
-  it("gives no type-specific fields to a type it does not know", () => {
-    expect(editableFields("recipe")).toEqual(none);
+  it("gives a custom type the fields of a snippet: content and language", () => {
+    expect(editableFields("Recipes")).toEqual({
+      content: true,
+      codeEditor: true,
+      language: true,
+      url: false,
+      file: null,
+    });
   });
 });
 
@@ -186,10 +192,10 @@ describe("aiSource", () => {
     },
   );
 
-  it("sends nothing besides the title for a custom type", () => {
-    expect(aiSource(editableFields("recipe"), values)).toEqual({
-      kind: "none",
-      text: "",
+  it("reads the content of a custom type", () => {
+    expect(aiSource(editableFields("Recipes"), values)).toEqual({
+      kind: "content",
+      text: values.content,
     });
   });
 });

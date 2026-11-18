@@ -31,6 +31,8 @@ export const ERROR_PARAM_NAMES = {
   importTooManyItems: ["max"],
   importTooManyCollections: ["max"],
   importFileTooLarge: ["max"],
+  typeNameTooLong: ["max"],
+  customTypeLimitReached: ["limit"],
 } as const satisfies { readonly [Code in ErrorCode]?: readonly string[] };
 
 type ParamCode = keyof typeof ERROR_PARAM_NAMES;

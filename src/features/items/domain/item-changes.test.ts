@@ -111,9 +111,15 @@ describe("typeFieldValues", () => {
     expect(sent).not.toHaveProperty("language");
   });
 
-  it("sends nothing type-specific for a file or a custom type", () => {
+  it("sends nothing type-specific for a file", () => {
     expect(typeFieldValues(editableFields("file"), values)).toEqual({});
-    expect(typeFieldValues(editableFields("custom"), values)).toEqual({});
+  });
+
+  it("sends the content and language of a custom type", () => {
+    expect(typeFieldValues(editableFields("Recipes"), values)).toEqual({
+      content: values.content,
+      language: "typescript",
+    });
   });
 });
 

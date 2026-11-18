@@ -262,8 +262,13 @@ describe("createItemSchema", () => {
     return parse(input).error?.issues[0].message;
   }
 
-  it("rejects a type it does not know", () => {
-    expect(parse({ typeName: "recipe" }).success).toBe(false);
+  it("takes any type name and leaves the lookup to the service", () => {
+    expect(parse({ typeName: "Recipes" }).success).toBe(true);
+  });
+
+  it("refuses a missing or too long type name", () => {
+    expect(firstError({ typeName: " " })).toBe("chooseItemType");
+    expect(firstError({ typeName: "x".repeat(41) })).toBe("chooseItemType");
   });
 
   describe("file", () => {

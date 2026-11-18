@@ -1,4 +1,5 @@
 import type { FileKind } from "@/features/files/domain/file-rules";
+import { isSystemTypeName } from "@/features/item-types/domain/item-type";
 
 export interface EditableFields {
   content: boolean;
@@ -53,13 +54,15 @@ export function isCreatableType(
 }
 
 // Which type-specific fields the forms show. The upload of a file or image is
-// set when the item is created and is not edited afterwards; custom types
-// edit only the fields every item has.
+// set when the item is created and is not edited afterwards. A custom type
+// (any name that is not a system type's, isReservedTypeName) is a text type
+// like a snippet: content in the code editor with its language (ADR 0031).
 export function editableFields(typeName: string): EditableFields {
+  const custom = !isSystemTypeName(typeName);
   return {
-    content: CONTENT_TYPES.includes(typeName),
-    codeEditor: CODE_TYPES.includes(typeName),
-    language: LANGUAGE_TYPES.includes(typeName),
+    content: custom || CONTENT_TYPES.includes(typeName),
+    codeEditor: custom || CODE_TYPES.includes(typeName),
+    language: custom || LANGUAGE_TYPES.includes(typeName),
     url: URL_TYPES.includes(typeName),
     file: FILE_TYPES[typeName] ?? null,
   };
@@ -121,8 +124,7 @@ const FILE_SOURCE_LABELS: Record<FileKind, string> = {
 
 // What the AI reads besides the title: only a field this type shows, so text
 // left from another type in the create dialog is not sent. A file or image
-// has no text, so its file name stands in ("Image: diagram.png"). A custom
-// type edits no content, so it sends the title alone.
+// has no text, so its file name stands in ("Image: diagram.png").
 export function aiSource(
   fields: EditableFields,
   values: { content: string; url: string; fileName?: string | null },

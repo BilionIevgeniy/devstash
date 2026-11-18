@@ -5,6 +5,7 @@ import deAuth from "@/i18n/messages/de/auth.json";
 import deBilling from "@/i18n/messages/de/billing.json";
 import deCollections from "@/i18n/messages/de/collections.json";
 import deCommon from "@/i18n/messages/de/common.json";
+import deCustomTypes from "@/i18n/messages/de/customTypes.json";
 import deEditor from "@/i18n/messages/de/editor.json";
 import deEmails from "@/i18n/messages/de/emails.json";
 import deErrors from "@/i18n/messages/de/errors.json";
@@ -22,6 +23,7 @@ import enAuth from "@/i18n/messages/en/auth.json";
 import enBilling from "@/i18n/messages/en/billing.json";
 import enCollections from "@/i18n/messages/en/collections.json";
 import enCommon from "@/i18n/messages/en/common.json";
+import enCustomTypes from "@/i18n/messages/en/customTypes.json";
 import enEditor from "@/i18n/messages/en/editor.json";
 import enEmails from "@/i18n/messages/en/emails.json";
 import enErrors from "@/i18n/messages/en/errors.json";
@@ -47,6 +49,7 @@ const EN = {
   billing: enBilling,
   collections: enCollections,
   common: enCommon,
+  customTypes: enCustomTypes,
   editor: enEditor,
   emails: enEmails,
   errors: enErrors,
@@ -70,6 +73,7 @@ const DE = {
   billing: deBilling,
   collections: deCollections,
   common: deCommon,
+  customTypes: deCustomTypes,
   editor: deEditor,
   emails: deEmails,
   errors: deErrors,

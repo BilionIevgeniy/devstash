@@ -7,7 +7,7 @@ import {
 import { getEntitlements } from "@/features/billing/queries";
 import type { FileKind } from "@/features/files/domain/file-rules";
 import { confirmUpload } from "@/features/files/services/objects";
-import { getItemTypeByName } from "@/features/item-types/queries";
+import { getUserItemTypeByName } from "@/features/item-types/queries";
 import {
   collectionLinks,
   tagLinks,
@@ -73,11 +73,12 @@ async function confirmFileColumns(
 // stored value (ADR 0027).
 function itemData(
   userId: string,
-  typeId: string,
+  type: { id: string; name: string },
   input: CreateItemInput,
   fileColumns: object,
 ): Prisma.ItemUncheckedCreateInput {
-  const { typeName, title, description, content, language, url } = input;
+  const { title, description, content, language, url } = input;
+  const typeName = type.name;
   const fields = editableFields(typeName);
   const { aiTags, ...marks } = nextAiMarks(
     null,
@@ -90,7 +91,7 @@ function itemData(
   );
   return {
     userId,
-    typeId,
+    typeId: type.id,
     contentType: contentTypeFor(typeName),
     title,
     description,
@@ -123,7 +124,8 @@ async function insertItem(
   }, LOCKED_TRANSACTION);
 }
 
-// The type is looked up by name among the system types.
+// The type is looked up by name among the system types and the caller's own
+// custom types; its stored name, not the input's case, decides the fields.
 //
 // An upload that is confirmed but not saved (a failure below, or a dialog
 // closed after the upload) stays in R2 until the account is purged: deleting
@@ -132,11 +134,11 @@ export async function createUserItem(
   userId: string,
   input: CreateItemInput,
 ): Promise<CreateItemResult> {
-  const type = await getItemTypeByName(input.typeName);
+  const type = await getUserItemTypeByName(userId, input.typeName);
   if (!type) return fail("invalidItemType");
 
   const { isPro } = await getEntitlements(userId);
-  const { file: fileKind } = editableFields(input.typeName);
+  const { file: fileKind } = editableFields(type.name);
   let fileColumns = {};
   if (fileKind) {
     const file = await confirmFileColumns(userId, isPro, fileKind, input.file);
@@ -145,7 +147,7 @@ export async function createUserItem(
   }
 
   try {
-    const data = itemData(userId, type.id, input, fileColumns);
+    const data = itemData(userId, type, input, fileColumns);
     const item = await insertItem(userId, isPro, data);
     if (!item) {
       return fail("itemLimitReached", { limit: FREE_ITEM_LIMIT });
