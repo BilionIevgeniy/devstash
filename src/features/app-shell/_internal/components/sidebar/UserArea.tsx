@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { IMPRINT_PATH, PRIVACY_PATH } from "@/lib/http/legal-paths";
+import { SETTINGS_PATH } from "@/features/auth/domain/auth-paths";
 
 interface UserAreaProps {
   user: {
@@ -68,7 +69,7 @@ export function UserArea({ user }: UserAreaProps) {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/settings">
+            <Link href={SETTINGS_PATH}>
               <Settings />
               {t("settings")}
             </Link>

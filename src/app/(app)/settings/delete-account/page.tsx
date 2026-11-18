@@ -6,35 +6,31 @@ import { DeletionNotice } from "@/app/(app)/settings/delete-account/_components/
 import { ConfirmAccountDeletion } from "@/features/account/components/ConfirmAccountDeletion";
 import { SwitchAccountButton } from "@/features/auth/components/SwitchAccountButton";
 import { accountDeletionPath } from "@/features/auth/domain/account-deletion";
-import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
+import { SETTINGS_PATH, SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 import { getSessionUser } from "@/features/auth/nextauth/session";
-import {
-  getUserProfile,
-  isAccountDeletionTokenValid,
-} from "@/features/auth/queries";
+import { getDeletionLinkState } from "@/features/auth/queries";
 import { emailLinkParamsSchema } from "@/features/auth/schemas";
 import { Button } from "@/components/ui/button";
 import { getErrorText } from "@/lib/errors/error-text";
 
-const SETTINGS_PATH = "/settings";
-
 // The page of the emailed deletion link of an account with no password. It
 // renders only: the delete is the button's action, so a mail scanner that
-// fetches the link deletes nothing. The link's address must be the signed-in
-// account's own; another account is offered to sign out first.
+// fetches the link deletes nothing. A link for another account is offered a
+// sign-out first, and leads back here after the sign-in.
 export default async function DeleteAccountPage({
   searchParams,
 }: PageProps<"/settings/delete-account">) {
   const { id: userId } = await getSessionUser();
-  const [profile, params, t] = await Promise.all([
-    getUserProfile(userId),
-    searchParams,
+  const [link, t] = await Promise.all([
+    searchParams.then((params) => emailLinkParamsSchema.safeParse(params)),
     getTranslations("account"),
   ]);
-  if (!profile) redirect(SIGN_IN_PATH);
-  const link = emailLinkParamsSchema.safeParse(params);
+  const state = link.success
+    ? await getDeletionLinkState(userId, link.data.email, link.data.token)
+    : "invalid";
+  if (!state) redirect(SIGN_IN_PATH);
 
-  if (link.success && link.data.email !== profile.email) {
+  if (link.success && state === "otherAccount") {
     return (
       <DeletionNotice
         title={t("otherAccountTitle")}
@@ -47,30 +43,26 @@ export default async function DeleteAccountPage({
     );
   }
 
-  const isValid =
-    link.success &&
-    !profile.hasPassword &&
-    (await isAccountDeletionTokenValid(link.data.email, link.data.token));
-  if (!link.success || !isValid) {
-    const errorText = await getErrorText();
+  if (link.success && state === "valid") {
     return (
       <DeletionNotice
-        title={t("expiredTitle")}
-        description={errorText("invalidDeletionLink")}
+        title={t("confirmTitle")}
+        description={t("dialogDescription")}
       >
-        <Button asChild variant="outline">
-          <Link href={SETTINGS_PATH}>{t("backToSettings")}</Link>
-        </Button>
+        <ConfirmAccountDeletion token={link.data.token} />
       </DeletionNotice>
     );
   }
 
+  const errorText = await getErrorText();
   return (
     <DeletionNotice
-      title={t("confirmTitle")}
-      description={t("dialogDescription")}
+      title={t("expiredTitle")}
+      description={errorText("invalidDeletionLink")}
     >
-      <ConfirmAccountDeletion token={link.data.token} />
+      <Button asChild variant="outline">
+        <Link href={SETTINGS_PATH}>{t("backToSettings")}</Link>
+      </Button>
     </DeletionNotice>
   );
 }

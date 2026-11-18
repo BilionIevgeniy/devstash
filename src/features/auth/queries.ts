@@ -2,7 +2,11 @@ import "server-only";
 
 import { staleRegistrationWhere } from "@/features/auth/_internal/queries";
 import { hashToken } from "@/features/auth/_internal/token";
-import { getAccountDeletionIdentifier } from "@/features/auth/domain/account-deletion";
+import {
+  deletionLinkState,
+  getAccountDeletionIdentifier,
+  type DeletionLinkState,
+} from "@/features/auth/domain/account-deletion";
 import { getPasswordResetIdentifier } from "@/features/auth/domain/password-reset";
 import { staleRegistrationCutoff } from "@/features/auth/domain/registration";
 import { isTokenExpired } from "@/features/auth/domain/verification-token";
@@ -114,4 +118,20 @@ export async function getStaleRegistrationIds(
     take,
   });
   return users.map(({ id }) => id);
+}
+
+// What the page of the deletion link shows for the signed-in user: the
+// confirm button, an expired link, or a link for another account. Null when
+// the user is gone. Read-only: opening the link deletes nothing.
+export async function getDeletionLinkState(
+  userId: string,
+  linkEmail: string,
+  token: string,
+): Promise<DeletionLinkState | null> {
+  const profile = await getUserProfile(userId);
+  if (!profile) return null;
+  const isTokenValid =
+    linkEmail === profile.email &&
+    (await isAccountDeletionTokenValid(linkEmail, token));
+  return deletionLinkState(profile, linkEmail, isTokenValid);
 }

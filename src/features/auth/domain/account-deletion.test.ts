@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  accountDeletionPath,
   buildAccountDeletionUrl,
+  deletionLinkState,
   getAccountDeletionExpiry,
   getAccountDeletionIdentifier,
 } from "@/features/auth/domain/account-deletion";
@@ -41,5 +43,35 @@ describe("buildAccountDeletionUrl", () => {
     expect(url.pathname).toBe("/settings/delete-account");
     expect(url.searchParams.get("token")).toBe("a/b+c");
     expect(url.searchParams.get("email")).toBe("ada+x@example.com");
+  });
+});
+
+describe("accountDeletionPath", () => {
+  it("is the page with the encoded query, for the sign-in to lead back to", () => {
+    expect(accountDeletionPath("a+b@example.com", "t/1")).toBe(
+      "/settings/delete-account?token=t%2F1&email=a%2Bb%40example.com",
+    );
+  });
+});
+
+describe("deletionLinkState", () => {
+  const github = { email: "ada@example.com", hasPassword: false };
+
+  it("offers the switch for a link of another address, whatever its token", () => {
+    expect(deletionLinkState(github, "bob@example.com", true)).toBe(
+      "otherAccount",
+    );
+  });
+
+  it("confirms only a valid token of an account without a password", () => {
+    expect(deletionLinkState(github, "ada@example.com", true)).toBe("valid");
+    expect(deletionLinkState(github, "ada@example.com", false)).toBe("invalid");
+    expect(
+      deletionLinkState(
+        { email: "ada@example.com", hasPassword: true },
+        "ada@example.com",
+        true,
+      ),
+    ).toBe("invalid");
   });
 });

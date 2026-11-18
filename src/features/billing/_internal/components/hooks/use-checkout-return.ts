@@ -4,9 +4,9 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { confirmCheckout } from "@/features/billing/actions/checkout";
+import { SETTINGS_PATH } from "@/features/auth/domain/auth-paths";
 
 const TOAST_ID = "checkout-return";
-const SETTINGS_URL = "/settings";
 
 // isPro is usually true on arrival: Stripe waits for the webhook before the
 // redirect. The fixed toast id covers effects that run twice in development.
@@ -23,13 +23,13 @@ export function useCheckoutReturn(sessionId: string | null, isPro: boolean) {
 
     if (isPro) {
       toast.success(welcome, { id: TOAST_ID });
-      router.replace(SETTINGS_URL);
+      router.replace(SETTINGS_PATH);
       return;
     }
 
     function settle() {
       toast.info(notConfirmed, { id: TOAST_ID });
-      router.replace(SETTINGS_URL);
+      router.replace(SETTINGS_PATH);
     }
 
     startConfirming(async () => {

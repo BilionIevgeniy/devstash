@@ -6,6 +6,7 @@ import { getEntitlements } from "@/features/billing/queries";
 import { LockedFilesRow } from "@/features/items/components/lists/LockedFilesRow";
 import { getUserLockedFileCount } from "@/features/items/services/locked-files";
 import { isStripeTestMode } from "@/lib/vendors/stripe";
+import { SETTINGS_PATH } from "@/features/auth/domain/auth-paths";
 
 export default async function UpgradePage() {
   const { id: userId } = await getSessionUser();
@@ -13,7 +14,7 @@ export default async function UpgradePage() {
     getEntitlements(userId),
     getUserLockedFileCount(userId),
   ]);
-  if (isPro) redirect("/settings");
+  if (isPro) redirect(SETTINGS_PATH);
 
   return (
     <ProUpgradePanel testMode={isStripeTestMode()}>

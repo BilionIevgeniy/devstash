@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  emailLinkPath,
+  emailLinkUrl,
+  tokenExpiry,
   buildVerificationUrl,
   getTokenExpiry,
   isTokenExpired,
@@ -79,5 +82,24 @@ describe("buildVerificationUrl", () => {
   it("replaces any path on the origin", () => {
     const link = buildVerificationUrl(`${ORIGIN}/some/path`, "a@b.co", "t");
     expect(new URL(link).pathname).toBe("/verify-email");
+  });
+});
+
+describe("tokenExpiry", () => {
+  it("adds the lifetime in hours to now", () => {
+    expect(
+      tokenExpiry(new Date("2026-01-15T12:00:00Z"), 24).toISOString(),
+    ).toBe("2026-01-16T12:00:00.000Z");
+  });
+});
+
+describe("emailLinkPath and emailLinkUrl", () => {
+  it("put the token and the encoded address in the query of the page", () => {
+    expect(emailLinkPath("/verify-email", "a+b@x.co", "t&1")).toBe(
+      "/verify-email?token=t%261&email=a%2Bb%40x.co",
+    );
+    expect(
+      emailLinkUrl("https://x.test/any", "/verify-email", "a@x.co", "t"),
+    ).toBe("https://x.test/verify-email?token=t&email=a%40x.co");
   });
 });
