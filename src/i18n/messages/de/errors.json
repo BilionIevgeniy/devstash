@@ -109,6 +109,7 @@
   "aiFailed": "Die KI konnte die Antwort nicht abschließen. Versuch es noch einmal.",
   "aiSignedOut": "Deine Sitzung ist abgelaufen. Melde dich erneut an.",
   "alreadyPro": "Du hast bereits den Pro-Plan.",
+  "orderConsentRequired": "Bitte akzeptiere die AGB und den sofortigen Beginn, bevor du bestellst.",
   "noBillingAccount": "Es wurde kein Abrechnungskonto gefunden.",
   "paymentNotConfirmed": "Diese Zahlung konnte nicht bestätigt werden.",
   "billingUnreachable": "Die Abrechnung ist nicht erreichbar. Bitte versuch es noch einmal.",

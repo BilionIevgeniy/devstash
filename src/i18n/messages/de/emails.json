@@ -20,5 +20,8 @@
     "intro": "Wir haben eine Anfrage erhalten, dein DevStash-Konto zu löschen. Öffne den Link unten, während du bei DevStash angemeldet bist, und bestätige dort. Das Löschen entfernt deine Einträge, Sammlungen und Dateien endgültig",
     "button": "Löschen bestätigen",
     "ignore": "Wenn du das nicht angefordert hast, ignoriere diese E-Mail: Ohne Bestätigung wird nichts gelöscht."
+  },
+  "checkout": {
+    "submitNote": "Mit Klick auf „Zahlen“ bestellst du zahlungspflichtig. Pro beginnt sofort; du hast zugestimmt, dass dein Widerrufsrecht damit erlischt."
   }
 }

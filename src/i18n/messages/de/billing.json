@@ -50,5 +50,17 @@
   "upgradePage": {
     "title": "Auf Pro upgraden",
     "lead": "Alles an einem Ort, ohne Grenzen"
+  },
+  "order": {
+    "title": "Bestellung prüfen",
+    "description": "DevStash Pro, {period, select, yearly {jährliche Abrechnung} other {monatliche Abrechnung}}",
+    "price": "{price} {period, select, yearly {pro Jahr} other {pro Monat}}",
+    "vat": "Gesamtpreis inklusive Umsatzsteuer. Die Steuer für dein Land steht auf der Bezahlseite.",
+    "renewal": "Verlängert sich jeden {period, select, yearly {Jahr} other {Monat}}, bis du kündigst. Du kannst jederzeit zum Ende der laufenden Laufzeit kündigen.",
+    "acceptTerms": "Ich akzeptiere die <terms>AGB</terms> und habe die <withdrawal>Widerrufsbelehrung</withdrawal> gelesen.",
+    "waiveWithdrawal": "Ich möchte, dass Pro sofort beginnt. Ich stimme zu, dass die Leistung vor Ablauf der Widerrufsfrist beginnt, und weiß, dass mein Widerrufsrecht damit erlischt.",
+    "submit": "Zahlungspflichtig bestellen",
+    "pending": "Bezahlseite wird geöffnet…",
+    "next": "Danach gibst du auf der Bezahlseite von Stripe deine Karte ein; mit Klick auf „Zahlen“ dort bestellst du."
   }
 }

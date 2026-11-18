@@ -2,12 +2,13 @@
 
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { getBillingOverview } from "@/features/billing/queries";
 import {
+  checkoutOrderSchema,
   checkoutSessionIdSchema,
-  planSchema,
 } from "@/features/billing/schemas";
 import {
   confirmCheckoutSession,
@@ -19,8 +20,8 @@ import { getAppOrigin } from "@/lib/http/app-url";
 import { logger } from "@/lib/observability/logger";
 import { firstIssue } from "@/lib/errors/validation";
 
-export async function startCheckout(plan: unknown): Promise<ActionResult> {
-  const parsed = planSchema.safeParse(plan);
+export async function startCheckout(order: unknown): Promise<ActionResult> {
+  const parsed = checkoutOrderSchema.safeParse(order);
   if (!parsed.success) return firstIssue(parsed.error);
 
   // Outside the try: a signed-out caller is redirected by a thrown error.
@@ -30,7 +31,7 @@ export async function startCheckout(plan: unknown): Promise<ActionResult> {
   try {
     const result = await createCheckoutSession(
       user,
-      parsed.data,
+      { plan: parsed.data.plan, locale: await getLocale() },
       getAppOrigin(),
     );
     if (!result.success) return result;

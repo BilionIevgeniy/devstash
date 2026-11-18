@@ -37,7 +37,11 @@ export function LegalDocument({
         {title}
       </h1>
       {sections.map((section) => (
-        <section key={section.id} className="mt-10">
+        <section
+          key={section.id}
+          id={`${id}-${section.id}`}
+          className="mt-10 scroll-mt-24"
+        >
           <h2 className="text-xl font-semibold">{section.heading}</h2>
           <div className={BODY_CLASS}>{section.body}</div>
         </section>

@@ -20,5 +20,8 @@
     "intro": "We received a request to delete your DevStash account. Open the link below while signed in to DevStash and confirm there. Deleting removes your items, collections and files for good",
     "button": "Confirm deletion",
     "ignore": "If you didn't ask for this, ignore this email: nothing is deleted without the confirmation."
+  },
+  "checkout": {
+    "submitNote": "By clicking “Pay” you place an order with an obligation to pay. Pro starts at once; you agreed that your right of withdrawal ends with that."
   }
 }

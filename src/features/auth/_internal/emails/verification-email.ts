@@ -3,7 +3,7 @@ import {
   buildActionEmail,
   type BuiltEmail,
 } from "@/features/auth/_internal/emails/action-email";
-import { emailTranslator } from "@/features/auth/_internal/emails/email-copy";
+import { emailTranslator } from "@/i18n/email-translator";
 import type { Locale } from "@/i18n/config";
 
 export function buildVerificationEmail(

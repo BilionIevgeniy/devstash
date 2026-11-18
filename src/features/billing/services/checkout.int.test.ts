@@ -66,9 +66,10 @@ describe("createCheckoutSession", () => {
   function checkoutStripe() {
     const createCustomer = vi.fn(async () => ({ id: "cus_new_a" }));
     const createSession = vi.fn(async () => ({ url: "https://checkout.test" }));
+    const list = vi.fn(async () => ({ data: [] }));
     stripeWith({
       customers: { create: createCustomer },
-      checkout: { sessions: { create: createSession } },
+      checkout: { sessions: { create: createSession, list } },
     });
     vi.stubEnv("STRIPE_PRICE_ID_MONTHLY", "price_test_monthly");
     return { createCustomer, createSession };
@@ -80,7 +81,7 @@ describe("createCheckoutSession", () => {
 
     const result = await createCheckoutSession(
       { id: t.a.userId, email: t.a.email },
-      "monthly",
+      { plan: "monthly", locale: "en" },
       "http://localhost",
     );
 
@@ -102,7 +103,7 @@ describe("createCheckoutSession", () => {
 
     await createCheckoutSession(
       { id: t.a.userId, email: t.a.email },
-      "monthly",
+      { plan: "monthly", locale: "en" },
       "http://localhost",
     );
 
