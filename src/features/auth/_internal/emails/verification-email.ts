@@ -1,7 +1,7 @@
+import type { BuiltEmail } from "@/lib/html";
 import {
   type ActionEmailCopy,
   buildActionEmail,
-  type BuiltEmail,
 } from "@/features/auth/_internal/emails/action-email";
 import { emailTranslator } from "@/i18n/email-translator";
 import type { Locale } from "@/i18n/config";

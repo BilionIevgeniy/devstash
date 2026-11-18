@@ -3,6 +3,7 @@
 import {
   ChevronsUpDown,
   LogOut,
+  FileX,
   Scale,
   Settings,
   ShieldCheck,
@@ -21,7 +22,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { IMPRINT_PATH, PRIVACY_PATH } from "@/lib/http/legal-paths";
+import {
+  CANCEL_CONTRACTS_PATH,
+  IMPRINT_PATH,
+  PRIVACY_PATH,
+} from "@/lib/http/legal-paths";
 import { SETTINGS_PATH } from "@/features/auth/domain/auth-paths";
 
 interface UserAreaProps {
@@ -85,6 +90,12 @@ export function UserArea({ user }: UserAreaProps) {
             <Link href={IMPRINT_PATH}>
               <Scale />
               {t("imprint")}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={CANCEL_CONTRACTS_PATH} lang="de">
+              <FileX />
+              {t("cancelContracts")}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />

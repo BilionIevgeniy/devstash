@@ -6,7 +6,7 @@ import type { SubscriptionConsent } from "@/features/billing/domain/subscription
 import { termsValues } from "@/features/billing/domain/terms";
 import type { Locale } from "@/i18n/config";
 import { emailFormatter, emailTranslator } from "@/i18n/email-translator";
-import { escapeHtml } from "@/lib/html";
+import { escapeHtml, type BuiltEmail } from "@/lib/html";
 import { legalTextHtml, legalTextPlain } from "@/lib/legal/email-text";
 import { fillLegalText } from "@/lib/legal/fill";
 import { OPERATOR } from "@/lib/legal/operator";
@@ -19,12 +19,6 @@ export interface ContractConfirmation {
   consent: SubscriptionConsent;
 }
 
-export interface BuiltContractEmail {
-  subject: string;
-  html: string;
-  text: string;
-}
-
 // The contract confirmation on a durable medium (§ 312f BGB, ADR 0032): the
 // provider, what was ordered at what price, the stored § 356 (5) consent with
 // its time, and the terms and withdrawal information in full, never a link.
@@ -34,7 +28,7 @@ export function buildContractConfirmationEmail({
   period,
   startedAt,
   consent,
-}: ContractConfirmation): BuiltContractEmail {
+}: ContractConfirmation): BuiltEmail {
   const t = emailTranslator(locale);
   const format = emailFormatter(locale);
   const price = (amount: number) => format.number(amount, "price");

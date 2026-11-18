@@ -32,6 +32,18 @@ export async function getUserProfile(
   return { ...profile, hasPassword: password !== null };
 }
 
+// The one read by email alone (ADR 0032, rule 4 of architecture-rules.md):
+// the signed-out § 312k cancellation names its contract by the account's
+// email. Only the id comes back; the caller never tells the requester whether
+// it found one. The email is normalised by emailSchema, as at registration.
+export async function getUserIdByEmail(email: string): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true },
+  });
+  return user?.id ?? null;
+}
+
 export async function getSessionVersion(
   userId: string,
 ): Promise<number | null> {

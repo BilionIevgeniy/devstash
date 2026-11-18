@@ -27,7 +27,8 @@
     "terms": "AGB",
     "privacy": "Datenschutz",
     "imprint": "Impressum",
-    "rights": "© {year} DevStash. Alle Rechte vorbehalten."
+    "rights": "© {year} DevStash. Alle Rechte vorbehalten.",
+    "cancelContracts": "Verträge hier kündigen"
   },
   "hero": {
     "titleStart": "Verlier nie wieder dein",

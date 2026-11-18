@@ -1,4 +1,4 @@
-import { escapeHtml } from "@/lib/html";
+import { escapeHtml, type BuiltEmail } from "@/lib/html";
 
 export interface ActionEmailCopy {
   subject: string;
@@ -8,12 +8,6 @@ export interface ActionEmailCopy {
   ignoreNote: string;
   /** "This link expires in 24 hours.", in the email's language. */
   expiry: string;
-}
-
-export interface BuiltEmail {
-  subject: string;
-  html: string;
-  text: string;
 }
 
 function buildActionHtml(copy: ActionEmailCopy, actionUrl: string) {

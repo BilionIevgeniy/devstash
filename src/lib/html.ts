@@ -7,3 +7,10 @@ export function escapeHtml(value: string): string {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;");
 }
+
+/** An email as its builders hand it to `sendEmail`. */
+export interface BuiltEmail {
+  subject: string;
+  html: string;
+  text: string;
+}

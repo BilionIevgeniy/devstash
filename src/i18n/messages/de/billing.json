@@ -62,5 +62,31 @@
     "submit": "Zahlungspflichtig bestellen",
     "pending": "Bezahlseite wird geöffnet…",
     "next": "Danach gibst du auf der Bezahlseite von Stripe deine Karte ein; mit Klick auf „Zahlen“ dort bestellst du."
+  },
+  "cancel": {
+    "title": "Verträge hier kündigen / Cancel contracts here",
+    "lead": "Hier kündigst du dein Abonnement von DevStash Pro. / Cancel your DevStash Pro subscription here.",
+    "contract": "Vertrag / Contract: DevStash Pro",
+    "live": "Läuft, nächste Verlängerung am {date} / Running, next renewal on {date}",
+    "liveNoDate": "Läuft / Running",
+    "cancelling": "Bereits gekündigt, endet am {date} / Already cancelled, ends on {date}",
+    "cancellingNoDate": "Bereits gekündigt / Already cancelled",
+    "none": "Unter deinem Konto läuft kein Abonnement. / No subscription runs under your account.",
+    "name": "Name / Name",
+    "email": "E-Mail-Adresse deines Kontos / Email address of your account",
+    "kind": "Art der Kündigung / Type of cancellation",
+    "ordinary": "Ordentlich zum Ende der Laufzeit / Ordinary, at the end of the term",
+    "extraordinary": "Außerordentlich aus wichtigem Grund / For good cause",
+    "reason": "Grund, bei außerordentlicher Kündigung / Reason, for good cause",
+    "submit": "Jetzt kündigen / Cancel now",
+    "pending": "Wird gesendet… / Sending…",
+    "doneTitle": "Kündigung eingegangen / Cancellation received",
+    "doneAt": "Eingegangen am {date} / Received on {date}",
+    "doneKind": "Art / Type: {kind, select, extraordinary {außerordentlich / for good cause} other {ordentlich / ordinary}}",
+    "doneName": "Name / Name: {name}",
+    "doneEmail": "E-Mail / Email: {email}",
+    "doneReason": "Grund / Reason: {reason}",
+    "doneNote": "Eine Bestätigung geht an die E-Mail-Adresse des Kontos. Bewahre diese Seite auf. / A confirmation goes to the account's email address. Keep this page.",
+    "print": "Drucken oder speichern / Print or save"
   }
 }

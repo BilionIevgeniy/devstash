@@ -27,7 +27,8 @@
     "terms": "Terms",
     "privacy": "Privacy",
     "imprint": "Imprint",
-    "rights": "© {year} DevStash. All rights reserved."
+    "rights": "© {year} DevStash. All rights reserved.",
+    "cancelContracts": "Verträge hier kündigen"
   },
   "hero": {
     "titleStart": "Stop Losing Your",
