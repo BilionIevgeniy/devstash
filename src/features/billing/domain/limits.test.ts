@@ -7,7 +7,9 @@ import {
   proPriceDisplay,
   proYearlyPricePerMonth,
   proYearlySavingsPercent,
+  FREE_ITEM_LIMIT,
   reachedFreeLimit,
+  textEditsAllowed,
   withinFreeCollectionLimit,
   withinFreeItemLimit,
 } from "@/features/billing/domain/limits";
@@ -110,5 +112,17 @@ describe("billingOverviewFor", () => {
       hasBillingAccount: true,
       paymentIssue: true,
     });
+  });
+});
+
+describe("textEditsAllowed", () => {
+  it("keeps text editing open for Pro and for Free at or under the limit", () => {
+    expect(textEditsAllowed(true, 500)).toBe(true);
+    expect(textEditsAllowed(false, FREE_ITEM_LIMIT)).toBe(true);
+    expect(textEditsAllowed(false, 3)).toBe(true);
+  });
+
+  it("closes it for Free over the limit", () => {
+    expect(textEditsAllowed(false, FREE_ITEM_LIMIT + 1)).toBe(false);
   });
 });

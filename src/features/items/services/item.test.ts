@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
   update,
@@ -19,6 +19,10 @@ const {
 }));
 const getEntitlements = vi.hoisted(() => vi.fn());
 vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
+const userCanEditText = vi.hoisted(() => vi.fn(async () => true));
+vi.mock("@/features/items/services/text-access", () => ({
+  userCanEditText,
+}));
 vi.mock("@/lib/postgres/prisma", () => ({
   prisma: {
     $executeRaw: executeRaw,
@@ -572,5 +576,68 @@ describe("deleteUserItem", () => {
     remove.mockRejectedValue(prismaError("P2003"));
 
     await expect(deleteUserItem("user-1", "item-1")).rejects.toThrow("failed");
+  });
+});
+
+describe("the text lock over the Free limit", () => {
+  const stored = {
+    title: "Renamed",
+    content: "echo hi",
+    language: "bash",
+    tags: ["shell"],
+    collectionIds: ["ckabc1234567890abcdefghij"],
+    aiGenerated: { description: true, content: true, tags: ["shell"] },
+  };
+
+  beforeEach(() => {
+    update.mockReset().mockResolvedValue({ id: "item-1" });
+    findFirst.mockReset().mockResolvedValue(rawItem);
+    deleteTags.mockReset().mockResolvedValue({ count: 0 });
+    userCanEditText.mockResolvedValue(false);
+  });
+
+  afterEach(() => {
+    userCanEditText.mockResolvedValue(true);
+  });
+
+  it("saves a change of the collections only, keeping the marks as stored", async () => {
+    const result = await updateUserItem("user-1", "item-1", {
+      ...stored,
+      tags: ["SHELL"],
+    });
+
+    expect(result.success).toBe(true);
+    const data = update.mock.calls[0][0].data;
+    expect(data.descriptionAiGenerated).toBeUndefined();
+    expect(data.contentAiGenerated).toBeUndefined();
+    expect(data.searchTags).toEqual(expect.stringContaining("shell"));
+    expect(data.collections.create).toHaveLength(1);
+  });
+
+  it("refuses changed text and writes nothing", async () => {
+    const result = await updateUserItem("user-1", "item-1", {
+      ...stored,
+      content: "rm -rf /",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "itemsReadOnlyOverLimit",
+      params: { limit: 50 },
+    });
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it("refuses an AI rewrite of the content too", async () => {
+    findFirst.mockResolvedValue({
+      ...rawItem,
+      type: { ...rawItem.type, name: "prompt" },
+    });
+
+    const result = await setUserItemAiContent("user-1", "item-1", "Better");
+
+    expect(result.error).toBe("itemsReadOnlyOverLimit");
+    expect(update).not.toHaveBeenCalled();
   });
 });

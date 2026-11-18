@@ -1,3 +1,4 @@
+import { isSystemTypeName } from "@/features/item-types/domain/item-type";
 import "server-only";
 
 import {
@@ -138,6 +139,11 @@ export async function createUserItem(
   if (!type) return fail("invalidItemType");
 
   const { isPro } = await getEntitlements(userId);
+  // A former Pro user keeps their custom types, read-only (ADR 0032): no new
+  // item of one until Pro again.
+  if (!isPro && !isSystemTypeName(type.name)) {
+    return fail("customTypesProOnly");
+  }
   const { file: fileKind } = editableFields(type.name);
   let fileColumns = {};
   if (fileKind) {

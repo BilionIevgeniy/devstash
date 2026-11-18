@@ -70,6 +70,14 @@ describe("getItemEditState", () => {
     ).resolves.toEqual({
       typeName: "snippet",
       collectionIds: [t.b.collections.main],
+      text: {
+        title: "useDebounce",
+        description: null,
+        content: "export function useDebounce() {}",
+        language: "typescript",
+        url: null,
+        tags: expect.arrayContaining(["react", "shared"]),
+      },
       ai: {
         description: null,
         content: "export function useDebounce() {}",

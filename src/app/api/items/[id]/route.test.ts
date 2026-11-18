@@ -61,6 +61,7 @@ describe("GET /api/items/[id]", () => {
       status: "ok",
       item: { id: VALID_ID, title: "useAuth Hook" },
       canUseAi: true,
+      editMode: "collectionsOnly",
     });
 
     const response = await callGet(VALID_ID);
@@ -68,7 +69,11 @@ describe("GET /api/items/[id]", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual({
       success: true,
-      data: { item: { id: VALID_ID, title: "useAuth Hook" }, canUseAi: true },
+      data: {
+        item: { id: VALID_ID, title: "useAuth Hook" },
+        canUseAi: true,
+        editMode: "collectionsOnly",
+      },
       error: null,
     });
   });

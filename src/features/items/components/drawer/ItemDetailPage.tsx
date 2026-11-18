@@ -11,13 +11,18 @@ import { ItemDrawerSkeleton } from "@/features/items/_internal/components/drawer
 import { ItemDetailView } from "@/features/items/_internal/components/drawer/ItemDetailView";
 import { deleteItem } from "@/features/items/actions/item";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
-import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
+import type {
+  DashboardItem,
+  ItemDetailJson,
+  OpenedItemJson,
+} from "@/features/items/types";
 import { isNavigationError } from "@/lib/errors/navigation-error";
 
 interface ItemDetailPageProps {
   item: DashboardItem;
   detail: ItemDetailJson;
   canUseAi: boolean;
+  editMode: OpenedItemJson["editMode"];
   listHref: string;
 }
 
@@ -30,6 +35,7 @@ export function ItemDetailPage({
   item,
   detail,
   canUseAi,
+  editMode,
   listHref,
 }: ItemDetailPageProps) {
   const t = useTranslations("items.toasts");
@@ -67,6 +73,7 @@ export function ItemDetailPage({
         item={item}
         detail={detail}
         canUseAi={canUseAi}
+        editMode={editMode}
         variant="page"
         onDelete={handleDelete}
       />

@@ -73,6 +73,7 @@
   "filesProOnly": "Dateien und Bilder sind eine Pro-Funktion",
   "fileAlreadySaved": "Diese Datei ist bereits in einem anderen Eintrag gespeichert",
   "collectionGone": "Eine der Sammlungen existiert nicht mehr",
+  "itemsReadOnlyOverLimit": "Du hast mehr als {limit} Einträge, deshalb ist ihr Text im Free-Plan schreibgeschützt. Sammlungen kannst du weiter ändern, oder du upgradest auf Pro, um zu bearbeiten.",
   "itemLimitReached": "Du hast das Limit des Free-Plans von {limit} Einträgen erreicht. Upgrade auf Pro für unbegrenzte Einträge.",
   "itemNotFound": "Eintrag nicht gefunden",
   "itemLocked": "Verlängere dein Abo, um diesen Eintrag zu öffnen",

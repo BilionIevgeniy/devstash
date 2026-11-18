@@ -64,5 +64,8 @@
     "manage": "Download or delete",
     "label": "Renew your subscription to open",
     "named": "{title}: renew your subscription to open"
+  },
+  "edit": {
+    "textLocked": "You have more than {limit} items, so their text is read-only on the Free plan. You can still change the collections here, or <link>upgrade to Pro</link> to edit."
   }
 }

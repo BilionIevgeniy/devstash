@@ -48,8 +48,7 @@ export function ItemDrawerContent({
   variant = "sheet",
 }: ItemDrawerContentProps) {
   const t = useTranslations("items");
-  const detail = state.status === "ready" ? state.detail : null;
-  const canUseAi = state.status === "ready" && state.canUseAi;
+  const { detail, canUseAi, collectionsOnly } = readyAccess(state);
 
   if (isEditing && detail) {
     return (
@@ -63,6 +62,7 @@ export function ItemDrawerContent({
           item={item}
           detail={detail}
           canUseAi={canUseAi}
+          collectionsOnly={collectionsOnly}
           onCancel={onCancelEdit}
           onSaved={onSaved}
           onDirtyChange={onDirtyChange}
@@ -116,6 +116,18 @@ export function ItemDrawerContent({
       </div>
     </>
   );
+}
+
+// What a ready detail allows; nothing while it loads or after it failed.
+function readyAccess(state: ItemDetailState) {
+  if (state.status !== "ready") {
+    return { detail: null, canUseAi: false, collectionsOnly: false };
+  }
+  return {
+    detail: state.detail,
+    canUseAi: state.canUseAi,
+    collectionsOnly: state.editMode === "collectionsOnly",
+  };
 }
 
 function ItemDescription({

@@ -190,6 +190,31 @@ describe("createUserItem", () => {
     expect(create).not.toHaveBeenCalled();
   });
 
+  it("refuses a new item of a custom type to a former Pro user", async () => {
+    const result = await createUserItem("user-1", {
+      ...snippet,
+      typeName: "Recipe",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      data: null,
+      error: "customTypesProOnly",
+    });
+    expect(create).not.toHaveBeenCalled();
+  });
+
+  it("creates an item of a custom type on Pro", async () => {
+    getEntitlements.mockResolvedValue({ isPro: true });
+
+    const result = await createUserItem("user-1", {
+      ...snippet,
+      typeName: "Recipe",
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   describe("the Free limit", () => {
     it("creates the item under the limit, counting inside the lock", async () => {
       count.mockResolvedValue(49);

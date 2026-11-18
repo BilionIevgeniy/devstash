@@ -40,8 +40,11 @@ describe("getItemEditState", () => {
 
   it("flattens the type and the collection links", async () => {
     findFirst.mockResolvedValue({
+      title: "Debounce",
       description: "A summary",
       content: "code",
+      language: "ts",
+      url: null,
       descriptionAiGenerated: true,
       contentAiGenerated: false,
       type: { name: "snippet" },
@@ -55,6 +58,14 @@ describe("getItemEditState", () => {
     await expect(getItemEditState("user-1", "item-1")).resolves.toEqual({
       typeName: "snippet",
       collectionIds: ["col-1", "col-2"],
+      text: {
+        title: "Debounce",
+        description: "A summary",
+        content: "code",
+        language: "ts",
+        url: null,
+        tags: ["hooks", "mine"],
+      },
       ai: {
         description: "A summary",
         content: "code",

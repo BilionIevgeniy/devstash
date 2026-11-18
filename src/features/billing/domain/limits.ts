@@ -97,6 +97,13 @@ export function reachedFreeLimit(
   );
 }
 
+// After Pro ends, an account over the Free limit may no longer rewrite its
+// items' text (ADR 0032): rewriting an old item would get around the limit.
+// At the limit or under it nothing changes.
+export function textEditsAllowed(isPro: boolean, itemCount: number): boolean {
+  return isPro || itemCount <= FREE_ITEM_LIMIT;
+}
+
 export function isProStatus(status: string): boolean {
   return PRO_STATUSES.includes(status);
 }

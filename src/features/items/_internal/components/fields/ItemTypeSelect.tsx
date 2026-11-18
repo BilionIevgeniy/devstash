@@ -27,6 +27,8 @@ interface ItemTypeSelectProps {
 }
 
 // A Pro type stays in the list for a Free user, disabled with a Pro badge.
+// So do the custom types a former Pro user keeps (ADR 0032): no new item of
+// one until Pro again.
 export function ItemTypeSelect({
   value,
   onChange,
@@ -55,8 +57,9 @@ export function ItemTypeSelect({
             })}
             {customTypeNames.length > 0 && <SelectSeparator />}
             {customTypeNames.map((name) => (
-              <SelectItem key={name} value={name}>
+              <SelectItem key={name} value={name} disabled={!isPro}>
                 {name}
+                {!isPro && <ProBadge />}
               </SelectItem>
             ))}
           </SelectContent>

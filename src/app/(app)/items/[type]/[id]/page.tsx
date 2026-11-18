@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import { getEntitlements } from "@/features/billing/queries";
+import { getItemEditMode } from "@/features/items/services/text-access";
 import { systemTypeNameForSlug } from "@/features/item-types/domain/item-type";
 import { ItemDetailPage } from "@/features/items/components/drawer/ItemDetailPage";
 import { toItemDetailJson } from "@/features/items/domain/item-detail";
@@ -14,17 +15,18 @@ export default async function ItemPage({
 }: PageProps<"/items/[type]/[id]">) {
   const { type: slug, id } = await params;
   const { id: userId } = await getSessionUser();
-  // A custom type is open to every plan; only a Pro system type is checked
-  // before the read (feature 19 decides the downgrade of custom types).
+  // A custom type can be opened on every plan (its items stay readable after a
+  // downgrade, ADR 0032); only a Pro system type is checked before the read.
   const systemName = systemTypeNameForSlug(slug);
   if (systemName && !(await userCanUseType(userId, systemName))) {
     redirect(UPGRADE_PATH);
   }
 
   // cache() shares this read with the plan check above.
-  const [item, { isPro }] = await Promise.all([
+  const [item, { isPro }, editMode] = await Promise.all([
     getUserItemDetailOfType(userId, id, slug),
     getEntitlements(userId),
+    getItemEditMode(userId),
   ]);
   if (!item) notFound();
 
@@ -34,6 +36,7 @@ export default async function ItemPage({
         item={item}
         detail={toItemDetailJson(item)}
         canUseAi={isPro}
+        editMode={editMode}
         listHref={`/items/${slug}`}
       />
     </div>

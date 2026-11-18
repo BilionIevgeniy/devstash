@@ -12,7 +12,12 @@ import type {
 export type ItemDetailState =
   | { status: "loading" }
   | { status: "error" }
-  | { status: "ready"; detail: ItemDetailJson; canUseAi: boolean };
+  | {
+      status: "ready";
+      detail: ItemDetailJson;
+      canUseAi: boolean;
+      editMode: OpenedItemJson["editMode"];
+    };
 
 interface DetailQuery {
   data: OpenedItemJson | undefined;
@@ -28,7 +33,12 @@ function detailState({
   isFetching,
 }: DetailQuery): ItemDetailState {
   if (data) {
-    return { status: "ready", detail: data.item, canUseAi: data.canUseAi };
+    return {
+      status: "ready",
+      detail: data.item,
+      canUseAi: data.canUseAi,
+      editMode: data.editMode,
+    };
   }
   return isError && !isFetching ? { status: "error" } : { status: "loading" };
 }
