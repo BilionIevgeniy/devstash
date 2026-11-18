@@ -16,9 +16,27 @@ const COLLECTION: DashboardCollection = {
   isFavorite: false,
   itemCount: 12,
   types: [
-    { id: "type-snippet", name: "snippet", icon: "Code", color: "#3b82f6" },
-    { id: "type-note", name: "note", icon: "StickyNote", color: "#fde047" },
-    { id: "type-link", name: "link", icon: "Link", color: "#10b981" },
+    {
+      id: "type-snippet",
+      name: "snippet",
+      slug: "snippets",
+      icon: "Code",
+      color: "#3b82f6",
+    },
+    {
+      id: "type-note",
+      name: "note",
+      slug: "notes",
+      icon: "StickyNote",
+      color: "#fde047",
+    },
+    {
+      id: "type-link",
+      name: "link",
+      slug: "links",
+      icon: "Link",
+      color: "#10b981",
+    },
   ],
 };
 

@@ -96,11 +96,11 @@ describe("getItemDetailOfType", () => {
   it("only looks up the caller's item of the type in the URL", async () => {
     findFirst.mockResolvedValue(null);
 
-    await getItemDetailOfType("user-1", "item-1", "snippet");
+    await getItemDetailOfType("user-1", "item-1", "snippets");
 
     expect(findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: "item-1", userId: "user-1", type: { name: "snippet" } },
+        where: { id: "item-1", userId: "user-1", type: { slug: "snippets" } },
       }),
     );
   });
@@ -109,7 +109,7 @@ describe("getItemDetailOfType", () => {
     findFirst.mockResolvedValue(null);
 
     await expect(
-      getItemDetailOfType("user-1", "item-1", "note"),
+      getItemDetailOfType("user-1", "item-1", "notes"),
     ).resolves.toBeNull();
   });
 

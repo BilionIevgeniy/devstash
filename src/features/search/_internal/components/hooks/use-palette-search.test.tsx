@@ -41,7 +41,7 @@ function page(
         descriptionAiGenerated: false,
         aiTags: [],
         createdAt: new Date("2026-01-15T00:00:00Z"),
-        type: { id: "type-1", name: "note", icon: "StickyNote" },
+        type: { id: "type-1", name: "note", slug: "notes", icon: "StickyNote" },
         tags: [],
         preview: null,
         previewAiGenerated: false,

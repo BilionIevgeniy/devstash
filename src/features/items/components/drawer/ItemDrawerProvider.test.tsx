@@ -78,7 +78,12 @@ function cardItem(id: string, title: string): DashboardItem {
     aiTags: [],
     createdAt: new Date("2026-01-01T00:00:00Z"),
     tags: [],
-    type: { id: "type-snippet", name: "Snippet", icon: "Code" },
+    type: {
+      id: "type-snippet",
+      name: "Snippet",
+      slug: "snippets",
+      icon: "Code",
+    },
   };
 }
 

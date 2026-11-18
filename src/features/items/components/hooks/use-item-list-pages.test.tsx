@@ -31,7 +31,7 @@ function favorite(id: string): FavoriteItem {
     createdAt: new Date("2026-01-01T00:00:00Z"),
     favoritedAt: new Date("2026-03-01T00:00:00Z"),
     tags: [],
-    type: { id: "t", name: "snippet", icon: "Code" },
+    type: { id: "t", name: "snippet", slug: "snippets", icon: "Code" },
   };
 }
 

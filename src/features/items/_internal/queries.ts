@@ -211,10 +211,10 @@ export async function getItemDetail(
 export async function getItemDetailOfType(
   userId: string,
   id: string,
-  typeName: string,
+  typeSlug: string,
 ): Promise<ItemDetailRecord | null> {
   const item = await prisma.item.findFirst({
-    where: { id, userId, type: { name: typeName } },
+    where: { id, userId, type: { slug: typeSlug } },
     select: itemDetailSelect,
   });
   return item ? toItemDetail(item) : null;

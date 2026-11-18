@@ -11,7 +11,7 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { parseTypeSlug } from "@/features/item-types/domain/item-type";
+import { systemTypeNameForSlug } from "@/features/item-types/domain/item-type";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/form/DiscardChangesDialog";
 import { ItemDetailView } from "@/features/items/_internal/components/drawer/ItemDetailView";
 import { ITEM_SHEET_CLASS } from "@/features/items/_internal/components/drawer/ItemDrawerContent";
@@ -124,7 +124,7 @@ export function ItemRouteDrawerSkeleton() {
   return (
     <div className="px-6 pt-12 pb-6">
       <SheetTitle className="sr-only">{t("loading")}</SheetTitle>
-      <ItemDrawerSkeleton typeName={parseTypeSlug(slug) ?? undefined} />
+      <ItemDrawerSkeleton typeName={systemTypeNameForSlug(slug) ?? undefined} />
     </div>
   );
 }

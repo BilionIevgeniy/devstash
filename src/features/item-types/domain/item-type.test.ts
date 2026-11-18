@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
-  parseTypeSlug,
   sortBySystemOrder,
+  systemTypeNameForSlug,
+  systemTypeSlug,
   toItemTypeInfo,
   typeLabel,
-  typeSlug,
 } from "@/features/item-types/domain/item-type";
 
 const SYSTEM_TYPES = [
@@ -23,23 +23,40 @@ describe("toItemTypeInfo", () => {
       toItemTypeInfo({
         id: "t1",
         name: "snippet",
+        slug: "snippets",
         icon: "Code",
         color: "#3b82f6",
       }),
-    ).toEqual({ id: "t1", name: "snippet", icon: "Code", color: "#3b82f6" });
+    ).toEqual({
+      id: "t1",
+      name: "snippet",
+      slug: "snippets",
+      icon: "Code",
+      color: "#3b82f6",
+    });
   });
 
   it("falls back to the File icon when the row has none", () => {
     expect(
-      toItemTypeInfo({ id: "t1", name: "custom", icon: null, color: "#fff" })
-        .icon,
+      toItemTypeInfo({
+        id: "t1",
+        name: "custom",
+        slug: "customs",
+        icon: null,
+        color: "#fff",
+      }).icon,
     ).toBe("File");
   });
 
   it("turns a missing color into undefined", () => {
     expect(
-      toItemTypeInfo({ id: "t1", name: "custom", icon: "Code", color: null })
-        .color,
+      toItemTypeInfo({
+        id: "t1",
+        name: "custom",
+        slug: "customs",
+        icon: "Code",
+        color: null,
+      }).color,
     ).toBeUndefined();
   });
 });
@@ -86,32 +103,24 @@ describe("sortBySystemOrder", () => {
   });
 });
 
-describe("typeSlug", () => {
-  it("is the plural of the type name", () => {
-    expect(typeSlug("snippet")).toBe("snippets");
-    expect(typeSlug("link")).toBe("links");
+describe("systemTypeSlug", () => {
+  it("is the plural of the type name, as the migration backfilled it", () => {
+    expect(systemTypeSlug("snippet")).toBe("snippets");
+    expect(systemTypeSlug("link")).toBe("links");
   });
 });
 
-describe("parseTypeSlug", () => {
-  it("gives back the type name", () => {
-    expect(parseTypeSlug("snippets")).toBe("snippet");
+describe("systemTypeNameForSlug", () => {
+  it.each(SYSTEM_TYPES)("finds the system type %s by its slug", (name) => {
+    expect(systemTypeNameForSlug(`${name}s`)).toBe(name);
   });
 
-  it.each(SYSTEM_TYPES)("round-trips the system type %s", (name) => {
-    expect(parseTypeSlug(typeSlug(name))).toBe(name);
+  it("is null for a custom type's slug", () => {
+    expect(systemTypeNameForSlug("recipes")).toBeNull();
   });
 
-  it("is null for a slug that is only the suffix", () => {
-    expect(parseTypeSlug("s")).toBeNull();
-  });
-
-  it("is null for a slug without the suffix", () => {
-    expect(parseTypeSlug("snippet")).toBeNull();
-  });
-
-  it("is null for an empty slug", () => {
-    expect(parseTypeSlug("")).toBeNull();
+  it("is null for a system name without the suffix", () => {
+    expect(systemTypeNameForSlug("snippet")).toBeNull();
   });
 });
 

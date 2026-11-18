@@ -6,6 +6,7 @@ import {
 } from "../../../test/integration/fixtures";
 import {
   getItemTypeByName,
+  getItemTypeBySlug,
   getItemTypesById,
   getSidebarItemTypes,
 } from "@/features/item-types/queries";
@@ -19,7 +20,12 @@ let customTypeOfB: string;
 beforeAll(async () => {
   t = await seedTenants();
   const custom = await prisma.itemType.create({
-    data: { name: "snippet", userId: t.b.userId, isSystem: false },
+    data: {
+      name: "snippet",
+      slug: "snippets",
+      userId: t.b.userId,
+      isSystem: false,
+    },
   });
   customTypeOfB = custom.id;
 });
@@ -40,6 +46,26 @@ describe("getItemTypeByName", () => {
     await expect(getItemTypeByName("snippet")).resolves.toMatchObject({
       id: snippet,
     });
+  });
+});
+
+describe("getItemTypeBySlug", () => {
+  it("finds a system type by its slug for any user", async () => {
+    const snippet = await systemTypeId("snippet");
+    await expect(
+      getItemTypeBySlug(t.a.userId, "snippets"),
+    ).resolves.toMatchObject({ id: snippet });
+  });
+
+  it("finds the caller's own type, never another user's of the same slug", async () => {
+    const own = await prisma.itemType.create({
+      data: { name: "Recipes", slug: "recipes", userId: t.b.userId },
+    });
+    await expect(
+      getItemTypeBySlug(t.b.userId, "recipes"),
+    ).resolves.toMatchObject({ id: own.id });
+    await expect(getItemTypeBySlug(t.a.userId, "recipes")).resolves.toBeNull();
+    await prisma.itemType.delete({ where: { id: own.id } });
   });
 });
 

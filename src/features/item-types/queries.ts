@@ -14,6 +14,7 @@ import { prisma } from "@/lib/postgres/prisma";
 export const itemTypeSelect = {
   id: true,
   name: true,
+  slug: true,
   icon: true,
   color: true,
 } satisfies Prisma.ItemTypeSelect;
@@ -26,6 +27,19 @@ export async function getItemTypeByName(
 ): Promise<ItemTypeInfo | null> {
   const type = await prisma.itemType.findFirst({
     where: { name, isSystem: true },
+    select: itemTypeSelect,
+  });
+  return type ? toItemTypeInfo(type) : null;
+}
+
+// The type of a type page: a system type, or the caller's own custom type.
+// Another user's type of the same slug is never read.
+export async function getItemTypeBySlug(
+  userId: string,
+  slug: string,
+): Promise<ItemTypeInfo | null> {
+  const type = await prisma.itemType.findFirst({
+    where: { slug, OR: [{ isSystem: true, userId: null }, { userId }] },
     select: itemTypeSelect,
   });
   return type ? toItemTypeInfo(type) : null;

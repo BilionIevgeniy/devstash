@@ -1,12 +1,10 @@
-import { typeSlug } from "@/features/item-types/domain/item-type";
-
 interface ItemPageTarget {
   id: string;
-  type: { name: string };
+  type: { slug: string };
 }
 
 export function itemPagePath(item: ItemPageTarget): string {
-  return `/items/${typeSlug(item.type.name)}/${encodeURIComponent(item.id)}`;
+  return `/items/${item.type.slug}/${encodeURIComponent(item.id)}`;
 }
 
 // Whether this path is the item's own full page. The palette and the sidebar do

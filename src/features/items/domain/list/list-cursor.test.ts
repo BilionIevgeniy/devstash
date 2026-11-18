@@ -86,7 +86,7 @@ describe("list pages", () => {
     createdAt: new Date("2026-01-01T00:00:00.000Z"),
     favoritedAt: new Date("2026-03-01T10:00:00.000Z"),
     tags: [],
-    type: { id: "type-1", name: "snippet", icon: "Code" },
+    type: { id: "type-1", name: "snippet", slug: "snippets", icon: "Code" },
   };
 
   it("puts the sort keys of a row and then its id in its cursor", () => {

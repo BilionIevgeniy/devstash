@@ -3,7 +3,7 @@ import { rankTypesByUsage } from "@/features/item-types/domain/rank-types-by-usa
 import type { ItemTypeInfo } from "@/features/item-types/types";
 
 function makeType(id: string, name: string): ItemTypeInfo {
-  return { id, name, icon: "File" };
+  return { id, name, slug: `${name}s`, icon: "File" };
 }
 
 function indexById(...types: ItemTypeInfo[]): Map<string, ItemTypeInfo> {

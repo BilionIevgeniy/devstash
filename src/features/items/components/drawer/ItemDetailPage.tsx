@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Skeleton } from "@/components/ui/skeleton";
-import { parseTypeSlug } from "@/features/item-types/domain/item-type";
+import { systemTypeNameForSlug } from "@/features/item-types/domain/item-type";
 import { ItemDrawerSkeleton } from "@/features/items/_internal/components/drawer/ItemDrawerSkeleton";
 import { ItemDetailView } from "@/features/items/_internal/components/drawer/ItemDetailView";
 import { deleteItem } from "@/features/items/actions/item";
@@ -88,7 +88,7 @@ export function ItemDetailPageSkeleton() {
           <Skeleton className="h-5 w-20" />
         </div>
       </div>
-      <ItemDrawerSkeleton typeName={parseTypeSlug(type) ?? undefined} />
+      <ItemDrawerSkeleton typeName={systemTypeNameForSlug(type) ?? undefined} />
     </div>
   );
 }

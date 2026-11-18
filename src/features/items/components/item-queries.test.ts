@@ -30,7 +30,13 @@ function row(
     aiTags: [],
     createdAt: new Date("2026-01-01T00:00:00Z"),
     tags: [],
-    type: { id: "type-snippet", name: "snippet", icon: "Code", color: "#fff" },
+    type: {
+      id: "type-snippet",
+      name: "snippet",
+      slug: "snippets",
+      icon: "Code",
+      color: "#fff",
+    },
     ...overrides,
   };
 }

@@ -2,6 +2,7 @@ import { DEMO_PRO_USER_EMAIL, DEMO_USER_EMAIL } from "./demo-user";
 
 export interface SeedItemType {
   name: string;
+  slug: string;
   icon: string;
   color: string;
 }
@@ -40,13 +41,13 @@ export const demoProUser = {
 };
 
 export const systemItemTypes: SeedItemType[] = [
-  { name: "snippet", icon: "Code", color: "#3b82f6" },
-  { name: "prompt", icon: "Sparkles", color: "#8b5cf6" },
-  { name: "command", icon: "Terminal", color: "#f97316" },
-  { name: "note", icon: "StickyNote", color: "#fde047" },
-  { name: "file", icon: "File", color: "#6b7280" },
-  { name: "image", icon: "Image", color: "#ec4899" },
-  { name: "link", icon: "Link", color: "#10b981" },
+  { name: "snippet", slug: "snippets", icon: "Code", color: "#3b82f6" },
+  { name: "prompt", slug: "prompts", icon: "Sparkles", color: "#8b5cf6" },
+  { name: "command", slug: "commands", icon: "Terminal", color: "#f97316" },
+  { name: "note", slug: "notes", icon: "StickyNote", color: "#fde047" },
+  { name: "file", slug: "files", icon: "File", color: "#6b7280" },
+  { name: "image", slug: "images", icon: "Image", color: "#ec4899" },
+  { name: "link", slug: "links", icon: "Link", color: "#10b981" },
 ];
 
 // The demo user is on the Free plan and sits one short of both limits (50 items,

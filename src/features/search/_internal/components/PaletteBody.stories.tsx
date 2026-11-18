@@ -27,6 +27,7 @@ const RESULTS: PaletteResults = {
       type: {
         id: "type-snippet",
         name: "snippet",
+        slug: "snippets",
         icon: "Code",
         color: "#3b82f6",
       },
@@ -44,7 +45,13 @@ const RESULTS: PaletteResults = {
       aiTags: [],
       createdAt: new Date("2026-10-28T14:00:00Z"),
       tags: [],
-      type: { id: "type-file", name: "file", icon: "File", color: "#6b7280" },
+      type: {
+        id: "type-file",
+        name: "file",
+        slug: "files",
+        icon: "File",
+        color: "#6b7280",
+      },
       isLocked: true,
     },
   ],

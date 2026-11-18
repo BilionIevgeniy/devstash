@@ -58,8 +58,8 @@ export async function openUserItem(
 export async function getUserItemDetailOfType(
   userId: string,
   itemId: string,
-  typeName: string,
+  typeSlug: string,
 ): Promise<ItemDetail | null> {
-  const record = await getItemDetailOfType(userId, itemId, typeName);
+  const record = await getItemDetailOfType(userId, itemId, typeSlug);
   return record ? toItemDetail(record) : null;
 }

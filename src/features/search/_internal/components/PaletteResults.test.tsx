@@ -33,7 +33,7 @@ function item(title: string): PaletteItem {
     descriptionAiGenerated: false,
     aiTags: [],
     createdAt: new Date("2026-01-15T00:00:00Z"),
-    type: { id: "type-1", name: "snippet", icon: "Code" },
+    type: { id: "type-1", name: "snippet", slug: "snippets", icon: "Code" },
     tags: [],
     preview: null,
     previewAiGenerated: false,

@@ -9,8 +9,7 @@ import { PaginationNav } from "@/components/common/lists/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import { getEntitlements } from "@/features/billing/queries";
-import { parseTypeSlug } from "@/features/item-types/domain/item-type";
-import { getItemTypeByName } from "@/features/item-types/queries";
+import { getItemTypeBySlug } from "@/features/item-types/queries";
 import { typeListing } from "@/features/items/domain/item-fields";
 import { itemListHref } from "@/features/items/domain/list/list-params";
 import { ITEMS_PER_PAGE } from "@/features/items/domain/list/pagination";
@@ -34,16 +33,12 @@ export default async function ItemsByTypePage({
   searchParams,
 }: PageProps<"/items/[type]">) {
   const { type: slug } = await params;
-  const typeName = parseTypeSlug(slug);
-  if (!typeName) notFound();
-
   const { id: userId } = await getSessionUser();
-  if (!(await userCanUseType(userId, typeName))) {
+  const type = await getItemTypeBySlug(userId, slug);
+  if (!type) notFound();
+  if (!(await userCanUseType(userId, type.name))) {
     redirect(UPGRADE_PATH);
   }
-
-  const type = await getItemTypeByName(typeName);
-  if (!type) notFound();
 
   const requested = parseItemListParams(await searchParams);
   const [totalCount, tags, { isPro }] = await Promise.all([
