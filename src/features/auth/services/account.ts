@@ -7,9 +7,11 @@ import {
 } from "@/features/auth/_internal/password";
 import {
   getDeletionCredentials,
+  getStaleRegistration,
   getPasswordHash,
   getPasswordHashByEmail,
 } from "@/features/auth/_internal/queries";
+import { staleRegistrationCutoff } from "@/features/auth/domain/registration";
 import { addressTokenIdentifiers } from "@/features/auth/domain/token-identifiers";
 import {
   tooManyAttemptsParams,
@@ -22,6 +24,7 @@ import {
   type Failure,
   type OperationResult,
 } from "@/lib/errors/action-result";
+import { staleRegistrationWhere } from "@/features/auth/_internal/queries";
 import { prisma } from "@/lib/postgres/prisma";
 import { consumeRateLimit, resetRateLimit } from "@/lib/vendors/rate-limit";
 
@@ -39,6 +42,8 @@ declare const verified: unique symbol;
 export interface VerifiedDeletion {
   readonly userId: string;
   readonly email: string;
+  /** Set for a stale registration: the rows go only while it still is one. */
+  readonly staleBefore?: Date;
   readonly [verified]: true;
 }
 
@@ -128,6 +133,20 @@ export async function verifyAccountDeletion(
   return ok({ userId, email: user.email } as VerifiedDeletion);
 }
 
+// The proof of the daily job for a registration never verified within
+// UNVERIFIED_REGISTRATION_DAYS: the conditions are read again here with the
+// cutoff of `now`, so no caller can pass its own. Null when the user verified,
+// linked GitHub or is gone in the meantime.
+export async function verifyStaleRegistration(
+  userId: string,
+  now: Date,
+): Promise<VerifiedDeletion | null> {
+  const staleBefore = staleRegistrationCutoff(now);
+  const user = await getStaleRegistration(userId, staleBefore);
+  if (!user) return null;
+  return { userId, email: user.email, staleBefore } as VerifiedDeletion;
+}
+
 // Called only by account's delete flow, after it has purged the user's files.
 //
 // Items, collections, tags, custom types, accounts and sessions go with the
@@ -136,7 +155,13 @@ export async function verifyAccountDeletion(
 export async function deleteVerifiedUserRows({
   userId,
   email,
+  staleBefore,
 }: VerifiedDeletion): Promise<void> {
+  if (staleBefore) {
+    await deleteStaleRegistrationRows(userId, email, staleBefore);
+    return;
+  }
+
   await prisma.$transaction([
     prisma.verificationToken.deleteMany({
       where: {
@@ -145,4 +170,22 @@ export async function deleteVerifiedUserRows({
     }),
     prisma.user.delete({ where: { id: userId } }),
   ]);
+}
+
+// A verification that lands between the job's proof and this delete keeps the
+// user, and with it the tokens of the address.
+async function deleteStaleRegistrationRows(
+  userId: string,
+  email: string,
+  staleBefore: Date,
+): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const { count } = await tx.user.deleteMany({
+      where: { id: userId, ...staleRegistrationWhere(staleBefore) },
+    });
+    if (count !== 1) return;
+    await tx.verificationToken.deleteMany({
+      where: { identifier: { in: addressTokenIdentifiers(email) } },
+    });
+  });
 }

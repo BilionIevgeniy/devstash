@@ -9,6 +9,7 @@ import {
   changeUserPassword,
   deleteVerifiedUserRows,
   verifyAccountDeletion,
+  verifyStaleRegistration,
 } from "@/features/auth/services/account";
 import { hashToken } from "@/features/auth/_internal/token";
 import { getAccountDeletionIdentifier } from "@/features/auth/domain/account-deletion";
@@ -131,5 +132,47 @@ describe("deletion link", () => {
       error: "invalidDeletionLink",
     });
     expect(await snapshotTenant(t.b.userId)).toEqual(before);
+  });
+});
+
+// The daily job's delete re-checks the registration in its own transaction: a
+// verification after the proof keeps the user and the tokens of the address.
+describe("stale registration", () => {
+  it("keeps a user verified between the proof and the delete", async () => {
+    const createdAt = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
+    const user = await prisma.user.create({
+      data: { email: "late@example.com", password: "hash", createdAt },
+    });
+    await prisma.verificationToken.create({
+      data: {
+        identifier: "password-reset:late@example.com",
+        token: "token-of-late",
+        expires: new Date(Date.now() + 60_000),
+      },
+    });
+
+    const verified = await verifyStaleRegistration(user.id, new Date());
+    expect(verified?.userId).toBe(user.id);
+    if (!verified) return;
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerified: new Date() },
+    });
+    await deleteVerifiedUserRows(verified);
+
+    await expect(prisma.user.count({ where: { id: user.id } })).resolves.toBe(
+      1,
+    );
+    await expect(
+      prisma.verificationToken.count({
+        where: { identifier: "password-reset:late@example.com" },
+      }),
+    ).resolves.toBe(1);
+  });
+
+  it("gives no proof for a verified tenant", async () => {
+    await expect(
+      verifyStaleRegistration(t.a.userId, new Date()),
+    ).resolves.toBeNull();
   });
 });

@@ -1,3 +1,4 @@
+import { purgeStaleRegistrations } from "@/features/account/services/retention";
 import { deleteExpiredTokens } from "@/features/auth/services/retention";
 import { sweepUnclaimedUploads } from "@/features/items/services/upload-sweep";
 import { fail } from "@/lib/errors/action-result";
@@ -5,7 +6,7 @@ import { jsonError, jsonOk } from "@/lib/http/api-response";
 import { isCronRequest, runCronJobs, type CronJob } from "@/lib/http/cron";
 
 // The daily job of the data retention (ADR 0030), called by Vercel Cron
-// (vercel.json): one service per job and nothing else. 60 s is the limit on
+// (vercel.json): one service per job and nothing else, the cheapest first. 60 s is the limit on
 // Hobby without Fluid compute; the jobs stop paging at the deadline, well
 // before it, and what is left waits for the next day.
 export const maxDuration = 60;
@@ -20,6 +21,7 @@ const JOBS: CronJob[] = [
     }),
   },
   { name: "unclaimed-uploads", run: sweepUnclaimedUploads },
+  { name: "stale-registrations", run: purgeStaleRegistrations },
 ];
 
 export async function GET(request: Request) {

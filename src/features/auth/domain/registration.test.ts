@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { shouldResendVerification } from "@/features/auth/domain/registration";
+import {
+  shouldResendVerification,
+  staleRegistrationCutoff,
+  UNVERIFIED_REGISTRATION_DAYS,
+} from "@/features/auth/domain/registration";
 
 describe("shouldResendVerification", () => {
   // A repeat registration must reveal nothing about other kinds of account, so
@@ -17,4 +21,13 @@ describe("shouldResendVerification", () => {
       );
     },
   );
+});
+
+describe("staleRegistrationCutoff", () => {
+  it("lies the stated number of days before now", () => {
+    expect(UNVERIFIED_REGISTRATION_DAYS).toBe(7);
+    expect(
+      staleRegistrationCutoff(new Date("2026-11-18T03:00:00Z")).toISOString(),
+    ).toBe("2026-11-11T03:00:00.000Z");
+  });
 });

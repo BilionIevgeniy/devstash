@@ -4,6 +4,12 @@ const { deleteExpiredTokens } = vi.hoisted(() => ({
   deleteExpiredTokens: vi.fn(),
 }));
 vi.mock("@/features/auth/services/retention", () => ({ deleteExpiredTokens }));
+vi.mock("@/features/account/services/retention", () => ({
+  purgeStaleRegistrations: vi.fn(async () => ({
+    counts: { deleted: 0, failed: 0 },
+    stoppedEarly: false,
+  })),
+}));
 vi.mock("@/features/items/services/upload-sweep", () => ({
   sweepUnclaimedUploads: vi.fn(async () => ({
     counts: { scanned: 0, deleted: 0 },

@@ -1,8 +1,10 @@
 import "server-only";
 
+import { staleRegistrationWhere } from "@/features/auth/_internal/queries";
 import { hashToken } from "@/features/auth/_internal/token";
 import { getAccountDeletionIdentifier } from "@/features/auth/domain/account-deletion";
 import { getPasswordResetIdentifier } from "@/features/auth/domain/password-reset";
+import { staleRegistrationCutoff } from "@/features/auth/domain/registration";
 import { isTokenExpired } from "@/features/auth/domain/verification-token";
 import type { AccountState, UserProfile } from "@/features/auth/types";
 import { prisma } from "@/lib/postgres/prisma";
@@ -91,4 +93,25 @@ export function isAccountDeletionTokenValid(
   token: string,
 ): Promise<boolean> {
   return isTokenValid(getAccountDeletionIdentifier(email), token);
+}
+
+// For the daily job: one page of the ids of registrations never verified within
+// UNVERIFIED_REGISTRATION_DAYS, in id order after `afterId`. Not scoped by a
+// user, since it finds who is due across all of them (ADR 0030); each id then
+// goes through the deletion proof of services/account.
+export async function getStaleRegistrationIds(
+  now: Date,
+  afterId: string | null,
+  take: number,
+): Promise<string[]> {
+  const users = await prisma.user.findMany({
+    where: {
+      ...staleRegistrationWhere(staleRegistrationCutoff(now)),
+      ...(afterId && { id: { gt: afterId } }),
+    },
+    orderBy: { id: "asc" },
+    select: { id: true },
+    take,
+  });
+  return users.map(({ id }) => id);
 }

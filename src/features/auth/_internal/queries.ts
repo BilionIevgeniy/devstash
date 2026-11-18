@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/postgres/prisma";
 
 // Reads that hand a secret (a password hash) to their caller.
@@ -62,5 +63,31 @@ export async function getCredentialsUser(
       password: true,
       emailVerified: true,
     },
+  });
+}
+
+// A registration with a password whose email was never verified, created
+// before the cutoff. A GitHub account also has no verified email (Auth.js
+// leaves it null) and must never match, hence no linked Account. Shared by the
+// daily job's reads and its delete, so a verification in between keeps the
+// account.
+export function staleRegistrationWhere(cutoff: Date): Prisma.UserWhereInput {
+  return {
+    password: { not: null },
+    emailVerified: null,
+    accounts: { none: {} },
+    createdAt: { lt: cutoff },
+  };
+}
+
+// The address of a stale registration, for the deletion proof of the daily
+// job; null once the user verified, linked GitHub or is gone.
+export async function getStaleRegistration(
+  userId: string,
+  cutoff: Date,
+): Promise<{ email: string } | null> {
+  return prisma.user.findFirst({
+    where: { id: userId, ...staleRegistrationWhere(cutoff) },
+    select: { email: true },
   });
 }
