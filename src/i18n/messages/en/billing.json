@@ -42,6 +42,7 @@
     "limitReached": "You've reached the Free plan's limit. Delete something to create more, or <link>upgrade to Pro</link>.",
     "paymentIssue": "Your last payment didn't go through. Open Manage Billing to fix it.",
     "manage": "Manage Billing",
+    "grantedPro": "Pro was granted to this account directly, so there is no subscription to manage or cancel. To try a purchase, register your own account.",
     "upgradeMonthly": "Upgrade {price}/mo",
     "upgradeYearly": "Upgrade {price}/yr (save {percent}%)",
     "welcome": "Welcome to DevStash Pro!",

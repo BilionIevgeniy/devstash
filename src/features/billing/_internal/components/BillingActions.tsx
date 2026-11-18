@@ -21,7 +21,10 @@ export function BillingActions({
   const { isPending, run } = useBillingRedirect();
 
   if (!isPro) return <CheckoutButtons testMode={testMode} />;
-  if (!hasBillingAccount) return null;
+  // Pro with no Stripe customer is a grant (the demo user): nothing to manage.
+  if (!hasBillingAccount) {
+    return <p className="text-sm text-muted-foreground">{t("grantedPro")}</p>;
+  }
 
   return (
     <div className="space-y-4">

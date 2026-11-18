@@ -281,7 +281,7 @@ Mocks cannot prove these.
 - [x] Back from Stripe: the Upgrade buttons work again, and the order step comes back closed with its boxes clear (`usePageRestoreKey`, feature 19)
 - [ ] Feature 19: a purchase through the order step shows gross EUR prices with Stripe Tax and the payable button; the row gets the consent; the § 312f email arrives once; the § 312k page cancels signed in and signed out, each with its email; the reconciliation corrects a row edited by hand
 - [ ] Free at the limit: the plain error, and the form stays open
-- [ ] Pro user sees Manage Billing (Pro and Free checked on 2026-11-18; the demo user is still open), Free sees usage and Upgrade, the demo user sees neither
+- [x] Pro user sees Manage Billing, Free sees usage and Upgrade, and a Pro grant with no Stripe customer (the demo user) sees a note that there is nothing to manage instead of the button
 - [ ] `/settings` does not shift while loading
 
 ### Results in test mode (2026-11-18)
