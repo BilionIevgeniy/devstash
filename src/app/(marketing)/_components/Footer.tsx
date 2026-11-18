@@ -10,6 +10,8 @@ import {
   TERMS_PATH,
 } from "@/lib/http/legal-paths";
 
+import { PrivacySettingsButton } from "@/components/common/consent/PrivacySettingsButton";
+
 import { LanguageLink } from "./LanguageLink";
 
 interface FooterEntry {
@@ -19,14 +21,20 @@ interface FooterEntry {
   lang?: string;
 }
 
-const FOOTER_LINK = "transition-colors hover:text-foreground";
+const FOOTER_LINK =
+  "inline-flex items-center transition-colors hover:text-foreground max-md:min-h-11";
 
 // Only pages that exist. A link is added here in the commit that adds its page.
 // The in-page links lead to the homepage of the footer's own language.
 export async function Footer({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "marketing" });
   const home = homePath(locale);
-  const columns: { heading: string; entries: FooterEntry[] }[] = [
+  const columns: {
+    heading: string;
+    entries: FooterEntry[];
+    /** After the links: the button that opens the consent banner again. */
+    withPrivacySettings?: boolean;
+  }[] = [
     {
       heading: t("footer.product"),
       entries: [
@@ -47,6 +55,7 @@ export async function Footer({ locale }: { locale: Locale }) {
           lang: "de",
         },
       ],
+      withPrivacySettings: true,
     },
   ];
 
@@ -60,7 +69,7 @@ export async function Footer({ locale }: { locale: Locale }) {
               {t("footer.tagline")}
             </p>
           </div>
-          {columns.map(({ heading, entries }) => (
+          {columns.map(({ heading, entries, withPrivacySettings }) => (
             <nav key={heading} aria-label={heading}>
               <h3 className="font-mono text-[13px] font-medium">{heading}</h3>
               <ul className="mt-3 grid gap-2 text-sm text-muted-foreground">
@@ -71,6 +80,11 @@ export async function Footer({ locale }: { locale: Locale }) {
                     </Link>
                   </li>
                 ))}
+                {withPrivacySettings && (
+                  <li>
+                    <PrivacySettingsButton className={FOOTER_LINK} />
+                  </li>
+                )}
               </ul>
             </nav>
           ))}

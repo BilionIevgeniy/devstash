@@ -1,6 +1,7 @@
 import { localeBodySchema } from "@/features/app-shell/schemas";
 import { fail } from "@/lib/errors/action-result";
 import { jsonError, NO_STORE } from "@/lib/http/api-response";
+import { refuseCrossSiteJson } from "@/lib/http/same-origin-json";
 import { setLocaleCookie } from "@/lib/locale/locale-cookie";
 import { firstIssue } from "@/lib/errors/validation";
 
@@ -8,22 +9,11 @@ import { firstIssue } from "@/lib/errors/validation";
 // and the app (ADR 0024). A route, not a Server Action: an action that sets a
 // cookie refreshes the current page, which would race the link's navigation.
 // Open to visitors, so no session; it stores nothing but the caller's own
-// cookie, so no rate limit.
-//
-// A route has no built-in origin check, so a foreign page must not be able to
-// set the language: JSON only (a cross-site fetch with that type needs a CORS
-// preflight this route never answers, and a form cannot send it), and a
-// browser that says the request is cross-site is refused. Not compared with
-// APP_URL: a preview deployment has an origin of its own.
+// cookie, so no rate limit. A foreign page must not be able to set the
+// language: `refuseCrossSiteJson`.
 export async function POST(request: Request): Promise<Response> {
-  const contentType = request.headers.get("content-type") ?? "";
-  if (!contentType.startsWith("application/json")) {
-    return jsonError(fail("invalidRequest"), 415);
-  }
-  const fetchSite = request.headers.get("sec-fetch-site");
-  if (fetchSite !== null && fetchSite !== "same-origin") {
-    return jsonError(fail("invalidRequest"), 403);
-  }
+  const refused = refuseCrossSiteJson(request);
+  if (refused) return refused;
 
   let body: unknown;
   try {

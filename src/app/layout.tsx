@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { AppToaster } from "@/components/common/providers/AppToaster";
 import { getSiteOrigin } from "@/lib/http/app-url";
 import { geistMono, geistSans } from "./fonts";
 import "./globals.css";
@@ -19,12 +18,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased motion-safe:scroll-smooth`}
+      className={`${geistSans.variable} ${geistMono.variable} dark h-full scroll-pb-(--consent-inset) antialiased motion-safe:scroll-smooth`}
     >
-      <body className="min-h-full flex flex-col">
-        {children}
-        <AppToaster />
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

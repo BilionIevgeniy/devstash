@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { ANSWERED_CONSENT } from "./storage-state";
 import { E2E_USER_PASSWORD, requireE2eUserEmail } from "../../scripts/e2e-user";
 
 // A different client address for every sign-in. Next fills `x-forwarded-for`
@@ -18,9 +19,15 @@ export async function signInThroughForm(
   page: Page,
   email: string = requireE2eUserEmail(),
 ): Promise<void> {
-  await page
-    .context()
-    .setExtraHTTPHeaders({ "x-forwarded-for": randomTestIp() });
+  const context = page.context();
+  await context.setExtraHTTPHeaders({ "x-forwarded-for": randomTestIp() });
+  // The saved session carries the answer to the consent banner, so it never
+  // covers a button; an answer already there is kept.
+  await context.addInitScript(({ name, value }) => {
+    if (window.localStorage.getItem(name) === null) {
+      window.localStorage.setItem(name, value);
+    }
+  }, ANSWERED_CONSENT);
   await page.goto("/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel("Password", { exact: true }).fill(E2E_USER_PASSWORD);

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { SIGNED_OUT } from "./support/storage-state";
 
 // An email link finished while another account is signed in leads here: the
 // page says what was done and offers to sign out. The session of this test is
@@ -25,7 +26,7 @@ test("the switch page names the finished step and signs out on request", async (
 });
 
 test.describe("signed out", () => {
-  test.use({ storageState: { cookies: [], origins: [] } });
+  test.use({ storageState: SIGNED_OUT });
 
   test("the switch page sends a visitor to sign-in", async ({ page }) => {
     await page.goto("/switch-account?reason=email");

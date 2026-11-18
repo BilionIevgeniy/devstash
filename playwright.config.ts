@@ -1,6 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 import { config as loadEnv } from "dotenv";
-import { AUTH_FILE } from "./e2e/support/storage-state";
+import { AUTH_FILE, E2E_ORIGIN, E2E_PORT } from "./e2e/support/storage-state";
 import { buildE2eServerEnv } from "./scripts/e2e-server-env";
 import { FAKE_OPENAI_PORT } from "./scripts/fake-openai";
 import { requireTestDatabase } from "./scripts/require-dev-database";
@@ -13,10 +13,9 @@ import { requireTestDatabase } from "./scripts/require-dev-database";
 // and the vendor keys of .env never reach it.
 loadEnv({ path: ".env.test", quiet: true });
 
-// Not 3000: a `npm run dev` on the usual port must not be mistaken for the test
-// server, and the config never reuses a server that is already running.
-const PORT = 3100;
-const ORIGIN = `http://localhost:${PORT}`;
+// The config never reuses a server that is already running.
+const PORT = E2E_PORT;
+const ORIGIN = E2E_ORIGIN;
 const BUILD_AND_START_TIMEOUT_MS = 5 * 60 * 1000;
 // The sign-in redirect waits on several Upstash calls, a cold database
 // connection and the first render of the dashboard: more than the default 5 s

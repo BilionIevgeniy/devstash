@@ -26,6 +26,7 @@ Feature 19 writes these texts and flows in test mode; before live a lawyer signs
 - The failed-payment policy: whether two weeks of arrears supports ending the contract; the AGB now say so (section 6, [ADR 0033](../docs/adr/0033-tax-prices-and-payment-policy.md))
 - The downgrade terms: text read-only over the Free limit, custom types kept read-only (AGB section 7)
 - The AI Act decision of feature 15
+- § 25 TDDDG (feature 20, [ADR 0034](../docs/adr/0034-consent-and-field-measurement.md)): the Sentry browser SDK runs without consent, counted as strictly necessary because it reports only a failure of the service the visitor asked for; and the banner's wording, the log retention named for the Web Vitals, and Allow and Decline as equal buttons
 
 ## Vendors and privacy
 

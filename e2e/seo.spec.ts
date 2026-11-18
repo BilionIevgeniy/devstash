@@ -1,9 +1,10 @@
 import { expect, test } from "@playwright/test";
+import { SIGNED_OUT } from "./support/storage-state";
 
 // What a crawler and a link preview see. A visitor has no session, so the
 // app routes would only redirect: the noindex they carry is checked signed in.
 test.describe("as a visitor", () => {
-  test.use({ storageState: { cookies: [], origins: [] } });
+  test.use({ storageState: SIGNED_OUT });
 
   test("the sitemap lists the public pages", async ({ request, baseURL }) => {
     const response = await request.get("/sitemap.xml");
