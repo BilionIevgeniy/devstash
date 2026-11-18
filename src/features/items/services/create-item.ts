@@ -10,11 +10,13 @@ import { confirmUpload } from "@/features/files/services/objects";
 import { getItemTypeByName } from "@/features/item-types/queries";
 import {
   collectionLinks,
+  tagLinks,
+} from "@/features/items/_internal/services/item-writes";
+import {
   hasPrismaCode,
   isRecordNotFound,
-  tagLinks,
   UNIQUE_VIOLATION_CODE,
-} from "@/features/items/_internal/services/item-writes";
+} from "@/lib/postgres/prisma-errors";
 import { nextAiMarks } from "@/features/items/domain/ai-marks";
 import {
   contentTypeFor,

@@ -1,20 +1,5 @@
 import "server-only";
 
-import { Prisma } from "@/generated/prisma/client";
-
-const RECORD_NOT_FOUND_CODE = "P2025";
-export const UNIQUE_VIOLATION_CODE = "P2002";
-
-export function hasPrismaCode(error: unknown, code: string): boolean {
-  return (
-    error instanceof Prisma.PrismaClientKnownRequestError && error.code === code
-  );
-}
-
-export function isRecordNotFound(error: unknown): boolean {
-  return hasPrismaCode(error, RECORD_NOT_FOUND_CODE);
-}
-
 // Links to the caller's tags, creating the ones the caller does not have yet.
 // A link to a name in aiTags is marked as an accepted AI suggestion.
 export function tagLinks(

@@ -3,9 +3,9 @@ import "server-only";
 import { deleteUserObject } from "@/features/files/services/objects";
 import {
   collectionLinks,
-  isRecordNotFound,
   tagLinks,
 } from "@/features/items/_internal/services/item-writes";
+import { isRecordNotFound } from "@/lib/postgres/prisma-errors";
 import { nextAiMarks } from "@/features/items/domain/ai-marks";
 import {
   editableFields,
