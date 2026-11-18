@@ -57,9 +57,9 @@ export function proYearlySavingsPercent(): number {
   return Math.round((1 - PRO_YEARLY_PRICE / fullYear) * 100);
 }
 
-// What the Pro card of a pricing table shows for the chosen period, in
-// dollars: the price per month, and the yearly total when billed yearly. The
-// component formats them for the locale.
+// What the Pro card of a pricing table shows for the chosen period, in euros
+// including VAT: the price per month, and the yearly total when billed yearly.
+// The component formats them for the locale.
 export function proPriceDisplay(yearly: boolean): {
   perMonth: number;
   yearlyTotal: number | null;

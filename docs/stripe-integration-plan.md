@@ -1,6 +1,6 @@
 # Stripe Integration Plan
 
-The plan for DevStash Pro ($8 a month, $72 a year). Phases 1 and 2 are built. Section 2 describes the code as it was before Phase 1. The steps to follow are in two specs:
+The plan for DevStash Pro (€8 a month, €72 a year, including VAT since feature 19). Phases 1 and 2 are built. Section 2 describes the code as it was before Phase 1. The steps to follow are in two specs:
 
 - [context/features/stripe-phase-1-spec.md](../context/features/stripe-phase-1-spec.md): SDK, limits, checkout, portal, ADR 0011
 - [context/features/stripe-phase-2-spec.md](../context/features/stripe-phase-2-spec.md): webhook, gating, billing UI, account deletion
@@ -230,7 +230,7 @@ Full steps and code are in the specs.
 
 Do this in a sandbox first, then again in live mode.
 
-1. **Product:** create "DevStash Pro" with two recurring prices, $8 monthly and $72 yearly. Copy the ids to `STRIPE_PRICE_ID_MONTHLY` and `STRIPE_PRICE_ID_YEARLY`
+1. **Product:** create "DevStash Pro" with two recurring prices in EUR with `tax_behavior: inclusive`, €8 monthly and €72 yearly. Copy the ids to `STRIPE_PRICE_ID_MONTHLY` and `STRIPE_PRICE_ID_YEARLY`
 2. **Keys:** copy the secret key to `STRIPE_SECRET_KEY`
 3. **One subscription per customer:** Settings > Checkout and Payment Links > Subscriptions: redirect customers who already have one to the portal. Keep the portal login link on, or the setting stops working
 4. **Customer portal:** activate it. Allow updating the payment method, viewing invoices, cancelling at period end, and switching between the two prices
