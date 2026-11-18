@@ -24,7 +24,7 @@ The prices were US dollars with no tax, which a shop selling to consumers in Ger
   Stripe works out the VAT of the customer's country and shows it on its page.
 
 - **Setup:** the Dashboard settings (an origin address and a registration) are made in the Dashboard, by the account owner. The README lists them.
-- **Payment methods:** cards only (`payment_method_types: ["card"]`). SEPA Direct Debit and PayPal stay in `context/todo-before-live.md`.
+- **Payment methods:** cards only (`allowed_payment_method_types: ["card"]`, a filter on the methods the Dashboard enables; API `2026-10-28.endive` refuses `payment_method_types`). SEPA Direct Debit and PayPal stay in `context/todo-before-live.md`.
 
 ### Failed payments
 

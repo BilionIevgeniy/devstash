@@ -36,7 +36,7 @@ This record is the design and our reading of the law. It is not legal advice: a 
   - the consent to the immediate start, worded after § 356 (5).
 - The button reads "Zahlungspflichtig bestellen". The English wording is "Order and pay".
 - The server refuses an order without both consents (`checkoutOrderSchema`, `z.literal(true)`).
-- Stripe's own button is labelled "Pay" (`submit_type: "pay"`). Next to it, `custom_text.submit` says that clicking it orders with an obligation to pay.
+- Stripe labels its own button "Subscribe with obligation to pay" ("Kostenpflichtig abonnieren"): in subscription mode it refuses `submit_type`, so the label cannot be set. Next to it, `custom_text.submit` says that clicking it orders with an obligation to pay.
 - Whether Stripe's label satisfies § 312j (3) is on the lawyer's list. The label Stripe shows is recorded by the browser check of the purchase.
 - Rejected: Stripe's embedded Payment Element (`ui_mode: "elements"`). It would give our own button, but it costs the publishable key, `@stripe/stripe-js`, a wider CSP and more PCI surface on our page.
 - A page restored from the back/forward cache (Back from Stripe) mounts the checkout UI fresh (`usePageRestoreKey`), so the consent never comes back ticked.

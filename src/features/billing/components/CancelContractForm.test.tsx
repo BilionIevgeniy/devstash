@@ -53,7 +53,9 @@ describe("CancelContractForm signed out", () => {
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/November 18, 2026 at 10:00:00 AM/),
+      screen.getByText(
+        "Eingegangen am 18. November 2026 um 10:00:00 / Received on November 18, 2026 at 10:00:00 AM",
+      ),
     ).toBeInTheDocument();
     expect(
       screen.getByText("E-Mail / Email: ada@example.com"),
@@ -147,7 +149,9 @@ describe("CancelContractForm signed in", () => {
     );
 
     expect(
-      screen.getByText(/Already cancelled, ends on December 18, 2026/),
+      screen.getByText(
+        /endet am 18\. Dezember 2026 \/ Already cancelled, ends on December 18, 2026/,
+      ),
     ).toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });

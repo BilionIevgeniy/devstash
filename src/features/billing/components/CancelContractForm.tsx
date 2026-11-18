@@ -1,10 +1,11 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { createTranslator, useFormatter, useTranslations } from "next-intl";
+import { createTranslator, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
+import { bilingualDate } from "@/features/billing/_internal/components/cancel/bilingual-date";
 import { CancellationFields } from "@/features/billing/_internal/components/cancel/CancellationFields";
 import { DeclarationRecord } from "@/features/billing/_internal/components/cancel/DeclarationRecord";
 import { useCancellation } from "@/features/billing/_internal/components/hooks/use-cancellation";
@@ -40,16 +41,15 @@ interface CancelContractFormProps {
 
 function ContractLine({ contract }: { contract: ContractState }) {
   const t = useTranslations("billing.cancel");
-  const format = useFormatter();
   if (contract.status === "none") return <p>{t("none")}</p>;
 
-  const date = contract.periodEnd
-    ? format.dateTime(new Date(contract.periodEnd), "long")
+  const dates = contract.periodEnd
+    ? bilingualDate(new Date(contract.periodEnd), "long")
     : null;
   const key = contract.status === "cancelling" ? "cancelling" : "live";
   return (
     <p>
-      {t("contract")} · {date ? t(key, { date }) : t(`${key}NoDate`)}
+      {t("contract")} · {dates ? t(key, dates) : t(`${key}NoDate`)}
     </p>
   );
 }

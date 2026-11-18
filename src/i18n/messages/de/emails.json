@@ -22,7 +22,7 @@
     "ignore": "Wenn du das nicht angefordert hast, ignoriere diese E-Mail: Ohne Bestätigung wird nichts gelöscht."
   },
   "checkout": {
-    "submitNote": "Mit Klick auf „Zahlen“ bestellst du zahlungspflichtig. Pro beginnt sofort; du hast zugestimmt, dass dein Widerrufsrecht damit erlischt."
+    "submitNote": "Mit Klick auf „Kostenpflichtig abonnieren“ bestellst du zahlungspflichtig. Pro beginnt sofort; du hast zugestimmt, dass dein Widerrufsrecht damit erlischt."
   },
   "contract": {
     "subject": "Dein Vertrag über DevStash Pro",
@@ -32,7 +32,7 @@
     "plan": "Plan: DevStash Pro, {period, select, yearly {jährliche Abrechnung} other {monatliche Abrechnung}}",
     "price": "Preis: {price} {period, select, yearly {pro Jahr} other {pro Monat}}, inklusive Umsatzsteuer",
     "start": "Beginn: {date}",
-    "renewal": "Der Vertrag verlängert sich jeden {period, select, yearly {Jahr} other {Monat}}, bis du kündigst. Du kannst jederzeit zum Ende der laufenden Laufzeit kündigen: über „Verträge hier kündigen“ unten auf jeder Seite von DevStash oder über „Abrechnung verwalten“ in den Einstellungen.",
+    "renewal": "Der Vertrag verlängert sich {period, select, yearly {jedes Jahr} other {jeden Monat}}, bis du kündigst. Du kannst jederzeit zum Ende der laufenden Laufzeit kündigen: über „Verträge hier kündigen“ unten auf jeder Seite von DevStash oder über „Abrechnung verwalten“ in den Einstellungen.",
     "consent": "Am {date} hast du ausdrücklich zugestimmt, dass wir vor Ablauf der Widerrufsfrist mit der Leistung beginnen, und bestätigt, dass du weißt, dass dein Widerrufsrecht damit erlischt (§ 356 Abs. 5 BGB). Version der AGB: {version}.",
     "texts": "Die AGB und die Widerrufsbelehrung, die du akzeptiert hast:"
   },
