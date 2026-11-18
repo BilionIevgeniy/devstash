@@ -7,11 +7,9 @@ import {
 } from "@/features/auth/_internal/password";
 import {
   getDeletionCredentials,
-  getGitHubAccessTokens,
   getPasswordHash,
   getPasswordHashByEmail,
 } from "@/features/auth/_internal/queries";
-import { revokeGitHubGrant } from "@/features/auth/_internal/services/github-grant";
 import { getAccountDeletionIdentifier } from "@/features/auth/domain/account-deletion";
 import { getPasswordResetIdentifier } from "@/features/auth/domain/password-reset";
 import {
@@ -140,13 +138,6 @@ export async function deleteVerifiedUserRows({
   userId,
   email,
 }: VerifiedDeletion): Promise<void> {
-  // Best effort, for rows from before tokens stopped being stored: a newer row
-  // has no token and an older one is usually dead, so the app's authorization
-  // on GitHub normally outlives the account.
-  for (const token of await getGitHubAccessTokens(userId)) {
-    await revokeGitHubGrant(token);
-  }
-
   await prisma.$transaction([
     prisma.verificationToken.deleteMany({
       where: {

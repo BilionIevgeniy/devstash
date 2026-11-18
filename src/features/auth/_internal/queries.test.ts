@@ -1,24 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { findUnique, findMany } = vi.hoisted(() => ({
+const { findUnique } = vi.hoisted(() => ({
   findUnique: vi.fn(),
-  findMany: vi.fn(),
 }));
 vi.mock("@/lib/postgres/prisma", () => ({
-  prisma: { user: { findUnique }, account: { findMany } },
+  prisma: { user: { findUnique } },
 }));
 
 import {
   getCredentialsUser,
   getDeletionCredentials,
-  getGitHubAccessTokens,
   getPasswordHash,
   getPasswordHashByEmail,
 } from "@/features/auth/_internal/queries";
 
 beforeEach(() => {
   findUnique.mockReset().mockResolvedValue(null);
-  findMany.mockReset().mockResolvedValue([]);
 });
 
 describe("getPasswordHash", () => {
@@ -78,30 +75,5 @@ describe("getCredentialsUser", () => {
         emailVerified: true,
       },
     });
-  });
-});
-
-describe("getGitHubAccessTokens", () => {
-  it("reads only the GitHub accounts of the given user", async () => {
-    await getGitHubAccessTokens("user-1");
-
-    expect(findMany.mock.calls[0][0].where).toEqual({
-      userId: "user-1",
-      provider: "github",
-    });
-  });
-
-  it("leaves out accounts with no stored token", async () => {
-    findMany.mockResolvedValue([
-      { access_token: "token-1" },
-      { access_token: null },
-      { access_token: "" },
-      { access_token: "token-2" },
-    ]);
-
-    await expect(getGitHubAccessTokens("user-1")).resolves.toEqual([
-      "token-1",
-      "token-2",
-    ]);
   });
 });

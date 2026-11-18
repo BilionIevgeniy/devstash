@@ -2,7 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/postgres/prisma";
 
-// Reads that hand a secret (a password hash, an OAuth token) to their caller.
+// Reads that hand a secret (a password hash) to their caller.
 // They live here and not in auth/queries.ts so that nothing outside auth can
 // import them (ADR 0009). A read that reduces the secret to a boolean, such as
 // getAccountState, is an ordinary query.
@@ -35,16 +35,6 @@ export async function getDeletionCredentials(
     where: { id: userId },
     select: { email: true, password: true },
   });
-}
-
-export async function getGitHubAccessTokens(userId: string): Promise<string[]> {
-  const accounts = await prisma.account.findMany({
-    where: { userId, provider: "github" },
-    select: { access_token: true },
-  });
-  return accounts.flatMap(({ access_token }) =>
-    access_token ? [access_token] : [],
-  );
 }
 
 // The two reads below are keyed by an email address: their callers hold no user

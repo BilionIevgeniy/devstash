@@ -7,8 +7,8 @@ import { requireTestDatabase } from "../../scripts/require-dev-database";
 requireTestDatabase(process.env.DATABASE_URL);
 
 // Only Prisma is real in the integration tests. Every outside boundary is
-// replaced here, for every file: Upstash, R2, Resend, Stripe, OpenAI and the
-// GitHub grant revocation (the one `fetch` of a service). Each factory exports
+// replaced here, for every file: Upstash, R2, Resend, Stripe and OpenAI. Each
+// factory exports
 // every name its importers use. Implementations are passed to `vi.fn(impl)`,
 // which `mockReset` restores before each test; a test that needs another
 // answer sets it itself. Nothing here imports Prisma: the worker's
@@ -81,10 +81,6 @@ vi.mock("@/lib/vendors/openai", () => {
     aiErrorKind: vi.fn(() => null),
   };
 });
-
-vi.mock("@/features/auth/_internal/services/github-grant", () => ({
-  revokeGitHubGrant: vi.fn(async () => {}),
-}));
 
 // Any other network call is a mistake in a test of the database.
 vi.stubGlobal(

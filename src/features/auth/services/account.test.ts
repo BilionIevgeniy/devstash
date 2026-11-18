@@ -4,33 +4,28 @@ const {
   findUnique,
   updateUser,
   deleteUser,
-  findAccounts,
   deleteTokens,
   transaction,
   consumeRateLimit,
   resetRateLimit,
   compare,
   hash,
-  revokeGitHubGrant,
   isAccountDeletionTokenValid,
 } = vi.hoisted(() => ({
   findUnique: vi.fn(),
   updateUser: vi.fn(),
   deleteUser: vi.fn(),
-  findAccounts: vi.fn(),
   deleteTokens: vi.fn(),
   transaction: vi.fn(),
   consumeRateLimit: vi.fn(),
   resetRateLimit: vi.fn(),
   compare: vi.fn(),
   hash: vi.fn(),
-  revokeGitHubGrant: vi.fn(),
   isAccountDeletionTokenValid: vi.fn(),
 }));
 vi.mock("@/lib/postgres/prisma", () => ({
   prisma: {
     user: { findUnique, update: updateUser, delete: deleteUser },
-    account: { findMany: findAccounts },
     verificationToken: { deleteMany: deleteTokens },
     $transaction: transaction,
   },
@@ -41,9 +36,6 @@ vi.mock("@/lib/vendors/rate-limit", () => ({
 }));
 vi.mock("@/features/auth/queries", () => ({ isAccountDeletionTokenValid }));
 vi.mock("bcryptjs", () => ({ default: { compare, hash } }));
-vi.mock("@/features/auth/_internal/services/github-grant", () => ({
-  revokeGitHubGrant,
-}));
 
 import { DUMMY_PASSWORD_HASH } from "@/features/auth/_internal/password";
 import { getAccountDeletionIdentifier } from "@/features/auth/domain/account-deletion";
@@ -149,22 +141,6 @@ describe("deleteVerifiedUserRows", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    findAccounts.mockResolvedValue([]);
-  });
-
-  it("revokes every stored GitHub token before the rows go", async () => {
-    findAccounts.mockResolvedValue([
-      { access_token: "token-1" },
-      { access_token: null },
-      { access_token: "token-2" },
-    ]);
-
-    await deleteVerifiedUserRows(proof);
-
-    expect(revokeGitHubGrant.mock.calls).toEqual([["token-1"], ["token-2"]]);
-    expect(revokeGitHubGrant.mock.invocationCallOrder[1]).toBeLessThan(
-      transaction.mock.invocationCallOrder[0],
-    );
   });
 
   it("removes the user and every kind of token in one transaction", async () => {
