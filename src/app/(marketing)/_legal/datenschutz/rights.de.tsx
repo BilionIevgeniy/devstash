@@ -7,11 +7,18 @@ export const RIGHTS_DE: LegalSection[] = [
     body: (
       <p>
         Konto und Inhalte speichern wir, bis Sie sie löschen oder Ihr Konto
-        löschen (Einstellungen, „Delete account“). Beim Löschen des Kontos
-        entfernen wir Ihre Daten aus der Datenbank, löschen Ihre Dateien und das
-        Stripe-Kundenkonto. Zähler zum Missbrauchsschutz verfallen nach Minuten,
-        höchstens nach 24 Stunden. Server-Protokolle löscht der Hosting-Anbieter
-        nach seiner eigenen Frist.
+        löschen (Einstellungen, „Konto löschen“; ein Konto ohne Passwort
+        bestätigt mit einem Link, den wir an seine Adresse senden). Beim Löschen
+        des Kontos entfernen wir Ihre Daten aus der Datenbank, löschen Ihre
+        Dateien und das Stripe-Kundenkonto. Eine Registrierung, deren
+        E-Mail-Adresse nicht innerhalb von 7 Tagen bestätigt wird, löschen wir
+        mit ihren Daten. Links zur Bestätigung der E-Mail-Adresse, zum
+        Zurücksetzen des Passworts und zum Löschen des Kontos löschen wir,
+        sobald sie abgelaufen sind (nach 24 Stunden bzw. 1 Stunde), spätestens
+        bei der nächsten täglichen Bereinigung. Eine hochgeladene Datei, die nie
+        als Eintrag gespeichert wurde, löschen wir nach 24 Stunden. Zähler zum
+        Missbrauchsschutz verfallen nach Minuten, höchstens nach 24 Stunden.
+        Server-Protokolle löscht der Hosting-Anbieter nach seiner eigenen Frist.
       </p>
     ),
   },

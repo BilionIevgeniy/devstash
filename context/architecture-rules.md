@@ -10,7 +10,7 @@ src/
     (marketing)/        public homepage with its own `_components/`
     (app)/              authenticated routes under one shell layout, each route with `_components/`
     (auth)/             sign-in, registration and the email-link pages, under one layout with the messages of the request's locale
-    api/                route handlers: NextAuth, registration; later webhooks, export, AI streaming
+    api/                route handlers: NextAuth, registration, webhooks, export, AI streaming, the daily cron (`cron/daily`)
   features/             the product, one folder per feature (see Ranks)
   components/ui/        shadcn/ui primitives only, and their stories (ADR 0026)
   components/common/    hand-written UI with no feature knowledge: BilingualErrorText, CheckList, CopyButton, ErrorState, Field, GradientBadge, LinkPendingMark, Logo; providers/ (AppToaster, I18nProvider, QueryProvider with query-client.ts); lists/ (ListLoadError, LoadMore, PaginationNav, ShowMore); hooks/ (useErrorText, useLeaveWarning, useReportError, useScrollRestore, useSearchParam, useSubmitDialog); EmptyState (planned)
@@ -77,9 +77,9 @@ features/<name>/
 1. `app/` composes only: session, queries, feature components. No Prisma, no business `if`
 2. A pure rule, limit or constant (no I/O, clock, env or package) goes in `domain/`, with its test
 3. An input shape goes in `schemas.ts`; a view or result type in `types.ts` (every other type: see "Where types live"); an email body in `_internal/emails/`
-4. A read of the feature's own models goes in `queries.ts`, scoped by `userId` (the one exception: a read before sign-in keyed by email and a one-time token or the password being checked). A read that hands a secret to its caller (password hash, OAuth token, R2 object key) goes in `_internal/queries.ts` ([ADR 0009](../docs/adr/0009-read-write-split-enforced-by-lint.md), [ADR 0010](../docs/adr/0010-pagination-in-lib-and-object-key-reads-in-internal.md)). A write is scoped by `userId` too; the one exception is the Stripe sync, scoped by the customer ([ADR 0012](../docs/adr/0012-webhook-writes-scoped-by-customer.md))
+4. A read of the feature's own models goes in `queries.ts`, scoped by `userId` (the one exception: a read before sign-in keyed by email and a one-time token or the password being checked). A read that hands a secret to its caller (password hash, OAuth token, R2 object key) goes in `_internal/queries.ts` ([ADR 0009](../docs/adr/0009-read-write-split-enforced-by-lint.md), [ADR 0010](../docs/adr/0010-pagination-in-lib-and-object-key-reads-in-internal.md)). A write is scoped by `userId` too; the one exception is the Stripe sync, scoped by the customer ([ADR 0012](../docs/adr/0012-webhook-writes-scoped-by-customer.md)). A read or delete made only for a job of the daily cron route may span users to find what is due; the job then acts on each row by its id ([ADR 0030](../docs/adr/0030-daily-cron-and-retention.md))
 5. A write, a vendor call, a multi-step flow, another feature's data or a read through `tx` that shares a transaction with a write goes in `services/<topic>.ts`
-6. `"use server"` files, `route.ts` and pages are thin: session, schema, one service call, revalidate. Webhooks and streams are routes
+6. `"use server"` files, `route.ts` and pages are thin: session, schema, one service call, revalidate. Webhooks and streams are routes. The one exception: the daily cron route calls one service per job ([ADR 0030](../docs/adr/0030-daily-cron-and-retention.md))
 7. UI of one route goes in `app/<route>/_components/`; UI used across routes in the feature's `components/`
 8. A vendor SDK goes in `lib/<vendor>.ts`; what the vendor means for the product (prices, prompts) stays in the feature's `domain/`
 9. A file starts in `_internal/`; unsure means `_internal/`. Move it to the public folder of the same role when a second consumer, including `app/`, needs it
