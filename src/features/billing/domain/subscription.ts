@@ -129,3 +129,15 @@ export function syncPlan(
       row.confirmedSubscriptionId !== snapshot.id,
   };
 }
+
+// The reconciliation's second pass: a live subscription in Stripe whose row
+// does not name it (a lost checkout.session.completed) is synced; a customer
+// with no row is not ours, or a deleted account.
+export function liveSubscriptionCheck(
+  subscription: { id: string; status: string },
+  rowSubscriptionId: string | null | undefined,
+): "skip" | "sync" | "noRow" {
+  if (!isProStatus(subscription.status)) return "skip";
+  if (rowSubscriptionId === undefined) return "noRow";
+  return rowSubscriptionId === subscription.id ? "skip" : "sync";
+}

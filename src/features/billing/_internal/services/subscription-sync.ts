@@ -125,12 +125,15 @@ async function syncInLock(
   }, LOCKED_TRANSACTION);
 }
 
+// `quiet` leaves the warning for a missing row to the caller: the daily job
+// warns once per run, not once per foreign subscription.
 export async function syncSubscription(
   customerId: string,
   subscriptionId: string,
+  { quiet = false }: { quiet?: boolean } = {},
 ): Promise<SyncOutcome> {
   const { outcome, claimed } = await syncInLock(customerId, subscriptionId);
-  if (outcome === "noRow") {
+  if (outcome === "noRow" && !quiet) {
     logger.warn("No row took a subscription", { customerId, subscriptionId });
   }
   // After the commit: the email never waits inside the lock.

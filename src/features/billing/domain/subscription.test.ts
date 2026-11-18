@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   consentFromMetadata,
+  liveSubscriptionCheck,
   stripeIdOf,
   subscriptionWrite,
   syncPlan,
@@ -184,5 +185,31 @@ describe("consentFromMetadata", () => {
     [{ termsVersion: "2026-11-18", withdrawalWaiverAt: "not a date" }],
   ])("answers null for incomplete metadata %j", (metadata) => {
     expect(consentFromMetadata(metadata)).toBeNull();
+  });
+});
+
+describe("liveSubscriptionCheck", () => {
+  it("syncs a live subscription its row does not name", () => {
+    expect(
+      liveSubscriptionCheck({ id: "sub_2", status: "active" }, "sub_1"),
+    ).toBe("sync");
+    expect(
+      liveSubscriptionCheck({ id: "sub_2", status: "past_due" }, null),
+    ).toBe("sync");
+  });
+
+  it("skips one the row names, or one that is not live", () => {
+    expect(
+      liveSubscriptionCheck({ id: "sub_1", status: "active" }, "sub_1"),
+    ).toBe("skip");
+    expect(
+      liveSubscriptionCheck({ id: "sub_1", status: "incomplete" }, null),
+    ).toBe("skip");
+  });
+
+  it("reports a live subscription of a customer with no row", () => {
+    expect(
+      liveSubscriptionCheck({ id: "sub_1", status: "active" }, undefined),
+    ).toBe("noRow");
   });
 });

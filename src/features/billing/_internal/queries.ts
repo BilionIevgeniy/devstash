@@ -26,3 +26,49 @@ export async function getLiveSubscriptionRef(
     subscriptionId: row.stripeSubscriptionId,
   };
 }
+
+/** A row the daily reconciliation compares with Stripe. */
+export interface ReconcileRow {
+  customerId: string;
+  subscriptionId: string;
+}
+
+// A cross-user read for the daily reconciliation only (ADR 0030, rule 4 of
+// architecture-rules.md): every row that names a subscription, the least
+// recently written first, so a run cut short by the deadline still reaches
+// the oldest rows. Read once before the job writes: a corrected row moves to
+// the end of this order, which would throw a cursor off. One row per paying
+// customer, so the list stays small; the job acts on each through the sync.
+export async function getReconcileRows(): Promise<ReconcileRow[]> {
+  const rows = await prisma.subscription.findMany({
+    where: {
+      stripeCustomerId: { not: null },
+      stripeSubscriptionId: { not: null },
+    },
+    orderBy: [{ updatedAt: "asc" }, { id: "asc" }],
+    select: { stripeCustomerId: true, stripeSubscriptionId: true },
+  });
+  return rows.flatMap(({ stripeCustomerId, stripeSubscriptionId }) =>
+    stripeCustomerId && stripeSubscriptionId
+      ? [{ customerId: stripeCustomerId, subscriptionId: stripeSubscriptionId }]
+      : [],
+  );
+}
+
+// The subscription each customer's row holds, for the reconciliation's second
+// pass; a customer with no row is missing from the map.
+export async function getRowSubscriptionIds(
+  customerIds: string[],
+): Promise<Map<string, string | null>> {
+  const rows = await prisma.subscription.findMany({
+    where: { stripeCustomerId: { in: customerIds } },
+    select: { stripeCustomerId: true, stripeSubscriptionId: true },
+  });
+  return new Map(
+    rows.flatMap(({ stripeCustomerId, stripeSubscriptionId }) =>
+      stripeCustomerId
+        ? [[stripeCustomerId, stripeSubscriptionId] as const]
+        : [],
+    ),
+  );
+}
