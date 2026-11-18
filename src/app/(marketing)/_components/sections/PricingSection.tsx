@@ -18,8 +18,7 @@ import {
 import { ScrollFadeIn } from "./ScrollFadeIn";
 import { SectionHead } from "./SectionHead";
 
-// The roadmap lines on top of what Pro gives today: custom item types are not
-// built yet (feature 18, context/features/plan/18.custom-item-types.md), and the export is JSON only.
+// The roadmap line on top of what Pro gives today: the export is JSON only.
 const PRO_FEATURES = [...PRO_PLAN_FEATURES, ...PRO_ROADMAP_FEATURES];
 
 interface PricingSectionProps {

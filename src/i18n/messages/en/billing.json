@@ -30,7 +30,7 @@
     "aiSummaries": "AI summaries",
     "aiExplain": "AI code explanations",
     "aiOptimize": "AI prompt optimization",
-    "customTypes": "Custom item types (coming soon)",
+    "customTypes": "Custom item types",
     "exportJson": "Export (JSON)"
   },
   "testModeHint": "Demo mode: no real charges. Pay with card 4242 4242 4242 4242, any future date and any CVC.",
