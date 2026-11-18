@@ -71,6 +71,52 @@ export function contentError(fields: EditableFields, content: string) {
     : null;
 }
 
+// An address a link may store: one the browser can parse, on http or https.
+// The schema refuses the rest with the same function, so the browser and the
+// server cannot disagree.
+export function isHttpUrl(value: string): boolean {
+  if (!URL.canParse(value)) return false;
+  const { protocol } = new URL(value);
+  return protocol === "http:" || protocol === "https:";
+}
+
+/** A field of the item forms the browser checks before the save. */
+export type CheckedItemField = "url" | "content" | "tags";
+
+interface CheckedItemValues {
+  url: string;
+  content: string;
+  tags: string;
+}
+
+function tagsError(input: string) {
+  const tags = parseTagInput(input);
+  if (tags.length > TAGS_MAX) {
+    return { error: "tooManyTags", params: { max: TAGS_MAX } } as const;
+  }
+  return tags.some((tag) => tag.length > TAG_MAX)
+    ? ({ error: "tagTooLong", params: { max: TAG_MAX } } as const)
+    : null;
+}
+
+// The first field of a form the server would refuse, in the order of the
+// form, with the error code and its params; null when the form may be sent.
+// An empty URL is left to the input's `required`; the tags are counted as
+// the schema counts them (parseTagInput).
+export function itemFormError(
+  fields: EditableFields,
+  values: CheckedItemValues,
+) {
+  const url = values.url.trim();
+  if (fields.url && url !== "" && !isHttpUrl(url)) {
+    return { field: "url", error: "invalidUrl" } as const;
+  }
+  const content = contentError(fields, values.content);
+  if (content) return { field: "content", ...content } as const;
+  const tags = tagsError(values.tags);
+  return tags ? ({ field: "tags", ...tags } as const) : null;
+}
+
 interface TypeSpecificUpdate {
   title: string;
   content?: string | null;

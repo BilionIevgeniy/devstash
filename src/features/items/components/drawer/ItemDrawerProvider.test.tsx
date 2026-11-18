@@ -62,6 +62,7 @@ vi.mock(
 );
 
 import { ItemDrawerProvider } from "@/features/items/components/drawer/ItemDrawerProvider";
+import { ItemDrawerTrigger } from "@/features/items/components/drawer/ItemDrawerTrigger";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
 
 type Drawer = ReturnType<typeof useItemDrawer>;
@@ -329,5 +330,49 @@ describe("ItemDrawerProvider", () => {
       });
       expect(signalOfCall(0).aborted).toBe(false);
     });
+  });
+});
+
+describe("ItemDrawerTrigger", () => {
+  it("is a link to the item's URL on a page whose drawer is a route", () => {
+    render(
+      <ItemDrawerProvider basePath="/items/snippets">
+        <ItemDrawerTrigger item={ALPHA}>
+          <span>Alpha</span>
+        </ItemDrawerTrigger>
+      </ItemDrawerProvider>,
+    );
+
+    expect(screen.getByRole("link", { name: "Alpha" })).toHaveAttribute(
+      "href",
+      "/items/snippets/item-a",
+    );
+  });
+
+  it("gives the focus back to the next card when the opened one is gone", async () => {
+    fetchItemDetail.mockReturnValue(new Promise(() => undefined));
+    const user = userEvent.setup();
+    let drawer: Drawer | undefined;
+    render(
+      <ItemDrawerProvider>
+        <Capture onDrawer={(next) => (drawer = next)} />
+        <ItemDrawerTrigger item={ALPHA}>
+          <span>Alpha</span>
+        </ItemDrawerTrigger>
+        <ItemDrawerTrigger item={BETA}>
+          <span>Beta</span>
+        </ItemDrawerTrigger>
+      </ItemDrawerProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Alpha" }));
+    await screen.findByRole("dialog", { name: "Alpha" });
+    // The delete hides the card in the same commit as the close.
+    await act(async () => drawer?.remove(ALPHA.id));
+    await user.keyboard("{Escape}");
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Beta" })).toHaveFocus(),
+    );
   });
 });

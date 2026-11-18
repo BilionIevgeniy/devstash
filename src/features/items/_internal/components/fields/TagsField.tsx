@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -25,6 +25,10 @@ interface TagsFieldProps {
   content: string;
   /** Told each suggestion accepted into the field (ADR 0027). */
   onAcceptTag?: (tag: string) => void;
+  /** The input, for the focus of a refused save. */
+  ref?: Ref<HTMLInputElement>;
+  /** Why the save refused the tags, shown under the field. */
+  error?: string | null;
 }
 
 // The comma-separated tags of both forms. An accepted suggestion only changes
@@ -36,6 +40,8 @@ export function TagsField({
   title,
   content,
   onAcceptTag,
+  ref,
+  error,
 }: TagsFieldProps) {
   const t = useTranslations("items.fields");
   const errorText = useErrorText();
@@ -51,10 +57,12 @@ export function TagsField({
   }
 
   const field = (action?: ReactNode) => (
-    <Field label={t("tags")} hint={t("tagsHint")} action={action}>
-      {(id) => (
+    <Field label={t("tags")} hint={t("tagsHint")} action={action} error={error}>
+      {(id, errorProps) => (
         <Input
+          ref={ref}
           id={id}
+          {...errorProps}
           value={value}
           onChange={(event) => onChange(event.target.value)}
         />

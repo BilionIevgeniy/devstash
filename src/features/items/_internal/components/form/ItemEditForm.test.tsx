@@ -5,15 +5,15 @@ import {
   waitFor,
 } from "../../../../../../test/intl";
 import userEvent from "@testing-library/user-event";
-import { useImperativeHandle, type RefObject } from "react";
+import { useImperativeHandle } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import type { EditorHandle } from "@/features/editor/types";
 import type {
   ItemFormValues,
   ItemTextField,
 } from "@/features/items/domain/item-changes";
 import type { AcceptedAiHandlers } from "@/features/items/_internal/components/hooks/use-accepted-ai";
+import type { ItemFormCheck } from "@/features/items/_internal/components/hooks/use-item-form-check";
 import type { DashboardItem, ItemDetailJson } from "@/features/items/types";
 
 const { updateItem, toastError, toastSuccess, contentFocus } = vi.hoisted(
@@ -46,21 +46,22 @@ vi.mock(
   }),
 );
 
-// The fields have their own tests; this probe is a title and a content input
-// that hand the form the content editor's handle, as ItemFields does.
+// The fields have their own tests; this probe is a title, a tags and a content
+// input that take the refs of the form's check, as ItemFields does, and show
+// the code of a refused field.
 vi.mock("@/features/items/_internal/components/fields/ItemFields", () => ({
   ItemFields: function ItemFieldsProbe({
     values,
     onChange,
-    contentRef,
+    check,
     acceptedAi,
   }: {
     values: ItemFormValues;
     onChange: (name: ItemTextField, value: string) => void;
-    contentRef: RefObject<EditorHandle | null>;
+    check: Pick<ItemFormCheck, "tagsRef" | "contentRef" | "errors">;
     acceptedAi: AcceptedAiHandlers;
   }) {
-    useImperativeHandle(contentRef, () => ({ focus: contentFocus }));
+    useImperativeHandle(check.contentRef, () => ({ focus: contentFocus }));
     return (
       <>
         <input
@@ -91,18 +92,27 @@ vi.mock("@/features/items/_internal/components/fields/ItemFields", () => ({
         >
           Accept tag
         </button>
+        <input
+          ref={check.tagsRef}
+          aria-label="Tags"
+          value={values.tags}
+          onChange={(event) => onChange("tags", event.target.value)}
+        />
         <textarea
           aria-label="Content"
           value={values.content}
           onChange={(event) => onChange("content", event.target.value)}
         />
+        {Object.entries(check.errors).map(([field, error]) => (
+          <p key={field}>{`${field}: ${error.error}`}</p>
+        ))}
       </>
     );
   },
 }));
 
 import { ItemEditForm } from "@/features/items/_internal/components/form/ItemEditForm";
-import { CONTENT_MAX } from "@/features/items/domain/item-fields";
+import { CONTENT_MAX, TAG_MAX } from "@/features/items/domain/item-fields";
 
 const TYPE = {
   id: "type-1",
@@ -153,7 +163,7 @@ function renderForm() {
 }
 
 describe("ItemEditForm submit", () => {
-  it("refuses content over the limit: no save, the reason, the focus in the editor", async () => {
+  it("refuses content over the limit: no save, the error at the field, the focus in the editor", async () => {
     const user = userEvent.setup();
     renderForm();
     fireEvent.change(screen.getByLabelText("Content"), {
@@ -163,10 +173,25 @@ describe("ItemEditForm submit", () => {
     await user.click(screen.getByRole("button", { name: "Save" }));
 
     expect(updateItem).not.toHaveBeenCalled();
-    expect(toastError).toHaveBeenCalledExactlyOnceWith(
-      "Content can be up to 100000 characters",
-    );
+    expect(screen.getByText("content: contentTooLong")).toBeInTheDocument();
+    expect(toastError).not.toHaveBeenCalled();
     expect(contentFocus).toHaveBeenCalledOnce();
+  });
+
+  it("refuses a tag over its length at the tags input, and drops the error once it changes", async () => {
+    const user = userEvent.setup();
+    renderForm();
+    const tags = screen.getByLabelText("Tags");
+    fireEvent.change(tags, { target: { value: "x".repeat(TAG_MAX + 1) } });
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(updateItem).not.toHaveBeenCalled();
+    expect(tags).toHaveFocus();
+    expect(screen.getByText("tags: tagTooLong")).toBeInTheDocument();
+
+    await user.type(tags, "{Backspace}");
+    expect(screen.queryByText("tags: tagTooLong")).not.toBeInTheDocument();
   });
 
   it("saves an ordinary change without a refusal", async () => {

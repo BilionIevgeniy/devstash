@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { Field } from "@/components/common/Field";
+import { Field, type FieldErrorProps } from "@/components/common/Field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -15,7 +15,9 @@ const meta = {
   ],
   args: {
     label: "Title",
-    children: (id: string) => <Input id={id} placeholder="useDebounce hook" />,
+    children: (id: string, errorProps: FieldErrorProps) => (
+      <Input id={id} placeholder="useDebounce hook" {...errorProps} />
+    ),
   },
 } satisfies Meta<typeof Field>;
 
@@ -40,4 +42,9 @@ export const WithAction: Story = {
     ),
     children: (id: string) => <Input id={id} placeholder="react, hooks" />,
   },
+};
+
+// A refused save: the error under the field, which describes the control.
+export const WithError: Story = {
+  args: { label: "URL", error: "Enter a valid URL" },
 };

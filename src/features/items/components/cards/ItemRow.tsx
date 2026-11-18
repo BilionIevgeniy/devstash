@@ -17,13 +17,15 @@ export function ItemRow({ item }: ItemRowProps) {
   const iconBackground = type.color
     ? `color-mix(in oklab, ${type.color} 10%, transparent)`
     : undefined;
+  const dateTime = item.createdAt.toISOString();
+  const date = format.dateTime(item.createdAt, "short");
 
   // The padding leaves room for the buttons over the corner (ItemCardTrigger).
   return (
     <article
       className={cn(
-        "flex items-start gap-4 rounded-lg border border-l-4 bg-card p-4 transition-colors hover:bg-accent/50",
-        item.canCopy ? "pr-22" : "pr-14",
+        "flex items-start gap-4 rounded-lg border border-l-4 bg-card p-4 transition-colors group-hover/card:bg-accent/50",
+        item.canCopy ? "pr-22 max-md:pr-26" : "pr-14 max-md:pr-15",
       )}
       style={{ borderLeftColor: type.color }}
     >
@@ -39,25 +41,34 @@ export function ItemRow({ item }: ItemRowProps) {
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <h3 className="truncate font-medium">{item.title}</h3>
+          <h3 className="line-clamp-2 font-medium wrap-anywhere sm:truncate">
+            {item.title}
+          </h3>
           {item.isPinned && <PinMark color={type.color} />}
         </div>
-        <p
-          className="truncate text-sm text-muted-foreground"
-          {...aiMarkProps(item.descriptionAiGenerated)}
-        >
-          {item.descriptionAiGenerated && (
-            <AiGeneratedLabel variant="icon" className="mr-1 inline" />
-          )}
-          {item.description}
-        </p>
+        {/* Below sm the date leaves its column for this line, so the title
+            gets the width back. */}
+        <div className="flex gap-2 text-sm text-muted-foreground">
+          <time dateTime={dateTime} className="shrink-0 sm:hidden">
+            {date}
+          </time>
+          <p
+            className="min-w-0 truncate"
+            {...aiMarkProps(item.descriptionAiGenerated)}
+          >
+            {item.descriptionAiGenerated && (
+              <AiGeneratedLabel variant="icon" className="mr-1 inline" />
+            )}
+            {item.description}
+          </p>
+        </div>
         <ItemTagBadges tags={item.tags} aiTags={item.aiTags} className="mt-2" />
       </div>
       <time
-        dateTime={item.createdAt.toISOString()}
-        className="shrink-0 text-xs text-muted-foreground"
+        dateTime={dateTime}
+        className="hidden shrink-0 text-xs text-muted-foreground sm:block"
       >
-        {format.dateTime(item.createdAt, "short")}
+        {date}
       </time>
     </article>
   );

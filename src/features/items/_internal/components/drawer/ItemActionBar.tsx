@@ -86,12 +86,15 @@ export function ItemActionBar({
         <Pencil />
         <span className={ACTION_LABEL}>{t("common.actions.edit")}</span>
       </Button>
-      <DeleteItemDialog
-        itemId={itemId}
-        title={title}
-        disabled={!canEdit}
-        onDelete={onDelete}
-      />
+      {/* Apart from Edit on a phone, so a tap cannot hit the destructive one. */}
+      <div className="flex max-md:ml-3">
+        <DeleteItemDialog
+          itemId={itemId}
+          title={title}
+          disabled={!canEdit}
+          onDelete={onDelete}
+        />
+      </div>
     </div>
   );
 }

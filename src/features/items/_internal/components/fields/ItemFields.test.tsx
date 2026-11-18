@@ -55,15 +55,24 @@ const VALUES: ItemFormValues = {
   collectionIds: [],
 };
 
-function renderFields(typeName: string) {
+function renderFields(
+  typeName: string,
+  errors: Parameters<typeof ItemFields>[0]["check"]["errors"] = {},
+) {
   const contentRef = createRef<EditorHandle>();
+  const check = {
+    urlRef: createRef<HTMLInputElement>(),
+    tagsRef: createRef<HTMLInputElement>(),
+    contentRef,
+    errors,
+  };
   render(
     <ItemFields
       fields={editableFields(typeName)}
       values={VALUES}
       onChange={() => undefined}
       canUseAi={false}
-      contentRef={contentRef}
+      check={check}
       acceptedAi={{ acceptDescription: vi.fn(), acceptTag: vi.fn() }}
     />,
   );
@@ -110,5 +119,15 @@ describe("ItemFields content editor", () => {
 
     expect(contentRef.current).toBeNull();
     expect(screen.queryByText("Content")).not.toBeInTheDocument();
+  });
+});
+
+describe("ItemFields errors", () => {
+  it("shows a refused URL under its input and describes the input by it", () => {
+    renderFields("link", { url: { error: "invalidUrl" } });
+
+    const url = screen.getByLabelText("URL");
+    expect(url).toBeInvalid();
+    expect(url).toHaveAccessibleDescription("Enter a valid URL");
   });
 });

@@ -47,4 +47,24 @@ describe("Field", () => {
     await user.click(screen.getByRole("button", { name: "Generate" }));
     expect(onLabelClick).toHaveBeenCalledOnce();
   });
+
+  it("describes its control by its error, and drops both when it is gone", () => {
+    const { rerender } = render(
+      <Field label="URL" error="Enter a valid URL">
+        {(id, errorProps) => <input id={id} {...errorProps} />}
+      </Field>,
+    );
+
+    const input = screen.getByLabelText("URL");
+    expect(input).toBeInvalid();
+    expect(input).toHaveAccessibleDescription("Enter a valid URL");
+
+    rerender(
+      <Field label="URL">
+        {(id, errorProps) => <input id={id} {...errorProps} />}
+      </Field>,
+    );
+    expect(input).not.toHaveAttribute("aria-invalid");
+    expect(screen.queryByText("Enter a valid URL")).not.toBeInTheDocument();
+  });
 });

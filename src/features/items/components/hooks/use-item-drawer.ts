@@ -12,7 +12,20 @@ interface ItemDrawerContextValue {
   isLocked: (item: Pick<DashboardItem, "type">) => boolean;
   /** Takes the focus when the row that held it is gone. */
   focusListTop: () => void;
-  open: (item: DashboardItem) => void;
+  /**
+   * The item's own URL on a page whose drawer is a route (a type page), so
+   * its card is a link; null where the drawer has no URL.
+   */
+  hrefFor: (item: Pick<DashboardItem, "id">) => string | null;
+  /** Opens the drawer; the opener gets the focus back when it closes. */
+  open: (item: DashboardItem, opener?: HTMLElement | null) => void;
+  /** A card link was followed: its element gets the focus back later. */
+  rememberOpener: (opener: HTMLElement) => void;
+  /**
+   * Gives the focus back after the route drawer closed: the opener, else the
+   * row next to it, else the top of the list.
+   */
+  restoreFocus: (options?: { skipOpener?: boolean }) => void;
   /** Deletes the item and hides its card until the fresh page arrives. */
   remove: (id: string) => void;
   /** Items being deleted: their cards are hidden until the fresh page arrives. */

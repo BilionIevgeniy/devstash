@@ -2,9 +2,20 @@
 
 import { useId, type ReactNode } from "react";
 
+/** What the control of a field with an error must carry. */
+export interface FieldErrorProps {
+  "aria-invalid"?: true;
+  "aria-describedby"?: string;
+}
+
 interface FieldProps {
   label: string;
   hint?: string;
+  /**
+   * The field's own error, shown under it; the control gets it through the
+   * second argument of `children`.
+   */
+  error?: string | null;
   /** A control for the whole field, at the end of the label row. */
   action?: ReactNode;
   /**
@@ -12,7 +23,7 @@ interface FieldProps {
    * `htmlFor`, such as an editor that owns its own textarea.
    */
   onLabelClick?: () => void;
-  children: (id: string) => ReactNode;
+  children: (id: string, errorProps: FieldErrorProps) => ReactNode;
 }
 
 const LABEL_CLASS = "block text-sm font-medium text-muted-foreground";
@@ -22,9 +33,14 @@ export function Field({
   hint,
   action,
   onLabelClick,
+  error,
   children,
 }: FieldProps) {
   const id = useId();
+  const errorId = `${id}-error`;
+  const errorProps: FieldErrorProps = error
+    ? { "aria-invalid": true, "aria-describedby": errorId }
+    : {};
   const labelElement = (
     <label htmlFor={id} className={LABEL_CLASS} onClick={onLabelClick}>
       {label}
@@ -41,7 +57,12 @@ export function Field({
       ) : (
         labelElement
       )}
-      {children(id)}
+      {children(id, errorProps)}
+      {error && (
+        <p id={errorId} className="text-xs text-destructive">
+          {error}
+        </p>
+      )}
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
     </div>
   );

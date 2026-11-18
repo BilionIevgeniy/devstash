@@ -10,14 +10,13 @@ import {
 } from "react";
 
 import type { SubmitRun } from "@/components/common/hooks/use-submit-dialog";
-import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogFooter } from "@/components/ui/dialog";
-import type { EditorHandle } from "@/features/editor/types";
 import { CollectionSelect } from "@/features/items/_internal/components/fields/CollectionSelect";
 import { ItemFileField } from "@/features/items/_internal/components/fields/ItemFileField";
 import { ItemFields } from "@/features/items/_internal/components/fields/ItemFields";
 import { useAcceptedAi } from "@/features/items/_internal/components/hooks/use-accepted-ai";
+import { useItemFormCheck } from "@/features/items/_internal/components/hooks/use-item-form-check";
 import { useTypeChoice } from "@/features/items/_internal/components/hooks/use-type-choice";
 import { ItemTypeSelect } from "@/features/items/_internal/components/fields/ItemTypeSelect";
 import { submitNewItem } from "@/features/items/_internal/components/form/submit-new-item";
@@ -67,11 +66,10 @@ export function CreateItemForm({
     useTypeChoice(initialType);
   const [values, setValues] = useState<ItemFormValues>(EMPTY_VALUES);
   const formRef = useRef<HTMLFormElement>(null);
-  const contentRef = useRef<EditorHandle>(null);
   const acceptedAi = useAcceptedAi();
-  const errorText = useErrorText();
   const syncItems = useSyncItemQueries();
   const fields = editableFields(typeName);
+  const check = useItemFormCheck(fields);
 
   useLateFocus(formRef);
 
@@ -80,6 +78,7 @@ export function CreateItemForm({
     value: ItemFormValues[K],
   ) {
     setValues((current) => ({ ...current, [name]: value }));
+    check.clear(name);
   }
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
@@ -90,9 +89,8 @@ export function CreateItemForm({
       values,
       aiGenerated: acceptedAi.claims(values),
       upload,
-      contentRef,
+      rejectInvalid: check.reject,
       run,
-      errorText,
       syncItems,
       onCreated,
     });
@@ -121,7 +119,7 @@ export function CreateItemForm({
         onChange={setField}
         canUseAi={isPro}
         fileName={upload?.fileName}
-        contentRef={contentRef}
+        check={check}
         acceptedAi={acceptedAi}
       />
       <CollectionSelect

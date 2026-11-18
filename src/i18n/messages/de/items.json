@@ -4,6 +4,7 @@
     "url": "URL",
     "language": "Sprache",
     "content": "Inhalt",
+    "contentWithError": "Inhalt, {error}",
     "description": "Beschreibung",
     "tags": "Tags",
     "tagsHint": "Tags durch Kommas trennen",

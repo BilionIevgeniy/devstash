@@ -4,6 +4,7 @@
     "url": "URL",
     "language": "Language",
     "content": "Content",
+    "contentWithError": "Content, {error}",
     "description": "Description",
     "tags": "Tags",
     "tagsHint": "Separate tags with commas",

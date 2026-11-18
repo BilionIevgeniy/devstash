@@ -20,7 +20,7 @@ export function ItemCard({ item }: ItemCardProps) {
 
   return (
     <article
-      className="flex h-full flex-col gap-3 rounded-lg border border-l-4 bg-card p-4 transition-colors hover:bg-accent/50"
+      className="flex h-full flex-col gap-3 rounded-lg border border-l-4 bg-card p-4 transition-colors group-hover/card:bg-accent/50"
       style={{ borderLeftColor: type.color }}
     >
       <div className="flex items-start gap-3">
@@ -35,7 +35,12 @@ export function ItemCard({ item }: ItemCardProps) {
           />
         </div>
         {/* Room for the buttons over the corner (ItemCardTrigger). */}
-        <div className={cn("min-w-0 flex-1", item.canCopy ? "pr-16" : "pr-8")}>
+        <div
+          className={cn(
+            "min-w-0 flex-1",
+            item.canCopy ? "pr-16 max-md:pr-20" : "pr-8 max-md:pr-10",
+          )}
+        >
           <div className="flex items-center gap-2">
             <h2 className="truncate font-medium">{item.title}</h2>
             {item.isPinned && <PinMark color={type.color} />}
