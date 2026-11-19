@@ -20,9 +20,8 @@ test.skip(
   process.platform !== "linux",
   "The baselines are Linux only: they come from the e2e job",
 );
-// A missing baseline is written by the failing attempt (playwright.config.ts),
-// so a retry would pass against it: none here. A screenshot that differs on a
-// second try is a fault to fix, not to retry away.
+// No retry: a screenshot that differs on a second try is a fault to fix, not
+// to retry away.
 test.describe.configure({ retries: 0 });
 
 // The email is new every run; the sidebar's user area shows it under the name.

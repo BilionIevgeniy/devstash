@@ -38,9 +38,9 @@ export default defineConfig({
     // (a few hundred pixels) must fail, anti-aliasing noise must not.
     toHaveScreenshot: { maxDiffPixels: 100 },
   },
-  // A missing baseline is written and its test still fails; e2e/visual.spec.ts
-  // has no retry, so no second attempt passes against the picture the first
-  // one wrote. A changed one is never overwritten: its -actual.png goes to
+  // A missing baseline is written and its test passes; the e2e job then fails
+  // on the changed snapshot folder (.github/workflows/ci.yml). A changed one is
+  // never overwritten: its test fails and its -actual.png goes to
   // test-results/. Both reach the job's artifact (README, "End-to-end tests").
   updateSnapshots: "missing",
   forbidOnly: isCi,
