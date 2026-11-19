@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import type { Ref } from "react";
 import { Crown, Loader2, Sparkles } from "lucide-react";
 
@@ -80,16 +81,14 @@ export function AiStreamButton({
 // A Free user's button leads to the upgrade page: a tooltip alone would say
 // nothing on a phone, where it never opens.
 function UpgradeLink({ label }: { label: string }) {
+  const t = useTranslations("ai");
   const errorText = useErrorText();
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button asChild variant="ghost" size="xs">
-            <Link
-              href={UPGRADE_PATH}
-              aria-label={`${label}: a Pro feature, upgrade`}
-            >
+            <Link href={UPGRADE_PATH} aria-label={t("upgradeLabel", { label })}>
               <Crown className="text-amber-500" aria-hidden />
               {label}
             </Link>

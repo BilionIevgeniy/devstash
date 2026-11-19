@@ -2,7 +2,6 @@
   "title": "Search",
   "description": "Search your items and collections",
   "placeholder": "Search items and collections...",
-  "trigger": "Search items and collections",
   "items": "Items",
   "collections": "Collections",
   "noResults": "No results found.",

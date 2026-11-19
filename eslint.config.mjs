@@ -229,6 +229,24 @@ const SHARED_SYNTAX_BANS = [
     message:
       'Toast text comes from the messages: toast.success(t("items.toasts.saved")) (ADR 0024).',
   },
+  {
+    // i18next/no-literal-string reads string literals only, so a template
+    // with words in a text attribute (`Download ${name}`) slipped past it.
+    // Only the template that is the value (or a branch of it), not a key
+    // built for t(`${id}.title`).
+    selector: [
+      "JSXExpressionContainer > TemplateLiteral",
+      "JSXExpressionContainer > ConditionalExpression > TemplateLiteral",
+      "JSXExpressionContainer > LogicalExpression > TemplateLiteral",
+    ]
+      .map(
+        (value) =>
+          `JSXAttribute[name.name=/^(aria-label|ariaLabel|placeholder|title|alt|label|description|heading|hint|copyLabel|badge|lead)$/] > ${value} > TemplateElement[value.raw=/[A-Za-z]{2,}/]`,
+      )
+      .join(", "),
+    message:
+      'Text in an attribute comes from the messages, placeholders included: aria-label={t("items.actions.downloadNamed", { name })} (ADR 0024).',
+  },
 ];
 
 // No user-facing literal in JSX (feature 11, ADR 0024): text, the attributes a

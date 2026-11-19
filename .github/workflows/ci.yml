@@ -126,8 +126,12 @@ jobs:
   # for a browser.
   e2e:
     needs: ci
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Pinned, not ubuntu-latest: the screenshot baselines of e2e/visual.spec.ts
+    # are taken on this image, and a new one can render fonts differently.
+    runs-on: ubuntu-24.04
+    # A cold build (a new lockfile empties the Next cache) and the suite took
+    # 13 minutes in feature 21: 15 left no room.
+    timeout-minutes: 25
     # The same empty Postgres as the `integration` job, in a container of its
     # own: both jobs empty their database, so they cannot share one.
     services:
@@ -144,21 +148,28 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
+      # The Upstash stand-in (ADR 0035): a plain Redis and serverless-redis-http
+      # in front of it, with the REST API of Upstash. scripts/fake-upstash.ts,
+      # started by Playwright, sits in front of SRH. The token is not a secret:
+      # SRH listens on the runner only, and scripts/fake-upstash.ts repeats it.
+      redis:
+        image: redis:8
+      srh:
+        image: hiett/serverless-redis-http:0.0.10
+        env:
+          SRH_MODE: env
+          SRH_TOKEN: e2e-local-redis-token
+          SRH_CONNECTION_STRING: redis://redis:6379
+        ports:
+          - 8079:80
     # - TEST_DATABASE_URL: read by playwright.config.ts, refused by
     #   requireTestDatabase unless the host is local.
     # - DATABASE_URL, DIRECT_URL: the same database. prisma.config.ts reads
     #   DIRECT_URL for `prisma generate` in `npm ci`. The test server gets an
     #   environment of its own (scripts/e2e-server-env.ts), with dummies for
-    #   Stripe, Resend, OpenAI, R2 and GitHub.
-    # - E2E_UPSTASH_REDIS_REST_URL, E2E_UPSTASH_REDIS_REST_TOKEN: the only
-    #   secrets of this workflow, set on the one step that runs the tests and
-    #   not on the job: `npm ci` runs the install scripts of every dependency,
-    #   and this repository is public. Sign-in is rate-limited and fails closed,
-    #   so the production build needs a real Upstash database. The free plan
-    #   allows one, so it is the app's own: the test keys never meet a user's (a
-    #   random email and a random test IP per run). GitHub passes no Actions
-    #   secrets to a fork PR and only Dependabot's own to a Dependabot PR, so
-    #   the same two are stored as Dependabot secrets too.
+    #   Stripe, Resend and GitHub, and local stand-ins for OpenAI, R2 and
+    #   Upstash (ADR 0035). The job needs no secret, so it runs on fork and
+    #   Dependabot PRs alike.
     env:
       TEST_DATABASE_URL: postgresql://postgres@localhost:5432/devstash_test
       DATABASE_URL: postgresql://postgres@localhost:5432/devstash_test
@@ -185,14 +196,29 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-e2e-${{ hashFiles('package-lock.json') }}-
       - run: npm run test:e2e
-        env:
-          E2E_UPSTASH_REDIS_REST_URL: ${{ secrets.E2E_UPSTASH_REDIS_REST_URL }}
-          E2E_UPSTASH_REDIS_REST_TOKEN: ${{ secrets.E2E_UPSTASH_REDIS_REST_TOKEN }}
+      # Playwright writes a missing screenshot baseline and lets its test pass,
+      # so a baseline that was never committed would never be compared. The
+      # job fails instead; the written picture is in the artifact below.
+      - name: Fail on an uncommitted screenshot baseline
+        if: ${{ !cancelled() }}
+        run: |
+          written=$(git status --porcelain --untracked-files=all -- e2e/visual.spec.ts-snapshots)
+          if [ -n "$written" ]; then
+            echo "::error::A screenshot baseline is missing and was written in this run: review it in the artifact and commit it (README, End-to-end tests)"
+            echo "$written"
+            exit 1
+          fi
       # The HTML report embeds the traces of the failed tests and of those that
       # failed once and passed on the retry, so it is kept in both cases.
+      # A missing screenshot baseline is written into e2e/visual.spec.ts-snapshots/
+      # and a changed one leaves its `-actual.png` in test-results/: both are
+      # reviewed and committed from here (README, "End-to-end tests").
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: playwright-report/
+          path: |
+            playwright-report/
+            test-results/
+            e2e/visual.spec.ts-snapshots/
           retention-days: 7

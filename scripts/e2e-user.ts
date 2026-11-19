@@ -39,3 +39,9 @@ export const E2E_KEPT_TYPE = "Recipe";
 export function overLimitUserEmail(runEmail: string): string {
   return `over-${runEmail}`;
 }
+
+// A fifth user with fixed rows and no writes, for the screenshots and the
+// accessibility scans (scripts/e2e-visual-user.ts).
+export function visualUserEmail(runEmail: string): string {
+  return `visual-${runEmail}`;
+}

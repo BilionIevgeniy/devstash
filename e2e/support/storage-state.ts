@@ -11,6 +11,10 @@ export const PRO_AUTH_FILE = "playwright/.auth/pro-user.json";
 // The session of the former Pro user over the Free limit (scripts/seed-e2e.ts).
 export const OVER_LIMIT_AUTH_FILE = "playwright/.auth/over-limit-user.json";
 
+// The session of the user with fixed rows, for the screenshots and the
+// accessibility scans (scripts/e2e-visual-user.ts).
+export const VISUAL_AUTH_FILE = "playwright/.auth/visual-user.json";
+
 import { CONSENT_STORAGE_KEY, serializeConsent } from "../../src/lib/consent";
 
 // The origin of the test server (playwright.config.ts). Not 3000: a `npm run

@@ -3,14 +3,16 @@ import { config as loadEnv } from "dotenv";
 import { AUTH_FILE, E2E_ORIGIN, E2E_PORT } from "./e2e/support/storage-state";
 import { buildE2eServerEnv } from "./scripts/e2e-server-env";
 import { FAKE_OPENAI_PORT } from "./scripts/fake-openai";
+import { FAKE_R2_PORT } from "./scripts/fake-r2";
+import { FAKE_UPSTASH_PORT } from "./scripts/fake-upstash";
 import { requireTestDatabase } from "./scripts/require-dev-database";
 
-// End-to-end smoke tests against the production build, on the test database.
-// TEST_DATABASE_URL and the E2E_UPSTASH_* values come from the environment (CI)
-// or .env.test (locally; a value already set wins). The test database goes
-// through requireTestDatabase before anything starts, and the server gets an
-// environment built from scratch (scripts/e2e-server-env.ts), so the database
-// and the vendor keys of .env never reach it.
+// End-to-end tests against the production build, on the test database.
+// TEST_DATABASE_URL comes from the environment (CI) or .env.test (locally; a
+// value already set wins) and goes through requireTestDatabase before anything
+// starts. The server gets an environment built from scratch
+// (scripts/e2e-server-env.ts), so the database and the vendor keys of .env
+// never reach it: OpenAI, R2 and Upstash are local stand-ins (ADR 0035).
 loadEnv({ path: ".env.test", quiet: true });
 
 // The config never reuses a server that is already running.
@@ -22,14 +24,6 @@ const BUILD_AND_START_TIMEOUT_MS = 5 * 60 * 1000;
 // on a CI runner.
 const EXPECT_TIMEOUT_MS = 10_000;
 
-function required(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`${name} is not set: see "End-to-end tests" in README.md`);
-  }
-  return value;
-}
-
 const isCi = Boolean(process.env.CI);
 
 export default defineConfig({
@@ -38,7 +32,17 @@ export default defineConfig({
   // One user and one database: the order of the tests is the order of the files.
   fullyParallel: false,
   workers: 1,
-  expect: { timeout: EXPECT_TIMEOUT_MS },
+  expect: {
+    timeout: EXPECT_TIMEOUT_MS,
+    // A small absolute budget, not a ratio: a changed border or button color
+    // (a few hundred pixels) must fail, anti-aliasing noise must not.
+    toHaveScreenshot: { maxDiffPixels: 100 },
+  },
+  // A missing baseline is written and its test passes; the e2e job then fails
+  // on the changed snapshot folder (.github/workflows/ci.yml). A changed one is
+  // never overwritten: its test fails and its -actual.png goes to
+  // test-results/. Both reach the job's artifact (README, "End-to-end tests").
+  updateSnapshots: "missing",
   forbidOnly: isCi,
   retries: isCi ? 1 : 0,
   reporter: isCi ? [["list"], ["html", { open: "never" }]] : "list",
@@ -60,9 +64,21 @@ export default defineConfig({
       reuseExistingServer: false,
     },
     {
+      // The stand-in for R2 (scripts/fake-r2.ts), reached through R2_ENDPOINT.
+      command: "npx tsx scripts/fake-r2.ts",
+      url: `http://localhost:${FAKE_R2_PORT}/health`,
+      reuseExistingServer: false,
+    },
+    {
+      // The proxy in front of the local Redis REST API (scripts/fake-upstash.ts);
+      // Redis and SRH themselves run in Docker (README, "End-to-end tests").
+      command: "npx tsx scripts/fake-upstash.ts",
+      url: `http://localhost:${FAKE_UPSTASH_PORT}/health`,
+      reuseExistingServer: false,
+    },
+    {
       // `next start` listens on every interface by default; the test server
-      // holds the Upstash token and a public AUTH_SECRET, so it stays on this
-      // machine.
+      // signs sessions with a public AUTH_SECRET, so it stays on this machine.
       command: "npm run build && npm run start -- --hostname localhost",
       url: ORIGIN,
       reuseExistingServer: false,
@@ -73,8 +89,6 @@ export default defineConfig({
         origin: ORIGIN,
         port: PORT,
         databaseUrl: requireTestDatabase(process.env.TEST_DATABASE_URL),
-        upstashUrl: required("E2E_UPSTASH_REDIS_REST_URL"),
-        upstashToken: required("E2E_UPSTASH_REDIS_REST_TOKEN"),
       }),
     },
   ],

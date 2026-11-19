@@ -61,18 +61,21 @@ async function createTestUsers(prisma: PrismaClient): Promise<TestUsers> {
 
 // A Free user who can sign in with a password. Verified, so the sign-in does
 // not wait for an email; the hash comes from the caller, which picks its cost.
+// Returns the new user's id.
 export async function createVerifiedTestUser(
   prisma: PrismaClient,
   { email, passwordHash }: { email: string; passwordHash: string },
-): Promise<void> {
-  await prisma.user.create({
+): Promise<string> {
+  const user = await prisma.user.create({
     data: {
       email,
       name: "E2E Tester",
       password: passwordHash,
       emailVerified: new Date(),
     },
+    select: { id: true },
   });
+  return user.id;
 }
 
 export async function resetTestDatabase(

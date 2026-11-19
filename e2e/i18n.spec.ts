@@ -230,6 +230,10 @@ test.describe("the language switch", () => {
     await page.reload();
     await expect(types).toBeVisible();
 
+    // Every answer of a signed-in request sets the session cookie again, so
+    // one still on its way after the sign-out would sign the browser back in
+    // (see endSession in signed-out.spec.ts).
+    await page.waitForLoadState("networkidle");
     await userMenu.click();
     await page.getByRole("menuitem", { name: "Abmelden" }).click();
     await expect(page).toHaveURL(/\/$/);

@@ -1,4 +1,5 @@
 import { createServer, type IncomingMessage } from "node:http";
+import { answerHealth, readBody } from "./fake-server";
 
 // A stand-in for the OpenAI Responses API, for the end-to-end tests only. The
 // test server reaches it through OPENAI_BASE_URL (scripts/e2e-server-env.ts),
@@ -18,9 +19,7 @@ const ANSWERS: Record<string, unknown> = {
 };
 
 async function readJson(request: IncomingMessage): Promise<unknown> {
-  const chunks: Buffer[] = [];
-  for await (const chunk of request) chunks.push(chunk as Buffer);
-  return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  return JSON.parse((await readBody(request)).toString("utf8"));
 }
 
 function schemaName(body: unknown): string | null {
@@ -69,10 +68,7 @@ function main() {
       response.writeHead(status, { "content-type": "application/json" });
       response.end(JSON.stringify(body));
     };
-    if (request.method === "GET" && request.url === "/health") {
-      send(200, { ok: true });
-      return;
-    }
+    if (answerHealth(request, response)) return;
     if (request.method !== "POST" || request.url !== "/v1/responses") {
       send(404, { error: { message: "Not faked" } });
       return;

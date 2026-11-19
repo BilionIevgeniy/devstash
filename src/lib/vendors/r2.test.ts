@@ -35,6 +35,7 @@ import {
   deletePrefix,
   headObject,
   listObjectsPage,
+  r2Endpoint,
 } from "@/lib/vendors/r2";
 
 const CREATED = new Date("2026-11-01T10:00:00Z");
@@ -49,6 +50,35 @@ function sentOf(name: string): SentCommand[] {
     .map(([command]) => command as SentCommand)
     .filter((command) => command.name === name);
 }
+
+describe("r2Endpoint", () => {
+  it("is the account's endpoint when no override is set", () => {
+    expect(r2Endpoint("account", undefined)).toEqual({
+      endpoint: "https://account.r2.cloudflarestorage.com",
+      forcePathStyle: false,
+    });
+    expect(r2Endpoint("account", "").forcePathStyle).toBe(false);
+  });
+
+  it("takes a loopback stand-in, path-style", () => {
+    expect(r2Endpoint("account", "http://localhost:3102")).toEqual({
+      endpoint: "http://localhost:3102",
+      forcePathStyle: true,
+    });
+    expect(r2Endpoint("account", "http://127.0.0.1:3102").forcePathStyle).toBe(
+      true,
+    );
+  });
+
+  it("refuses any other host", () => {
+    expect(() => r2Endpoint("account", "https://evil.example.com")).toThrow(
+      "R2_ENDPOINT must point at localhost",
+    );
+    expect(() =>
+      r2Endpoint("account", "https://localhost.example.com"),
+    ).toThrow();
+  });
+});
 
 describe("deletePrefix", () => {
   beforeEach(() => {

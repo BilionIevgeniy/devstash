@@ -34,7 +34,8 @@
     "favoriteNamed": "{title} als Favorit markieren",
     "pinNamed": "{title} anheften",
     "copyNamed": "{title} kopieren",
-    "deleteNamed": "{title} löschen"
+    "deleteNamed": "{title} löschen",
+    "downloadNamed": "{name} herunterladen"
   },
   "delete": {
     "title": "Diesen Eintrag löschen?",
