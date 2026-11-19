@@ -113,7 +113,7 @@ Dependabot (`.github/dependabot.yml`) opens PRs every week: Storybook, Vitest an
 - **A group** (minor and patch, or Storybook, Vitest, Playwright): merged on GitHub once `ci`, `integration` and `e2e` are green, like a feature and with no separate go (`gh pr merge <number> --merge --delete-branch`). A feature branch then takes the new `main` (`git merge main`), and the checks of `/feature complete` run again before the push
 - **A major outside a group**: a small task of its own, never merged in passing. Its changelog and the peer ranges of what depends on it are read, a needed fix goes on its branch, and it is merged on green checks; the final message names what it changed
 - **Out of date or in conflict**: `@dependabot rebase` as a comment on the PR. **Built by an older config** (its group no longer matches `.github/dependabot.yml`): `@dependabot recreate`. Then its checks are waited for
-- **A red check**: no merge. The cause is read in the run and fixed on the bot's branch, or named in the final message
+- **A red check**: no merge. The cause is read in the run and fixed on the bot's branch, or named in the final message. A Playwright group that turns `e2e/visual.spec.ts` red (a new Chromium can shift text rendering) gets its baselines from the job's artifact on the bot's branch, after a look at the diffs (README, "End-to-end tests"; ADR 0035)
 - A change to `package.json`, `package-lock.json` or `.github/dependabot.yml` comments `@dependabot recreate` on every bot PR still open once it is merged
 
 ## Production standard

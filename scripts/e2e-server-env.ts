@@ -1,4 +1,6 @@
 import { FAKE_OPENAI_PORT } from "./fake-openai";
+import { FAKE_R2_ENDPOINT } from "./fake-r2";
+import { FAKE_UPSTASH_URL, SRH_TOKEN } from "./fake-upstash";
 
 // The environment of the server the end-to-end tests start (`npm run build`,
 // then `npm run start`). Playwright puts it over the environment of the test
@@ -14,8 +16,6 @@ export interface E2eServerEnvInput {
   port: number;
   /** A database that has passed requireTestDatabase. */
   databaseUrl: string;
-  upstashUrl: string;
-  upstashToken: string;
 }
 
 const DUMMY = "e2e-dummy-not-a-real-key";
@@ -24,8 +24,6 @@ export function buildE2eServerEnv({
   origin,
   port,
   databaseUrl,
-  upstashUrl,
-  upstashToken,
 }: E2eServerEnvInput): Record<string, string> {
   return {
     NODE_ENV: "production",
@@ -44,14 +42,18 @@ export function buildE2eServerEnv({
     AUTH_GITHUB_SECRET: DUMMY,
     RESEND_API_KEY: DUMMY,
     EMAIL_FROM: "DevStash <noreply@devstash.test>",
-    UPSTASH_REDIS_REST_URL: upstashUrl,
-    UPSTASH_REDIS_REST_TOKEN: upstashToken,
+    // The local stand-in (scripts/fake-upstash.ts), never a real Upstash
+    // database, and never SRH directly, which would skip the script rewrite.
+    UPSTASH_REDIS_REST_URL: FAKE_UPSTASH_URL,
+    UPSTASH_REDIS_REST_TOKEN: SRH_TOKEN,
     RATE_LIMIT_HASH_KEY: "e2e-rate-limit-hash-key-not-used-anywhere",
     CRON_SECRET: "e2e-cron-secret-not-used-anywhere",
     R2_ACCOUNT_ID: DUMMY,
     R2_ACCESS_KEY_ID: DUMMY,
     R2_SECRET_ACCESS_KEY: DUMMY,
     R2_BUCKET_NAME: DUMMY,
+    // The local stand-in (scripts/fake-r2.ts); r2.ts takes only localhost.
+    R2_ENDPOINT: FAKE_R2_ENDPOINT,
     STRIPE_SECRET_KEY: DUMMY,
     STRIPE_WEBHOOK_SECRET: DUMMY,
     STRIPE_PRICE_ID_MONTHLY: DUMMY,

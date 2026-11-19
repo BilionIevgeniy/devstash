@@ -18,6 +18,7 @@ function randomTestIp(): string {
 export async function signInThroughForm(
   page: Page,
   email: string = requireE2eUserEmail(),
+  password: string = E2E_USER_PASSWORD,
 ): Promise<void> {
   const context = page.context();
   await context.setExtraHTTPHeaders({ "x-forwarded-for": randomTestIp() });
@@ -30,7 +31,7 @@ export async function signInThroughForm(
   }, ANSWERED_CONSENT);
   await page.goto("/sign-in");
   await page.getByLabel("Email", { exact: true }).fill(email);
-  await page.getByLabel("Password", { exact: true }).fill(E2E_USER_PASSWORD);
+  await page.getByLabel("Password", { exact: true }).fill(password);
   // Exact: "Sign in with GitHub" is a button too.
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
 }

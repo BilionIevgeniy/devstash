@@ -6,12 +6,14 @@ import {
   overLimitUserEmail,
   proUserEmail,
   requireE2eUserEmail,
+  visualUserEmail,
 } from "../scripts/e2e-user";
 import {
   AUTH_FILE,
   LISTS_AUTH_FILE,
   OVER_LIMIT_AUTH_FILE,
   PRO_AUTH_FILE,
+  VISUAL_AUTH_FILE,
 } from "./support/storage-state";
 import { signInThroughForm } from "./support/sign-in";
 
@@ -47,4 +49,12 @@ setup("sign in the former Pro user over the limit", async ({ page }) => {
 
   await mkdir(dirname(OVER_LIMIT_AUTH_FILE), { recursive: true });
   await page.context().storageState({ path: OVER_LIMIT_AUTH_FILE });
+});
+
+setup("sign in the user of the screenshots", async ({ page }) => {
+  await signInThroughForm(page, visualUserEmail(requireE2eUserEmail()));
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  await mkdir(dirname(VISUAL_AUTH_FILE), { recursive: true });
+  await page.context().storageState({ path: VISUAL_AUTH_FILE });
 });

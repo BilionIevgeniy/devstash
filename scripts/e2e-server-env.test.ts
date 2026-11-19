@@ -6,8 +6,6 @@ const INPUT = {
   origin: "http://localhost:3100",
   port: 3100,
   databaseUrl: "postgresql://postgres@localhost:5433/devstash_test",
-  upstashUrl: "https://e2e.example.upstash.io",
-  upstashToken: "upstash-token",
 };
 
 // The names the app documents; a new one must get a decision here.
@@ -28,7 +26,7 @@ describe("buildE2eServerEnv", () => {
     expect(unnamed).toEqual([]);
   });
 
-  it("points the server at the test database, the test origin and the given Upstash", () => {
+  it("points the server at the test database, the test origin and the local Upstash stand-in", () => {
     const env = buildE2eServerEnv(INPUT);
 
     expect(env).toMatchObject({
@@ -37,8 +35,8 @@ describe("buildE2eServerEnv", () => {
       AUTH_URL: INPUT.origin,
       APP_URL: INPUT.origin,
       PORT: "3100",
-      UPSTASH_REDIS_REST_URL: INPUT.upstashUrl,
-      UPSTASH_REDIS_REST_TOKEN: INPUT.upstashToken,
+      UPSTASH_REDIS_REST_URL: "http://localhost:3103",
+      UPSTASH_REDIS_REST_TOKEN: "e2e-local-redis-token",
     });
   });
 
@@ -47,7 +45,8 @@ describe("buildE2eServerEnv", () => {
     const vendorKeys = Object.keys(env).filter(
       (name) =>
         (/^(RESEND|OPENAI|STRIPE|R2|AUTH_GITHUB)_/.test(name) &&
-          name !== "OPENAI_BASE_URL") ||
+          name !== "OPENAI_BASE_URL" &&
+          name !== "R2_ENDPOINT") ||
         name === "SEED_DEMO_PASSWORD",
     );
 
@@ -61,6 +60,10 @@ describe("buildE2eServerEnv", () => {
     expect(buildE2eServerEnv(INPUT).OPENAI_BASE_URL).toBe(
       "http://localhost:3101/v1",
     );
+  });
+
+  it("sends the file calls to the local fake R2, never to Cloudflare", () => {
+    expect(buildE2eServerEnv(INPUT).R2_ENDPOINT).toBe("http://localhost:3102");
   });
 
   it("keeps Sentry off: no DSN, and no token to upload source maps with", () => {
