@@ -8,6 +8,10 @@ import { RIGHTS_EN } from "../../_legal/datenschutz/rights.en";
 import { VENDORS_DE } from "../../_legal/datenschutz/vendors.de";
 import { VENDORS_EN } from "../../_legal/datenschutz/vendors.en";
 
+// Static, and the build fails if a change makes it read the request
+// (ADR 0024, ADR 0037).
+export const ensureStatic = "navigation";
+
 export const metadata: Metadata = {
   title: "Datenschutzerklärung / Privacy notice - DevStash",
   description:

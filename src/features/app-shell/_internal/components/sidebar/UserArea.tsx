@@ -93,7 +93,7 @@ export function UserArea({ user }: UserAreaProps) {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href={CANCEL_CONTRACTS_PATH} lang="de">
+            <Link href={CANCEL_CONTRACTS_PATH} prefetch={false} lang="de">
               <FileX />
               {t("cancelContracts")}
             </Link>

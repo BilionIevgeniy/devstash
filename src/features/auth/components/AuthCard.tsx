@@ -52,7 +52,12 @@ export function AuthCard({ title, description, children }: AuthCardProps) {
           <Link href={IMPRINT_PATH} className={LEGAL_LINK}>
             {t("imprint")}
           </Link>
-          <Link href={CANCEL_CONTRACTS_PATH} className={LEGAL_LINK} lang="de">
+          <Link
+            href={CANCEL_CONTRACTS_PATH}
+            prefetch={false}
+            className={LEGAL_LINK}
+            lang="de"
+          >
             {t("cancelContracts")}
           </Link>
         </nav>

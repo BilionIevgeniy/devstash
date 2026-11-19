@@ -13,6 +13,7 @@ export function AppFooter() {
     <footer className="mt-12 flex flex-wrap gap-x-4 border-t pt-4 text-xs text-muted-foreground">
       <Link
         href={CANCEL_CONTRACTS_PATH}
+        prefetch={false}
         lang="de"
         className="inline-flex items-center underline-offset-4 hover:text-foreground hover:underline max-md:min-h-11"
       >

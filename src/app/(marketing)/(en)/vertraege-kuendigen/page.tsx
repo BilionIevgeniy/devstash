@@ -1,8 +1,10 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { CancelContractForm } from "@/features/billing/components/CancelContractForm";
+import { CancelContractFormSkeleton } from "@/features/billing/components/CancelContractFormSkeleton";
 import { getContractState } from "@/features/billing/queries";
 import { MAIN_CONTENT_ID } from "@/app/(marketing)/_components/SkipLink";
 
@@ -13,16 +15,17 @@ export const metadata: Metadata = {
   alternates: { canonical: "/vertraege-kuendigen" },
 };
 
-// The one dynamic page of the legal group (ADR 0032): it reads the session, so
-// a signed-in user cancels their own contract without typing it. The footer
-// link stays a plain link, so every other page stays static.
+// The one page of the legal group that reads the request (ADR 0032): the
+// session, so a signed-in user cancels their own contract without typing it.
+// The read sits under Suspense, so the title and the lead are the static
+// shell and the form streams in (ADR 0037); a read at the top left the
+// shell's prefetch unanswered. The footer link stays a plain link, so every
+// other page stays static.
 export default async function CancelContractsPage() {
   const t = await getTranslations({
     locale: "en",
     namespace: "billing.cancel",
   });
-  const userId = await getSignedInUserId();
-  const contract = userId ? await getContractState(userId) : null;
 
   return (
     <main
@@ -33,8 +36,16 @@ export default async function CancelContractsPage() {
       <div className="mx-auto max-w-xl space-y-6">
         <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
         <p className="text-muted-foreground">{t("lead")}</p>
-        <CancelContractForm contract={contract} />
+        <Suspense fallback={<CancelContractFormSkeleton />}>
+          <CancelContract />
+        </Suspense>
       </div>
     </main>
   );
+}
+
+async function CancelContract() {
+  const userId = await getSignedInUserId();
+  const contract = userId ? await getContractState(userId) : null;
+  return <CancelContractForm contract={contract} />;
 }

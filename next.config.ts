@@ -45,6 +45,12 @@ const SECURITY_HEADERS = [
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  // Static shells and Partial Prefetching (ADR 0037): the marketing and legal
+  // pages are static and stay so (ensureStatic), the app and auth layouts
+  // read the request and say so (instant = false). Nothing per user is cached
+  // on the server.
+  cacheComponents: true,
+  partialPrefetching: true,
   // The throw routes of the end-to-end build only (scripts/e2e-build.ts).
   pageExtensions: pageExtensionsFor({
     E2E_BUILD: process.env.E2E_BUILD,
