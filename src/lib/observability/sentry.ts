@@ -7,7 +7,12 @@ import {
   init,
   withScope,
 } from "@sentry/nextjs";
-import { errorDigest, safeError } from "@/lib/errors/error-summary";
+import {
+  errorDigest,
+  errorFrames,
+  errorSummary,
+  safeError,
+} from "@/lib/errors/error-summary";
 import { allowedSentryDsn } from "@/lib/observability/sentry-dsn";
 import {
   SAFE_MESSAGE_TAG,
@@ -126,6 +131,24 @@ export function captureSafeError(
   });
 }
 
+// Under Cache Components Next.js renders the Server Components of a request in
+// two passes and calls onRequestError once for each, with the same failure
+// and a new digest (seen in e2e/egress.spec.ts, ADR 0037). The first digest is
+// the reference the error page shows, so the twin that follows is dropped:
+// the same method, path, route type, class and top frame within a few
+// seconds, on this instance.
+const TWIN_WINDOW_MS = 5000;
+const recentRequestErrors = new Map<string, number>();
+
+function isTwinReport(key: string, now: number): boolean {
+  for (const [seen, at] of recentRequestErrors) {
+    if (now - at >= TWIN_WINDOW_MS) recentRequestErrors.delete(seen);
+  }
+  if (recentRequestErrors.has(key)) return true;
+  recentRequestErrors.set(key, now);
+  return false;
+}
+
 // `onRequestError` of Next.js: an error nobody caught, in a Server Component,
 // a Route Handler or a Server Action. The SDK flushes this one itself. It gets
 // the path without its query string and no headers, and the digest as a tag, so
@@ -135,6 +158,14 @@ export function onRequestError(
   request: RequestInfo,
   context: ErrorContext,
 ): void {
+  const key = [
+    request.method,
+    stripQuery(request.path),
+    context.routeType,
+    errorSummary(error).name,
+    errorFrames(error)[0] ?? "",
+  ].join(" ");
+  if (isTwinReport(key, Date.now())) return;
   const digest = errorDigest(error);
   withScope((scope) => {
     scope.setTag(SAFE_MESSAGE_TAG, "1");
