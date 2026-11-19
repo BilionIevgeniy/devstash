@@ -93,6 +93,10 @@ test.describe("signed out", () => {
   test("homepage", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expectScreen(page, "homepage");
+    // The hero's icons drift, and even at rest each gets a random tilt
+    // (chaos-simulation.ts): the panel is masked, the rest is compared.
+    await expectScreen(page, "homepage", [
+      page.getByRole("figure", { name: "Your knowledge today..." }),
+    ]);
   });
 });
