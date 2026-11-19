@@ -272,13 +272,18 @@ describe("onRequestError", () => {
     expect(scope.setTag).toHaveBeenCalledWith("digest", "1");
   });
 
-  it("reports the same failure again once the window has passed, or on another route", () => {
+  it("reports the same failure again once the window has passed, or for another URL", () => {
     onRequestError(new Error("x"), request, context);
     onRequestError(new Error("x"), { ...request, path: "/dashboard" }, context);
+    onRequestError(
+      new Error("x"),
+      { ...request, path: `${request.path}&n=2` },
+      context,
+    );
     vi.advanceTimersByTime(5_000);
     onRequestError(new Error("x"), request, context);
 
-    expect(captureRequestError).toHaveBeenCalledTimes(3);
+    expect(captureRequestError).toHaveBeenCalledTimes(4);
   });
 });
 

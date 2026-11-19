@@ -131,11 +131,12 @@ export function captureSafeError(
   });
 }
 
-// Under Cache Components Next.js renders the Server Components of a request in
-// two passes and calls onRequestError once for each, with the same failure
-// and a new digest (seen in e2e/egress.spec.ts, ADR 0037). The first digest is
+// With Partial Prefetching on, Next.js 16.4 rendered the Server Components of
+// a request in two passes and called onRequestError once for each, with the
+// same failure and a new digest (seen in e2e/egress.spec.ts, ADR 0037). It is
+// off for now and on by default in Next.js 17, so the guard stays. The first digest is
 // the reference the error page shows, so the twin that follows is dropped:
-// the same method, path, route type, class and top frame within a few
+// the same method, URL, route type, class and top frame within a few
 // seconds, on this instance.
 const TWIN_WINDOW_MS = 5000;
 const recentRequestErrors = new Map<string, number>();
@@ -158,9 +159,11 @@ export function onRequestError(
   request: RequestInfo,
   context: ErrorContext,
 ): void {
+  // The whole path, query included: the twins share it, two requests rarely
+  // do. It stays on this instance; the event gets the path without the query.
   const key = [
     request.method,
-    stripQuery(request.path),
+    request.path,
     context.routeType,
     errorSummary(error).name,
     errorFrames(error)[0] ?? "",
