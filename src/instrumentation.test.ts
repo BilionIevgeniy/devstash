@@ -2,11 +2,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 // `@/lib/observability/sentry` is the stub of vitest.shared.mts here, in this file and in
 // instrumentation.ts alike.
 import { onRequestError as libOnRequestError } from "@/lib/observability/sentry";
+import { installSafeConsoleError } from "@/lib/observability/logger";
 import { initSentryServer } from "@/lib/observability/sentry-server";
 import { onRequestError, register } from "./instrumentation";
 
 vi.mock("@/lib/observability/sentry-server", () => ({
   initSentryServer: vi.fn(),
+}));
+vi.mock("@/lib/observability/logger", () => ({
+  installSafeConsoleError: vi.fn(),
 }));
 
 afterEach(() => {
@@ -23,6 +27,19 @@ describe("register", () => {
     expect(initSentryServer).toHaveBeenCalledOnce();
   });
 
+  it("keeps error messages out of console.error, after Sentry has started", async () => {
+    vi.stubEnv("NEXT_RUNTIME", "nodejs");
+
+    await register();
+
+    expect(installSafeConsoleError).toHaveBeenCalledOnce();
+    expect(
+      vi.mocked(initSentryServer).mock.invocationCallOrder[0],
+    ).toBeLessThan(
+      vi.mocked(installSafeConsoleError).mock.invocationCallOrder[0],
+    );
+  });
+
   it.each(["edge", undefined])(
     "starts nothing when the runtime is %s: only Node.js is started",
     async (runtime) => {
@@ -31,6 +48,7 @@ describe("register", () => {
       await register();
 
       expect(initSentryServer).not.toHaveBeenCalled();
+      expect(installSafeConsoleError).not.toHaveBeenCalled();
     },
   );
 });

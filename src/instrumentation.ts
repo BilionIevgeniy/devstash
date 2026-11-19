@@ -8,6 +8,10 @@ export async function register(): Promise<void> {
   const { initSentryServer } =
     await import("@/lib/observability/sentry-server");
   initSentryServer();
+  // After Sentry, so nothing that wraps console later sees the raw error.
+  const { installSafeConsoleError } =
+    await import("@/lib/observability/logger");
+  installSafeConsoleError();
 }
 
 export { onRequestError } from "@/lib/observability/sentry";

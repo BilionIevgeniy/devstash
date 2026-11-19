@@ -276,3 +276,22 @@ describe("logger.error: the throttle tells failures apart by code", () => {
     expect(captureSafeError).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("installSafeConsoleError", () => {
+  it("writes an Error as its class, codes and frames, never its message", async () => {
+    const { installSafeConsoleError } =
+      await import("@/lib/observability/logger");
+    installSafeConsoleError();
+
+    console.error(" ⨯", prismaError(), "plain text");
+
+    const [prefix, written, text] = error.mock.calls[0] as unknown[];
+    expect(prefix).toBe(" ⨯");
+    expect(text).toBe("plain text");
+    expect(String(written)).not.toContain("alice@example.com");
+    expect(String(written)).not.toContain("Invalid invocation");
+    expect(JSON.parse(String(written))).toMatchObject({
+      error: { name: "PrismaClientKnownRequestError", code: "P2002" },
+    });
+  });
+});
