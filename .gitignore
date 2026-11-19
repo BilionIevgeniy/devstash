@@ -16,6 +16,7 @@
 /.playwright-mcp
 # Playwright: the saved session holds a login cookie
 /playwright/.auth/
+/playwright/server.log
 /playwright-report/
 /test-results/
 # Storybook: the static build and the log of a failed run

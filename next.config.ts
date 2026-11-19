@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 import packageJson from "./package.json";
+import { pageExtensionsFor } from "./scripts/e2e-build";
 import { buildContentSecurityPolicy, CSP_HEADER } from "./src/lib/http/csp";
 import { NOINDEX_PATHS } from "./src/lib/http/noindex-paths";
 
@@ -44,6 +45,11 @@ const SECURITY_HEADERS = [
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  // The throw routes of the end-to-end build only (scripts/e2e-build.ts).
+  pageExtensions: pageExtensionsFor({
+    E2E_BUILD: process.env.E2E_BUILD,
+    VERCEL: process.env.VERCEL,
+  }),
   devIndicators: false,
   poweredByHeader: false,
   env: {

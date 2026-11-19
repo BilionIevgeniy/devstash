@@ -594,6 +594,9 @@ const eslintConfig = defineConfig([
       "src/app/(marketing)/_components/legal/LegalPage.tsx",
       "src/components/common/BilingualErrorText.tsx",
       "src/app/global-error.tsx",
+      // The throw routes of the end-to-end build only (scripts/e2e-build.ts):
+      // no user ever sees them.
+      "src/app/(e2e)/**",
     ],
     plugins: { i18next },
     rules: { "i18next/no-literal-string": ["error", I18N_LITERALS] },
