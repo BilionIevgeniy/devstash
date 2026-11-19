@@ -93,7 +93,9 @@ test("each server error is one event, without its message, and the log keeps it 
   }).toPass();
 
   // A caught error, logged by the app: its fixed message, an id, no text.
-  await request.get(probeUrl("logged", secrets));
+  await request.get(
+    `${probeUrl("logged", secrets)}&run=E2E_${randomUUID().slice(0, 8)}`,
+  );
   await expectOneEvent("The end-to-end probe failed");
 
   await waitForServerLog("E2eServerProbeError");
