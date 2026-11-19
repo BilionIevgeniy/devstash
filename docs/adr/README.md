@@ -2,43 +2,45 @@
 
 One short file per decision that shapes the structure of the code, in the [MADR](https://adr.github.io/madr/) form: context, options, the decision and its consequences. The rules that follow from a decision are in [context/architecture-rules.md](../../context/architecture-rules.md); the record says why they are the way they are.
 
-| No.                                                                | Decision                                                                                     | Status             |
-| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- | ------------------ |
-| [0001](0001-modular-monolith-with-ranked-features.md)              | Modular monolith with ranked features                                                        | accepted           |
-| [0002](0002-boundaries-enforced-by-eslint.md)                      | Boundaries are enforced by ESLint                                                            | accepted           |
-| [0003](0003-services-for-every-write.md)                           | Every write goes through a service                                                           | accepted           |
-| [0004](0004-direct-upload-to-r2.md)                                | Files go from the browser straight to R2                                                     | accepted           |
-| [0005](0005-entitlements-from-the-database.md)                     | Entitlements come from the database, and billing owns its data                               | superseded by 0011 |
-| [0006](0006-eslint-9-and-eslint-plugin-import.md)                  | Stay on ESLint 9 because of `eslint-plugin-import`                                           | accepted           |
-| [0007](0007-client-hooks-in-the-components-role.md)                | Client hooks belong to the components role                                                   | accepted           |
-| [0008](0008-items-own-the-collection-link.md)                      | Items own the link to collections                                                            | accepted           |
-| [0009](0009-read-write-split-enforced-by-lint.md)                  | The split between reads and writes is enforced by lint                                       | accepted           |
-| [0010](0010-pagination-in-lib-and-object-key-reads-in-internal.md) | Pagination lives in `lib`, and reads of the object key in `_internal/queries.ts`             | accepted           |
-| [0011](0011-past-due-grace-and-no-event-table.md)                  | Pro lasts through `past_due`, and webhooks need no event table                               | accepted           |
-| [0012](0012-webhook-writes-scoped-by-customer.md)                  | A webhook write is scoped by the Stripe customer, not by the user                            | accepted           |
-| [0013](0013-how-schema-changes-reach-production.md)                | Schema changes reach production through a guarded migration in the Vercel build              | accepted           |
-| [0014](0014-launch-mode.md)                                        | Portfolio mode now, with real legal pages; what a commercial launch adds                     | accepted           |
-| [0015](0015-no-barrel-files.md)                                    | No barrel files; a feature's public API is defined by lint                                   | accepted           |
-| [0016](0016-error-monitoring-with-sentry.md)                       | Error monitoring with Sentry: what leaves the server, and how it is kept small               | accepted           |
-| [0017](0017-queries-split-by-topic.md)                             | `queries.ts` may split into `queries/<topic>.ts`                                             | accepted           |
-| [0018](0018-search-in-postgres.md)                                 | Search runs in Postgres, with one narrow raw-SQL exception                                   | accepted           |
-| [0019](0019-export-without-file-bytes.md)                          | The export carries no file bytes, and streams page by page                                   | accepted           |
-| [0020](0020-import-as-batched-data-input.md)                       | An import is data input in batches, not a file upload                                        | accepted           |
-| [0021](0021-result-contract-and-shared-building-blocks.md)         | One result contract, and shared building blocks with one home each                           | accepted           |
-| [0022](0022-error-codes-in-the-result-contract.md)                 | A failure carries an error code, not a sentence                                              | accepted           |
-| [0023](0023-next-intl-outside-lib.md)                              | next-intl is used outside `lib`, and `src/i18n/` sits below it                               | accepted           |
-| [0024](0024-locale-decision.md)                                    | The locale: a cookie for the app and the auth pages, an explicit locale for static pages     | accepted           |
-| [0025](0025-client-data-with-tanstack-query.md)                    | TanStack Query for the data the browser fetches, and cursor pages for /favorites and /pinned | accepted           |
-| [0026](0026-storybook-and-story-tests.md)                          | Storybook for the hard-to-reach states, with every story run as a test                       | accepted           |
-| [0027](0027-marking-ai-generated-output.md)                        | AI output is marked per field, in the data and in the markup                                 | accepted           |
-| [0028](0028-schema-drift-check-in-ci.md)                           | CI fails on a schema change without its migration                                            | accepted           |
-| [0029](0029-topic-subfolders.md)                                   | A large folder is split into topic subfolders                                                | accepted           |
-| [0030](0030-daily-cron-and-retention.md)                           | One daily cron route runs the data retention                                                 | accepted           |
-| [0031](0031-custom-item-types.md)                                  | Custom item types: a slug fixed at creation, a fixed palette, owner-scoped lookups           | accepted           |
-| [0032](0032-consumer-flow.md)                                      | The consumer flow: order step, consent, terms, confirmation, cancellation, downgrade         | accepted           |
-| [0033](0033-tax-prices-and-payment-policy.md)                      | Tax, prices in euros, the failed-payment policy and a daily reconciliation                   | accepted           |
-| [0034](0034-consent-and-field-measurement.md)                      | Consent in the browser, and real-user Web Vitals behind it                                   | accepted           |
-| [0035](0035-e2e-stand-ins-and-visual-baselines.md)                 | End-to-end stand-ins for Upstash and R2, fresh users per test, visual baselines from CI      | accepted           |
+| No.                                                                | Decision                                                                                          | Status             |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | ------------------ |
+| [0001](0001-modular-monolith-with-ranked-features.md)              | Modular monolith with ranked features                                                             | accepted           |
+| [0002](0002-boundaries-enforced-by-eslint.md)                      | Boundaries are enforced by ESLint                                                                 | accepted           |
+| [0003](0003-services-for-every-write.md)                           | Every write goes through a service                                                                | accepted           |
+| [0004](0004-direct-upload-to-r2.md)                                | Files go from the browser straight to R2                                                          | accepted           |
+| [0005](0005-entitlements-from-the-database.md)                     | Entitlements come from the database, and billing owns its data                                    | superseded by 0011 |
+| [0006](0006-eslint-9-and-eslint-plugin-import.md)                  | Stay on ESLint 9 because of `eslint-plugin-import`                                                | accepted           |
+| [0007](0007-client-hooks-in-the-components-role.md)                | Client hooks belong to the components role                                                        | accepted           |
+| [0008](0008-items-own-the-collection-link.md)                      | Items own the link to collections                                                                 | accepted           |
+| [0009](0009-read-write-split-enforced-by-lint.md)                  | The split between reads and writes is enforced by lint                                            | accepted           |
+| [0010](0010-pagination-in-lib-and-object-key-reads-in-internal.md) | Pagination lives in `lib`, and reads of the object key in `_internal/queries.ts`                  | accepted           |
+| [0011](0011-past-due-grace-and-no-event-table.md)                  | Pro lasts through `past_due`, and webhooks need no event table                                    | accepted           |
+| [0012](0012-webhook-writes-scoped-by-customer.md)                  | A webhook write is scoped by the Stripe customer, not by the user                                 | accepted           |
+| [0013](0013-how-schema-changes-reach-production.md)                | Schema changes reach production through a guarded migration in the Vercel build                   | accepted           |
+| [0014](0014-launch-mode.md)                                        | Portfolio mode now, with real legal pages; what a commercial launch adds                          | accepted           |
+| [0015](0015-no-barrel-files.md)                                    | No barrel files; a feature's public API is defined by lint                                        | accepted           |
+| [0016](0016-error-monitoring-with-sentry.md)                       | Error monitoring with Sentry: what leaves the server, and how it is kept small                    | accepted           |
+| [0017](0017-queries-split-by-topic.md)                             | `queries.ts` may split into `queries/<topic>.ts`                                                  | accepted           |
+| [0018](0018-search-in-postgres.md)                                 | Search runs in Postgres, with one narrow raw-SQL exception                                        | accepted           |
+| [0019](0019-export-without-file-bytes.md)                          | The export carries no file bytes, and streams page by page                                        | accepted           |
+| [0020](0020-import-as-batched-data-input.md)                       | An import is data input in batches, not a file upload                                             | accepted           |
+| [0021](0021-result-contract-and-shared-building-blocks.md)         | One result contract, and shared building blocks with one home each                                | accepted           |
+| [0022](0022-error-codes-in-the-result-contract.md)                 | A failure carries an error code, not a sentence                                                   | accepted           |
+| [0023](0023-next-intl-outside-lib.md)                              | next-intl is used outside `lib`, and `src/i18n/` sits below it                                    | accepted           |
+| [0024](0024-locale-decision.md)                                    | The locale: a cookie for the app and the auth pages, an explicit locale for static pages          | accepted           |
+| [0025](0025-client-data-with-tanstack-query.md)                    | TanStack Query for the data the browser fetches, and cursor pages for /favorites and /pinned      | accepted           |
+| [0026](0026-storybook-and-story-tests.md)                          | Storybook for the hard-to-reach states, with every story run as a test                            | accepted           |
+| [0027](0027-marking-ai-generated-output.md)                        | AI output is marked per field, in the data and in the markup                                      | accepted           |
+| [0028](0028-schema-drift-check-in-ci.md)                           | CI fails on a schema change without its migration                                                 | accepted           |
+| [0029](0029-topic-subfolders.md)                                   | A large folder is split into topic subfolders                                                     | accepted           |
+| [0030](0030-daily-cron-and-retention.md)                           | One daily cron route runs the data retention                                                      | accepted           |
+| [0031](0031-custom-item-types.md)                                  | Custom item types: a slug fixed at creation, a fixed palette, owner-scoped lookups                | accepted           |
+| [0032](0032-consumer-flow.md)                                      | The consumer flow: order step, consent, terms, confirmation, cancellation, downgrade              | accepted           |
+| [0033](0033-tax-prices-and-payment-policy.md)                      | Tax, prices in euros, the failed-payment policy and a daily reconciliation                        | accepted           |
+| [0034](0034-consent-and-field-measurement.md)                      | Consent in the browser, and real-user Web Vitals behind it                                        | accepted           |
+| [0035](0035-e2e-stand-ins-and-visual-baselines.md)                 | End-to-end stand-ins for Upstash and R2, fresh users per test, visual baselines from CI           | accepted           |
+| [0036](0036-content-security-policy.md)                            | A static Content-Security-Policy with exact origins, no nonce; no error message in the server log | accepted           |
+| [0037](0037-caching-strategy.md)                                   | Cache Components on, Partial Prefetching off, nothing per user cached on the server               | accepted           |
 
 Records up to 0026 that name `context/todo.md` mean the deferred list that was split on 2026-11-14 into the specs of `context/features/plan/` and `context/todo-before-live.md`; the table "Where the former `context/todo.md` went" in `context/features/plan/README.md` says where each item is now.
 

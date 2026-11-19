@@ -71,3 +71,45 @@ Layout shift on `/dashboard`, `/items/snippets`, `/items/images` and `/favorites
 ### Sidebar navigation
 
 Each sidebar link carries `LinkPendingMark` and dims while its navigation is pending, after a 100 ms delay so a prefetched or fast navigation does not flicker. Every app segment has its own `loading.tsx` except `/profile` (feature 20 adds it).
+
+## Feature 22 (2026-11-19): Cache Components
+
+### How it was measured
+
+- **App pages**: `e2e/perf/pages.perf.ts` (`npx playwright test --config playwright.perf.config.ts`) on the production build of the end-to-end suite, the signed-in run user, desktop Chromium on the same machine as the server and the Docker Postgres. One warm-up load per page, then the median of seven full loads: TTFB is `responseStart` of the navigation, LCP the last `largest-contentful-paint` entry. The queries are the `prisma:query` lines the server wrote during a load and its prefetches, with Prisma's query log switched on by hand for the measurement only (`log: ["query"]` in `lib/postgres/prisma.ts`, never committed); the server's log is `playwright/server.log`
+- **500 favorites**: `e2e/perf/favorites-500.perf.ts`, a fresh Pro user with 500 starred snippets (`many-favorites` in `scripts/e2e-fixture.ts`), all 17 pages of `/favorites` loaded by scrolling, a `PerformanceObserver` for long tasks and for Event Timing (16 ms threshold) on the star of the last row
+- **Production**: Vercel Observability is not available on the Hobby plan (the query answers 404), so the production numbers are the TTFB from outside, `curl` from Germany, median of seven
+
+### App pages (lab)
+
+| Page              | Before: TTFB |    LCP | Queries | Cache Components + Partial Prefetching: TTFB |    LCP | Queries | Cache Components (shipped): TTFB |    LCP | Queries |
+| ----------------- | -----------: | -----: | ------: | -------------------------------------------: | -----: | ------: | -------------------------------: | -----: | ------: |
+| `/dashboard`      |        12 ms |  40 ms |      32 |                                         4 ms |  36 ms |      58 |                             5 ms |  32 ms |      32 |
+| `/items/snippets` |        10 ms | 360 ms |      19 |                                         6 ms | 344 ms |      52 |                             5 ms | 340 ms |      19 |
+| `/favorites`      |        12 ms | 360 ms |      25 |                                         6 ms | 340 ms |      62 |                             5 ms | 340 ms |      25 |
+| `/collections`    |        12 ms | 348 ms |      21 |                                         6 ms | 344 ms |      56 |                             6 ms | 344 ms |      21 |
+
+- TTFB fell by about half with Cache Components: the shell streams before the page's reads are done. LCP barely moved; on the list pages it is the first card's text after its fonts
+- Partial Prefetching more than doubled the queries of a page view for no gain in TTFB or LCP: every app route reads the session, so each visible link's App Shell prefetch is a server render with its own reads. It is off ([ADR 0037](adr/0037-caching-strategy.md))
+
+### /favorites with 500 favorites
+
+|                                     | Before | After |
+| ----------------------------------- | -----: | ----: |
+| Long tasks while 17 pages load      |      0 |     0 |
+| DOM nodes with 500 rows             |  8,757 | 8,758 |
+| Star on the last row (Event Timing) |  24 ms | 24 ms |
+
+No long task and a star answered within one frame and a half: no virtualization (`@tanstack/react-virtual` stays out, as feature 12 decided). The 12.5 s to load all pages is the test's scroll loop, a page per scroll; the requests themselves are fast.
+
+### Production (from outside, 2026-11-19, before this deploy)
+
+| Page                   | Served by                | Median TTFB | Min–max     |
+| ---------------------- | ------------------------ | ----------: | ----------- |
+| `/impressum`           | the edge in `fra1` (HIT) |      114 ms | 63–511 ms   |
+| `/`                    | the edge in `fra1` (HIT) |      243 ms | 105–801 ms  |
+| `/sign-in`             | a function in `iad1`     |      245 ms | 209–2233 ms |
+| `/vertraege-kuendigen` | a function in `iad1`     |      241 ms | 182–350 ms  |
+
+- A dynamic page pays the Atlantic once (`fra1::iad1` in `x-vercel-id`): about 100 ms of the TTFB of a visitor in Germany before any database read. The 2.2 s outlier is a cold start
+- The database latency inside the region (`iad1` to Neon in `us-east-2`) was not measured: it needs Neon's query statistics of the production branch, which is read only on the owner's explicit request (project CLAUDE.md). No pool change was made without numbers
