@@ -14,29 +14,24 @@ const LINK: Components["a"] = ({ href, title, children }) => (
   </a>
 );
 
-const SHOW_IMAGES: Components = { a: LINK };
-
-// Text the user did not write (an AI answer) can carry an image whose URL
-// sends data out the moment it renders, without a click: no image loads,
-// its alt text stands in.
-const DROP_IMAGES: Components = {
+// No image loads, its alt text stands in. An image URL sends data out the
+// moment it renders, without a click, so the Content-Security-Policy allows
+// images from this app, R2 and GitHub avatars only (ADR 0036): an image of
+// another host would show as broken. That holds for an AI answer and for the
+// user's own note alike.
+const COMPONENTS: Components = {
   a: LINK,
   img: ({ alt }) => (alt ? <span>{alt}</span> : null),
 };
 
 interface MarkdownPreviewProps {
   value: string;
-  /** Required, so no caller of untrusted text shows images by default. */
-  images: "show" | "drop";
 }
 
-export function MarkdownPreview({ value, images }: MarkdownPreviewProps) {
+export function MarkdownPreview({ value }: MarkdownPreviewProps) {
   return (
     <div className="markdown-preview">
-      <ReactMarkdown
-        remarkPlugins={REMARK_PLUGINS}
-        components={images === "show" ? SHOW_IMAGES : DROP_IMAGES}
-      >
+      <ReactMarkdown remarkPlugins={REMARK_PLUGINS} components={COMPONENTS}>
         {value}
       </ReactMarkdown>
     </div>

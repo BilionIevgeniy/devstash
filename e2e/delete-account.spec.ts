@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { requireE2eUserEmail } from "../scripts/e2e-user";
 
 // The page of the emailed deletion link renders only; these states need no

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { SIGNED_OUT } from "./support/storage-state";
 
 test.use({ storageState: SIGNED_OUT });

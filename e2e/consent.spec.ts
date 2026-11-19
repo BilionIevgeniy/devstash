@@ -1,4 +1,5 @@
-import { expect, test, type Page, type Request } from "@playwright/test";
+import type { Page, Request } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { FRESH_VISITOR } from "./support/storage-state";
 
 // The consent banner and the real-user Web Vitals behind it (ADR 0034), for a

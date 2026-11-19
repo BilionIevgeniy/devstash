@@ -1,4 +1,5 @@
-import { expect, test, type Locator } from "@playwright/test";
+import type { Locator } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { FAKE_SUMMARY } from "../scripts/fake-openai";
 import { createSnippet, itemHeading, uniqueTitle } from "./support/items";
 import { PRO_AUTH_FILE } from "./support/storage-state";

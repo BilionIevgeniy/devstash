@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { itemHeading, uniqueTitle } from "./support/items";
 import { PRO_AUTH_FILE } from "./support/storage-state";
 

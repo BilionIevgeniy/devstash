@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { createSnippet, openCreateDialog, uniqueTitle } from "./support/items";
 import { signInFreshUser } from "./support/fresh-user";
 import { SIGNED_OUT } from "./support/storage-state";

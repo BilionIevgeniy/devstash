@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { createSnippet, itemHeading, uniqueTitle } from "./support/items";
 
 // A session that ends while a page is open: the next Server Action must take

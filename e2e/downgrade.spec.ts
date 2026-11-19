@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { E2E_KEPT_TYPE } from "../scripts/e2e-user";
 import { itemHeading } from "./support/items";
 import { OVER_LIMIT_AUTH_FILE } from "./support/storage-state";

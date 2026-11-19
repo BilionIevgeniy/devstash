@@ -179,7 +179,7 @@ function PreviewPane({ value }: { value: string }) {
       {value.trim() === "" ? (
         <p className="text-sm text-muted-foreground">{t("nothingToPreview")}</p>
       ) : (
-        <MarkdownPreview value={value} images="show" />
+        <MarkdownPreview value={value} />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { VISUAL_DRAWER_ITEM } from "../scripts/e2e-visual-user";
 import { expectNoSeriousViolations } from "./support/axe";
 import { itemLink, openCreateDialog } from "./support/items";

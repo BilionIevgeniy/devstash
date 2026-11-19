@@ -1,7 +1,7 @@
 import { itemInput } from "@/features/ai/domain/input";
 
 // Sent with explainInput, which keeps the code out of these. Images are asked
-// against here and dropped by the view anyway (MarkdownPreview images="drop").
+// against here and dropped by the view anyway (MarkdownPreview drops every image).
 export const EXPLAIN_INSTRUCTIONS = [
   "You explain one item in a developer's knowledge base: a code snippet or a terminal command.",
   "In 200 to 300 words, say what it does, step by step where that helps, then the key concepts a reader needs to understand it.",

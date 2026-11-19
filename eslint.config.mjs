@@ -558,6 +558,28 @@ const eslintConfig = defineConfig([
     rules: { "@typescript-eslint/no-floating-promises": "error" },
   },
   {
+    // A spec takes `test` and `expect` from e2e/support/test.ts, whose fixture
+    // fails a test on any Content-Security-Policy violation (ADR 0036): one
+    // taken from @playwright/test would skip that guard. Types stay allowed.
+    files: ["e2e/**/*.spec.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@playwright/test",
+              importNames: ["test", "expect"],
+              allowTypeImports: true,
+              message:
+                "Import test and expect from ./support/test, which checks the Content-Security-Policy.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // No literal UI text in JSX (I18N_LITERALS). Left out: the shadcn
     // primitives, the tests and the stories, whose text is demo content
     // (ADR 0026), and what is bilingual by design (ADR 0024): the
