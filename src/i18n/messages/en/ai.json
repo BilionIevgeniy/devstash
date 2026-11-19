@@ -1,4 +1,5 @@
 {
+  "upgradeLabel": "{label}: a Pro feature, upgrade",
   "dataNotice": "Content is sent to OpenAI when you click.",
   "generate": {
     "idle": "Generate with AI",

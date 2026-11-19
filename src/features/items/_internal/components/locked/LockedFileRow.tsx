@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+
 import { Download } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +14,7 @@ interface LockedFileRowProps {
 }
 
 export function LockedFileRow({ file, returnFocus }: LockedFileRowProps) {
+  const t = useTranslations("items.actions");
   const fileSize = useFileSize();
   return (
     <li className="flex items-center gap-3 px-4 py-3">
@@ -26,7 +29,10 @@ export function LockedFileRow({ file, returnFocus }: LockedFileRowProps) {
         </p>
       </div>
       <Button asChild variant="ghost" size="icon">
-        <a href={file.downloadUrl} aria-label={`Download ${file.fileName}`}>
+        <a
+          href={file.downloadUrl}
+          aria-label={t("downloadNamed", { name: file.fileName })}
+        >
           <Download />
         </a>
       </Button>

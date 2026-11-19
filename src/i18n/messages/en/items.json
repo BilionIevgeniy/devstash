@@ -34,7 +34,8 @@
     "favoriteNamed": "Favorite {title}",
     "pinNamed": "Pin {title}",
     "copyNamed": "Copy {title}",
-    "deleteNamed": "Delete {title}"
+    "deleteNamed": "Delete {title}",
+    "downloadNamed": "Download {name}"
   },
   "delete": {
     "title": "Delete this item?",

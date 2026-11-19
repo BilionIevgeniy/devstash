@@ -1,5 +1,5 @@
 "use client";
-import { useFormatter } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 
 import { Download } from "lucide-react";
 
@@ -24,6 +24,7 @@ interface FileRowProps {
 }
 
 function FileRowActions({ item }: FileRowProps) {
+  const t = useTranslations("items.actions");
   const { isLocked, focusListTop } = useItemDrawer();
   const { file } = item;
 
@@ -48,7 +49,10 @@ function FileRowActions({ item }: FileRowProps) {
       />
       {file && (
         <Button asChild variant="ghost" size="icon">
-          <a href={file.downloadUrl} aria-label={`Download ${file.name}`}>
+          <a
+            href={file.downloadUrl}
+            aria-label={t("downloadNamed", { name: file.name })}
+          >
             <Download />
           </a>
         </Button>
