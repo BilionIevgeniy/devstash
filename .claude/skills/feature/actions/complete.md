@@ -13,12 +13,12 @@ The feature reaches `main` through a PR merged on GitHub after green `ci`, `inte
    - Keep anything not clearly done, and name the deleted items in the final message
    - Write nothing new into either for later: work found during the feature is done in it ("Found work" in context/ai-interaction.md); only what cannot be built goes to the before-live file, and what is too large goes into the Scope of the matching spec
    - Tick the feature in context/features/plan/README.md
-4. Commit on the feature branch (check `git branch --show-current` first):
+4. Commit what is left on the feature branch (check `git branch --show-current` first). The steps and the found work are already committed, one change per commit ("Commits" in context/ai-interaction.md):
    - Stage the feature's files by name, not `git add -A`
    - Check `git status`: a change that is not part of the feature stays unstaged, and the final message names it
    - Commit with a descriptive conventional message
 5. Before the push, handle the open Dependabot PRs ("Dependency updates (Dependabot)" in `context/ai-interaction.md`): merge the green groups on GitHub, then `git fetch` and `git merge origin/main` into the feature branch, and run the checks of step 1 again if anything came in. A major or a red bot PR is not merged in passing; the final message names it
-6. Push the feature branch and open the PR if there is none: `gh pr create --base main` (title = the main commit message)
+6. Push the feature branch and open the PR if there is none: `gh pr create --base main` (title = a conventional message for the whole feature)
 7. Wait for the `ci`, `integration` and `e2e` checks: `gh pr checks <number> --watch`
    - Red: fix, commit, push, wait again
    - No run starts within a few minutes (GitHub sometimes drops the PR event): `gh pr close <number>` and `gh pr reopen <number>`, then wait again
