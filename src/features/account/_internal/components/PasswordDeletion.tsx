@@ -11,9 +11,17 @@ import {
   AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
+import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
+
+// Mounted anew when its route shows again (useRemountOnReveal, ADR 0037): the
+// route stays mounted while hidden, and a password typed and left must not
+// wait in the page for the user's return.
+export function PasswordDeletion() {
+  return <PasswordDeletionBody key={useRemountOnReveal()} />;
+}
 
 // The body of the delete dialog for an account with a password.
-export function PasswordDeletion() {
+function PasswordDeletionBody() {
   const tActions = useTranslations("common.actions");
   const t = useTranslations("account");
   const [password, setPassword] = useState("");

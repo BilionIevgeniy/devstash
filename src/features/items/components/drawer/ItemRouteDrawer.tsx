@@ -10,6 +10,7 @@ import {
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
+import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { systemTypeNameForSlug } from "@/features/item-types/domain/item-type";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/form/DiscardChangesDialog";
@@ -42,7 +43,17 @@ const RouteDrawerContext = createContext<RouteDrawerContextValue | null>(null);
 // the sheet still open: the history has already moved, so going back again
 // would leave the list; only the focus goes back. Unsaved edits are lost on that Back, since the route
 // is already gone when the sheet hears of it.
+//
+// Mounted anew whenever its route shows again after Back and Forward
+// (useRemountOnReveal, ADR 0037): kept hidden, the page inside the sheet's
+// portal stayed hidden on return, an empty sheet over a page it had hidden.
 export function ItemRouteDrawer({ children }: { children: ReactNode }) {
+  return (
+    <RouteDrawerSheet key={useRemountOnReveal()}>{children}</RouteDrawerSheet>
+  );
+}
+
+function RouteDrawerSheet({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(true);
   const pendingDeleteRef = useRef<string | null>(null);
   const { guardOpenChange, setDirty, discardDialogProps } =

@@ -18,6 +18,7 @@ import {
 } from "@/features/auth/domain/password-reset";
 import type { FormActionState } from "@/features/auth/types";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
+import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -88,7 +89,13 @@ async function submit(formData: FormData): Promise<State> {
   return INITIAL_STATE;
 }
 
+// A password typed and left must not wait in the page for the user's return:
+// the route stays mounted while hidden (ADR 0037), so the form mounts anew.
 export function ChangePasswordForm() {
+  return <PasswordForm key={useRemountOnReveal()} />;
+}
+
+function PasswordForm() {
   const t = useTranslations("auth");
   const [state, formAction, isPending] = useActionState(
     (_previous: State, formData: FormData) => submit(formData),
