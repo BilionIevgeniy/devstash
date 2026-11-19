@@ -2,9 +2,9 @@ import type { BrowserContext, Page, Request } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 // What a test means by a quiet network: no request of the context still waits
-// for its answer, for QUIET_MS. Not `networkidle`: since Partial Prefetching
+// for its answer, for QUIET_MS. Not `networkidle`: since Cache Components
 // (ADR 0037), Chromium reports some prefetches as unfinished after their last
-// byte has arrived, so `networkidle` never comes. A sign-out needs only the
+// byte has arrived, so `networkidle` may never come. A sign-out needs only the
 // answers in: the session cookie comes with the headers.
 const QUIET_MS = 500;
 
