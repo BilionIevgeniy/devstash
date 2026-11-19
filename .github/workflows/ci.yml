@@ -129,7 +129,9 @@ jobs:
     # Pinned, not ubuntu-latest: the screenshot baselines of e2e/visual.spec.ts
     # are taken on this image, and a new one can render fonts differently.
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # A cold build (a new lockfile empties the Next cache) and the suite took
+    # 13 minutes in feature 21: 15 left no room.
+    timeout-minutes: 25
     # The same empty Postgres as the `integration` job, in a container of its
     # own: both jobs empty their database, so they cannot share one.
     services:
