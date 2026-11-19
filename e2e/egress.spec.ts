@@ -8,6 +8,7 @@ import {
   serverLog,
 } from "./support/ingest";
 import { expect, test } from "./support/test";
+import { waitForAnswers } from "./support/network";
 
 // What leaves the app (ADR 0016), checked on every run instead of by hand:
 // the test build sends Sentry's events to a stand-in ingest
@@ -130,10 +131,10 @@ test("a page in use sends nothing until an error happens, and stores nothing of 
 }) => {
   for (const path of ["/", "/dashboard", "/items/snippets", "/settings"]) {
     await page.goto(path);
-    await page.waitForLoadState("networkidle");
+    await waitForAnswers(page);
   }
   await page.getByRole("link", { name: "Favorites" }).first().click();
-  await page.waitForLoadState("networkidle");
+  await waitForAnswers(page);
 
   // The sentinel: once its event is in, anything sent before it would be too.
   await throwInBrowser(page, probeSecrets(), "Throw in a handler");

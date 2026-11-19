@@ -1,6 +1,7 @@
 import { expect, test } from "./support/test";
 import { signInFreshUser } from "./support/fresh-user";
 import { SIGNED_OUT } from "./support/storage-state";
+import { waitForAnswers } from "./support/network";
 
 // A fresh user, since signing out ends the session the saved state would hold.
 test.use({ storageState: SIGNED_OUT });
@@ -15,7 +16,7 @@ test("Sign out leads home, and the app then sends the visitor to sign-in", async
   // Every answer of a signed-in request sets the session cookie again, so one
   // still on its way after the sign-out would sign the browser back in (see
   // endSession in signed-out.spec.ts).
-  await page.waitForLoadState("networkidle");
+  await waitForAnswers(page);
   // The user area at the foot of the sidebar opens the account menu. The
   // first click is repeated until React has hydrated the trigger.
   const signOut = page.getByRole("menuitem", { name: "Sign out" });

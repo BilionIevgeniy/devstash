@@ -1,5 +1,6 @@
 import { serverLog } from "../support/ingest";
 import { test } from "../support/test";
+import { waitForAnswers } from "../support/network";
 
 // TTFB and LCP of a full load of the main app pages, and the database queries
 // each load makes, median of RUNS loads on the production build (docs/
@@ -27,11 +28,11 @@ test("lab numbers of the main app pages", async ({ page }) => {
     const queries: number[] = [];
     // One load first, so the instance is warm as on a busy server.
     await page.goto(path);
-    await page.waitForLoadState("networkidle");
+    await waitForAnswers(page);
     for (let run = 0; run < RUNS; run++) {
       const before = (await serverLog()).length;
       await page.goto(path);
-      await page.waitForLoadState("networkidle");
+      await waitForAnswers(page);
       const timing = await page.evaluate(
         () =>
           new Promise<{ ttfb: number; lcp: number }>((resolve) => {

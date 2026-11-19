@@ -1,6 +1,7 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "./support/test";
 import { createSnippet, itemHeading, uniqueTitle } from "./support/items";
+import { waitForAnswers } from "./support/network";
 
 // A session that ends while a page is open: the next Server Action must take
 // the user to sign-in, not show an error toast. The cookies are cleared only
@@ -27,7 +28,7 @@ async function recordErrorToasts(page: Page) {
 // page fires many (the prefetches of the sidebar links after a load). So the
 // session ends only once the network is quiet; then the toasts are recorded.
 async function endSession(page: Page) {
-  await page.waitForLoadState("networkidle");
+  await waitForAnswers(page);
   await page.context().clearCookies();
   await recordErrorToasts(page);
 }
