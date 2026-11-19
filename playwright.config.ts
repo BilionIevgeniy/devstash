@@ -38,10 +38,11 @@ export default defineConfig({
     // (a few hundred pixels) must fail, anti-aliasing noise must not.
     toHaveScreenshot: { maxDiffPixels: 100 },
   },
-  // CI never writes a baseline: a missing one fails, and the retry cannot pass
-  // against the picture the first attempt just wrote. New and changed ones come
-  // from the job's artifact (README, "End-to-end tests").
-  updateSnapshots: isCi ? "none" : "missing",
+  // A missing baseline is written and its test still fails; e2e/visual.spec.ts
+  // has no retry, so no second attempt passes against the picture the first
+  // one wrote. A changed one is never overwritten: its -actual.png goes to
+  // test-results/. Both reach the job's artifact (README, "End-to-end tests").
+  updateSnapshots: "missing",
   forbidOnly: isCi,
   retries: isCi ? 1 : 0,
   reporter: isCi ? [["list"], ["html", { open: "never" }]] : "list",

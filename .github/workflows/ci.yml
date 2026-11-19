@@ -196,8 +196,9 @@ jobs:
       - run: npm run test:e2e
       # The HTML report embeds the traces of the failed tests and of those that
       # failed once and passed on the retry, so it is kept in both cases.
-      # test-results/ holds the `-actual.png` of a missing or changed screenshot
-      # baseline, which is reviewed and committed (README, "End-to-end tests").
+      # A missing screenshot baseline is written into e2e/visual.spec.ts-snapshots/
+      # and a changed one leaves its `-actual.png` in test-results/: both are
+      # reviewed and committed from here (README, "End-to-end tests").
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
@@ -205,4 +206,5 @@ jobs:
           path: |
             playwright-report/
             test-results/
+            e2e/visual.spec.ts-snapshots/
           retention-days: 7
