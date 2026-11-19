@@ -11,6 +11,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { r2Endpoint } from "@/lib/vendors/r2-endpoint";
 
 export interface R2Object {
   size: number;
@@ -45,31 +46,6 @@ interface R2Config {
 }
 
 let config: R2Config | undefined;
-
-const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1"]);
-
-// The endpoint of the account, or R2_ENDPOINT for the stand-in of the
-// end-to-end tests (scripts/fake-r2.ts). The SDK's own AWS_ENDPOINT_URL_S3
-// loses to an explicit endpoint, so this is the one test hook in src
-// (ADR 0035). Only a loopback host is taken, in every environment: a stray
-// value on a deployment would send real users' files elsewhere.
-export function r2Endpoint(
-  accountId: string,
-  override: string | undefined,
-): { endpoint: string; forcePathStyle: boolean } {
-  if (!override) {
-    return {
-      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-      forcePathStyle: false,
-    };
-  }
-  if (!LOOPBACK_HOSTS.has(new URL(override).hostname)) {
-    throw new Error("R2_ENDPOINT must point at localhost");
-  }
-  // The stand-in serves /<bucket>/<key>: a bucket subdomain of localhost
-  // does not resolve everywhere.
-  return { endpoint: override, forcePathStyle: true };
-}
 
 // Created on first use so a build never needs the credentials.
 function getR2(): R2Config {

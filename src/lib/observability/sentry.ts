@@ -8,6 +8,7 @@ import {
   withScope,
 } from "@sentry/nextjs";
 import { errorDigest, safeError } from "@/lib/errors/error-summary";
+import { allowedSentryDsn } from "@/lib/observability/sentry-dsn";
 import {
   SAFE_MESSAGE_TAG,
   scrubEvent,
@@ -55,29 +56,10 @@ const EXTENSION_URLS = [
   /^safari(-web)?-extension:\/\//i,
 ];
 
-const EU_HOST_SUFFIX = ".de.sentry.io";
-const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1"]);
-
-// The privacy notice says the events stay in Sentry's EU region, and a DSN
-// pasted from an organization in another region would send them elsewhere, so
-// only a DSN of the EU region is used. Localhost is the stand-in ingest of the
-// check of what leaves the app (ADR 0016). The host is read, not matched in the
-// text: "https://k@evil.com/?x=.de.sentry.io" is not an EU DSN. A DSN that does
-// not parse is off, and never an exception in the start of the server or of
-// the page.
-function isAllowedDsn(dsn: string): boolean {
-  try {
-    const { hostname } = new URL(dsn);
-    return hostname.endsWith(EU_HOST_SUFFIX) || LOCAL_HOSTS.has(hostname);
-  } catch {
-    return false;
-  }
-}
-
 // What the server and the browser have in common. lib/observability/sentry-server.ts adds the
 // part that only exists on the server.
 export function sentryBaseOptions(dsn: string | undefined): InitOptions {
-  const allowed = dsn && isAllowedDsn(dsn) ? dsn : undefined;
+  const allowed = allowedSentryDsn(dsn);
   const environment = process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT;
   // A key that is present but undefined would override the SDK's own default
   // when the options are spread, so absent values are left out.
