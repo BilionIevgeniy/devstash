@@ -23,7 +23,7 @@ This is the common workflow that we will use for every single feature/fix. Each 
 9. **PR and CI** (`/feature complete`) - Push the branch, open the PR with `gh`, wait for the `ci`, `integration` and `e2e` checks to be green
 10. **Merge** (`/feature complete`) - Once the `ci`, `integration` and `e2e` checks are green, merge the PR on GitHub (`gh pr merge --merge --delete-branch`) without asking: it is the natural end of the task. The branch is deleted there; then update the local `main` and delete the local branch. A red or missing check means no merge
 
-Do NOT commit without permission, and not until `npm run test` is green and the build passes. Run the tests again right before the commit, not only earlier in the feature. If a test or the build fails, fix the issues first; never skip, disable or delete a test to get a commit through. `git commit`, `git merge` and `git push` run without a permission prompt, so this rule holds only because it is followed. `main` changes only through a PR merged on GitHub. That merge deploys and migrates production, so it happens only when every required check (`ci`, `integration`, `e2e`) is green; then it runs without asking me.
+Do NOT commit without permission. Before every commit `npm run format:check`, `npm run test`, `npm run typecheck` and `npm run lint` are green; before every push the whole set of step 5 is, run again right then, not only earlier in the feature. If a test or the build fails, fix the issues first; never skip, disable or delete a test to get a commit through. `git commit`, `git merge` and `git push` run without a permission prompt, so this rule holds only because it is followed. `main` changes only through a PR merged on GitHub. That merge deploys and migrates production, so it happens only when every required check (`ci`, `integration`, `e2e`) is green; then it runs without asking me.
 
 ### Working with review agents
 
@@ -80,7 +80,9 @@ We will create a new branch for every feature/fix. Name branch **feature/[featur
 
 - Ask before committing (don't auto-commit)
 - Use conventional commit messages (feat:, fix:, chore:, etc.)
-- Keep commits focused (one feature/fix per commit)
+- One change per commit. A feature is a series of such commits on its branch, joined by the merge commit of its PR: the steps of the plan, each found work and each review fix get commits of their own ("Found work" below)
+- The PR is merged with `--merge`, never squashed, so those commits stay apart; `git log --first-parent main` shows one line per feature
+- Published history is never rewritten: no rebase, amend or force-push of a pushed branch or of `main`
 - Never put "Generated With Claude" in the commit messages
 
 ## When Stuck
