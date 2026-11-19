@@ -34,9 +34,12 @@ interface ToggleConfig {
 // while the transition runs: on success the action's refresh brings the fresh
 // page and `sync` fixes the cached lists (ADR 0025) before it ends, so a row
 // the override hid is gone by then; on failure the override goes and the flag
-// falls back. `onSaved` runs in a transition of its own, because an update
-// after an await is outside the first one and would land after the override
-// has gone. The toast waits for the cache, so it never runs ahead of the list.
+// falls back. `onSaved` must land before the override goes, or a copy of the
+// item (the drawer's) shows the old value for a moment: it runs in a
+// transition of its own, after the await and inside the outer one, which
+// React commits before the outer transition ends (e2e/favorites.spec.ts
+// records every value of the drawer's star). The toast waits for the cache,
+// so it never runs ahead of the list.
 export function useOptimisticToggle(
   action: (id: string, value: boolean) => Promise<ActionResult>,
   { failCode, sync, onSaved, notify }: ToggleConfig,
