@@ -2,7 +2,6 @@
   "title": "Suche",
   "description": "Durchsuche deine Einträge und Sammlungen",
   "placeholder": "Einträge und Sammlungen durchsuchen …",
-  "trigger": "Einträge und Sammlungen durchsuchen",
   "items": "Einträge",
   "collections": "Sammlungen",
   "noResults": "Keine Ergebnisse.",

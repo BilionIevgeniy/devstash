@@ -57,22 +57,31 @@ export function CommandPalette() {
 
   return (
     <>
-      <Button
-        ref={triggerRef}
-        variant="outline"
-        aria-haspopup="dialog"
-        aria-label={t("trigger")}
-        className="size-8 justify-center font-normal text-muted-foreground lg:w-full lg:max-w-md lg:min-w-0 lg:shrink lg:justify-start"
-        onClick={open}
-      >
-        <Search />
-        {/* Icon-only below lg: beside an open sidebar at 768px the field had
-            room for a few letters of its placeholder. The label stays. */}
-        <span className="hidden truncate lg:inline">{t("placeholder")}</span>
-        <kbd className="ml-auto hidden rounded border px-1.5 text-xs lg:inline">
+      {/* The ⌘K hint sits beside the button, not in it: the button's name is
+          its visible label, and a hint inside would be part of that label
+          (WCAG 2.5.3, Label in Name). aria-keyshortcuts says it instead. */}
+      <div className="relative lg:w-full lg:max-w-md lg:min-w-0 lg:shrink">
+        <Button
+          ref={triggerRef}
+          variant="outline"
+          aria-haspopup="dialog"
+          aria-keyshortcuts="Meta+K Control+K"
+          aria-label={t("placeholder")}
+          className="size-8 justify-center font-normal text-muted-foreground lg:w-full lg:justify-start lg:pr-12"
+          onClick={open}
+        >
+          <Search />
+          {/* Icon-only below lg: beside an open sidebar at 768px the field had
+              room for a few letters of its placeholder. The label stays. */}
+          <span className="hidden truncate lg:inline">{t("placeholder")}</span>
+        </Button>
+        <kbd
+          aria-hidden
+          className="pointer-events-none absolute top-1/2 right-2 hidden -translate-y-1/2 rounded border px-1.5 text-xs text-muted-foreground lg:inline"
+        >
           ⌘K
         </kbd>
-      </Button>
+      </div>
       <PaletteDialog
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}

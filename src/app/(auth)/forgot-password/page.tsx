@@ -16,7 +16,7 @@ export default async function ForgotPasswordPage() {
         {t("remembered")}{" "}
         <Link
           href={SIGN_IN_PATH}
-          className="text-foreground underline-offset-4 hover:underline"
+          className="text-foreground underline underline-offset-4 hover:decoration-2"
         >
           {t("signIn")}
         </Link>
