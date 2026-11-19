@@ -45,3 +45,7 @@ export function overLimitUserEmail(runEmail: string): string {
 export function visualUserEmail(runEmail: string): string {
   return `visual-${runEmail}`;
 }
+
+// The favorites of the Pro user of the 500-row profile of /favorites
+// (scripts/e2e-fixture.ts, e2e/perf/; not part of CI).
+export const E2E_MANY_FAVORITES = 500;
