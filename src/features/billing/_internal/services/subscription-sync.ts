@@ -16,6 +16,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import {
   getStripe,
   isStripeNotFound,
+  type StripeRequestOptions,
   type StripeSubscription,
 } from "@/lib/vendors/stripe";
 
@@ -48,9 +49,12 @@ function toSnapshot(subscription: StripeSubscription): SubscriptionSnapshot {
   };
 }
 
-async function retrieveSubscription(id: string) {
+async function retrieveSubscription(
+  id: string,
+  request?: StripeRequestOptions,
+) {
   try {
-    return await getStripe().subscriptions.retrieve(id);
+    return await getStripe().subscriptions.retrieve(id, undefined, request);
   } catch (error) {
     if (isStripeNotFound(error)) return null;
     throw error;
@@ -101,10 +105,11 @@ async function endMissing(
 async function syncInLock(
   customerId: string,
   subscriptionId: string,
+  request?: StripeRequestOptions,
 ): Promise<SyncOutcome> {
   return prisma.$transaction(async (tx) => {
     await lockForTransaction(tx, `stripe-customer:${customerId}`);
-    const subscription = await retrieveSubscription(subscriptionId);
+    const subscription = await retrieveSubscription(subscriptionId, request);
     if (!subscription) return endMissing(tx, customerId, subscriptionId);
 
     const snapshot = toSnapshot(subscription);
@@ -131,12 +136,19 @@ async function syncInLock(
   }, LOCKED_TRANSACTION);
 }
 
+interface SyncOptions {
+  /** No warning for a subscription with no row: the caller counts them. */
+  quiet?: boolean;
+  /** For a caller with a deadline of its own; else the SDK's defaults. */
+  request?: StripeRequestOptions;
+}
+
 export async function syncSubscription(
   customerId: string,
   subscriptionId: string,
-  { quiet = false }: { quiet?: boolean } = {},
+  { quiet = false, request }: SyncOptions = {},
 ): Promise<SyncOutcome> {
-  const outcome = await syncInLock(customerId, subscriptionId);
+  const outcome = await syncInLock(customerId, subscriptionId, request);
   if (outcome === "noRow" && !quiet) {
     logger.warn("No row took a subscription", { customerId, subscriptionId });
   }

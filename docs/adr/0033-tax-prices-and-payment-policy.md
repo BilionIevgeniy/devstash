@@ -60,3 +60,15 @@ How the job behaves:
 - **A new Stripe setup:** the EUR prices and Stripe Tax must be set up in test mode before a purchase works. Until then the new session parameters make Checkout refuse the session.
 - **Stripe's API budget:** the job reads Stripe once per subscription per day. At this size that is well inside Stripe's limits. A few thousand subscribers would need the read spread over days, or a cursor kept between runs.
 - **Closed risks:** "Lost webhooks" in `docs/architecture.md` is closed. "Two open Checkout tabs" is narrowed (ADR 0032).
+
+## Amendment (2026-11-24, feature 23)
+
+The first pass started at the least recently written row, and a row that is right is not written. So every run started at the same rows, and the second pass ran only if the first one got to the end.
+
+- **Order:** the rows are read by id, an order no write changes, and the run starts at another place every day (`billing/domain/reconciliation.ts`, the golden ratio over the day number). A run that gets through one row in _n_ has seen them all after about _n_ runs, at any number of rows; a fixed capacity still needs more days for more rows. Nothing is kept between two runs, so no column and no migration.
+- **Time:** the first pass has 70 % of what is left of the job's time, and the second one always runs, with the rest and whatever the first left over. It checks the deadline before each subscription, since a page holds 100. Every Stripe request of the job gives up after 8 seconds and is not retried: the SDK's own 80 seconds would outlive the run.
+- **The second pass has no turn.** Stripe lists the newest subscriptions first, and a lost checkout is a recent one. Cut short for days, it would not see an old one.
+- **One row that fails** is logged with its ids and counted as `failed`, and the next one is tried; it ended the whole job before. A failure of Stripe's own list still fails the job (500). So an outage that breaks every single read but not the list answers 200, with the failures in the log, in Sentry and in the count.
+- **The report:** `checked`, `corrected`, `missingRow`, `duplicate` and `failed`.
+
+This replaces "the least recently written first" of pass 1 and the consequence that a few thousand subscribers need a cursor.

@@ -39,6 +39,8 @@ export interface CronJobReport {
 export interface CronJob {
   /** A constant: it goes into the log message. */
   name: string;
+  /** What the job may take; what the jobs before it left over comes on top. */
+  budgetMs: number;
   run: (context: CronContext) => Promise<CronJobReport>;
 }
 
@@ -47,18 +49,23 @@ export interface CronRunResult {
   failed: string[];
 }
 
-// Runs the jobs one after another with one clock. A failed job is logged and
+// Runs the jobs one after another with one clock. A job's deadline is the sum
+// of the budgets up to its own, from the start of the run: time a job leaves
+// over goes to the next ones, and the whole run never plans for more than the
+// sum. So a slow job cannot take the time of the ones after it. A failed job is logged and
 // the next one still runs; the caller answers with an error when any failed.
 // Vercel retries nothing and may run a job twice, so every job is idempotent.
 export async function runCronJobs(
   jobs: CronJob[],
-  context: CronContext,
+  now: Date,
 ): Promise<CronRunResult> {
   const result: CronRunResult = { reports: {}, failed: [] };
+  let deadline = now.getTime();
 
   for (const job of jobs) {
+    deadline += job.budgetMs;
     try {
-      const report = await job.run(context);
+      const report = await job.run({ now, deadline });
       result.reports[job.name] = report;
       const log = report.stoppedEarly ? logger.warn : logger.info;
       log(

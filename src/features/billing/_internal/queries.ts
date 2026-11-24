@@ -34,18 +34,17 @@ export interface ReconcileRow {
 }
 
 // A cross-user read for the daily reconciliation only (ADR 0030, rule 4 of
-// architecture-rules.md): every row that names a subscription, the least
-// recently written first, so a run cut short by the deadline still reaches
-// the oldest rows. Read once before the job writes: a corrected row moves to
-// the end of this order, which would throw a cursor off. One row per paying
-// customer, so the list stays small; the job acts on each through the sync.
+// architecture-rules.md): every row that names a subscription, by id, an order
+// no write changes, so the daily start (domain/reconciliation.ts) goes round
+// all of them. One row per paying customer, so the list stays small; the job
+// acts on each through the sync.
 export async function getReconcileRows(): Promise<ReconcileRow[]> {
   const rows = await prisma.subscription.findMany({
     where: {
       stripeCustomerId: { not: null },
       stripeSubscriptionId: { not: null },
     },
-    orderBy: [{ updatedAt: "asc" }, { id: "asc" }],
+    orderBy: { id: "asc" },
     select: { stripeCustomerId: true, stripeSubscriptionId: true },
   });
   return rows.flatMap(({ stripeCustomerId, stripeSubscriptionId }) =>
@@ -55,11 +54,17 @@ export async function getReconcileRows(): Promise<ReconcileRow[]> {
   );
 }
 
+/** What a customer's row says, for the reconciliation's second pass. */
+export interface RowSubscription {
+  subscriptionId: string | null;
+  status: string;
+}
+
 // The subscription each customer's row holds and its status, for the
 // reconciliation's second pass; a customer with no row is missing from the map.
 export async function getRowSubscriptions(
   customerIds: string[],
-): Promise<Map<string, { subscriptionId: string | null; status: string }>> {
+): Promise<Map<string, RowSubscription>> {
   const rows = await prisma.subscription.findMany({
     where: { stripeCustomerId: { in: customerIds } },
     select: {

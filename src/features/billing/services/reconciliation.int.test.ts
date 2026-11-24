@@ -81,6 +81,7 @@ describe("reconcileSubscriptions", () => {
       corrected: 1,
       missingRow: 0,
       duplicate: 0,
+      failed: 0,
     });
     expect(await snapshotTenant(t.b.userId)).toEqual(before);
   });

@@ -33,14 +33,14 @@ describe("isCronRequest", () => {
 });
 
 describe("runCronJobs", () => {
-  const context = { now: new Date(), deadline: Date.now() + 45_000 };
+  const NOW = new Date("2026-11-24T03:00:00Z");
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  function job(name: string, run: CronJob["run"]): CronJob {
-    return { name, run };
+  function job(name: string, run: CronJob["run"], budgetMs = 10_000): CronJob {
+    return { name, budgetMs, run };
   }
 
   it("runs every job in order with the same clock and collects the reports", async () => {
@@ -56,10 +56,10 @@ describe("runCronJobs", () => {
           return { counts: { deleted: 0 }, stoppedEarly: false };
         }),
       ],
-      context,
+      NOW,
     );
 
-    const at = context.now.toISOString();
+    const at = NOW.toISOString();
     expect(seen).toEqual([`first ${at}`, `second ${at}`]);
     expect(result).toEqual({
       reports: {
@@ -82,7 +82,7 @@ describe("runCronJobs", () => {
         }),
         job("next", async () => ({ counts: {}, stoppedEarly: false })),
       ],
-      context,
+      NOW,
     );
 
     expect(result.failed).toEqual(["broken"]);
@@ -100,11 +100,30 @@ describe("runCronJobs", () => {
           stoppedEarly: true,
         })),
       ],
-      context,
+      NOW,
     );
 
     expect(warn).toHaveBeenCalledWith("Cron job long stopped at the deadline", {
       numbers: { deleted: 9 },
     });
+  });
+
+  // A job that overruns, or leaves time over, moves no one's deadline.
+  it("gives each job its own time, what is left over going on to the next", async () => {
+    const deadlines: number[] = [];
+    const run: CronJob["run"] = async ({ deadline }) => {
+      deadlines.push(deadline - NOW.getTime());
+      return { counts: {}, stoppedEarly: false };
+    };
+    await runCronJobs(
+      [
+        job("first", run, 5_000),
+        job("second", run, 10_000),
+        job("third", run, 20_000),
+      ],
+      NOW,
+    );
+
+    expect(deadlines).toEqual([5_000, 15_000, 35_000]);
   });
 });
