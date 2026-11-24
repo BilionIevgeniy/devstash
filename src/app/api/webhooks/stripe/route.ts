@@ -1,6 +1,6 @@
 import { handleStripeEvent } from "@/features/billing/services/webhook";
 import { fail } from "@/lib/errors/action-result";
-import { jsonError } from "@/lib/http/api-response";
+import { jsonError, jsonOk } from "@/lib/http/api-response";
 import { logger } from "@/lib/observability/logger";
 import {
   constructStripeEvent,
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
   try {
     await handleStripeEvent(event);
-    return Response.json({ received: true });
+    return jsonOk({ received: true });
   } catch (error) {
     // The log and Sentry are the only record of an event: there is no event table.
     await logger.error(`Stripe event of type ${event.type} failed`, {

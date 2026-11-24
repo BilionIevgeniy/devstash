@@ -6,7 +6,7 @@ import { PrivacySettingsButton } from "@/components/common/consent/PrivacySettin
 import { AppToaster } from "@/components/common/providers/AppToaster";
 import { I18nProvider } from "@/components/common/providers/I18nProvider";
 import { FreshAuthDocument } from "@/features/auth/components/FreshAuthDocument";
-import { messagesFor } from "@/i18n/messages";
+import { appMessages } from "@/i18n/messages";
 
 // The description of every page under this layout, in its language; the
 // title stays the root layout's "DevStash". Never indexed (a reset link
@@ -32,7 +32,7 @@ export default async function AuthLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
 
   return (
-    <I18nProvider locale={locale} messages={messagesFor(locale)}>
+    <I18nProvider locale={locale} messages={appMessages(locale)}>
       <div lang={locale} className="flex flex-1 flex-col pb-(--consent-inset)">
         {children}
         {/* Withdrawing consent is as easy here as on every other page. */}

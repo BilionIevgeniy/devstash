@@ -6,18 +6,29 @@ import {
   AI_BY_USER_DAY,
   AI_BY_USER_HOUR,
 } from "@/features/ai/domain/rate-limits";
-import { tooManyAttemptsParams } from "@/lib/http/retry-after";
+import {
+  getRetryAfterSeconds,
+  tooManyAttemptsParams,
+} from "@/lib/http/retry-after";
 import { getEntitlements } from "@/features/billing/queries";
 import { fail, type Failure } from "@/lib/errors/action-result";
 import { consumeRateLimit } from "@/lib/vendors/rate-limit";
 
-export type AiRefusalReason = "not-pro" | "limited";
+// The failure goes to the client as it is; the seconds are for the route's
+// Retry-After header, never for the body.
+export type AiRefusal =
+  | { reason: "not-pro"; failure: Failure }
+  | { reason: "limited"; failure: Failure; retryAfterSeconds: number };
 
 export type AiAccess =
-  { success: true; error: null } | (Failure & { reason: AiRefusalReason });
+  { success: true } | { success: false; refusal: AiRefusal };
 
-function refused(failure: Failure, reason: AiRefusalReason): AiAccess {
-  return { ...failure, reason };
+function limited(failure: Failure, reset: number, now: number): AiAccess {
+  const retryAfterSeconds = getRetryAfterSeconds(reset, now);
+  return {
+    success: false,
+    refusal: { reason: "limited", failure, retryAfterSeconds },
+  };
 }
 
 // The check every AI operation starts with, in the order of presignUpload:
@@ -27,23 +38,27 @@ function refused(failure: Failure, reason: AiRefusalReason): AiAccess {
 // unchecked. A past_due subscription passes: PRO_STATUSES grants Pro there.
 export async function checkAiAccess(userId: string): Promise<AiAccess> {
   const { isPro } = await getEntitlements(userId);
-  if (!isPro) return refused(fail("aiProOnly"), "not-pro");
+  if (!isPro) {
+    return {
+      success: false,
+      refusal: { reason: "not-pro", failure: fail("aiProOnly") },
+    };
+  }
 
   const hour = await consumeRateLimit(AI_BY_USER_HOUR, userId);
+  const now = Date.now();
   if (!hour.success) {
-    return refused(
-      fail("tooManyAttempts", tooManyAttemptsParams(hour.reset, Date.now())),
-      "limited",
-    );
+    const params = tooManyAttemptsParams(hour.reset, now);
+    return limited(fail("tooManyAttempts", params), hour.reset, now);
   }
 
   // Worded apart: the shared message counts in minutes, which reads badly
   // for a window of a day.
   const day = await consumeRateLimit(AI_BY_USER_DAY, userId);
-  if (!day.success) return refused(fail("aiDailyLimit"), "limited");
+  if (!day.success) return limited(fail("aiDailyLimit"), day.reset, now);
 
   const app = await consumeRateLimit(AI_BY_APP_DAY, AI_APP_LIMIT_KEY);
-  if (!app.success) return refused(fail("aiAppLimit"), "limited");
+  if (!app.success) return limited(fail("aiAppLimit"), app.reset, now);
 
-  return { success: true, error: null };
+  return { success: true };
 }

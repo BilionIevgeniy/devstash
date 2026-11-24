@@ -15,12 +15,7 @@ import {
   SUMMARY_INSTRUCTIONS,
 } from "@/features/ai/domain/summary";
 import { summarySchema, type AiItemInput } from "@/features/ai/schemas";
-import {
-  fail,
-  failFrom,
-  ok,
-  type OperationResult,
-} from "@/lib/errors/action-result";
+import { fail, ok, type OperationResult } from "@/lib/errors/action-result";
 import { generateStructured } from "@/lib/vendors/openai";
 
 export type SummarizeItemResult = OperationResult<string>;
@@ -32,7 +27,7 @@ export async function summarizeItem(
   { title, content }: AiItemInput,
 ): Promise<SummarizeItemResult> {
   const access = await checkAiAccess(userId);
-  if (!access.success) return failFrom(access);
+  if (!access.success) return access.refusal.failure;
 
   try {
     const output = await generateStructured({

@@ -41,6 +41,7 @@ describe("POST /api/webhooks/stripe", () => {
     const response = await call();
 
     expect(response.status).toBe(200);
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store");
     expect(constructStripeEvent).toHaveBeenCalledWith(
       "the raw body",
       "t=1,v1=abc",

@@ -57,6 +57,10 @@ export class FakeXhr {
     this.onload?.();
   }
 
+  expire() {
+    if (!this.aborted) this.ontimeout?.();
+  }
+
   fail() {
     if (!this.aborted) this.onerror?.();
   }

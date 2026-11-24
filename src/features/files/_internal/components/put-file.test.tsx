@@ -62,6 +62,29 @@ describe("startPut", () => {
     expect(onDone).toHaveBeenCalledExactlyOnceWith(false);
   });
 
+  it("is done as failed when the upload stalls", () => {
+    const { request, onDone } = put();
+
+    expect(request.timeout).toBe(60_000);
+    request.expire();
+
+    expect(onDone).toHaveBeenCalledExactlyOnceWith(false);
+  });
+
+  // A slow upload is not a stalled one; the length may be unknown.
+  it("moves the time limit on with every progress", () => {
+    const now = vi.spyOn(performance, "now").mockReturnValue(1_000);
+    const { request } = put();
+
+    now.mockReturnValue(31_000);
+    request.progress(1, 3);
+    expect(request.timeout).toBe(90_000);
+
+    now.mockReturnValue(81_000);
+    request.progress(2, 0, false);
+    expect(request.timeout).toBe(140_000);
+  });
+
   // The caller that aborts has already moved on.
   it("reports nothing for an abort", () => {
     const { request, onDone } = put();
