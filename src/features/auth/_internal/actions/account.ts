@@ -6,9 +6,8 @@ import { changePasswordSchema } from "@/features/auth/schemas";
 import { changeUserPassword } from "@/features/auth/services/account";
 import type { AuthActionState } from "@/features/auth/types";
 import { logger } from "@/lib/observability/logger";
-import { fail, ok } from "@/lib/errors/action-result";
+import { fail, ok, type ActionResult } from "@/lib/errors/action-result";
 import { firstIssue } from "@/lib/errors/validation";
-import { SIGN_IN_AFTER_PASSWORD_CHANGE_PATH } from "@/features/auth/domain/auth-paths";
 
 const SUCCESS: AuthActionState = ok();
 
@@ -44,6 +43,9 @@ export async function changePassword(
 // with the new password, and the sign-in page says that it changed. No session
 // check: signing out is all it does, harmless for a caller with no session, and
 // Next refuses a Server Action from another origin.
-export async function signOutAfterPasswordChange(): Promise<void> {
-  await signOut({ redirectTo: SIGN_IN_AFTER_PASSWORD_CHANGE_PATH });
+// The browser then loads the sign-in page as a new document (leaveSession in
+// ChangePasswordForm, ADR 0037).
+export async function signOutAfterPasswordChange(): Promise<ActionResult> {
+  await signOut({ redirect: false });
+  return ok();
 }

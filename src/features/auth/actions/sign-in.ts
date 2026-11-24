@@ -1,7 +1,6 @@
 "use server";
 
 import { AuthError, CredentialsSignin } from "next-auth";
-import { getLocale } from "next-intl/server";
 import { headers } from "next/headers";
 import { redirect, RedirectType } from "next/navigation";
 import { signIn, signOut } from "@/features/auth/nextauth/auth";
@@ -25,9 +24,13 @@ import {
   getIpRateLimitStatus,
   getRateLimitStatus,
 } from "@/lib/vendors/rate-limit";
-import { fail, ok, type Failure } from "@/lib/errors/action-result";
+import {
+  fail,
+  ok,
+  type ActionResult,
+  type Failure,
+} from "@/lib/errors/action-result";
 import { firstIssue } from "@/lib/errors/validation";
-import { homePath } from "@/i18n/config";
 
 // The sign-in error only carries a code, so the time to wait is read from the
 // counters; when none can be read the message simply has no time in it.
@@ -80,16 +83,23 @@ export async function signInWithGitHub(formData: FormData): Promise<void> {
   await signIn("github", { redirectTo });
 }
 
-// To the homepage in the user's language: the locale cookie is a preference,
-// not part of the session, and outlives the sign-out (ADR 0024).
-export async function signOutUser(): Promise<void> {
-  const home = homePath(await getLocale());
-  await signOut({ redirectTo: home });
+// Ends the session and leaves the navigation to the browser, which loads the
+// homepage of the user's language as a new document (leaveSession, ADR 0037):
+// a redirect here would be a soft navigation that keeps the user's hidden
+// routes for Back. Deleting the cookie re-renders the current page, which may
+// redirect to sign-in on its own; the caller leaves on that too.
+export async function signOutUser(): Promise<ActionResult> {
+  await signOut({ redirect: false });
+  return ok();
 }
 
 // Signs out so the user can sign in with another account, then leads to the
 // sign-in page, which continues to the form's path. Replace and not signOut's
-// own redirect, a push: Back must not lead to a page of the old session.
+// own redirect, a push: Back must not lead to a page of the old session. A
+// redirect and not leaveSession: /switch-account is reached only by a
+// document load (the GitHub callback, an email link), in (auth), so no route
+// of the old user is mounted; a soft link to it from the app would need
+// leaveSession (ADR 0037).
 export async function switchAccount(formData: FormData): Promise<void> {
   const callbackPath = callbackPathSchema.parse(formData.get("callbackUrl"));
   await signOut({ redirect: false });

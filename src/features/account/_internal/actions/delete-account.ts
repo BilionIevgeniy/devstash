@@ -1,18 +1,16 @@
 "use server";
 
 import { getLocale } from "next-intl/server";
-import { redirect, RedirectType } from "next/navigation";
 
 import { deleteAccountSchema } from "@/features/account/schemas";
 import { deleteAccount as deleteUserAccount } from "@/features/account/_internal/services/delete-account";
 import { signOut } from "@/features/auth/nextauth/auth";
 import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { sendAccountDeletionLink } from "@/features/auth/services/account-deletion-link";
-import { fail, type ActionResult } from "@/lib/errors/action-result";
+import { fail, ok, type ActionResult } from "@/lib/errors/action-result";
 import { getAppOrigin } from "@/lib/http/app-url";
 import { logger } from "@/lib/observability/logger";
 import { firstIssue } from "@/lib/errors/validation";
-import { homePath } from "@/i18n/config";
 
 interface DeleteAccountInput {
   password?: string;
@@ -42,13 +40,11 @@ export async function deleteAccount(
     return fail("generic");
   }
 
-  // Outside the try: redirect() throws, and the catch above would turn that
-  // into an error on a deleted account. Replace and not signOut's own redirect,
-  // a push in an action: Back must not lead to the settings of a deleted account.
-  // The homepage in the user's language: the locale cookie outlives the account.
-  const home = homePath(await getLocale());
+  // The browser then loads the homepage as a new document (leaveSession in
+  // useDeleteAccount, ADR 0037): a redirect would be a soft navigation that
+  // keeps the settings of a deleted account mounted for Back.
   await signOut({ redirect: false });
-  redirect(home, RedirectType.replace);
+  return ok();
 }
 
 // Emails the link that confirms deleting an account with no password, to the

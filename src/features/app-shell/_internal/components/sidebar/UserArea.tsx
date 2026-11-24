@@ -12,7 +12,7 @@ import {
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
-import { signOutUser } from "@/features/auth/actions/sign-in";
+import { useSignOut } from "@/features/auth/components/hooks/use-sign-out";
 import { LanguageMenu } from "@/features/app-shell/_internal/components/sidebar/LanguageMenu";
 import { UserAvatar } from "@/features/auth/components/UserAvatar";
 import {
@@ -39,6 +39,7 @@ interface UserAreaProps {
 
 export function UserArea({ user }: UserAreaProps) {
   const t = useTranslations("shell");
+  const signOut = useSignOut();
 
   return (
     <div className="shrink-0 border-t p-2">
@@ -101,7 +102,7 @@ export function UserArea({ user }: UserAreaProps) {
           <DropdownMenuSeparator />
           <LanguageMenu />
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => signOutUser()}>
+          <DropdownMenuItem onSelect={() => void signOut()}>
             <LogOut />
             {t("signOut")}
           </DropdownMenuItem>

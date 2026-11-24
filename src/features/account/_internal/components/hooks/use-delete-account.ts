@@ -1,8 +1,11 @@
 import { useState, useTransition } from "react";
-import { unstable_rethrow } from "next/navigation";
+import { useLocale } from "next-intl";
 
 import { deleteAccount } from "@/features/account/_internal/actions/delete-account";
+import { leaveSession } from "@/features/auth/components/leave-session";
+import { homePath } from "@/i18n/config";
 import type { ErrorRef } from "@/i18n/error-codes";
+import { isNavigationError } from "@/lib/errors/navigation-error";
 
 export interface DeleteAccountInput {
   password?: string;
@@ -10,23 +13,35 @@ export interface DeleteAccountInput {
 }
 
 // The delete of the dialog's password body and of the deletion link's page. A
-// success ends in a redirect, which must go on; a refusal stays on screen.
+// success loads the homepage as a new document (leaveSession, ADR 0037) and
+// stays pending until it does, so nothing can be sent on a deleted account; a
+// refusal stays on screen. The action's cookie deletion re-renders the page,
+// which can redirect to sign-in on its own: that redirect is left the same
+// way, never followed as a soft navigation, so no rethrow here.
 export function useDeleteAccount() {
   const [isPending, startTransition] = useTransition();
+  const [isLeaving, setIsLeaving] = useState(false);
   const [error, setError] = useState<ErrorRef | null>(null);
+  const home = homePath(useLocale());
+
+  function leave() {
+    setIsLeaving(true);
+    leaveSession(home);
+  }
 
   function submit(input: DeleteAccountInput) {
     setError(null);
     startTransition(async () => {
       try {
         const result = await deleteAccount(input);
-        if (!result.success) setError(result);
+        if (result.success) leave();
+        else setError(result);
       } catch (error) {
-        unstable_rethrow(error);
-        setError({ error: "generic" });
+        if (isNavigationError(error)) leave();
+        else setError({ error: "generic" });
       }
     });
   }
 
-  return { isPending, error, submit };
+  return { isPending: isPending || isLeaving, error, submit };
 }

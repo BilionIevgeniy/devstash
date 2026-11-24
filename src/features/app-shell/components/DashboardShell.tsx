@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { AppFooter } from "@/features/app-shell/_internal/components/AppFooter";
+import { useReloadOnRestore } from "@/features/auth/components/hooks/use-reload-on-restore";
 
 interface DashboardShellProps {
   sidebar: ReactNode;
@@ -38,6 +39,9 @@ export function DashboardShell({
   children,
 }: DashboardShellProps) {
   const t = useTranslations("shell");
+  // Back to an app page from the browser's back-forward cache after a
+  // sign-out must not show the ended session's data.
+  useReloadOnRestore();
   const locale = useLocale();
   const [isSidebarOpen, setIsSidebarOpen] = useState(defaultSidebarOpen);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);

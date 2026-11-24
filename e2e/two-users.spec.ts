@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { createFreshUser, signInFreshUser } from "./support/fresh-user";
 import { createSnippet, uniqueTitle } from "./support/items";
-import { signInThroughForm } from "./support/sign-in";
+import { signInThroughForm, signOutThroughMenu } from "./support/sign-in";
 import { SIGNED_OUT } from "./support/storage-state";
 import { expect, test } from "./support/test";
 import { waitForAnswers } from "./support/network";
@@ -36,16 +36,17 @@ function linkName(path: string): RegExp {
 }
 
 async function signOut(page: Page) {
-  // An answer still on its way after the sign-out would set the session
-  // cookie again (endSession in signed-out.spec.ts).
-  await waitForAnswers(page);
-  const item = page.getByRole("menuitem", { name: "Sign out" });
-  await expect(async () => {
-    await page.getByRole("button", { name: /E2E Tester/ }).click();
-    await expect(item).toBeVisible({ timeout: 2_000 });
-  }).toPass();
-  await item.click();
+  await signOutThroughMenu(page, {
+    trigger: page.getByRole("button", { name: /E2E Tester/ }),
+    item: "Sign out",
+  });
   await expect(page).toHaveURL(/:\d+\/$/);
+}
+
+declare global {
+  interface Window {
+    __sameDocument?: boolean;
+  }
 }
 
 test("the next user of the tab sees none of the last one's data or plan", async ({
@@ -58,8 +59,16 @@ test("the next user of the tab sees none of the last one's data or plan", async 
   await visit(page);
   await signOut(page);
 
+  // The sign-out loaded the homepage as a new document. From here on the tab
+  // keeps it: B signs in through the homepage's link, and the marker proves at
+  // the end that no page load dropped what A could have left in it.
+  await page.evaluate(() => {
+    window.__sameDocument = true;
+  });
   const emailOfB = createFreshUser("free");
-  await signInThroughForm(page, emailOfB);
+  await signInThroughForm(page, emailOfB, undefined, {
+    fromCurrentPage: true,
+  });
   await expect(page).toHaveURL(/\/dashboard$/);
   const sidebar = page.getByRole("complementary");
   await expect(sidebar.getByText("Free", { exact: true })).toBeVisible();
@@ -77,4 +86,5 @@ test("the next user of the tab sees none of the last one's data or plan", async 
   await expect(
     page.getByRole("button", { name: new RegExp(emailOfB) }),
   ).toBeVisible();
+  expect(await page.evaluate(() => window.__sameDocument)).toBe(true);
 });

@@ -8,20 +8,19 @@ import {
 } from "@/features/auth/domain/password-reset";
 import type { AuthActionState } from "@/features/auth/types";
 
-import { CatchBoundary } from "../../../../test/catch-boundary";
-
-const { changePassword, signOutAfterPasswordChange, rethrow } = vi.hoisted(
-  () => ({
+const { changePassword, signOutAfterPasswordChange, rethrow, leaveSession } =
+  vi.hoisted(() => ({
     changePassword: vi.fn(),
     signOutAfterPasswordChange: vi.fn(),
     rethrow: vi.fn(),
-  }),
-);
+    leaveSession: vi.fn(),
+  }));
 vi.mock("@/features/auth/_internal/actions/account", () => ({
   changePassword,
   signOutAfterPasswordChange,
 }));
 vi.mock("next/navigation", () => ({ unstable_rethrow: rethrow }));
+vi.mock("@/features/auth/components/leave-session", () => ({ leaveSession }));
 
 import { ChangePasswordForm } from "@/features/auth/components/ChangePasswordForm";
 
@@ -164,21 +163,29 @@ describe("ChangePasswordForm", () => {
     expect(await screen.findByRole("alert")).toBeInTheDocument();
   });
 
-  it("signs the user out once the password changed; the sign-in page confirms it", async () => {
+  it("signs out, then loads the sign-in page that confirms the change, locked until then", async () => {
     changePassword.mockResolvedValue(SUCCESS);
-    signOutAfterPasswordChange.mockResolvedValue(undefined);
+    signOutAfterPasswordChange.mockResolvedValue(SUCCESS);
     const user = userEvent.setup();
     render(<ChangePasswordForm />);
 
     await fillAndSubmit(user);
 
-    await waitFor(() => expect(signOutAfterPasswordChange).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(leaveSession).toHaveBeenCalledExactlyOnceWith(
+        "/sign-in?notice=password-changed",
+      ),
+    );
+    expect(signOutAfterPasswordChange).toHaveBeenCalled();
+    expect(
+      screen.getByRole("button", { name: "Updating password…" }),
+    ).toBeDisabled();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("empties the fields once the password is changed", async () => {
     changePassword.mockResolvedValue(SUCCESS);
-    signOutAfterPasswordChange.mockResolvedValue(undefined);
+    signOutAfterPasswordChange.mockResolvedValue(SUCCESS);
     const user = userEvent.setup();
     render(<ChangePasswordForm />);
 
@@ -206,26 +213,22 @@ describe("ChangePasswordForm", () => {
     expect(screen.getByLabelText("Current password")).toHaveValue("");
   });
 
-  it("lets the sign-out's redirect leave the form instead of showing an alert", async () => {
-    const redirect = new Error("NEXT_REDIRECT");
+  it("leaves the same way when the page's re-render redirects, never as a soft navigation", async () => {
     changePassword.mockResolvedValue(SUCCESS);
-    signOutAfterPasswordChange.mockRejectedValue(redirect);
+    signOutAfterPasswordChange.mockRejectedValue(new Error("NEXT_REDIRECT"));
     rethrow.mockImplementation((error: unknown) => {
       throw error;
     });
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
     const user = userEvent.setup();
-    render(
-      <CatchBoundary>
-        <ChangePasswordForm />
-      </CatchBoundary>,
-    );
+    render(<ChangePasswordForm />);
 
     await fillAndSubmit(user);
 
-    expect(
-      await screen.findByText("Caught: NEXT_REDIRECT"),
-    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(leaveSession).toHaveBeenCalledExactlyOnceWith(
+        "/sign-in?notice=password-changed",
+      ),
+    );
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 

@@ -1,8 +1,7 @@
 import { expect, test } from "./support/test";
 import { E2E_USER_PASSWORD, requireE2eUserEmail } from "../scripts/e2e-user";
-import { signInThroughForm } from "./support/sign-in";
+import { signInThroughForm, signOutThroughMenu } from "./support/sign-in";
 import { SIGNED_OUT } from "./support/storage-state";
-import { waitForAnswers } from "./support/network";
 
 // The homepage exists twice, `/` and `/de`, both static: the language is the
 // page's, never the visitor's browser or cookie (ADR 0024).
@@ -238,9 +237,7 @@ test.describe("the language switch", () => {
     // Every answer of a signed-in request sets the session cookie again, so
     // one still on its way after the sign-out would sign the browser back in
     // (see endSession in signed-out.spec.ts).
-    await waitForAnswers(page);
-    await userMenu.click();
-    await page.getByRole("menuitem", { name: "Abmelden" }).click();
+    await signOutThroughMenu(page, { trigger: userMenu, item: "Abmelden" });
     // The homepage in German, not the English one.
     await expect(page).toHaveURL(/\/de$/);
 
