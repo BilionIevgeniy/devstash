@@ -19,8 +19,8 @@ vi.mock("@/features/files/services/objects", () => ({ signFileUrls }));
 
 import {
   getUserItemDetail,
-  getUserItemDetailOfType,
   openUserItem,
+  openUserItemOfType,
 } from "@/features/items/services/item-detail";
 
 const record = {
@@ -154,16 +154,60 @@ describe("openUserItem", () => {
   });
 });
 
-describe("getUserItemDetailOfType", () => {
-  it("reads through the typed query", async () => {
-    getItemDetailOfType.mockResolvedValue(null);
+describe("openUserItemOfType", () => {
+  const snippet = { ...record, type: { ...record.type, name: "snippet" } };
 
-    await getUserItemDetailOfType("user-1", "item-1", "image");
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getEntitlements.mockResolvedValue({ isPro: false });
+    getItemDetailOfType.mockResolvedValue(snippet);
+  });
 
+  it("opens the item of the type in the URL", async () => {
+    await expect(
+      openUserItemOfType("user-1", "item-1", "snippets"),
+    ).resolves.toMatchObject({
+      status: "ok",
+      item: { id: "item-1" },
+      canUseAi: false,
+      editMode: "full",
+    });
     expect(getItemDetailOfType).toHaveBeenCalledWith(
       "user-1",
       "item-1",
-      "image",
+      "snippets",
     );
+  });
+
+  // Locked whether the id exists or not: nothing is read for a locked type.
+  it("locks a Pro system type for a Free user before any read", async () => {
+    await expect(
+      openUserItemOfType("user-1", "item-1", "images"),
+    ).resolves.toEqual({ status: "locked" });
+    expect(getItemDetailOfType).not.toHaveBeenCalled();
+  });
+
+  it("opens a Pro system type on Pro, with the AI features", async () => {
+    getEntitlements.mockResolvedValue({ isPro: true });
+    getItemDetailOfType.mockResolvedValue(record);
+
+    await expect(
+      openUserItemOfType("user-1", "item-1", "images"),
+    ).resolves.toMatchObject({ status: "ok", canUseAi: true });
+  });
+
+  // A former Pro user keeps reading their custom types (ADR 0032).
+  it("never locks a custom type", async () => {
+    await expect(
+      openUserItemOfType("user-1", "item-1", "recipes"),
+    ).resolves.toMatchObject({ status: "ok" });
+  });
+
+  it("is missing when the query finds no such item of the type", async () => {
+    getItemDetailOfType.mockResolvedValue(null);
+
+    await expect(
+      openUserItemOfType("user-1", "item-1", "notes"),
+    ).resolves.toEqual({ status: "missing" });
   });
 });

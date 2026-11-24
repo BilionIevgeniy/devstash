@@ -1,6 +1,6 @@
 import "server-only";
 
-import { tooManyAttemptsParams } from "@/features/auth/domain/rate-limits";
+import { tooManyAttemptsParams } from "@/lib/http/retry-after";
 import { getUserIdByEmail, getUserProfile } from "@/features/auth/queries";
 import {
   buildCancellationEmail,

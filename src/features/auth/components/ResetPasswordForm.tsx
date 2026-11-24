@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import type { AccountSwitchReason } from "@/features/auth/domain/account-switch";
 import {
   doneStep,
-  finishEmailLink,
+  submitEmailLink,
   type DoneStep,
 } from "@/features/auth/_internal/components/finish-email-link";
 import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
@@ -55,17 +55,9 @@ async function submit(
     return { error: { error: "passwordsDoNotMatch" }, values };
   }
 
-  try {
-    const result = await resetPassword({ ...values, email, token });
-    if (!result.success) {
-      return { error: result, values };
-    }
-    finishEmailLink(router, done);
-    return INITIAL_STATE;
-  } catch {
-    // A rejection left in an action would show the error page.
-    return { error: { error: "generic" }, values };
-  }
+  return submitEmailLink(router, done, values, INITIAL_STATE, () =>
+    resetPassword({ ...values, email, token }),
+  );
 }
 
 interface ResetPasswordFormProps {

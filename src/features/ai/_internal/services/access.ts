@@ -6,7 +6,7 @@ import {
   AI_BY_USER_DAY,
   AI_BY_USER_HOUR,
 } from "@/features/ai/domain/rate-limits";
-import { tooManyAttemptsParams } from "@/features/auth/domain/rate-limits";
+import { tooManyAttemptsParams } from "@/lib/http/retry-after";
 import { getEntitlements } from "@/features/billing/queries";
 import { fail, type Failure } from "@/lib/errors/action-result";
 import { consumeRateLimit } from "@/lib/vendors/rate-limit";

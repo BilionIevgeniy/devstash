@@ -11,11 +11,10 @@ import {
   itemListHref,
   type ItemListParams,
 } from "@/features/items/domain/list/list-params";
-import { ITEMS_PER_PAGE } from "@/features/items/domain/list/pagination";
 import { getItemsOfType } from "@/features/items/queries/type-page";
 import { getUserFileListItems } from "@/features/items/services/file-list";
 import { getUserGalleryItems } from "@/features/items/services/gallery";
-import { pageSkip } from "@/lib/pagination";
+import { CARDS_PER_PAGE, pageSkip } from "@/lib/pagination";
 
 interface ItemsListingProps {
   userId: string;
@@ -53,8 +52,8 @@ export async function ItemsListing({
     userId,
     type.id,
     params,
-    pageSkip(params.page, ITEMS_PER_PAGE),
-    ITEMS_PER_PAGE,
+    pageSkip(params.page, CARDS_PER_PAGE),
+    CARDS_PER_PAGE,
   ] as const;
 
   switch (typeListing(type.name)) {

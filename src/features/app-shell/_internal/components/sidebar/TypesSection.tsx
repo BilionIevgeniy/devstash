@@ -11,6 +11,7 @@ import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { typeLabel } from "@/features/item-types/domain/item-type";
 import { canUseType, requiresPro } from "@/features/items/domain/item-fields";
 import type { SidebarItemType } from "@/features/item-types/types";
+import { typePagePath } from "@/features/item-types/domain/item-type";
 
 interface TypesSectionProps {
   itemTypes: SidebarItemType[];
@@ -30,7 +31,7 @@ export function TypesSection({ itemTypes, isPro }: TypesSectionProps) {
           return (
             <li key={type.id}>
               <SidebarNavLink
-                href={canUse ? `/items/${type.slug}` : UPGRADE_PATH}
+                href={canUse ? typePagePath(type.slug) : UPGRADE_PATH}
                 match={canUse ? "prefix" : undefined}
                 className={LINK_CLASS}
               >

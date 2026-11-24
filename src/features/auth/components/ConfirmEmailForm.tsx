@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import type { AccountSwitchReason } from "@/features/auth/domain/account-switch";
 import {
   doneStep,
-  finishEmailLink,
+  submitEmailLink,
   type DoneStep,
 } from "@/features/auth/_internal/components/finish-email-link";
 import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
@@ -45,17 +45,9 @@ async function submit(
 ): Promise<State> {
   const values = formValues(formData, FIELD_NAMES);
 
-  try {
-    const result = await confirmEmail({ ...values, email, token });
-    if (!result.success) {
-      return { error: result, values };
-    }
-    finishEmailLink(router, done);
-    return INITIAL_STATE;
-  } catch {
-    // A rejection left in an action would show the error page.
-    return { error: { error: "generic" }, values };
-  }
+  return submitEmailLink(router, done, values, INITIAL_STATE, () =>
+    confirmEmail({ ...values, email, token }),
+  );
 }
 
 interface ConfirmEmailFormProps {

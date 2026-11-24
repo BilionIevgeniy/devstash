@@ -1,5 +1,5 @@
 import { getSignedInUserId } from "@/features/auth/nextauth/session";
-import { getRetryAfterSeconds } from "@/features/auth/domain/rate-limits";
+import { getRetryAfterSeconds } from "@/lib/http/retry-after";
 import { exportUserData } from "@/features/import-export/services/export";
 import { fail } from "@/lib/errors/action-result";
 import { jsonError, NO_STORE } from "@/lib/http/api-response";

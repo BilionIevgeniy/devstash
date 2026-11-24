@@ -10,10 +10,8 @@ import {
   getPasswordResetIdentifier,
   PASSWORD_RESET_TOKEN_TTL_HOURS,
 } from "@/features/auth/domain/password-reset";
-import {
-  tooManyAttemptsParams,
-  RESET_EMAIL_BY_ADDRESS,
-} from "@/features/auth/domain/rate-limits";
+import { RESET_EMAIL_BY_ADDRESS } from "@/features/auth/domain/rate-limits";
+import { tooManyAttemptsParams } from "@/lib/http/retry-after";
 import { isTokenExpired } from "@/features/auth/domain/verification-token";
 import {
   getAccountState,

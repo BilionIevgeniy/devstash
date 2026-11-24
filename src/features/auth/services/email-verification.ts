@@ -5,9 +5,9 @@ import { replaceToken } from "@/features/auth/_internal/services/token-store";
 import { hashToken } from "@/features/auth/_internal/token";
 import {
   CONFIRM_EMAIL_BY_ADDRESS,
-  tooManyAttemptsParams,
   VERIFICATION_EMAIL_BY_ADDRESS,
 } from "@/features/auth/domain/rate-limits";
+import { tooManyAttemptsParams } from "@/lib/http/retry-after";
 import { shouldResendVerification } from "@/features/auth/domain/registration";
 import {
   buildVerificationUrl,

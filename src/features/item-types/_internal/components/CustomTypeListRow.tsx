@@ -7,6 +7,7 @@ import { CustomTypeDialog } from "@/features/item-types/_internal/components/Cus
 import { DeleteCustomTypeDialog } from "@/features/item-types/_internal/components/DeleteCustomTypeDialog";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import type { CustomTypeRow } from "@/features/item-types/types";
+import { typePagePath } from "@/features/item-types/domain/item-type";
 
 interface CustomTypeListRowProps {
   type: CustomTypeRow;
@@ -30,7 +31,7 @@ export function CustomTypeListRow({
         style={{ color: type.color }}
       />
       <Link
-        href={`/items/${type.slug}`}
+        href={typePagePath(type.slug)}
         className="min-w-0 flex-1 truncate font-medium hover:underline"
       >
         {type.name}

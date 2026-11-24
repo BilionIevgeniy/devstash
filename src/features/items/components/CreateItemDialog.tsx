@@ -5,7 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
-import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
+import {
+  useDialogControl,
+  type DialogControl,
+} from "@/components/common/hooks/use-dialog-control";
 import { ListLoadError } from "@/components/common/lists/ListLoadError";
 import { Button } from "@/components/ui/button";
 import {
@@ -118,11 +121,7 @@ interface CreateItemDialogProps {
   /** From getEntitlements on the server; the server checks again on create. */
   isPro: boolean;
   /** Opened from elsewhere: no button, and the focus goes back through this. */
-  controlled?: {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    returnFocus: () => void;
-  };
+  controlled?: DialogControl;
 }
 
 export function CreateItemDialog({
@@ -133,10 +132,14 @@ export function CreateItemDialog({
 }: CreateItemDialogProps) {
   const typeName = useTranslations("itemTypes");
   const t = useTranslations("items");
-  const [isOpenState, setIsOpenState] = useState(false);
-  const isOpen = controlled?.open ?? isOpenState;
-  const setIsOpen = controlled?.onOpenChange ?? setIsOpenState;
-  const { isPending: isCreating, run, takeDone } = useSubmitDialog();
+  const {
+    isOpen,
+    isPending: isCreating,
+    run,
+    close,
+    handleOpenChange,
+    handleCloseAutoFocus,
+  } = useDialogControl(() => toast.success(t("toasts.created")), controlled);
   const { Form, hasFailed, preload, retry, clearFailure } =
     useCreateItemForm(isOpen);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -149,13 +152,10 @@ export function CreateItemDialog({
   const isLocked =
     defaultType !== undefined && !canCreateOfType(defaultType, isPro);
 
-  // Esc, the overlay and the X wait for the result: closing now would lose
-  // the input on a failure and let the form be sent twice.
   // A closed dialog forgets a failed load, so the next open tries again.
-  function handleOpenChange(open: boolean) {
-    if (isCreating) return;
-    if (!open) clearFailure();
-    setIsOpen(open);
+  function handleDialogOpenChange(open: boolean) {
+    if (!open && !isCreating) clearFailure();
+    handleOpenChange(open);
   }
 
   // With the form still loading, the first focusable element would be the X;
@@ -166,20 +166,8 @@ export function CreateItemDialog({
     contentRef.current?.focus();
   }
 
-  // Sonner is outside the transition, so a toast in the form would show
-  // before the refreshed page closes the dialog. Radix calls this once the
-  // dialog has closed, with or without an animation; focus still returns to
-  // the trigger, or through `controlled`, which has none.
-  function handleCloseAutoFocus(event: Event) {
-    if (controlled) {
-      event.preventDefault();
-      controlled.returnFocus();
-    }
-    if (takeDone()) toast.success(t("toasts.created"));
-  }
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
       {!controlled && (
         <CreateTrigger label={label} isLocked={isLocked} onIntent={preload} />
       )}
@@ -202,7 +190,7 @@ export function CreateItemDialog({
             isPro={isPro}
             isCreating={isCreating}
             run={run}
-            onCreated={() => setIsOpen(false)}
+            onCreated={close}
           />
         ) : hasFailed ? (
           <ListLoadError onRetry={retry} message={t("create.loadFailed")} />

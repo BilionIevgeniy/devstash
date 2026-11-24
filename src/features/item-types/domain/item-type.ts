@@ -68,6 +68,11 @@ export function systemTypeSlug(name: SystemTypeName): string {
   return `${name}s`;
 }
 
+/** The page of a type: the list of its items. */
+export function typePagePath(slug: string): string {
+  return `/items/${slug}`;
+}
+
 // The system type a URL segment names, or null for a custom type's slug. Only
 // for what renders before the type is read (the skeletons of loading.tsx and
 // the drawer); a page reads the type by its slug.

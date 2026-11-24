@@ -1,10 +1,9 @@
 import "server-only";
 
 import { NEWEST_FIRST } from "@/features/items/_internal/queries/selects";
-import { ITEMS_PER_PAGE } from "@/features/items/domain/list/pagination";
 import type { LockedFileRecord } from "@/features/items/types";
 import type { Prisma } from "@/generated/prisma/client";
-import { type Paginated, readPage } from "@/lib/pagination";
+import { CARDS_PER_PAGE, type Paginated, readPage } from "@/lib/pagination";
 import { prisma } from "@/lib/postgres/prisma";
 
 function fileItemsOf(userId: string) {
@@ -22,7 +21,7 @@ export function getFileItemRecords(
 ): Promise<Paginated<LockedFileRecord>> {
   return readPage(
     page,
-    ITEMS_PER_PAGE,
+    CARDS_PER_PAGE,
     () => countFileItems(userId),
     (skip, take) =>
       prisma.item.findMany({

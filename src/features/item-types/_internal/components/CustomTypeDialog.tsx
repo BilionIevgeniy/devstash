@@ -2,7 +2,7 @@ import { useState, type ReactNode, type SubmitEvent } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
+import { useDialogControl } from "@/components/common/hooks/use-dialog-control";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -51,26 +51,23 @@ export function CustomTypeDialog({
   sync,
 }: CustomTypeDialogProps) {
   const t = useTranslations("customTypes");
-  const [open, setOpen] = useState(false);
-  const { isPending, run, takeDone } = useSubmitDialog();
-
-  // Esc, the overlay and the X wait for the result, so the input stays.
-  function handleOpenChange(next: boolean) {
-    if (!isPending) setOpen(next);
-  }
-
-  // Radix gives the focus back to the trigger; the toast follows the close.
-  function handleCloseAutoFocus() {
-    if (takeDone())
-      toast.success(t(type ? "toasts.updated" : "toasts.created"));
-  }
+  const {
+    isOpen,
+    isPending,
+    run,
+    close,
+    handleOpenChange,
+    handleCloseAutoFocus,
+  } = useDialogControl(() =>
+    toast.success(t(type ? "toasts.updated" : "toasts.created")),
+  );
 
   function submit(values: CustomTypeInput) {
     run(
       () =>
         type ? updateCustomType(type.id, values) : createCustomType(values),
       {
-        onSuccess: () => setOpen(false),
+        onSuccess: close,
         failCode: "customTypeSaveFailed",
         sync,
       },
@@ -78,7 +75,7 @@ export function CustomTypeDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent onCloseAutoFocus={handleCloseAutoFocus}>
         <DialogHeader>

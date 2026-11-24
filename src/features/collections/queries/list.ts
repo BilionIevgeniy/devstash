@@ -1,13 +1,12 @@
 import "server-only";
 
 import { fetchCollections } from "@/features/collections/_internal/queries/collection-rows";
-import { COLLECTIONS_PER_PAGE } from "@/features/collections/domain/pagination";
 import type {
   CollectionOption,
   CollectionSummary,
   DashboardCollection,
 } from "@/features/collections/types";
-import { type Paginated, readPage } from "@/lib/pagination";
+import { CARDS_PER_PAGE, type Paginated, readPage } from "@/lib/pagination";
 import { prisma } from "@/lib/postgres/prisma";
 
 export function getUserCollections(
@@ -16,7 +15,7 @@ export function getUserCollections(
 ): Promise<Paginated<DashboardCollection>> {
   return readPage(
     page,
-    COLLECTIONS_PER_PAGE,
+    CARDS_PER_PAGE,
     () => prisma.collection.count({ where: { userId } }),
     (skip, take) => fetchCollections(userId, {}, { skip, take }),
   );
