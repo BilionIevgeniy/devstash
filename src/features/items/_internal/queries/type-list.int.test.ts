@@ -12,7 +12,7 @@ import {
   countItemsOfType,
   getItemsOfType,
   getTypeTagNames,
-} from "@/features/items/queries";
+} from "@/features/items/queries/type-page";
 
 // Read-only after the seed: the tenants, plus titles for the A-Z order on A's
 // snippets and a tag only B uses. The owner's call finds the rows first, so an

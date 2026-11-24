@@ -11,6 +11,7 @@ import { Navbar } from "./Navbar";
 
 vi.mock("@/features/auth/components/hooks/use-has-session", () => ({
   useHasSession: () => false,
+  primeSessionCheck: () => undefined,
 }));
 
 // A key the provider cannot find is shown as its path ("common.logoHome").

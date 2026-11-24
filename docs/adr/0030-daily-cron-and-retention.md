@@ -45,3 +45,7 @@ A GitHub account has no verified email in Auth.js's eyes either, so the stale-re
 - The sweep has no saved cursor: every run lists `users/` from the start, and held objects never leave the listing. Past about 40,000 objects a run can stop at the deadline before the end, and keys that sort late would never be reached. The `stoppedEarly` warning is the trigger to save the last key (Upstash) and continue from it.
 - A job that stops early or fails is seen in the log and the 500, not retried: the next day's run is the retry.
 - Feature 19 adds its reconciliation as one more entry in the route's list.
+
+## Amendment (2026-11-24, feature 23)
+
+One deadline for all jobs let a slow one take the time of the ones after it. Each job now has its own `budgetMs` (5, 10, 10 and 20 seconds, 45 in all), and its deadline is the sum of the budgets up to its own, from the start of the run: what a job leaves over goes to the next ones, and one that overruns between two of its checks takes it from them. `purgeStaleRegistrations` checks its deadline before each user, not before each page of 100: one page of deletions could pass the 60 seconds of the function, and no job after it ran.

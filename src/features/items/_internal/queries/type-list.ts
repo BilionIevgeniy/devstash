@@ -4,7 +4,7 @@ import {
   dashboardItemSelect,
   PINNED_FIRST,
   toDashboardItem,
-} from "@/features/items/_internal/queries";
+} from "@/features/items/_internal/queries/selects";
 import type {
   ItemListFilter,
   ItemListSort,

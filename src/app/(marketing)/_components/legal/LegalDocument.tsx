@@ -31,7 +31,10 @@ export function LegalDocument({
       id={id}
       lang={lang}
       aria-labelledby={`${id}-title`}
-      className={cn("scroll-mt-24", lang === "de" && "hyphens-auto")}
+      className={cn(
+        "scroll-mt-24 outline-none",
+        lang === "de" && "hyphens-auto",
+      )}
     >
       <h1 id={`${id}-title`} className="text-3xl font-bold tracking-tight">
         {title}

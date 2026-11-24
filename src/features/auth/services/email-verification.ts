@@ -1,13 +1,17 @@
 import "server-only";
 
 import { buildVerificationEmail } from "@/features/auth/_internal/emails/verification-email";
+import {
+  deferLogged,
+  type Defer,
+} from "@/features/auth/_internal/services/defer";
 import { replaceToken } from "@/features/auth/_internal/services/token-store";
 import { hashToken } from "@/features/auth/_internal/token";
 import {
   CONFIRM_EMAIL_BY_ADDRESS,
-  tooManyAttemptsParams,
   VERIFICATION_EMAIL_BY_ADDRESS,
 } from "@/features/auth/domain/rate-limits";
+import { tooManyAttemptsParams } from "@/lib/http/retry-after";
 import { shouldResendVerification } from "@/features/auth/domain/registration";
 import {
   buildVerificationUrl,
@@ -54,7 +58,8 @@ export async function sendVerificationLink(
 }
 
 // Every outcome except an exhausted per-IP limit is the same neutral success,
-// so the answer never shows whether the address has an account. For the same
+// so the answer never shows whether the address has an account, in its words or
+// in the time it takes: the lookup and the send run after it. For the same
 // reason a send failure is only logged (sendEmail logs it): only an address
 // waiting for its verification gets that far, so an error would name it.
 export async function resendVerificationLink(
@@ -62,6 +67,7 @@ export async function resendVerificationLink(
   origin: string,
   ip: string | null,
   locale: Locale,
+  defer: Defer,
 ): Promise<OperationResult> {
   const check = await checkEmailSend(VERIFICATION_EMAIL_BY_ADDRESS, email, ip);
   if (check.status === "ip-limited") {
@@ -72,10 +78,11 @@ export async function resendVerificationLink(
   }
   if (check.status === "address-limited") return SUCCESS;
 
-  const account = await getAccountState(email);
-  if (!account || !shouldResendVerification(account)) return SUCCESS;
-
-  await sendVerificationLink(email, origin, locale);
+  deferLogged(defer, async () => {
+    const account = await getAccountState(email);
+    if (!account || !shouldResendVerification(account)) return;
+    await sendVerificationLink(email, origin, locale);
+  });
   return SUCCESS;
 }
 

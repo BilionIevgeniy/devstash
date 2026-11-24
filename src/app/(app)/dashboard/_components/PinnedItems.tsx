@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { ItemCardTrigger } from "@/features/items/components/cards/ItemCardTrigger";
 import { ItemRow } from "@/features/items/components/cards/ItemRow";
-import { getPinnedItems } from "@/features/items/queries";
+import { getPinnedItems } from "@/features/items/queries/dashboard";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 
 export async function PinnedItems() {

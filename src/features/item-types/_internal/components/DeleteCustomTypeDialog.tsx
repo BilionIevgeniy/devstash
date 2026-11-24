@@ -1,9 +1,9 @@
-import { useState, type MouseEvent } from "react";
+import type { MouseEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Loader2Icon, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
+import { useDialogControl } from "@/components/common/hooks/use-dialog-control";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,31 +31,29 @@ export function DeleteCustomTypeDialog({
   sync,
 }: DeleteCustomTypeDialogProps) {
   const t = useTranslations();
-  const [open, setOpen] = useState(false);
-  const { isPending, run, takeDone } = useSubmitDialog();
+  // The row and its trigger are gone with the fresh page, so the focus is
+  // left where the browser puts it.
+  const {
+    isOpen,
+    isPending,
+    run,
+    close,
+    handleOpenChange,
+    handleCloseAutoFocus,
+  } = useDialogControl(() => toast.success(t("customTypes.toasts.deleted")));
   const hasItems = type.itemCount > 0;
-
-  function handleOpenChange(next: boolean) {
-    if (!isPending) setOpen(next);
-  }
 
   function handleConfirm(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     run(() => deleteCustomType(type.id), {
-      onSuccess: () => setOpen(false),
+      onSuccess: close,
       failCode: "customTypeDeleteFailed",
       sync,
     });
   }
 
-  // The row and its trigger are gone with the fresh page, so the focus is
-  // left where the browser puts it; the toast follows the close.
-  function handleCloseAutoFocus() {
-    if (takeDone()) toast.success(t("customTypes.toasts.deleted"));
-  }
-
   return (
-    <AlertDialog open={open} onOpenChange={handleOpenChange}>
+    <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>
         <Button
           variant="ghost"

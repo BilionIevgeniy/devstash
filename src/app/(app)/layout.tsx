@@ -22,7 +22,7 @@ import { SidebarSkeleton } from "@/features/app-shell/components/SidebarSkeleton
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { EditorPreferencesProvider } from "@/features/editor/components/EditorPreferencesProvider";
 import { getEditorPreferences } from "@/features/editor/queries";
-import { messagesFor } from "@/i18n/messages";
+import { appMessages } from "@/i18n/messages";
 
 // The layout reads the request at its top (the locale, the sidebar cookie)
 // and every page below reads the session, so this segment blocks on the
@@ -51,10 +51,10 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   );
 
   // The outermost element: the editor preferences show their errors through
-  // the messages too. Every message goes down, since the layout is dynamic and
-  // its screens reach into many features (ADR 0024).
+  // the messages too. Every namespace the app's screens read goes down, since
+  // the layout is dynamic and they reach into many features (ADR 0024).
   return (
-    <I18nProvider locale={locale} messages={messagesFor(locale)}>
+    <I18nProvider locale={locale} messages={appMessages(locale)}>
       {/* Around the shell: the top bar's create dialogs read the collection
           options through it too (ADR 0025). */}
       <QueryProvider>

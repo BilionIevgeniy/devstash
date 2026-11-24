@@ -4,7 +4,7 @@ import { getEntitlements } from "@/features/billing/queries";
 import {
   countFileItems,
   getFileItemRecords,
-} from "@/features/items/_internal/queries";
+} from "@/features/items/_internal/queries/file-records";
 import { signItemFile } from "@/features/items/_internal/services/file-urls";
 import type { LockedFile, LockedFileRecord } from "@/features/items/types";
 import type { Paginated } from "@/lib/pagination";

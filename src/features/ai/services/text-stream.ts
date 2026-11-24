@@ -2,7 +2,7 @@ import "server-only";
 
 import {
   checkAiAccess,
-  type AiRefusalReason,
+  type AiRefusal,
 } from "@/features/ai/_internal/services/access";
 import { failedCall } from "@/features/ai/_internal/services/failed-call";
 import {
@@ -17,7 +17,7 @@ import { logger } from "@/lib/observability/logger";
 import { AiOutputError, streamText } from "@/lib/vendors/openai";
 
 export type TextStreamStart =
-  | { status: "refused"; reason: AiRefusalReason; failure: Failure }
+  | { status: "refused"; refusal: AiRefusal }
   | { status: "failed"; failure: Failure }
   | { status: "aborted" }
   | { status: "ok"; stream: ReadableStream<Uint8Array> };
@@ -117,10 +117,7 @@ export async function startTextStream(
   clientSignal: AbortSignal,
 ): Promise<TextStreamStart> {
   const access = await checkAiAccess(userId);
-  if (!access.success) {
-    const { reason, ...failure } = access;
-    return { status: "refused", reason, failure };
-  }
+  if (!access.success) return { status: "refused", refusal: access.refusal };
 
   const deadlines = createStreamDeadlines(clientSignal, request.settings);
   const text = openText(userId, request, deadlines.signal);

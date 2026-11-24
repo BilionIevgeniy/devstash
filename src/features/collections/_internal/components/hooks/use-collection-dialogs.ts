@@ -1,13 +1,8 @@
 import { useState } from "react";
 
-type CollectionDialog = "edit" | "delete";
+import type { DialogControl } from "@/components/common/hooks/use-dialog-control";
 
-export interface CollectionDialogState {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  /** These dialogs have no Radix trigger, so they hand the focus back here. */
-  returnFocus: () => void;
-}
+type CollectionDialog = "edit" | "delete";
 
 // The open dialog of a collection and the control that opened it, shared by
 // the page header and the card menu.
@@ -22,7 +17,7 @@ export function useCollectionDialogs() {
     setOpenDialogName(name);
   }
 
-  function dialogState(name: CollectionDialog): CollectionDialogState {
+  function dialogState(name: CollectionDialog): DialogControl {
     return {
       open: openDialogName === name,
       onOpenChange: (open) => setOpenDialogName(open ? name : null),

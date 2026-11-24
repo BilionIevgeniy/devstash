@@ -89,7 +89,7 @@ const DE = {
 
 const MESSAGES: Record<Locale, Messages> = { en: EN, de: DE };
 
-/** All messages of a locale, for the request config and a dynamic layout. */
+/** All messages of a locale, for the request config. */
 export function messagesFor(locale: Locale): Messages {
   return MESSAGES[locale];
 }
@@ -103,4 +103,22 @@ export function pickMessages<N extends Namespace>(
   return Object.fromEntries(
     namespaces.map((namespace) => [namespace, messages[namespace]]),
   ) as Pick<Messages, N>;
+}
+
+// The emails are built on the server and the marketing pages send their own
+// list, so no screen behind the dynamic layouts reads these two.
+const SERVER_ONLY_NAMESPACES = ["emails", "marketing"] as const;
+export type AppNamespace = Exclude<
+  Namespace,
+  (typeof SERVER_ONLY_NAMESPACES)[number]
+>;
+
+const APP_NAMESPACES = (Object.keys(EN) as Namespace[]).filter(
+  (namespace): namespace is AppNamespace =>
+    !(SERVER_ONLY_NAMESPACES as readonly string[]).includes(namespace),
+);
+
+/** What the client components of the app and the auth pages read. */
+export function appMessages(locale: Locale): Pick<Messages, AppNamespace> {
+  return pickMessages(locale, APP_NAMESPACES);
 }

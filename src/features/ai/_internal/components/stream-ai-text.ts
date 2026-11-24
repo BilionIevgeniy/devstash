@@ -7,8 +7,11 @@ import { routeError } from "@/lib/errors/route-error";
 // The route answers refusals as JSON; anything else (the platform's own error
 // page, an empty body) is unavailable.
 export class AiStreamRequestError extends Error {
-  constructor(readonly failure: Failure) {
+  readonly failure: Failure;
+
+  constructor(failure: Failure) {
     super(failure.error);
+    this.failure = failure;
   }
 }
 

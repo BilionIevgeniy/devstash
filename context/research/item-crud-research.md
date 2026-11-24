@@ -2,7 +2,7 @@
 
 ## Output
 
-`docs/item-crud-architecture.md`
+`docs/archive/item-crud-architecture.md`
 
 ## Research
 

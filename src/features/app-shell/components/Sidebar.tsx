@@ -10,9 +10,9 @@ import { UserArea } from "@/features/app-shell/_internal/components/sidebar/User
 import { PlanBadge } from "@/features/billing/components/PlanBadge";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import { getEntitlements } from "@/features/billing/queries";
-import { getSidebarCollections } from "@/features/collections/queries";
+import { getSidebarCollections } from "@/features/collections/queries/sidebar";
 import { getSidebarItemTypes } from "@/features/item-types/queries";
-import { getSidebarItems } from "@/features/items/queries";
+import { getSidebarItems } from "@/features/items/queries/sidebar";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { DASHBOARD_PATH } from "@/features/auth/domain/auth-paths";
 

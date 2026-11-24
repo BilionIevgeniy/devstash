@@ -9,10 +9,8 @@ import {
   getAccountDeletionExpiry,
   getAccountDeletionIdentifier,
 } from "@/features/auth/domain/account-deletion";
-import {
-  DELETION_EMAIL_BY_USER,
-  tooManyAttemptsParams,
-} from "@/features/auth/domain/rate-limits";
+import { DELETION_EMAIL_BY_USER } from "@/features/auth/domain/rate-limits";
+import { tooManyAttemptsParams } from "@/lib/http/retry-after";
 import { fail, ok, type OperationResult } from "@/lib/errors/action-result";
 import type { Locale } from "@/i18n/config";
 import { sendEmail } from "@/lib/vendors/email";

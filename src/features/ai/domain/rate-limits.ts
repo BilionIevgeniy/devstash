@@ -3,7 +3,7 @@ const DAY_SECONDS = 24 * HOUR_SECONDS;
 
 // Shared by every AI feature. The hourly limit alone would allow a month of
 // calls costing about as much as the Pro plan; the daily one caps it
-// (docs/ai-integration-plan.md §7).
+// (docs/archive/ai-integration-plan.md §7).
 export const AI_BY_USER_HOUR = {
   name: "ai:user-hour",
   limit: 20,

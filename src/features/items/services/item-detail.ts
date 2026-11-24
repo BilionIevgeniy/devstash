@@ -3,10 +3,12 @@ import "server-only";
 import {
   getItemDetail,
   getItemDetailOfType,
-} from "@/features/items/_internal/queries";
+} from "@/features/items/_internal/queries/item-detail";
 import { signItemFile } from "@/features/items/_internal/services/file-urls";
 import { getEntitlements } from "@/features/billing/queries";
+import { systemTypeNameForSlug } from "@/features/item-types/domain/item-type";
 import { canUseType } from "@/features/items/domain/item-fields";
+import { userCanUseType } from "@/features/items/services/type-access";
 import { getItemEditMode } from "@/features/items/services/text-access";
 import type {
   ItemDetail,
@@ -68,13 +70,32 @@ export async function openUserItem(
   };
 }
 
-// The full item page carries the type in the URL: an item of another type is
-// not found there, the same as a missing one.
-export async function getUserItemDetailOfType(
+// What the full item page may open, with the type in its URL: an item of
+// another type is missing there, the same as one that does not exist. A Pro
+// system type is refused before any read, so a Free user learns nothing about
+// the id; a custom type opens on every plan (its items stay readable after a
+// downgrade, ADR 0032).
+export async function openUserItemOfType(
   userId: string,
   itemId: string,
   typeSlug: string,
-): Promise<ItemDetail | null> {
-  const record = await getItemDetailOfType(userId, itemId, typeSlug);
-  return record ? toItemDetail(record) : null;
+): Promise<OpenItemResult> {
+  const systemName = systemTypeNameForSlug(typeSlug);
+  if (systemName && !(await userCanUseType(userId, systemName))) {
+    return { status: "locked" };
+  }
+
+  // cache() shares the plan's read with the check above.
+  const [record, { isPro }, editMode] = await Promise.all([
+    getItemDetailOfType(userId, itemId, typeSlug),
+    getEntitlements(userId),
+    getItemEditMode(userId),
+  ]);
+  if (!record) return { status: "missing" };
+  return {
+    status: "ok",
+    item: await toItemDetail(record),
+    canUseAi: isPro,
+    editMode,
+  };
 }

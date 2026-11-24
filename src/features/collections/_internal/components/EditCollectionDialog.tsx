@@ -2,7 +2,10 @@ import { useState, type SubmitEvent } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
-import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
+import {
+  useDialogControl,
+  type DialogControl,
+} from "@/components/common/hooks/use-dialog-control";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,7 +17,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CollectionFields } from "@/features/collections/_internal/components/CollectionFields";
-import type { CollectionDialogState } from "@/features/collections/_internal/components/hooks/use-collection-dialogs";
 import { updateCollection } from "@/features/collections/actions/collection";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import {
@@ -23,35 +25,27 @@ import {
 } from "@/features/collections/domain/collection-fields";
 import type { CollectionSummary } from "@/features/collections/types";
 
-interface EditCollectionDialogProps extends CollectionDialogState {
+interface EditCollectionDialogProps extends DialogControl {
   collection: CollectionSummary;
 }
 
 export function EditCollectionDialog({
   collection,
-  open,
-  onOpenChange,
-  returnFocus,
+  ...control
 }: EditCollectionDialogProps) {
   const t = useTranslations("collections");
-  const { isPending: isSaving, run, takeDone } = useSubmitDialog();
+  const {
+    isOpen,
+    isPending: isSaving,
+    run,
+    close,
+    handleOpenChange,
+    handleCloseAutoFocus,
+  } = useDialogControl(() => toast.success(t("toasts.updated")), control);
   const syncItems = useSyncItemQueries();
 
-  // Esc, the overlay and the X wait for the result: closing now would lose
-  // the input on a failure and let the form be sent twice.
-  function handleOpenChange(next: boolean) {
-    if (!isSaving) onOpenChange(next);
-  }
-
-  // The toast waits for the dialog to close, as in CreateCollectionDialog.
-  function handleCloseAutoFocus(event: Event) {
-    event.preventDefault();
-    returnFocus();
-    if (takeDone()) toast.success(t("toasts.updated"));
-  }
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className="max-h-[90vh] grid-cols-1 overflow-y-auto"
         onCloseAutoFocus={handleCloseAutoFocus}
@@ -66,7 +60,7 @@ export function EditCollectionDialog({
           isSaving={isSaving}
           onSubmit={(values) =>
             run(() => updateCollection(collection.id, values), {
-              onSuccess: () => onOpenChange(false),
+              onSuccess: close,
               failCode: "collectionSaveFailed",
               sync: () => syncItems({ kind: "collections" }),
             })

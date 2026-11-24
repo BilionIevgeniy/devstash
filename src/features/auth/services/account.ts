@@ -14,10 +14,8 @@ import {
 } from "@/features/auth/_internal/queries";
 import { staleRegistrationCutoff } from "@/features/auth/domain/registration";
 import { addressTokenIdentifiers } from "@/features/auth/domain/token-identifiers";
-import {
-  tooManyAttemptsParams,
-  PASSWORD_CHECK_BY_USER,
-} from "@/features/auth/domain/rate-limits";
+import { PASSWORD_CHECK_BY_USER } from "@/features/auth/domain/rate-limits";
+import { tooManyAttemptsParams } from "@/lib/http/retry-after";
 import { isAccountDeletionTokenValid } from "@/features/auth/queries";
 import {
   fail,

@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import {
+  allItemIds,
   createItem,
   idsOf,
   seedTenants,
@@ -7,7 +8,10 @@ import {
   type Tenants,
 } from "../../../../test/integration/fixtures";
 import { SEARCH_PAGE_SIZE } from "@/features/items/domain/search-text";
-import { searchUserItems } from "@/features/items/queries/search";
+import {
+  getRecentSearchableItems,
+  searchUserItems,
+} from "@/features/items/queries/search";
 import { prisma } from "@/lib/postgres/prisma";
 
 // Read-only: one seed for the file. A and B have the same titles, so a search
@@ -119,5 +123,17 @@ describe("searchUserItems", () => {
     expect(await find(t.a.userId, "useDebounce")).toEqual([t.a.items.snippet]);
     expect(await find(t.b.userId, "task1500")).toEqual([]);
     expect(await find(t.b.userId, "console")).toEqual([]);
+  });
+});
+
+describe("getRecentSearchableItems", () => {
+  it("lists only the caller's items", async () => {
+    const [a, b] = await Promise.all([
+      getRecentSearchableItems(t.a.userId),
+      getRecentSearchableItems(t.b.userId),
+    ]);
+    expect(idsOf(b).sort()).toEqual(allItemIds(t.b).sort());
+    expect(a.length).toBeGreaterThan(0);
+    expect(idsOf(a).filter((id) => idsOf(b).includes(id))).toEqual([]);
   });
 });

@@ -23,13 +23,6 @@ export function recordLabel(record: unknown): string | null {
   return typeof label === "string" && label.trim() !== "" ? label.trim() : null;
 }
 
-// The type an item record names, if any.
-export function recordTypeName(record: unknown): string | null {
-  return isImportRecord(record) && typeof record.type === "string"
-    ? record.type
-    : null;
-}
-
 // Points an item's collections at the ids they have in this account. An id
 // the map does not know (a collection that failed) is dropped, so the item is
 // still created. A record that is not an object is left for the server.

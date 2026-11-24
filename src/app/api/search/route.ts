@@ -1,5 +1,5 @@
 import { getSignedInUserId } from "@/features/auth/nextauth/session";
-import { getRetryAfterSeconds } from "@/features/auth/domain/rate-limits";
+import { getRetryAfterSeconds } from "@/lib/http/retry-after";
 import { parseSearchParams } from "@/features/search/schemas";
 import { searchPalette } from "@/features/search/services/search";
 import { fail } from "@/lib/errors/action-result";

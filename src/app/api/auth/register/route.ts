@@ -1,10 +1,11 @@
 import { getLocale } from "next-intl/server";
+import { after } from "next/server";
 
+import { REGISTER_BY_IP } from "@/features/auth/domain/rate-limits";
 import {
   getRetryAfterSeconds,
   tooManyAttemptsParams,
-  REGISTER_BY_IP,
-} from "@/features/auth/domain/rate-limits";
+} from "@/lib/http/retry-after";
 import { registerSchema } from "@/features/auth/schemas";
 import { registerAccount } from "@/features/auth/services/registration";
 import { fail } from "@/lib/errors/action-result";
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
       getAppOrigin(),
       ip,
       await getLocale(),
+      after,
     );
     return accepted();
   } catch (error) {

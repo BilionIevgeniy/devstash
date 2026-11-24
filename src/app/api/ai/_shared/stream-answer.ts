@@ -26,7 +26,11 @@ function toResponse(result: TextStreamStart): Response {
     return new Response(null, { status: 204, headers: NO_STORE });
   }
   if (result.status === "refused") {
-    return jsonError(result.failure, result.reason === "not-pro" ? 403 : 429);
+    const { refusal } = result;
+    if (refusal.reason === "not-pro") return jsonError(refusal.failure, 403);
+    return jsonError(refusal.failure, 429, {
+      "Retry-After": String(refusal.retryAfterSeconds),
+    });
   }
   if (result.status === "failed") return jsonError(result.failure, 503);
   return new Response(result.stream, {

@@ -3,7 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const auth = vi.hoisted(() => vi.fn());
 const getCollectionOptions = vi.hoisted(() => vi.fn());
 vi.mock("@/features/auth/nextauth/auth", () => ({ auth }));
-vi.mock("@/features/collections/queries", () => ({ getCollectionOptions }));
+vi.mock("@/features/collections/queries/list", () => ({
+  getCollectionOptions,
+}));
 
 import { GET } from "@/app/api/collections/route";
 

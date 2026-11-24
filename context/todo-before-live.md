@@ -35,7 +35,7 @@ Feature 19 writes these texts and flows in test mode; before live a lawyer signs
 ## Switching Stripe to live
 
 - **The live key and the test-mode sentences.** The privacy notice (`_legal/datenschutz/general.*.tsx`, "About this service", the billing item, and the Stripe and retention texts) says Stripe runs in test mode. They are static, unlike the homepage hint, which follows the key. Rewrite them in the same change that switches to a live key, together with the retention and legal basis of the data kept under tax law ([ADR 0014](../docs/adr/0014-launch-mode.md)).
-- **The live Dashboard settings.** Smart Retries, the failed-payment emails and the authentication-link email, the customer portal: set and checked by hand in live mode, since a test clock proves only the sandbox (`docs/stripe-integration-plan.md`, section 5).
+- **The live Dashboard settings.** Smart Retries, the failed-payment emails and the authentication-link email, the customer portal: set and checked by hand in live mode, since a test clock proves only the sandbox (`docs/archive/stripe-integration-plan.md`, section 5).
 - **Live payment methods.** Test mode sells with cards only (feature 19). SEPA Direct Debit and PayPal are common in Germany, but SEPA settles late and can be reversed: turn them on only with the processing state decided (Pro while the payment is pending or not, what a late failure revokes) and tested in the sandbox first.
 
 ## Real numbers

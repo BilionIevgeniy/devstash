@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+/** Rows of three cards, seven per page: the type pages and the collections. */
+export const CARDS_PER_PAGE = 21;
+
 // Digits only: Number() alone would also take 1e3, 0x10 and " 2".
 const pageSchema = z
   .string()

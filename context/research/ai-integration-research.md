@@ -2,7 +2,7 @@
 
 ## Output
 
-docs/ai-integration-plan.md
+docs/archive/ai-integration-plan.md
 
 ## Research
 

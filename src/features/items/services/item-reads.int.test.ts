@@ -11,8 +11,8 @@ import { getUserFileListItems } from "@/features/items/services/file-list";
 import { getUserGalleryItems } from "@/features/items/services/gallery";
 import {
   getUserItemDetail,
-  getUserItemDetailOfType,
   openUserItem,
+  openUserItemOfType,
 } from "@/features/items/services/item-detail";
 import {
   getUserLockedFileCount,
@@ -31,15 +31,24 @@ beforeEach(async () => {
 });
 
 describe("item-detail", () => {
-  it("getUserItemDetail and getUserItemDetailOfType", async () => {
+  it("getUserItemDetail", async () => {
     const own = await getUserItemDetail(t.b.userId, required(t.b.items.file));
     expect(own?.file?.downloadUrl).toContain(`users/${t.b.userId}/`);
     await expect(
       getUserItemDetail(t.a.userId, required(t.b.items.file)),
     ).resolves.toBeNull();
+  });
+
+  it("openUserItemOfType: someone else's item is missing, and another type's too", async () => {
+    const own = await openUserItemOfType(t.b.userId, t.b.items.note, "notes");
+    expect(own.status).toBe("ok");
+    const missing = { status: "missing" };
     await expect(
-      getUserItemDetailOfType(t.a.userId, t.b.items.note, "notes"),
-    ).resolves.toBeNull();
+      openUserItemOfType(t.a.userId, t.b.items.note, "notes"),
+    ).resolves.toEqual(missing);
+    await expect(
+      openUserItemOfType(t.b.userId, t.b.items.note, "snippets"),
+    ).resolves.toEqual(missing);
   });
 
   it("openUserItem: someone else's item is missing, not locked", async () => {

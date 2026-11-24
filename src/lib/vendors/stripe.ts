@@ -4,6 +4,7 @@ import Stripe from "stripe";
 
 export type StripeEvent = Stripe.Event;
 export type StripeSubscription = Stripe.Subscription;
+export type StripeRequestOptions = Stripe.RequestOptions;
 
 let client: Stripe | undefined;
 

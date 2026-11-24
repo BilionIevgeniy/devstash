@@ -8,7 +8,7 @@ Add AI-powered code explanation for snippets and commands in the item drawer usi
 
 ## Requirements
 
-- Create a streaming route `app/api/ai/explain/route.ts` with auth, Zod validation (`ai/schemas.ts`), then one call into `ai/services/explain.ts`, which does the Pro check (`getEntitlements`) and the rate limit before the stream opens, then streams the OpenAI answer as plain text `[changed: course: an explainCode server action. Server Actions run one at a time, so a slow AI call would hold up the user's other actions; see section 5 of docs/ai-integration-plan.md]`
+- Create a streaming route `app/api/ai/explain/route.ts` with auth, Zod validation (`ai/schemas.ts`), then one call into `ai/services/explain.ts`, which does the Pro check (`getEntitlements`) and the rate limit before the stream opens, then streams the OpenAI answer as plain text `[changed: course: an explainCode server action. Server Actions run one at a time, so a slow AI call would hold up the user's other actions; see section 5 of docs/archive/ai-integration-plan.md]`
 - The route answers 401, 400, 403 (not Pro) and 429 (limit) as JSON before streaming, sets `Cache-Control: private, no-store` and `maxDuration = 60`, and passes `request.signal` to OpenAI so closing the drawer stops generation
 - Reuse the OpenAI foundation from auto-tagging (`lib/openai.ts`, `AI_MODEL`, the shared hourly and daily limits); add `streamText` to `lib/openai.ts` if it is missing. Use `reasoning: { effort: "low" }`, `store: false`, `safety_identifier`, `max_output_tokens: 2000` to start
 - Truncate the code to 8,000 characters before the call, and say so in the UI when it was cut
@@ -28,4 +28,4 @@ Add AI-powered code explanation for snippets and commands in the item drawer usi
 - Explanations are not saved to the database — regenerated on each click. The last one stays in component state, so switching tabs does not call again
 - Not available in create/edit forms, only in the item drawer read view
 - The drawer gets the plan as `canUseAi` in the `ok` result of `openUserItem` (`items/services/item-detail.ts`), with the detail it already loads; auto-tagging builds this first. The full item page (`getUserItemDetailOfType`) still needs it here `[changed: course: isPro as a prop to the item drawer and code editor, which no layout passes today]`
-- See `docs/ai-integration-plan.md` for full architectural context
+- See `docs/archive/ai-integration-plan.md` for full architectural context

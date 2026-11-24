@@ -1,6 +1,6 @@
 # Stripe Setup Guide
 
-How to set up Stripe for DevStash: the Dashboard, the webhook in production and locally, and how to check it works. The reasons behind each decision are in [docs/stripe-integration-plan.md](../../docs/stripe-integration-plan.md). Repeat everything in live mode before launch: a sandbox and live mode each have their own keys, prices and webhook secret.
+How to set up Stripe for DevStash: the Dashboard, the webhook in production and locally, and how to check it works. The reasons behind each decision are in [docs/archive/stripe-integration-plan.md](../../docs/archive/stripe-integration-plan.md). Repeat everything in live mode before launch: a sandbox and live mode each have their own keys, prices and webhook secret.
 
 ## State on 2026-11-06
 

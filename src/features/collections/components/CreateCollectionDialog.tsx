@@ -5,7 +5,10 @@ import { useState, type SubmitEvent } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
-import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
+import {
+  useDialogControl,
+  type DialogControl,
+} from "@/components/common/hooks/use-dialog-control";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,7 +21,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CollectionFields } from "@/features/collections/_internal/components/CollectionFields";
-import type { CollectionDialogState } from "@/features/collections/_internal/components/hooks/use-collection-dialogs";
 import { createCollection } from "@/features/collections/actions/collection";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import type { CollectionFormValues } from "@/features/collections/domain/collection-fields";
@@ -27,36 +29,22 @@ const EMPTY_VALUES: CollectionFormValues = { name: "", description: "" };
 
 interface CreateCollectionDialogProps {
   /** Opened from elsewhere: no button, and the focus goes back through this. */
-  controlled?: CollectionDialogState;
+  controlled?: DialogControl;
 }
 
 export function CreateCollectionDialog({
   controlled,
 }: CreateCollectionDialogProps) {
   const t = useTranslations("collections");
-  const [isOpenState, setIsOpenState] = useState(false);
-  const isOpen = controlled?.open ?? isOpenState;
-  const setIsOpen = controlled?.onOpenChange ?? setIsOpenState;
-  const { isPending: isCreating, run, takeDone } = useSubmitDialog();
+  const {
+    isOpen,
+    isPending: isCreating,
+    run,
+    close,
+    handleOpenChange,
+    handleCloseAutoFocus,
+  } = useDialogControl(() => toast.success(t("toasts.created")), controlled);
   const syncItems = useSyncItemQueries();
-
-  // Esc, the overlay and the X wait for the result: closing now would lose
-  // the input on a failure and let the form be sent twice.
-  function handleOpenChange(open: boolean) {
-    if (!isCreating) setIsOpen(open);
-  }
-
-  // Sonner is outside the transition, so a toast in the form would show
-  // before the refreshed page closes the dialog. Radix calls this once the
-  // dialog has closed, with or without an animation; focus still returns to
-  // the trigger, or through `controlled`, which has none.
-  function handleCloseAutoFocus(event: Event) {
-    if (controlled) {
-      event.preventDefault();
-      controlled.returnFocus();
-    }
-    if (takeDone()) toast.success(t("toasts.created"));
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -85,7 +73,7 @@ export function CreateCollectionDialog({
           isCreating={isCreating}
           onSubmit={(values) =>
             run(() => createCollection(values), {
-              onSuccess: () => setIsOpen(false),
+              onSuccess: close,
               failCode: "collectionCreateFailed",
               sync: () => syncItems({ kind: "collections" }),
             })

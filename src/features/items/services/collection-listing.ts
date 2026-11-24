@@ -4,13 +4,12 @@ import { getEntitlements } from "@/features/billing/queries";
 import {
   getCollectionItemRecords,
   getCollectionTypeCounts,
-} from "@/features/items/_internal/queries";
+} from "@/features/items/_internal/queries/collection-records";
 import {
   groupItemsByType,
   type TypeGroup,
 } from "@/features/items/domain/list/group-by-type";
 import { typeListing } from "@/features/items/domain/item-fields";
-import { ITEMS_PER_PAGE } from "@/features/items/domain/list/pagination";
 import { toFileListItem } from "@/features/items/services/file-list";
 import { toGalleryItem } from "@/features/items/services/gallery";
 import type {
@@ -19,13 +18,12 @@ import type {
   CollectionSection,
   ItemCardData,
 } from "@/features/items/types";
-import { readPage } from "@/lib/pagination";
+import { CARDS_PER_PAGE, readPage } from "@/lib/pagination";
+import { toRowFields } from "@/features/items/domain/row-fields";
 
-function toCardItem(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- a card shows no upload, and the key never leaves the server
-  { fileKey, fileName, fileSize, ...card }: CollectionItemRecord,
-): ItemCardData {
-  return card;
+// A card shows no upload, and the key never leaves the server.
+function toCardItem(item: CollectionItemRecord): ItemCardData {
+  return { ...toRowFields(item), canCopy: item.canCopy };
 }
 
 // With no key nothing is signed, and the card shows only its title and icon.
@@ -81,7 +79,7 @@ export async function getUserCollectionListing(
   ]);
   const { items, totalCount, page, totalPages } = await readPage(
     requestedPage,
-    ITEMS_PER_PAGE,
+    CARDS_PER_PAGE,
     async () => [...typeCounts.values()].reduce((sum, n) => sum + n, 0),
     (skip, take) => getCollectionItemRecords(userId, collectionId, skip, take),
   );

@@ -2,7 +2,7 @@ import "server-only";
 
 import { getEntitlements } from "@/features/billing/queries";
 import { textEditsAllowed } from "@/features/billing/domain/limits";
-import { getItemCount } from "@/features/items/queries";
+import { getItemCount } from "@/features/items/queries/dashboard";
 import type { ItemEditMode } from "@/features/items/types";
 
 // Whether the user may rewrite the text of their items (ADR 0032): always on

@@ -14,8 +14,8 @@ import {
   LOGIN_BY_EMAIL_IP,
   LOGIN_BY_IP,
   loginEmailKey,
-  tooManyAttemptsParams,
 } from "@/features/auth/domain/rate-limits";
+import { tooManyAttemptsParams } from "@/lib/http/retry-after";
 import { signInHref } from "@/features/auth/domain/callback-url";
 import { callbackPathSchema, signInSchema } from "@/features/auth/schemas";
 import type { AuthActionState } from "@/features/auth/types";

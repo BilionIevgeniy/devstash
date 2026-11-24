@@ -1,3 +1,4 @@
+import { MAIN_CONTENT_ID } from "@/components/common/main-content";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
@@ -10,7 +11,6 @@ import { CTASection } from "./sections/CTASection";
 import { FeaturesSection } from "./sections/FeaturesSection";
 import { HeroSection } from "./sections/HeroSection";
 import { PricingSection } from "./sections/PricingSection";
-import { MAIN_CONTENT_ID } from "./SkipLink";
 
 // The homepage of `/` and `/de`: the same sections in the locale the page
 // passes, never one read from the request (ADR 0024).

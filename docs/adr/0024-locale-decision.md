@@ -33,3 +33,7 @@ The interface is English and German (feature 11). Public pages must stay static,
 - "Registrieren" on `/de` leads to `/register`, whose language is the cookie or the browser's. A visitor who opened `/de` directly, with an English browser and no cookie, gets the English form: the page itself sets no cookie, only the language link does. One who switched with the link gets German, unless they click within the round trip of `POST /api/locale`, which the navigation does not wait for
 - A signed-in user who switches on the homepage switches the app too: it is the same explicit choice. A Cmd or Ctrl click opens the other homepage in a new tab and still sets the cookie
 - An upgrade of next-intl that removes the explicit locale override would make the marketing pages dynamic; the `○` check in the build shows it
+
+## Amendment (2026-11-24, feature 23)
+
+`(app)` and `(auth)` no longer pass every message: `appMessages` (`src/i18n/messages.ts`) leaves out `emails`, which only the server reads, and `marketing`, whose pages send their own list. That is about 7.7 KB of German JSON less in each document and each `refresh()`. `app-messages.guard.test.ts` fails when a component outside `app/(marketing)` reads one of the two. A new namespace goes down by default.

@@ -1,6 +1,7 @@
+import { MAIN_CONTENT_ID } from "@/components/common/main-content";
 import type { LegalContent } from "../../_legal/types";
+import { InPageLink } from "../links/InPageLink";
 import { LegalDocument } from "./LegalDocument";
-import { MAIN_CONTENT_ID } from "../SkipLink";
 
 interface LegalPageProps {
   /** `impressum` or `datenschutz`: the ids of the two documents derive from it. */
@@ -20,13 +21,13 @@ export function LegalPage({ slug, de, en }: LegalPageProps) {
     >
       <div className="mx-auto max-w-3xl wrap-break-word">
         <p className="mb-8 text-sm">
-          <a
+          <InPageLink
             lang="en"
             href={`#${slug}-en`}
             className="underline underline-offset-4"
           >
             English version below
-          </a>
+          </InPageLink>
         </p>
         <LegalDocument id={`${slug}-de`} lang="de" {...de} />
         <hr className="my-16" />

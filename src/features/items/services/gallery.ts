@@ -4,20 +4,21 @@ import { getUploadItemsOfType } from "@/features/items/_internal/queries/type-li
 import { signItemFile } from "@/features/items/_internal/services/file-urls";
 import type { ItemListFilter } from "@/features/items/domain/list/list-params";
 import type { GalleryItem, UploadItemRecord } from "@/features/items/types";
+import { toRowFields } from "@/features/items/domain/row-fields";
 
 // The records come from a query scoped by userId, so every key is the caller's
 // own; signing is local and makes no request to R2. The thumbnail is the
 // drawer's view URL, so opening a card reuses the cached image. The key itself
 // never leaves the server.
 export async function toGalleryItem(
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- the size is not part of a thumbnail
-  { fileKey, fileName, fileSize, ...item }: UploadItemRecord,
+  record: UploadItemRecord,
   now: Date,
 ): Promise<GalleryItem> {
-  if (!fileKey) return { ...item, imageUrl: null };
+  const row = toRowFields(record);
+  if (!record.fileKey) return { ...row, imageUrl: null };
 
-  const { viewUrl } = await signItemFile(fileKey, fileName, now);
-  return { ...item, imageUrl: viewUrl };
+  const { viewUrl } = await signItemFile(record.fileKey, record.fileName, now);
+  return { ...row, imageUrl: viewUrl };
 }
 
 export async function getUserGalleryItems(

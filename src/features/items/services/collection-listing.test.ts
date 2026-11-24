@@ -12,7 +12,7 @@ const {
   signFileUrls: vi.fn(),
 }));
 vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
-vi.mock("@/features/items/_internal/queries", () => ({
+vi.mock("@/features/items/_internal/queries/collection-records", () => ({
   getCollectionItemRecords,
   getCollectionTypeCounts,
 }));

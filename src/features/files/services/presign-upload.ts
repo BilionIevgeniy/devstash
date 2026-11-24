@@ -1,7 +1,7 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
-import { tooManyAttemptsParams } from "@/features/auth/domain/rate-limits";
+import { tooManyAttemptsParams } from "@/lib/http/retry-after";
 import { getEntitlements } from "@/features/billing/queries";
 import {
   checkDeclaredFile,

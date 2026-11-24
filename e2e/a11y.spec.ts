@@ -43,6 +43,33 @@ test.describe("signed in", () => {
     await expectNoSeriousViolations(page);
   });
 
+  // The shell's <main> scrolls and is no Tab stop of its own.
+  test("the skip link leads past the navigation and leaves Back alone", async ({
+    page,
+  }) => {
+    await page.goto("/dashboard");
+    const skip = page.getByRole("link", { name: "Skip to content" });
+    await page.keyboard.press("Tab");
+    await expect(skip).toBeFocused();
+
+    // The palette opens only once React has hydrated the page.
+    await openPalette(page);
+    await page.keyboard.press("Escape");
+    await skip.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("main")).toBeFocused();
+    await expect(page).toHaveURL("/dashboard");
+
+    await page.getByRole("link", { name: "Favorites" }).first().click();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Favorites" }),
+    ).toBeVisible();
+    await page.goBack();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Dashboard" }),
+    ).toBeVisible();
+  });
+
   test("the search palette has no serious violations", async ({ page }) => {
     await page.goto("/dashboard");
     const palette = await openPalette(page);
@@ -62,13 +89,24 @@ test.describe("signed in", () => {
 test.describe("signed out", () => {
   test.use({ storageState: SIGNED_OUT });
 
-  for (const path of [
-    "/",
-    "/de",
-    "/sign-in",
-    "/register",
-    "/forgot-password",
-  ]) {
+  // The calls to action come with the session's answer: the scan reads them,
+  // not the placeholder.
+  for (const [path, action] of [
+    ["/", "Get Started"],
+    ["/de", "Loslegen"],
+  ] as const) {
+    test(`${path} has no serious violations`, async ({ page }) => {
+      await page.goto(path);
+      await expect(
+        page
+          .getByRole("banner")
+          .getByRole("link", { name: action, exact: true }),
+      ).toBeVisible();
+      await expectNoSeriousViolations(page);
+    });
+  }
+
+  for (const path of ["/sign-in", "/register", "/forgot-password"]) {
     test(`${path} has no serious violations`, async ({ page }) => {
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -86,6 +124,11 @@ test.describe("a first visit", () => {
     await page.goto("/");
     await expect(
       page.getByRole("region", { name: "Performance measurement" }),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByRole("banner")
+        .getByRole("link", { name: "Get Started", exact: true }),
     ).toBeVisible();
     await expectNoSeriousViolations(page);
   });

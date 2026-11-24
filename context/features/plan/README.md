@@ -36,7 +36,7 @@ Rules that apply to every file:
 | 20  | [UX, accessibility and consent](../20.ux-a11y-and-consent.md)                    | SHOULD              | [x]    |
 | 21  | [Full E2E suite](../21.e2e-full.md)                                              | MUST before 22      | [x]    |
 | 22  | [CSP and Cache Components](../22.csp-and-cache-components.md)                    | SHOULD              | [x]    |
-| 23  | [Pre-show hardening](23.pre-show-hardening.md)                                   | MUST                | [ ]    |
+| 23  | [Pre-show hardening](../23.pre-show-hardening.md)                                | MUST                | [x]    |
 | 24  | [Functions and database closer to the users](24.region-closer-to-users.md)       | SHOULD              | [ ]    |
 | 25  | [Final review pass](25.final-review-pass.md)                                     | SHOULD, last        | [ ]    |
 

@@ -27,11 +27,14 @@ export async function purgeStaleRegistrations({
   let afterId: string | null = null;
 
   for (;;) {
-    if (Date.now() > deadline) return { counts, stoppedEarly: true };
     const ids = await getStaleRegistrationIds(now, afterId, PAGE_SIZE);
     if (ids.length === 0) return { counts, stoppedEarly: false };
 
-    for (const userId of ids) counts[await purgeOne(userId, now)] += 1;
+    // Before each one: a delete calls Stripe and R2, and a page has 100.
+    for (const userId of ids) {
+      if (Date.now() > deadline) return { counts, stoppedEarly: true };
+      counts[await purgeOne(userId, now)] += 1;
+    }
     afterId = ids[ids.length - 1];
   }
 }

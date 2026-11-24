@@ -5,6 +5,7 @@ import {
   systemTypeSlug,
   toItemTypeInfo,
   typeLabel,
+  typePagePath,
 } from "@/features/item-types/domain/item-type";
 
 const SYSTEM_TYPES = [
@@ -134,5 +135,11 @@ describe("typeLabel", () => {
 
   it("shows a custom type as it is named", () => {
     expect(typeLabel(t, "Recipes", "other")).toBe("Recipes");
+  });
+});
+
+describe("typePagePath", () => {
+  it("is the list of the type's items", () => {
+    expect(typePagePath("snippets")).toBe("/items/snippets");
   });
 });

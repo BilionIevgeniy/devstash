@@ -6,6 +6,7 @@ vi.mock("@/features/auth/nextauth/auth", () => ({ auth }));
 vi.mock("@/features/ai/services/explain", () => ({ startExplanation }));
 
 import { POST } from "@/app/api/ai/explain/route";
+import { fail } from "@/lib/errors/action-result";
 
 const body = { title: "useAuth", language: "bash", code: "ls -la" };
 
@@ -47,20 +48,34 @@ describe("POST /api/ai/explain", () => {
     },
   );
 
-  it.each([
-    ["not-pro", 403],
-    ["limited", 429],
-  ])("answers a %s refusal with %i", async (reason, status) => {
+  it("answers 403 without Pro", async () => {
     startExplanation.mockResolvedValue({
       status: "refused",
-      reason,
-      failure: { success: false, data: null, error: "aiProOnly" },
+      refusal: { reason: "not-pro", failure: fail("aiProOnly") },
     });
 
     const response = await post(body);
 
-    expect(response.status).toBe(status);
+    expect(response.status).toBe(403);
     expect(response.headers.get("Cache-Control")).toBe("private, no-store");
+  });
+
+  it("answers 429 with Retry-After, which is not in the body", async () => {
+    startExplanation.mockResolvedValue({
+      status: "refused",
+      refusal: {
+        reason: "limited",
+        failure: fail("aiDailyLimit"),
+        retryAfterSeconds: 90,
+      },
+    });
+
+    const response = await post(body);
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("90");
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store");
+    await expect(response.json()).resolves.toEqual(fail("aiDailyLimit"));
   });
 
   it("answers 503 for an AI failure before any text", async () => {

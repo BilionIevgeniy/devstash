@@ -14,13 +14,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useSubmitDialog } from "@/components/common/hooks/use-submit-dialog";
-import type { CollectionDialogState } from "@/features/collections/_internal/components/hooks/use-collection-dialogs";
+import {
+  useDialogControl,
+  type DialogControl,
+} from "@/components/common/hooks/use-dialog-control";
 import { deleteCollection } from "@/features/collections/actions/collection";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import type { CollectionSummary } from "@/features/collections/types";
 
-interface DeleteCollectionDialogProps extends CollectionDialogState {
+interface DeleteCollectionDialogProps extends DialogControl {
   collection: CollectionSummary;
   /** The page to leave for: the current one is the collection being deleted. */
   leaveTo?: string;
@@ -29,22 +31,28 @@ interface DeleteCollectionDialogProps extends CollectionDialogState {
 export function DeleteCollectionDialog({
   collection,
   leaveTo,
-  open,
-  onOpenChange,
-  returnFocus,
+  ...control
 }: DeleteCollectionDialogProps) {
   const t = useTranslations();
   const router = useRouter();
-  const { isPending: isDeleting, run, takeDone } = useSubmitDialog();
+  // The dialog can also end by unmounting: the fresh page no longer has the
+  // card or the page it sits in. Radix reports that as a close too.
+  const {
+    isOpen,
+    isPending: isDeleting,
+    run,
+    close,
+    handleOpenChange,
+    handleCloseAutoFocus,
+  } = useDialogControl(
+    () => toast.success(t("collections.toasts.deleted")),
+    control,
+  );
   const syncItems = useSyncItemQueries();
-
-  function handleOpenChange(next: boolean) {
-    if (!isDeleting) onOpenChange(next);
-  }
 
   function finishDelete() {
     if (leaveTo === undefined) {
-      onOpenChange(false);
+      close();
       return;
     }
     router.replace(leaveTo);
@@ -65,17 +73,8 @@ export function DeleteCollectionDialog({
     );
   }
 
-  // Radix calls this after a close and after an unmount, which is how the
-  // dialog ends here: the fresh page no longer has the card or the page it
-  // sits in, so it goes without an exit animation and the toast comes then.
-  function handleCloseAutoFocus(event: Event) {
-    event.preventDefault();
-    returnFocus();
-    if (takeDone()) toast.success(t("collections.toasts.deleted"));
-  }
-
   return (
-    <AlertDialog open={open} onOpenChange={handleOpenChange}>
+    <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
       <AlertDialogContent onCloseAutoFocus={handleCloseAutoFocus}>
         <AlertDialogHeader>
           <AlertDialogTitle>{t("collections.delete.title")}</AlertDialogTitle>

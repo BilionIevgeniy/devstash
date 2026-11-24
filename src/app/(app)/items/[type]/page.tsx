@@ -15,11 +15,14 @@ import {
 } from "@/features/item-types/queries";
 import { typeListing } from "@/features/items/domain/item-fields";
 import { itemListHref } from "@/features/items/domain/list/list-params";
-import { ITEMS_PER_PAGE } from "@/features/items/domain/list/pagination";
-import { countItemsOfType, getTypeTagNames } from "@/features/items/queries";
+import {
+  countItemsOfType,
+  getTypeTagNames,
+} from "@/features/items/queries/type-page";
 import { parseItemListParams } from "@/features/items/schemas";
 import { userCanUseType } from "@/features/items/services/type-access";
-import { pagePosition } from "@/lib/pagination";
+import { CARDS_PER_PAGE, pagePosition } from "@/lib/pagination";
+import { typePagePath } from "@/features/item-types/domain/item-type";
 
 // The URL holds the view: ?sort=&tag=&page= (feature 7). The header, the
 // filters and the pagination read the count and stay outside the Suspense, so
@@ -50,9 +53,9 @@ export default async function ItemsByTypePage({
     getEntitlements(userId),
     getCustomTypeNames(userId),
   ]);
-  const position = pagePosition(totalCount, ITEMS_PER_PAGE, requested.page);
+  const position = pagePosition(totalCount, CARDS_PER_PAGE, requested.page);
   const current = { ...requested, page: position.page };
-  const basePath = `/items/${slug}`;
+  const basePath = typePagePath(slug);
   return (
     <div className="group/list space-y-8">
       <ItemsHeader

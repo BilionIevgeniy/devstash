@@ -18,8 +18,8 @@ export type EmailSendCheck =
 // check does not depend on the address, so an IP refusal can say so openly. The
 // address is checked first so repeated clicks on "Resend" do not use up the IP's
 // budget. When the limiter is unavailable nothing is sent and the neutral
-// result is returned as well: registration only reaches this check for an
-// existing pending account, so an error here would show which addresses exist.
+// result is returned as well, so an outage never answers in other words than a
+// send does.
 export async function checkEmailSend(
   addressPolicy: RateLimitPolicy,
   email: string,

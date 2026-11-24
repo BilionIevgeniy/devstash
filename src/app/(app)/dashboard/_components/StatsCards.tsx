@@ -1,8 +1,8 @@
 import { FolderHeart, FolderOpen, Package, Star } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
-import { getCollectionStats } from "@/features/collections/queries";
-import { getItemStats } from "@/features/items/queries";
+import { getCollectionStats } from "@/features/collections/queries/dashboard";
+import { getItemStats } from "@/features/items/queries/dashboard";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { StatCard } from "@/app/(app)/_components/StatCard";
 

@@ -13,7 +13,7 @@ import {
 
 import { PrivacySettingsButton } from "@/components/common/consent/PrivacySettingsButton";
 
-import { LanguageLink } from "./LanguageLink";
+import { LanguageLink } from "./links/LanguageLink";
 
 interface FooterEntry {
   label: string;

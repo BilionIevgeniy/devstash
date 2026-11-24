@@ -116,7 +116,7 @@ This record is the design and our reading of the law. It is not legal advice: a 
   - A table would hold personal data of people who may have no account, and would need its own retention rule.
 - **Abuse:**
   - Anyone who knows an address can cancel that account's subscription at the period end.
-  - It is never immediate, the holder is told at once, and resuming in the portal undoes it. The Customer Portal must allow reactivation (`docs/stripe-integration-plan.md`, section 7).
+  - It is never immediate, the holder is told at once, and resuming in the portal undoes it. The Customer Portal must allow reactivation (`docs/archive/stripe-integration-plan.md`, section 7).
 
 ### Downgrade
 

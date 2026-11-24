@@ -14,13 +14,16 @@ import {
   AI_BY_USER_DAY,
   AI_BY_USER_HOUR,
 } from "@/features/ai/domain/rate-limits";
+import { fail } from "@/lib/errors/action-result";
 
-const allowed = { success: true, remaining: 10, reset: Date.now() };
-const blocked = { success: false, remaining: 0, reset: Date.now() + 60_000 };
+const NOW = 1_700_000_000_000;
+const allowed = { success: true, remaining: 10, reset: NOW };
+const blocked = { success: false, remaining: 0, reset: NOW + 60_000 };
 
 describe("checkAiAccess", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(Date, "now").mockReturnValue(NOW);
     getEntitlements.mockResolvedValue({ isPro: true });
     consumeRateLimit.mockResolvedValue(allowed);
   });
@@ -30,18 +33,13 @@ describe("checkAiAccess", () => {
 
     await expect(checkAiAccess("user-1")).resolves.toEqual({
       success: false,
-      data: null,
-      error: "aiProOnly",
-      reason: "not-pro",
+      refusal: { reason: "not-pro", failure: fail("aiProOnly") },
     });
     expect(consumeRateLimit).not.toHaveBeenCalled();
   });
 
   it("counts the user's limits and the app's limit for a Pro user", async () => {
-    await expect(checkAiAccess("user-1")).resolves.toEqual({
-      success: true,
-      error: null,
-    });
+    await expect(checkAiAccess("user-1")).resolves.toEqual({ success: true });
     expect(consumeRateLimit).toHaveBeenCalledWith(AI_BY_USER_HOUR, "user-1");
     expect(consumeRateLimit).toHaveBeenCalledWith(AI_BY_USER_DAY, "user-1");
     expect(consumeRateLimit).toHaveBeenCalledWith(
@@ -58,21 +56,25 @@ describe("checkAiAccess", () => {
 
     await expect(checkAiAccess("user-1")).resolves.toEqual({
       success: false,
-      data: null,
-      error: "aiAppLimit",
-      reason: "limited",
+      refusal: {
+        reason: "limited",
+        failure: fail("aiAppLimit"),
+        retryAfterSeconds: 60,
+      },
     });
   });
 
   it("refuses past the hourly limit, in minutes", async () => {
     consumeRateLimit.mockResolvedValueOnce(blocked);
 
-    const result = await checkAiAccess("user-1");
-
-    expect(result.success).toBe(false);
-    expect(result).toMatchObject({ reason: "limited" });
-    expect(result.error).toBe("tooManyAttempts");
-    expect(result).toHaveProperty("params.minutes", 1);
+    await expect(checkAiAccess("user-1")).resolves.toEqual({
+      success: false,
+      refusal: {
+        reason: "limited",
+        failure: fail("tooManyAttempts", { minutes: 1 }),
+        retryAfterSeconds: 60,
+      },
+    });
     expect(consumeRateLimit).toHaveBeenCalledTimes(1);
   });
 
@@ -83,9 +85,11 @@ describe("checkAiAccess", () => {
 
     await expect(checkAiAccess("user-1")).resolves.toEqual({
       success: false,
-      data: null,
-      error: "aiDailyLimit",
-      reason: "limited",
+      refusal: {
+        reason: "limited",
+        failure: fail("aiDailyLimit"),
+        retryAfterSeconds: 60,
+      },
     });
   });
 

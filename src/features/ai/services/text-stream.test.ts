@@ -102,8 +102,10 @@ describe("startTextStream", () => {
       startTextStream("user-1", request, client.signal),
     ).resolves.toEqual({
       status: "refused",
-      reason: "not-pro",
-      failure: { success: false, data: null, error: "aiProOnly" },
+      refusal: {
+        reason: "not-pro",
+        failure: { success: false, data: null, error: "aiProOnly" },
+      },
     });
     expect(streamText).not.toHaveBeenCalled();
   });
@@ -113,7 +115,10 @@ describe("startTextStream", () => {
 
     await expect(
       startTextStream("user-1", request, client.signal),
-    ).resolves.toMatchObject({ status: "refused", reason: "limited" });
+    ).resolves.toMatchObject({
+      status: "refused",
+      refusal: { reason: "limited" },
+    });
     expect(streamText).not.toHaveBeenCalled();
   });
 

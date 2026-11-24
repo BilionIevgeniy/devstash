@@ -2,6 +2,10 @@ import "server-only";
 
 import { buildPasswordResetEmail } from "@/features/auth/_internal/emails/password-reset-email";
 import { hashPassword } from "@/features/auth/_internal/password";
+import {
+  deferLogged,
+  type Defer,
+} from "@/features/auth/_internal/services/defer";
 import { replaceToken } from "@/features/auth/_internal/services/token-store";
 import { hashToken } from "@/features/auth/_internal/token";
 import {
@@ -10,10 +14,8 @@ import {
   getPasswordResetIdentifier,
   PASSWORD_RESET_TOKEN_TTL_HOURS,
 } from "@/features/auth/domain/password-reset";
-import {
-  tooManyAttemptsParams,
-  RESET_EMAIL_BY_ADDRESS,
-} from "@/features/auth/domain/rate-limits";
+import { RESET_EMAIL_BY_ADDRESS } from "@/features/auth/domain/rate-limits";
+import { tooManyAttemptsParams } from "@/lib/http/retry-after";
 import { isTokenExpired } from "@/features/auth/domain/verification-token";
 import {
   getAccountState,
@@ -56,13 +58,15 @@ export async function sendPasswordResetLink(
 }
 
 // Every outcome except an exhausted per-IP limit is the same neutral success,
-// so the answer never shows whether the address has an account. For the same
+// so the answer never shows whether the address has an account, in its words or
+// in the time it takes: the lookup and the send run after it. For the same
 // reason a send failure is only logged.
 export async function requestPasswordResetLink(
   email: string,
   origin: string,
   ip: string | null,
   locale: Locale,
+  defer: Defer,
 ): Promise<OperationResult> {
   const check = await checkEmailSend(RESET_EMAIL_BY_ADDRESS, email, ip);
   if (check.status === "ip-limited") {
@@ -73,10 +77,11 @@ export async function requestPasswordResetLink(
   }
   if (check.status === "address-limited") return ok();
 
-  const account = await getAccountState(email);
-  if (!account?.hasPassword) return ok();
-
-  await sendPasswordResetLink(email, origin, locale);
+  deferLogged(defer, async () => {
+    const account = await getAccountState(email);
+    if (account?.hasPassword)
+      await sendPasswordResetLink(email, origin, locale);
+  });
   return ok();
 }
 

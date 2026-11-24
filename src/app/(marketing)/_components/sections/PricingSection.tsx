@@ -43,6 +43,7 @@ function PlanAction({
 }: PlanActionProps) {
   return (
     <SessionAwareAction
+      pendingVariant={variant}
       guest={(hidden) => (
         <PricingCardButton
           asChild

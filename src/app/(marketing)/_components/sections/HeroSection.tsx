@@ -2,9 +2,10 @@ import { ArrowRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
-import type { Locale } from "@/i18n/config";
+import { homePath, type Locale } from "@/i18n/config";
 
 import { ChaosAnimation } from "../chaos/ChaosAnimation";
+import { InPageLink } from "../links/InPageLink";
 import { DashboardPreview } from "./DashboardPreview";
 import { StartAction } from "./StartAction";
 
@@ -31,7 +32,9 @@ export async function HeroSection({ locale }: { locale: Locale }) {
               size="lg"
               className="h-11 px-5 text-[15px]"
             >
-              <a href="#features">{t("seeFeatures")}</a>
+              <InPageLink href={`${homePath(locale)}#features`}>
+                {t("seeFeatures")}
+              </InPageLink>
             </Button>
           </div>
         </div>

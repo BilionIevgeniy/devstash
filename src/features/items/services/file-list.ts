@@ -2,6 +2,7 @@ import "server-only";
 
 import { getUploadItemsOfType } from "@/features/items/_internal/queries/type-list";
 import { signItemFile } from "@/features/items/_internal/services/file-urls";
+import { toRowFields } from "@/features/items/domain/row-fields";
 import type { ItemListFilter } from "@/features/items/domain/list/list-params";
 import type { FileListItem, UploadItemRecord } from "@/features/items/types";
 
@@ -9,13 +10,14 @@ import type { FileListItem, UploadItemRecord } from "@/features/items/types";
 // own; signing is local and makes no request to R2. The key itself never
 // leaves the server.
 export async function toFileListItem(
-  { fileKey, fileName, fileSize, ...item }: UploadItemRecord,
+  record: UploadItemRecord,
   now: Date,
 ): Promise<FileListItem> {
-  if (!fileKey) return { ...item, file: null };
+  const row = toRowFields(record);
+  if (!record.fileKey) return { ...row, file: null };
 
-  const file = await signItemFile(fileKey, fileName, now);
-  return { ...item, file: { ...file, size: fileSize ?? 0 } };
+  const file = await signItemFile(record.fileKey, record.fileName, now);
+  return { ...row, file: { ...file, size: record.fileSize ?? 0 } };
 }
 
 export async function getUserFileListItems(

@@ -5,6 +5,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
+import { MAIN_CONTENT_ID } from "@/components/common/main-content";
+import { SkipLink } from "@/components/common/SkipLink";
 import { TopBar } from "@/features/app-shell/_internal/components/TopBar";
 import { sidebarCookie } from "@/features/app-shell/domain/sidebar";
 import {
@@ -74,6 +76,7 @@ export function DashboardShell({
 
   return (
     <div lang={locale} className="flex h-screen">
+      <SkipLink />
       <aside
         className={cn(
           "hidden w-64 shrink-0 border-r",
@@ -105,7 +108,10 @@ export function DashboardShell({
           upgradeButton={upgradeButton}
           newItemButton={newItemButton}
         />
-        <main className="flex-1 scroll-pb-(--consent-inset) overflow-y-auto p-6 pb-[calc(--spacing(6)+var(--consent-inset,0px))]">
+        <main
+          id={MAIN_CONTENT_ID}
+          className="flex-1 outline-none scroll-pb-(--consent-inset) overflow-y-auto p-6 pb-[calc(--spacing(6)+var(--consent-inset,0px))]"
+        >
           {children}
           <AppFooter />
         </main>

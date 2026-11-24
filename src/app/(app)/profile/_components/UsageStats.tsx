@@ -5,8 +5,8 @@ import { getTranslations } from "next-intl/server";
 
 import { StatCard } from "@/app/(app)/_components/StatCard";
 import { getSessionUser } from "@/features/auth/nextauth/session";
-import { getCollectionStats } from "@/features/collections/queries";
-import { getItemStats } from "@/features/items/queries";
+import { getCollectionStats } from "@/features/collections/queries/dashboard";
+import { getItemStats } from "@/features/items/queries/dashboard";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
 import { getSidebarItemTypes } from "@/features/item-types/queries";
 import type { SidebarItemType } from "@/features/item-types/types";

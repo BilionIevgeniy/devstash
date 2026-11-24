@@ -21,12 +21,21 @@ export interface FullTextColumns {
   text: Prisma.Sql;
 }
 
+// A caller answers a text that can match nothing without a query. Reaching SQL
+// with it is a bug, and an empty condition would be broken SQL.
+function requireSide({ tsQuery, typoText }: FullTextMatch): void {
+  if (tsQuery === null && typoText === null) {
+    throw new Error("A full-text match needs a tsquery or a text");
+  }
+}
+
 // The WHERE part: the vector matches, or the text is close to the typed one.
-// At least one side of the match must be set.
 export function fullTextMatchSql(
-  { tsQuery, typoText }: FullTextMatch,
+  match: FullTextMatch,
   { vector, text }: FullTextColumns,
 ): Prisma.Sql {
+  requireSide(match);
+  const { tsQuery, typoText } = match;
   const conditions: Prisma.Sql[] = [];
   if (tsQuery !== null) {
     conditions.push(Prisma.sql`${vector} @@ to_tsquery('simple', ${tsQuery})`);
@@ -38,9 +47,11 @@ export function fullTextMatchSql(
 // The ORDER BY score: the weighted rank of the vector plus the word similarity
 // of the text column.
 export function fullTextRankSql(
-  { tsQuery, typoText }: FullTextMatch,
+  match: FullTextMatch,
   { vector, text }: FullTextColumns,
 ): Prisma.Sql {
+  requireSide(match);
+  const { tsQuery, typoText } = match;
   const parts: Prisma.Sql[] = [];
   if (tsQuery !== null) {
     parts.push(
