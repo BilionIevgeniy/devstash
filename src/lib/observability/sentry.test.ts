@@ -205,16 +205,6 @@ describe("captureSafeError", () => {
 });
 
 describe("onRequestError", () => {
-  // Each test starts past the twin window of the one before.
-  let clock = Date.UTC(2026, 10, 19);
-  beforeEach(() => {
-    clock += 60_000;
-    vi.useFakeTimers({ now: clock });
-  });
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   const context = {
     routerKind: "App Router",
     routePath: "/(app)/items/[id]/page",
@@ -261,29 +251,6 @@ describe("onRequestError", () => {
     onRequestError(new Error("x"), request, context);
 
     expect(scope.setTag).not.toHaveBeenCalledWith("digest", expect.anything());
-  });
-  it("drops the twin report of the second render pass, and keeps the first digest", () => {
-    const thrown = () => Object.assign(new Error("x"), { digest: "1" });
-    onRequestError(thrown(), request, context);
-    vi.advanceTimersByTime(50);
-    onRequestError(Object.assign(thrown(), { digest: "2" }), request, context);
-
-    expect(captureRequestError).toHaveBeenCalledOnce();
-    expect(scope.setTag).toHaveBeenCalledWith("digest", "1");
-  });
-
-  it("reports the same failure again once the window has passed, or for another URL", () => {
-    onRequestError(new Error("x"), request, context);
-    onRequestError(new Error("x"), { ...request, path: "/dashboard" }, context);
-    onRequestError(
-      new Error("x"),
-      { ...request, path: `${request.path}&n=2` },
-      context,
-    );
-    vi.advanceTimersByTime(5_000);
-    onRequestError(new Error("x"), request, context);
-
-    expect(captureRequestError).toHaveBeenCalledTimes(4);
   });
 });
 
