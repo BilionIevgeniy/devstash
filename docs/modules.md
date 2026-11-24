@@ -75,7 +75,7 @@ A module writes only the models it owns and reads only its own models. A relatio
 
 ### editor
 
-- **Owns:** `UserPreference` and the editor preferences; the editors of item content: `CodeEditor` (Monaco, served from `public/monaco/`, a plain textarea when it fails to load) and `MarkdownEditor`; the Markdown preview (no raw HTML, images only when asked for); the languages and their picker
+- **Owns:** `UserPreference` and the editor preferences; the editors of item content: `CodeEditor` (Monaco, served from `public/monaco/`, a plain textarea when it fails to load) and `MarkdownEditor`; the Markdown preview (no raw HTML, and never an image: its alt text); the languages and their picker
 - **`components/`:** the two editors, `MarkdownPreview`, `LanguageSelect`, `EditorPreferencesProvider` (around the shell, whose dialogs hold editors), `EditorPreferencesSection`, `hooks/use-language-label`
 - **`queries`, `domain/code-language`, `types`:** the preferences; the language names; `EditorHandle`, the `ref` with `focus()` only
 - It cannot import `ai`: Explain Code and prompt optimization reach the editors through slots that `items` fills
