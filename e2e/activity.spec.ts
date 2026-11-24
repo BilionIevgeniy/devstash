@@ -23,8 +23,10 @@ test("the code editor still takes input after Back to the item", async ({
   await page.goBack();
   await expect(page).toHaveURL(href ?? "/");
 
+  // The view mounted anew while hidden, so it comes back in view mode.
   const edit = page.getByRole("button", { name: "Edit", exact: true });
-  if (await edit.isVisible()) await edit.click();
+  await expect(edit).toBeVisible();
+  await edit.click();
   // Monaco's handle: a click on the label focuses it once it has mounted.
   await expect(async () => {
     await page.getByText("Content", { exact: true }).click();
