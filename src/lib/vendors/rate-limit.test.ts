@@ -27,6 +27,8 @@ vi.mock("@/lib/observability/logger", () => ({
   logger: { error, warn, info: vi.fn() },
 }));
 
+import { hmacSha256Hex } from "@/lib/hash";
+
 const POLICY = { name: "test:user", limit: 5, windowSeconds: 60 } as const;
 const KEY = "a-hash-key-of-at-least-32-characters";
 const ALLOWED = { success: true, remaining: 4, reset: 1_000 };
@@ -56,8 +58,20 @@ describe("consumeRateLimit", () => {
     await expect(consumeRateLimit(POLICY, "ada@example.com")).resolves.toEqual(
       ALLOWED,
     );
-    const [identifier] = limit.mock.calls[0] as [string];
-    expect(identifier).toMatch(/^[0-9a-f]{64}$/);
+    // Not a plain hash: one could be reversed by trying every address.
+    expect(limit).toHaveBeenCalledExactlyOnceWith(
+      hmacSha256Hex(KEY, "ada@example.com"),
+    );
+  });
+
+  it("limits as the policy says", async () => {
+    const { consumeRateLimit } = await load();
+
+    await consumeRateLimit(POLICY, "a");
+
+    expect(created).toHaveBeenCalledWith(
+      expect.objectContaining({ limiter: { tokens: 5, window: "60 s" } }),
+    );
   });
 
   it("keeps one limiter per policy, its counters apart by prefix", async () => {

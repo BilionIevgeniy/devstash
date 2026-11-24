@@ -57,5 +57,7 @@ describe("submitEmailLink", () => {
     const state = await submit(() => Promise.reject(new TypeError("offline")));
 
     expect(state).toEqual({ error: { error: "generic" }, values: VALUES });
+    expect(replace).not.toHaveBeenCalled();
+    expect(toast.success).not.toHaveBeenCalled();
   });
 });

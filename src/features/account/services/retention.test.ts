@@ -44,19 +44,27 @@ describe("purgeStaleRegistrations", () => {
 
   it("counts each outcome and pages on after the last id", async () => {
     mocks.getStaleRegistrationIds
-      .mockResolvedValueOnce(["a", "b", "c", "d"])
+      .mockResolvedValueOnce(["a", "b", "c", "d", "e"])
       .mockResolvedValueOnce([]);
     mocks.verifyStaleRegistration.mockResolvedValueOnce(null);
     mocks.removeVerifiedAccount
       .mockResolvedValueOnce(ok({ removed: true }))
       .mockResolvedValueOnce(fail("filesPurgeFailed"))
-      .mockRejectedValueOnce(new Error("database down"));
+      .mockRejectedValueOnce(new Error("database down"))
+      // Verified between the check and the delete.
+      .mockResolvedValueOnce(ok({ removed: false }));
 
     await expect(purge()).resolves.toEqual({
-      counts: { deleted: 1, skipped: 1, failed: 2 },
+      counts: { deleted: 1, skipped: 2, failed: 2 },
       stoppedEarly: false,
     });
-    expect(mocks.getStaleRegistrationIds.mock.calls[1][1]).toBe("d");
+    expect(mocks.getStaleRegistrationIds.mock.calls[1][1]).toBe("e");
+    // The cutoff is the run's own, and only a proof is deleted.
+    expect(mocks.verifyStaleRegistration).toHaveBeenCalledWith("b", NOW);
+    expect(mocks.removeVerifiedAccount).toHaveBeenCalledWith({ userId: "b" });
+    expect(mocks.removeVerifiedAccount).not.toHaveBeenCalledWith({
+      userId: "a",
+    });
   });
 
   // A page of 100 deletions would pass the function's 60 seconds, and no job

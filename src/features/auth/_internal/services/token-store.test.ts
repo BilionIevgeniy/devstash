@@ -46,6 +46,8 @@ describe("replaceToken", () => {
     const second = await replaceToken(IDENTIFIER, EMAIL, EXPIRES, NOW);
 
     expect(first).not.toBe(second);
+    // 32 random bytes: nobody guesses one.
+    expect(first).toMatch(/^[0-9a-f]{64}$/);
   });
 
   // An earlier link of the same kind must die, one of another kind must not
