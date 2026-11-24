@@ -24,10 +24,38 @@ export interface CspInput {
   };
   /** `next dev`: React's debugging needs eval, and HMR a WebSocket. */
   dev: boolean;
+  /** A Vercel preview, where Vercel injects its toolbar and comments. */
+  preview: boolean;
 }
 
 // GitHub avatars of the users who signed in with GitHub.
 const GITHUB_AVATARS = "https://avatars.githubusercontent.com";
+
+// The Vercel Toolbar of a preview deployment (its documented directives,
+// vercel.com/docs/vercel-toolbar/managing-toolbar). Never in production.
+const TOOLBAR = "https://vercel.live";
+const TOOLBAR_SOURCES: Record<string, string[]> = {
+  "script-src": [TOOLBAR],
+  "style-src": [TOOLBAR],
+  "img-src": [TOOLBAR, "https://vercel.com"],
+  "font-src": [TOOLBAR, "https://assets.vercel.com"],
+  "connect-src": [TOOLBAR, "wss://ws-us3.pusher.com"],
+  "frame-src": [TOOLBAR],
+};
+
+function withToolbar(
+  directives: Record<string, string[]>,
+): Record<string, string[]> {
+  return Object.fromEntries(
+    Object.entries(directives).map(([name, sources]) => {
+      const extra = TOOLBAR_SOURCES[name] ?? [];
+      // frame-src 'none' cannot take a source beside it.
+      const base =
+        extra.length > 0 ? sources.filter((s) => s !== "'none'") : sources;
+      return [name, [...base, ...extra]];
+    }),
+  );
+}
 
 function sentryOrigin(dsn: string | undefined): string[] {
   const allowed = allowedSentryDsn(dsn);
@@ -40,6 +68,11 @@ function r2Origin({ accountId, bucket, endpoint }: CspInput["r2"]): string[] {
 }
 
 export function cspDirectives(input: CspInput): Record<string, string[]> {
+  const directives = baseDirectives(input);
+  return input.preview ? withToolbar(directives) : directives;
+}
+
+function baseDirectives(input: CspInput): Record<string, string[]> {
   const r2 = r2Origin(input.r2);
   return {
     "default-src": ["'self'"],

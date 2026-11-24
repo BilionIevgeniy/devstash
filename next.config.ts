@@ -22,6 +22,7 @@ const CONTENT_SECURITY_POLICY = buildContentSecurityPolicy({
     endpoint: process.env.R2_ENDPOINT,
   },
   dev: process.env.NODE_ENV === "development",
+  preview: process.env.VERCEL_ENV === "preview",
 });
 
 // Sent with every response. The policy was report-only until the end-to-end

@@ -9,6 +9,7 @@ const PRODUCTION: CspInput = {
   sentryDsn: "https://key@o123.ingest.de.sentry.io/456",
   r2: { accountId: "account", bucket: "devstash", endpoint: undefined },
   dev: false,
+  preview: false,
 };
 
 describe("cspDirectives", () => {
@@ -54,6 +55,7 @@ describe("cspDirectives", () => {
         endpoint: "http://localhost:3102",
       },
       dev: false,
+      preview: false,
     });
     expect(directives["connect-src"]).toEqual([
       "'self'",
@@ -77,5 +79,13 @@ describe("cspDirectives", () => {
     expect(policy).toContain("object-src 'none'");
     expect(policy).toContain("base-uri 'self'");
     expect(policy).not.toContain("form-action");
+  });
+
+  it("lets the Vercel Toolbar in on a preview, and only there", () => {
+    const preview = cspDirectives({ ...PRODUCTION, preview: true });
+    expect(preview["script-src"]).toContain("https://vercel.live");
+    expect(preview["connect-src"]).toContain("wss://ws-us3.pusher.com");
+    expect(preview["frame-src"]).toEqual(["https://vercel.live"]);
+    expect(buildContentSecurityPolicy(PRODUCTION)).not.toContain("vercel");
   });
 });

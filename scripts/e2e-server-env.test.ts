@@ -90,6 +90,7 @@ describe("buildE2eServerEnv", () => {
         endpoint: env.R2_ENDPOINT,
       },
       dev: false,
+      preview: false,
     });
 
     expect(directives["connect-src"]).toEqual(
