@@ -1,6 +1,6 @@
 # AI Auto-Tagging
 
-> Adapted to our architecture (paths: `context/architecture-rules.md`, "Old paths in specs") and to `docs/ai-integration-plan.md` (cited as "plan §N"). The course wording is kept in `/Users/ievgenbilion/Programming/Projects/Devstash/featuresDRAFT.original/`. Changed requirements are marked `[changed: ...]`.
+> Adapted to our architecture (paths: `context/architecture-rules.md`, "Old paths in specs") and to `docs/archive/ai-integration-plan.md` (cited as "plan §N"). The course wording is kept in `/Users/ievgenbilion/Programming/Projects/Devstash/featuresDRAFT.original/`. Changed requirements are marked `[changed: ...]`.
 
 ## Overview
 
@@ -140,4 +140,4 @@ const parsed = response.output_parsed; // null on a refusal: treat as an error
 - `OPENAI_API_KEY` is read only in `lib/openai.ts`: no `NEXT_PUBLIC_` prefix, never `dangerouslyAllowBrowser` (plan §9)
 - AI runs only on a click: never in the background or on save, so content does not leave without the user asking (plan §7)
 - Output is untrusted: tags pass the strict schema and the normalizing, reach the form as text, and the user accepts each one (plan §9)
-- See `docs/ai-integration-plan.md` for full architectural context
+- See `docs/archive/ai-integration-plan.md` for full architectural context

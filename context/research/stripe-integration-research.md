@@ -2,7 +2,7 @@
 
 ## Output
 
-`docs/stripe-integration-plan.md`
+`docs/archive/stripe-integration-plan.md`
 
 ## Research
 

@@ -2,8 +2,8 @@
 
 The plan for DevStash Pro (€8 a month, €72 a year, including VAT since feature 19). Phases 1 and 2 are built. Section 2 describes the code as it was before Phase 1. The steps to follow are in two specs:
 
-- [context/features/stripe-phase-1-spec.md](../context/features/stripe-phase-1-spec.md): SDK, limits, checkout, portal, ADR 0011
-- [context/features/stripe-phase-2-spec.md](../context/features/stripe-phase-2-spec.md): webhook, gating, billing UI, account deletion
+- [context/features/stripe-phase-1-spec.md](../../context/features/stripe-phase-1-spec.md): SDK, limits, checkout, portal, ADR 0011
+- [context/features/stripe-phase-2-spec.md](../../context/features/stripe-phase-2-spec.md): webhook, gating, billing UI, account deletion
 
 This document holds the analysis and the reasons. Checked on 2026-11-06 against the code, `stripe` 23.1.0 (API version `2026-10-28.endive`), `next-auth` 5.0.0-beta.32 (`@auth/core` 0.41.3), the Next.js 16 docs in `node_modules`, the Stripe docs, and an independent review by the `architecture-reviewer` agent.
 
@@ -309,13 +309,13 @@ Run by hand against the dev server, `stripe listen` and the Neon `development` b
 ## 10. Known risks and open decisions
 
 - **Settled: no unbuilt feature is on sale.** `PricingSection` lists Custom item types, AI features and Export under Pro, and all three exist (custom types since feature 18, ADR 0031)
-- **Built in test mode by feature 19: German tax and consumer law.** Gross EUR prices with Stripe Tax, the order step (§ 312j BGB), the § 356 (5) consent, the AGB, the § 312f confirmation and the § 312k cancellation ([ADR 0032](adr/0032-consumer-flow.md), [ADR 0033](adr/0033-tax-prices-and-payment-policy.md)); the sign-offs stay in `context/todo-before-live.md`
-- **Two open Checkout tabs.** Narrowed by feature 19: a session is made under a lock per user, which reuses an open session of the same plan and expires any other. What remains is a session completed in one tab while the other still shows Stripe's page ([ADR 0032](adr/0032-consumer-flow.md))
+- **Built in test mode by feature 19: German tax and consumer law.** Gross EUR prices with Stripe Tax, the order step (§ 312j BGB), the § 356 (5) consent, the AGB, the § 312f confirmation and the § 312k cancellation ([ADR 0032](../adr/0032-consumer-flow.md), [ADR 0033](../adr/0033-tax-prices-and-payment-policy.md)); the sign-offs stay in `context/todo-before-live.md`
+- **Two open Checkout tabs.** Narrowed by feature 19: a session is made under a lock per user, which reuses an open session of the same plan and expires any other. What remains is a session completed in one tab while the other still shows Stripe's page ([ADR 0032](../adr/0032-consumer-flow.md))
 - **Two open tabs on a dead customer.** Both replace it, and the later save wins the row. A payment on the earlier customer then matches no row, so the user has paid and stays Free until it is fixed by hand. It needs a dead customer and two open tabs, so the risk is accepted
 - **Stripe behaviour not proven by the docs:** see the bold items in section 8
 - **`subscriptionWrite` reuses `isProStatus`** for its live class, so a change to the grace policy also changes which subscription may write. A comment in the code says so
 - **When `ai` lands,** `past_due` users get paid-for usage during the grace period. Decide that together with the quota
-- **Reconciliation:** built by feature 19 as a daily job of the cron route ([ADR 0033](adr/0033-tax-prices-and-payment-policy.md)): every row that names a subscription and every live Stripe subscription is synced, so a webhook lost past Stripe's 3 days of retries is corrected within a day
+- **Reconciliation:** built by feature 19 as a daily job of the cron route ([ADR 0033](../adr/0033-tax-prices-and-payment-policy.md)): every row that names a subscription and every live Stripe subscription is synced, so a webhook lost past Stripe's 3 days of retries is corrected within a day
 - **Not in scope:** trials, coupons. `cancelAtPeriodEnd` is on the row since feature 19, for the § 312k page
 
 ## Sources

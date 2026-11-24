@@ -11,7 +11,7 @@ export interface AiOperationSettings {
   timeoutMs: number;
 }
 
-// Starting points, to be set from the usage logs (docs/ai-integration-plan.md §4).
+// Starting points, to be set from the usage logs (docs/archive/ai-integration-plan.md §4).
 export const AUTO_TAG_SETTINGS: AiOperationSettings = {
   effort: "none",
   verbosity: "low",

@@ -7,7 +7,7 @@ Facts about laws and vendors below are **as of 2026-11-11**, each with its sourc
 
 ## Context
 
-DevStash is public. Anyone can register (email and password, or GitHub), a pricing page sells Pro through Stripe, and an item's content goes to OpenAI when a user clicks an AI button. Germany expects a provider identification (Impressum) and, from the first account, the information of Art. 13 GDPR (Datenschutzerklärung), whether or not any money moves. The footer showed "Privacy" and "Terms" as text with no pages behind them, and `docs/ai-integration-plan.md` already said a privacy page is needed before live mode.
+DevStash is public. Anyone can register (email and password, or GitHub), a pricing page sells Pro through Stripe, and an item's content goes to OpenAI when a user clicks an AI button. Germany expects a provider identification (Impressum) and, from the first account, the information of Art. 13 GDPR (Datenschutzerklärung), whether or not any money moves. The footer showed "Privacy" and "Terms" as text with no pages behind them, and `docs/archive/ai-integration-plan.md` already said a privacy page is needed before live mode.
 
 Stripe runs on a test key. Nobody can pay for real, and the project is a portfolio piece, not a business.
 

@@ -6,7 +6,7 @@
 
 ## Context
 
-[ADR 0005](0005-entitlements-from-the-database.md) decided where the plan comes from, and it still holds. Three of its details do not: it treats `past_due` as Free, it plans a `StripeEvent` table for idempotency, and its cost argument is weaker than it says. An accepted record is not edited, so this one restates its decision in full and replaces it. The analysis is in [docs/stripe-integration-plan.md](../stripe-integration-plan.md).
+[ADR 0005](0005-entitlements-from-the-database.md) decided where the plan comes from, and it still holds. Three of its details do not: it treats `past_due` as Free, it plans a `StripeEvent` table for idempotency, and its cost argument is weaker than it says. An accepted record is not edited, so this one restates its decision in full and replaces it. The analysis is in [docs/archive/stripe-integration-plan.md](../archive/stripe-integration-plan.md).
 
 ## Options
 

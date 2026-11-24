@@ -20,7 +20,7 @@ Review the codebase for cleanup tasks. Start with `git status` and `npm run lint
 7. **Suppressions:** find `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck` and `eslint-disable` comments that are no longer needed
 8. **Architecture:** read the lint errors, then search for what the lint does not cover. Only checks a search can answer belong here: logic (`userId` in every `where`, one service call per entry point, reads through `tx`) is for the `code-reviewer` agent
    - Foreign models: a feature uses `prisma.<model>` or `tx.<model>` for a model it does not own in the rank table
-   - `import "server-only"` missing from a `queries.ts` or a file in `services/`, `import "client-only"` missing from a browser helper, `"use client"` on a hook or a helper
+   - `import "server-only"` missing from a query file (`queries.ts`, or a file in `queries/`) or a file in `services/`, `import "client-only"` missing from a browser helper, `"use client"` on a hook or a helper
    - An `index.ts` barrel in `src/`
    - A folder in `src/` with more than 12 files, not counting tests, stories and subfolders (`components/ui` and `i18n/messages/<locale>` are exempt): split it by topic ("Rules" in `context/architecture-rules.md`, ADR 0029)
    - An authenticated route in `app/(app)/` that the matcher in `src/proxy.ts` does not cover

@@ -2,7 +2,7 @@
 
 The plan for the Pro AI features: auto-tagging, summaries, Explain Code and prompt optimization, suggest content. Auto-tagging is built (2026-11-07), with the foundation: `openai` 7.53.0, `lib/vendors/openai.ts`, the `ai` module, the access check and the limits. Summaries and Explain Code are built too (2026-11-07), Explain Code with `streamText` and the first streaming route. Prompt optimization is built too (2026-11-07), on the same stream core (`ai/services/text-stream.ts`).
 
-This document holds the analysis and the reasons. The steps to follow will be in the feature specs: [ai-auto-tag-spec.md](../featuresDRAFT/ai-auto-tag-spec.md), [ai-explain-spec.md](../featuresDRAFT/ai-explain-spec.md), and specs still to be written for summaries and prompt optimization.
+This document holds the analysis and the reasons. The steps to follow will be in the feature specs: [ai-auto-tag-spec.md](../../context/features/ai-auto-tag-spec.md), [ai-explain-spec.md](../../context/features/ai-explain-spec.md), and specs still to be written for summaries and prompt optimization.
 
 Checked on 2026-11-07 against the code, the types of `openai` 7.53.0 (read, not installed), the Next.js 16 docs in `node_modules` and the OpenAI docs. No call was made to the OpenAI API, so everything about model behaviour comes from the docs. Token counts and costs per call are estimates.
 
@@ -31,7 +31,7 @@ The model name lives in one constant, `AI_MODEL` in `ai/domain/`, so the next de
 - **Lint:** `eslint.config.mjs` already keeps `openai` and every `openai/*` path inside `lib`
 - **Environment:** `OPENAI_API_KEY` is in `.env.example`
 - **Markdown:** `MarkdownPreview` (private to `editor`) has raw HTML off and keeps the default URL filter
-- **Architecture:** `ai` is planned at rank 4, above `billing` and `editor`, below `items`. It takes content as input and never reads items ([modules.md](modules.md))
+- **Architecture:** `ai` is planned at rank 4, above `billing` and `editor`, below `items`. It takes content as input and never reads items ([modules.md](../modules.md))
 
 ### What is missing
 
@@ -39,7 +39,7 @@ The model name lives in one constant, `AI_MODEL` in `ai/domain/`, so the next de
 - **`CodeEditor` has no slot for a button or a second view.** `EditorHeader` holds the language label and the copy button, and `editor` (rank 3) cannot import `ai` (rank 4)
 - **`MarkdownPreview` is private**, and it renders images, which matters for model output (section 9)
 - **There is no spec for summaries or prompt optimization**
-- **The Pro lists do not mention AI.** `PRO_PLAN_FEATURES` must stay that way until a feature ships. `PricingSection` already sells AI features ("Unbuilt features on sale" in [architecture.md](architecture.md))
+- **The Pro lists do not mention AI.** `PRO_PLAN_FEATURES` must stay that way until a feature ships. `PricingSection` already sells AI features ("Unbuilt features on sale" in [architecture.md](../architecture.md))
 
 ### Paths in the research prompt
 
@@ -47,7 +47,7 @@ The model name lives in one constant, `AI_MODEL` in `ai/domain/`, so the next de
 
 ## 3. What the specs say that does not hold
 
-[ai-auto-tag-spec.md](../featuresDRAFT/ai-auto-tag-spec.md) lists gotchas. Some still stand, others conflict with the OpenAI docs.
+[ai-auto-tag-spec.md](../../context/features/ai-auto-tag-spec.md) lists gotchas. Some still stand, others conflict with the OpenAI docs.
 
 | Spec says                                                                                        | What the docs say                                                                                                                                                               | Decision                                                                                                                                                  |
 | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -58,7 +58,7 @@ The model name lives in one constant, `AI_MODEL` in `ai/domain/`, so the next de
 | `max_tokens` is not supported                                                                    | Correct: it is `max_output_tokens` on Responses                                                                                                                                 | Set it, and treat `incomplete` as a failure                                                                                                               |
 | Normalize tags to lowercase                                                                      | Still needed                                                                                                                                                                    | `ai/domain/`                                                                                                                                              |
 | Truncate content to 2000 characters                                                              | Still sensible for tags                                                                                                                                                         | Per-operation limits, section 7                                                                                                                           |
-| `explainCode` is a Server Action                                                                 | Server Actions run one at a time ([coding-standards.md](../context/coding-standards.md)), so a slow AI call holds up the user's other actions                                   | A streaming route, section 5                                                                                                                              |
+| `explainCode` is a Server Action                                                                 | Server Actions run one at a time ([coding-standards.md](../../context/coding-standards.md)), so a slow AI call holds up the user's other actions                                | A streaming route, section 5                                                                                                                              |
 | 20 requests per hour                                                                             | Does not bound the monthly cost                                                                                                                                                 | Add a daily limit, section 7                                                                                                                              |
 
 ## 4. SDK setup
@@ -120,7 +120,7 @@ These are starting points. OpenAI's guide advises a much larger reasoning buffer
 | Explain Code        | Route, streaming          | 200 to 300 words: the wait is long enough to feel, and text can be read as it comes |
 | Prompt optimization | Route, streaming          | Same length, and the same reason                                                    |
 
-This matches "AI, one answer" and "AI, streaming" in the operations table of [architecture.md](architecture.md). The Explain spec's Server Action and spinner change to a route and live text.
+This matches "AI, one answer" and "AI, streaming" in the operations table of [architecture.md](../architecture.md). The Explain spec's Server Action and spinner change to a route and live text.
 
 ### One answer: the action
 
@@ -254,10 +254,10 @@ export const AI_BY_USER_DAY = {
 ## 8. Pro gating
 
 - **The service is the enforcement.** The UI only follows it. A Free user calling the action or route directly gets the refusal
-- **Read through `getEntitlements`**, never the session or the JWT ([ADR 0005](adr/README.md))
+- **Read through `getEntitlements`**, never the session or the JWT ([ADR 0005](../adr/README.md))
 - **Getting the plan to the drawer:** add `canUseAi: boolean` to the `ok` result of `openUserItem` in `items/services/item-detail.ts`. Both drawers (the one fetched from `GET /api/items/[id]` and the intercepted route) get it with the detail they already load, every page works the same, and no provider prop has to be added in each layout. It stays beside the detail, not inside `ItemDetailJson`, because a save replaces the detail with the action's result. The full item page loads through `getUserItemDetailOfType` and renders the same edit form, so the page reads `getEntitlements` and passes `canUseAi` too. `cache()` does nothing in a route handler (Next.js docs, authentication guide), so `openUserItem` reads the plan once and decides both the lock and `canUseAi` from it; a type open to every plan pays one read per open
 - **`CreateItemDialog`** already has `isPro`
-- **`past_due`:** decided on 2026-11-07: AI is allowed during the grace period, under the same limits. `PRO_STATUSES` already grants Pro there ([ADR 0011](adr/README.md)) and a second rule would be the only exception to it, while the daily limit caps the cost of an unpaid month at about $1.65. The service checks `isPro` only, with no status check of its own
+- **`past_due`:** decided on 2026-11-07: AI is allowed during the grace period, under the same limits. `PRO_STATUSES` already grants Pro there ([ADR 0011](../adr/README.md)) and a second rule would be the only exception to it, while the daily limit caps the cost of an unpaid month at about $1.65. The service checks `isPro` only, with no status check of its own
 - **What Free users see:** the specs differ, and both are kept. The Suggest Tags button is hidden in forms. The Explain button in the read view shows a Crown and a tooltip, "AI features require Pro subscription", linking to `/upgrade`
 - **Selling it:** each feature adds its line to `PRO_PLAN_FEATURES` in the commit that ships it
 
@@ -296,7 +296,7 @@ export const AI_BY_USER_DAY = {
 
 ## 10. UI patterns
 
-From "UI/UX" in the [coding standards](../context/coding-standards.md).
+From "UI/UX" in the [coding standards](../../context/coding-standards.md).
 
 ### Suggest Tags
 
@@ -317,7 +317,7 @@ From "UI/UX" in the [coding standards](../context/coding-standards.md).
 
 Only for snippets and commands, only in the read view.
 
-- `CodeEditor` gets two optional props, filled by `items`: `headerActions`, placed before the copy button, and `view`, shown instead of Monaco. `editor` stays unaware of `ai`, as [modules.md](modules.md) requires. `ItemBody` composes `ExplainButton` and the explanation from `ai`
+- `CodeEditor` gets two optional props, filled by `items`: `headerActions`, placed before the copy button, and `view`, shown instead of Monaco. `editor` stays unaware of `ai`, as [modules.md](../modules.md) requires. `ItemBody` composes `ExplainButton` and the explanation from `ai`
 - After the first click, Code and Explain tabs appear in the header and the text streams into the Explain tab
 - Before the first words, a spinner. After them, the text grows in a box that scrolls at `MAX_HEIGHT`, so the drawer does not jump
 - Screen readers: do not put a live region on the growing text. Announce once when it is done
@@ -409,4 +409,4 @@ Each is its own branch, reviewed by the `architecture-reviewer` agent first.
 - OpenAI guides: [Structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs), [Reasoning](https://developers.openai.com/api/docs/guides/reasoning), [Streaming](https://developers.openai.com/api/docs/guides/streaming-responses), [Prompt caching](https://developers.openai.com/api/docs/guides/prompt-caching), [Error codes](https://developers.openai.com/api/docs/guides/error-codes), [Data controls](https://developers.openai.com/api/docs/guides/your-data), [Safety best practices](https://developers.openai.com/api/docs/guides/safety-best-practices)
 - `openai` 7.53.0 types: `client.d.ts`, `core/error.d.ts`, `helpers/zod.d.ts`, `resources/responses/responses.d.ts`, `resources/shared.d.ts`
 - Next.js docs in `node_modules/next/dist/docs/`: `route.md` (streaming), `02-route-segment-config/maxDuration.md`
-- This repository: [modules.md](modules.md), [architecture.md](architecture.md), [coding-standards.md](../context/coding-standards.md), [architecture-rules.md](../context/architecture-rules.md), `lib/vendors/rate-limit.ts`, `files/services/presign-upload.ts`, `billing/queries.ts`, `items/actions/item.ts`
+- This repository: [modules.md](../modules.md), [architecture.md](../architecture.md), [coding-standards.md](../../context/coding-standards.md), [architecture-rules.md](../../context/architecture-rules.md), `lib/vendors/rate-limit.ts`, `files/services/presign-upload.ts`, `billing/queries.ts`, `items/actions/item.ts`

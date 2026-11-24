@@ -1,6 +1,6 @@
 # Stripe Integration - Phase 2: Webhooks, Feature Gating & UI
 
-> The reasons behind each decision are in [docs/stripe-integration-plan.md](../../docs/stripe-integration-plan.md). This spec replaces `featuresDRAFT/stripe-phase-2-spec.md`.
+> The reasons behind each decision are in [docs/archive/stripe-integration-plan.md](../../docs/archive/stripe-integration-plan.md). This spec replaces `featuresDRAFT/stripe-phase-2-spec.md`.
 
 ## Overview
 

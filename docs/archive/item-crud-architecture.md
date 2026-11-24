@@ -1,8 +1,8 @@
 # Item CRUD architecture
 
-> **Historical, not maintained.** This is the proposal written on 2026-10-28, before item CRUD was built, and the code went a different way: components such as `ItemForm` and `NewItemSheet` never existed, and the ranks and the status below are out of date. For how items work today, read [modules.md](modules.md) and [architecture.md](architecture.md).
+> **Historical, not maintained.** This is the proposal written on 2026-10-28, before item CRUD was built, and the code went a different way: components such as `ItemForm` and `NewItemSheet` never existed, and the ranks and the status below are out of date. For how items work today, read [modules.md](../modules.md) and [architecture.md](../architecture.md).
 
-A design for create, read, update and delete of items, one system for all seven item types. Sources: [project-overview.md](../context/project-overview.md), [item-types.md](item-types.md), `prisma/schema.prisma`, the code in `src/`, and the rules in [architecture-rules.md](../context/architecture-rules.md) and [coding-standards.md](../context/coding-standards.md), which win wherever this guide disagrees with them.
+A design for create, read, update and delete of items, one system for all seven item types. Sources: [project-overview.md](../../context/project-overview.md), [item-types.md](../item-types.md), `prisma/schema.prisma`, the code in `src/`, and the rules in [architecture-rules.md](../../context/architecture-rules.md) and [coding-standards.md](../../context/coding-standards.md), which win wherever this guide disagrees with them.
 
 **Status: a proposal; only the list route is built.** Built: `/items/[type]` (a read-only grid of `ItemCard` through `ItemList`, not links), `typeSlug` and `parseTypeSlug`, `getItemTypeByName`, `getItemsByType` and the proxy matcher. `features/items` also holds `ItemRow` and three dashboard reads (`getPinnedItems`, `getRecentItems`, `getItemStats`). Not built: the drawer, any item action, service or schema. The tables below still describe the full design, including `ItemRow` as the list element, which the list route replaced with `ItemCard`.
 
@@ -16,7 +16,7 @@ A design for create, read, update and delete of items, one system for all seven 
 
 ## Content classes
 
-Recap of [item-types.md](item-types.md). The class decides the shape of the data; the type decides the label, icon, color and how the content is rendered.
+Recap of [item-types.md](../item-types.md). The class decides the shape of the data; the type decides the label, icon, color and how the content is rendered.
 
 | Class | Types                          | `Item` columns used               | `contentType` column |
 | ----- | ------------------------------ | --------------------------------- | -------------------- |
@@ -66,7 +66,7 @@ src/
         + fields/                 TextFields, UrlFields, FileFields
 ```
 
-`ItemList`, `ItemDrawer` and `NewItemSheet` are public because a page or the shell imports them. Everything else is private to the feature, in line with "Public API of a feature" in the Reference of [architecture.md](architecture.md). No `index.ts` files.
+`ItemList`, `ItemDrawer` and `NewItemSheet` are public because a page or the shell imports them. Everything else is private to the feature, in line with "Public API of a feature" in the Reference of [architecture.md](../architecture.md). No `index.ts` files.
 
 ## Routing: `/items/[type]`
 
@@ -144,7 +144,7 @@ ItemForm / ItemActions / DeleteItemDialog          client components
 
 Rules that follow from the standard:
 
-- Services take `userId` as a parameter and return `OperationResult<T>`, built with `ok`/`fail` ([ADR 0021](adr/0021-result-contract-and-shared-building-blocks.md)); create returns `OperationResult<{ id: string }>`, and `ActionResult<T>` is the same union under the name the actions use. Expected failures (not found, class mismatch, limit) are results; anything else throws and is caught in the action, which logs it and returns a generic message, as `auth/_internal/actions/account.ts` does.
+- Services take `userId` as a parameter and return `OperationResult<T>`, built with `ok`/`fail` ([ADR 0021](../adr/0021-result-contract-and-shared-building-blocks.md)); create returns `OperationResult<{ id: string }>`, and `ActionResult<T>` is the same union under the name the actions use. Expected failures (not found, class mismatch, limit) are results; anything else throws and is caught in the action, which logs it and returns a generic message, as `auth/_internal/actions/account.ts` does.
 - Actions and components never import Prisma. Services never import `next/cache`, which is why `revalidatePath` is in the action.
 - The action file stays thin. If it passes about 300 lines, split by topic, not by type.
 
@@ -254,7 +254,7 @@ On the client: after create, open the new item (`router.replace` with `?item=<id
 1. **`contentType` of the file class.** `FILE` is proposed. Decide it with the upload feature, and consider one exported constant or enum in `items/domain` so the three values cannot drift from the schema union and `pickFieldsForClass`.
 2. **Can an item change type?** Proposed: no. `updateItem` takes no `typeId`, which also avoids moving data between classes. Changing between types of the same class could be added later.
 3. **Class of a custom type.** The schema allows custom types, but nothing says which class one has. The creation of custom types must choose it; the default would be text.
-4. **File deletion.** Deleting a file or image item must also purge the object in R2. Per "Background work" in the Reference of [architecture.md](architecture.md), that means writing the intent to the database first and processing it from a cron route, not `after()`.
+4. **File deletion.** Deleting a file or image item must also purge the object in R2. Per "Background work" in the Reference of [architecture.md](../architecture.md), that means writing the intent to the database first and processing it from a cron route, not `after()`.
 5. **Where "New Item" picks the type.** The form has a type select (create only), preselected from the route when there is one. Whether the top bar button should offer all seven types, or only the types the plan allows, depends on gating that does not exist yet.
 
 ## Not in this design
