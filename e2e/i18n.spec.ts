@@ -86,6 +86,10 @@ test.describe("the homepage in two languages", () => {
       await expect(
         page.getByRole("heading", { level: 1, name: "Anmelden" }),
       ).toBeVisible();
+
+      // The way back leads to the German homepage, not to /.
+      await page.getByRole("link", { name: "Zurück zur Startseite" }).click();
+      await expect(page).toHaveURL(/\/de$/);
     });
   });
 });
@@ -237,7 +241,8 @@ test.describe("the language switch", () => {
     await waitForAnswers(page);
     await userMenu.click();
     await page.getByRole("menuitem", { name: "Abmelden" }).click();
-    await expect(page).toHaveURL(/\/$/);
+    // The homepage in German, not the English one.
+    await expect(page).toHaveURL(/\/de$/);
 
     await page.goto("/sign-in");
     await page

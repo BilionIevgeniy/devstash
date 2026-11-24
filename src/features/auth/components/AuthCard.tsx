@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Logo } from "@/components/common/Logo";
+import { homePath } from "@/i18n/config";
 import {
   CANCEL_CONTRACTS_PATH,
   IMPRINT_PATH,
@@ -25,8 +26,9 @@ export function AuthCard({ title, description, children }: AuthCardProps) {
   return (
     <main className="flex flex-1 items-center justify-center p-4">
       <div className="w-full max-w-sm">
+        {/* The homepage in the page's language, as the logo below. */}
         <Link
-          href="/"
+          href={homePath(useLocale())}
           className="inline-flex min-h-11 items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-4" />

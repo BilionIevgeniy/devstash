@@ -12,8 +12,7 @@ import { fail, type ActionResult } from "@/lib/errors/action-result";
 import { getAppOrigin } from "@/lib/http/app-url";
 import { logger } from "@/lib/observability/logger";
 import { firstIssue } from "@/lib/errors/validation";
-
-const HOME_URL = "/";
+import { homePath } from "@/i18n/config";
 
 interface DeleteAccountInput {
   password?: string;
@@ -46,8 +45,10 @@ export async function deleteAccount(
   // Outside the try: redirect() throws, and the catch above would turn that
   // into an error on a deleted account. Replace and not signOut's own redirect,
   // a push in an action: Back must not lead to the settings of a deleted account.
+  // The homepage in the user's language: the locale cookie outlives the account.
+  const home = homePath(await getLocale());
   await signOut({ redirect: false });
-  redirect(HOME_URL, RedirectType.replace);
+  redirect(home, RedirectType.replace);
 }
 
 // Emails the link that confirms deleting an account with no password, to the

@@ -1,6 +1,7 @@
 "use server";
 
 import { AuthError, CredentialsSignin } from "next-auth";
+import { getLocale } from "next-intl/server";
 import { headers } from "next/headers";
 import { redirect, RedirectType } from "next/navigation";
 import { signIn, signOut } from "@/features/auth/nextauth/auth";
@@ -26,8 +27,7 @@ import {
 } from "@/lib/vendors/rate-limit";
 import { fail, ok, type Failure } from "@/lib/errors/action-result";
 import { firstIssue } from "@/lib/errors/validation";
-
-const HOME_URL = "/";
+import { homePath } from "@/i18n/config";
 
 // The sign-in error only carries a code, so the time to wait is read from the
 // counters; when none can be read the message simply has no time in it.
@@ -80,8 +80,11 @@ export async function signInWithGitHub(formData: FormData): Promise<void> {
   await signIn("github", { redirectTo });
 }
 
+// To the homepage in the user's language: the locale cookie is a preference,
+// not part of the session, and outlives the sign-out (ADR 0024).
 export async function signOutUser(): Promise<void> {
-  await signOut({ redirectTo: HOME_URL });
+  const home = homePath(await getLocale());
+  await signOut({ redirectTo: home });
 }
 
 // Signs out so the user can sign in with another account, then leads to the

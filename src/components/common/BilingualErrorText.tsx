@@ -10,6 +10,7 @@ interface BilingualErrorTextProps {
     | "description"
     | "retry"
     | "home"
+    | "homeDe"
     | "reference"
     | "notFoundTitle"
     | "notFoundDescription";
@@ -57,12 +58,11 @@ export function BilingualErrorText({
           Try again <span lang="de">· Erneut versuchen</span>
         </>
       );
+    // Two parts, for two links: each language's own homepage.
     case "home":
-      return (
-        <>
-          Go to the homepage <span lang="de">· Zur Startseite</span>
-        </>
-      );
+      return <>Go to the homepage</>;
+    case "homeDe":
+      return <>Zur Startseite</>;
     case "notFoundTitle":
       return (
         <>
