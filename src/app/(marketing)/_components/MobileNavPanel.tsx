@@ -3,7 +3,7 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { homePath } from "@/i18n/config";
 
-import { LanguageLink } from "./LanguageLink";
+import { LanguageLink } from "./links/LanguageLink";
 import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
 const PANEL_LINK = "flex min-h-11 items-center text-muted-foreground";

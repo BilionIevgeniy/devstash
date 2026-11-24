@@ -80,7 +80,10 @@ export async function FeaturesSection({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: "marketing.features" });
 
   return (
-    <section id="features" className="marketing-section scroll-mt-20">
+    <section
+      id="features"
+      className="marketing-section scroll-mt-20 outline-none"
+    >
       <div className="marketing-container">
         <SectionHead title={t("title")} lead={t("lead")} />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

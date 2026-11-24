@@ -3,24 +3,16 @@
 import { useTranslations } from "next-intl";
 import type { MouseEvent } from "react";
 
+import { focusOnce } from "@/components/common/focus-once";
 import { MAIN_CONTENT_ID } from "@/components/common/main-content";
 
 // Moves the focus without the hash of the link: a hash pushes a history entry
-// the router does not know, and Back onto it would change the URL alone. A
-// `<main>` that cannot take the focus takes it for this once: focusable for
-// good, every click on its empty space would make it the active element, and
-// what asks "has anything the focus?" would be wrong.
+// the router does not know, and Back onto it would change the URL alone.
 function focusMain(event: MouseEvent<HTMLAnchorElement>) {
   const main = document.getElementById(MAIN_CONTENT_ID);
   if (!main) return;
   event.preventDefault();
-  if (!main.hasAttribute("tabindex")) {
-    main.setAttribute("tabindex", "-1");
-    main.addEventListener("blur", () => main.removeAttribute("tabindex"), {
-      once: true,
-    });
-  }
-  main.focus();
+  focusOnce(main);
 }
 
 // The first stop of the tab order, before the header and the navigation (WCAG

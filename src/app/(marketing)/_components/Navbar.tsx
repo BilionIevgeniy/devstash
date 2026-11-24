@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 import { useEscapeToClose } from "./hooks/use-escape-to-close";
 import { useScrolled } from "./hooks/use-scrolled";
-import { LanguageLink } from "./LanguageLink";
+import { LanguageLink } from "./links/LanguageLink";
 import { MobileNavPanel } from "./MobileNavPanel";
 import { BUTTON_TRANSITION, SessionAwareAction } from "./SessionAwareAction";
 import {
