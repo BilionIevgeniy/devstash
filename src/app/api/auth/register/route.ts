@@ -1,4 +1,5 @@
 import { getLocale } from "next-intl/server";
+import { after } from "next/server";
 
 import { REGISTER_BY_IP } from "@/features/auth/domain/rate-limits";
 import {
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
       getAppOrigin(),
       ip,
       await getLocale(),
+      after,
     );
     return accepted();
   } catch (error) {

@@ -4,6 +4,8 @@ const { registerAccount, consumeIpRateLimit } = vi.hoisted(() => ({
   registerAccount: vi.fn(),
   consumeIpRateLimit: vi.fn(),
 }));
+// Outside a request scope; the service decides what runs later.
+vi.mock("next/server", () => ({ after: vi.fn() }));
 vi.mock("next-intl/server", () => ({ getLocale: async () => "en" }));
 vi.mock("@/features/auth/services/registration", () => ({ registerAccount }));
 vi.mock("@/lib/vendors/rate-limit", () => ({ consumeIpRateLimit }));
@@ -13,6 +15,8 @@ vi.mock("@/lib/http/app-url", () => ({
 vi.mock("@/lib/observability/logger", () => ({
   logger: { error: vi.fn(async () => {}), warn: vi.fn(), info: vi.fn() },
 }));
+
+import { after } from "next/server";
 
 import { POST } from "@/app/api/auth/register/route";
 import { REGISTER_BY_IP } from "@/features/auth/domain/rate-limits";
@@ -27,7 +31,8 @@ const INPUT = {
 
 function call(body: unknown = INPUT) {
   return POST(
-    new Request("https://devstash.test/api/auth/register", {
+    // Another host than the app's own: an emailed link must not follow it.
+    new Request("https://evil.test/api/auth/register", {
       method: "POST",
       body: typeof body === "string" ? body : JSON.stringify(body),
       headers: { "x-forwarded-for": "203.0.113.1" },
@@ -55,7 +60,13 @@ describe("POST /api/auth/register", () => {
       data: null,
       error: null,
     });
-    expect(registerAccount).toHaveBeenCalledOnce();
+    expect(registerAccount).toHaveBeenCalledExactlyOnceWith(
+      { name: "Ada", email: "ada@example.com", password: "a long password" },
+      "https://devstash.test",
+      "203.0.113.1",
+      "en",
+      after,
+    );
   });
 
   it.each([
@@ -86,17 +97,21 @@ describe("POST /api/auth/register", () => {
     });
     expect(consumeIpRateLimit).toHaveBeenCalledWith(
       REGISTER_BY_IP,
-      expect.anything(),
+      "203.0.113.1",
     );
     expect(registerAccount).not.toHaveBeenCalled();
   });
 
-  it.each([consumeIpRateLimit, registerAccount])(
-    "answers 500 when the limiter or the registration failed",
-    async (step) => {
-      step.mockRejectedValue(new Error("down"));
+  it("registers nobody while the limiter is unavailable", async () => {
+    consumeIpRateLimit.mockRejectedValue(new Error("down"));
 
-      expect((await call()).status).toBe(500);
-    },
-  );
+    expect((await call()).status).toBe(500);
+    expect(registerAccount).not.toHaveBeenCalled();
+  });
+
+  it("answers 500 when the registration failed", async () => {
+    registerAccount.mockRejectedValue(new Error("down"));
+
+    expect((await call()).status).toBe(500);
+  });
 });

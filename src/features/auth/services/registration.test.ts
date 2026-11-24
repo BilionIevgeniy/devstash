@@ -23,15 +23,22 @@ vi.mock("@/lib/postgres/prisma", () => ({
   prisma: { user: { create: mocks.create } },
 }));
 
+import { VERIFICATION_EMAIL_BY_ADDRESS } from "@/features/auth/domain/rate-limits";
 import { registerAccount } from "@/features/auth/services/registration";
 import { Prisma } from "@/generated/prisma/client";
 import { fail, ok } from "@/lib/errors/action-result";
+import { deferredTasks } from "../../../../test/deferred";
 import { UNIQUE_VIOLATION_CODE } from "@/lib/postgres/prisma-errors";
 
 const ORIGIN = "https://devstash.example";
 const INPUT = { name: "Ada", email: "ada@example.com", password: "a password" };
 
-const register = () => registerAccount(INPUT, ORIGIN, "203.0.113.1", "en");
+// The answer, then what runs after it.
+async function register() {
+  const { defer, run } = deferredTasks();
+  await registerAccount(INPUT, ORIGIN, "203.0.113.1", "en", defer);
+  await run();
+}
 
 function prismaError(code: string) {
   return new Prisma.PrismaClientKnownRequestError("failed", {
@@ -89,8 +96,35 @@ describe("registerAccount for an existing address", () => {
 
     await expect(register()).resolves.toBeUndefined();
     expect(mocks.create).not.toHaveBeenCalled();
-    expect(mocks.checkEmailSend).not.toHaveBeenCalled();
     expect(mocks.sendVerificationLink).not.toHaveBeenCalled();
+  });
+
+  // The budget of the client is visible: Forgot password refuses openly once
+  // it is used up. A unit for some addresses only would name them.
+  it.each([
+    ["a new address", null],
+    ["a pending account", pending],
+    ["a verified account", { hasPassword: true, isEmailVerified: true }],
+    ["a GitHub account", { hasPassword: false, isEmailVerified: false }],
+  ])("counts one email for %s, before the answer", async (_name, account) => {
+    mocks.getAccountState.mockResolvedValue(account);
+    const { defer } = deferredTasks();
+
+    await registerAccount(INPUT, ORIGIN, "203.0.113.1", "en", defer);
+
+    expect(mocks.checkEmailSend).toHaveBeenCalledExactlyOnceWith(
+      VERIFICATION_EMAIL_BY_ADDRESS,
+      INPUT.email,
+      "203.0.113.1",
+    );
+  });
+
+  it("sends a new address its first link whatever the counters say", async () => {
+    mocks.checkEmailSend.mockResolvedValue({ status: "address-limited" });
+
+    await register();
+
+    expect(mocks.sendVerificationLink).toHaveBeenCalledOnce();
   });
 
   it("sends a pending account a fresh link and keeps its password", async () => {
@@ -121,7 +155,21 @@ describe("registerAccount for an existing address", () => {
     await expect(register()).resolves.toBeUndefined();
   });
 
-  // Without it the time of the answer would tell the two apart.
+  // The time of the answer would tell the two apart.
+  it.each([null, pending])(
+    "sends nothing before the answer, new address or not (%j)",
+    async (account) => {
+      mocks.getAccountState.mockResolvedValue(account);
+      const { defer, count } = deferredTasks();
+
+      await registerAccount(INPUT, ORIGIN, null, "en", defer);
+
+      expect(count()).toBe(1);
+      expect(mocks.sendVerificationLink).not.toHaveBeenCalled();
+    },
+  );
+
+  // bcrypt is the slowest step, and a new address needs it.
   it("hashes the password before the lookup, for both", async () => {
     mocks.getAccountState.mockResolvedValue(pending);
 

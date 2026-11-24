@@ -32,11 +32,22 @@ vi.mock("@/lib/postgres/prisma", () => ({
 
 import { resendVerificationLink } from "@/features/auth/services/email-verification";
 import { fail, ok } from "@/lib/errors/action-result";
+import { deferredTasks } from "../../../../test/deferred";
 
 const ORIGIN = "https://devstash.example";
 
-function resend(email: string) {
-  return resendVerificationLink(email, ORIGIN, "203.0.113.1", "en");
+// The answer, then what runs after it.
+async function resend(email: string) {
+  const { defer, run } = deferredTasks();
+  const answer = await resendVerificationLink(
+    email,
+    ORIGIN,
+    "203.0.113.1",
+    "en",
+    defer,
+  );
+  await run();
+  return answer;
 }
 
 describe("resendVerificationLink", () => {
@@ -62,6 +73,16 @@ describe("resendVerificationLink", () => {
     expect(sendEmail).toHaveBeenCalledTimes(1);
     expect(pending).toEqual(ok());
     expect(missing).toEqual(pending);
+  });
+
+  // The lookup and the send would be in the time of the answer.
+  it("answers before it looks anything up", async () => {
+    const { defer, count } = deferredTasks();
+
+    await resendVerificationLink("a@example.com", ORIGIN, null, "en", defer);
+
+    expect(count()).toBe(1);
+    expect(getAccountState).not.toHaveBeenCalled();
   });
 
   it("still refuses openly when the client address has used up its sends", async () => {

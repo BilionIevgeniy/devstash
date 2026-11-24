@@ -43,6 +43,7 @@ import {
   resetPasswordWithToken,
 } from "@/features/auth/services/password-reset";
 import { fail, ok } from "@/lib/errors/action-result";
+import { deferredTasks } from "../../../../test/deferred";
 
 const ORIGIN = "https://devstash.example";
 const EMAIL = "ada@example.com";
@@ -55,8 +56,18 @@ beforeEach(() => {
   mocks.sendEmail.mockResolvedValue(ok());
 });
 
-function request(email: string) {
-  return requestPasswordResetLink(email, ORIGIN, "203.0.113.1", "en");
+// The answer, then what runs after it.
+async function request(email: string) {
+  const { defer, run } = deferredTasks();
+  const answer = await requestPasswordResetLink(
+    email,
+    ORIGIN,
+    "203.0.113.1",
+    "en",
+    defer,
+  );
+  await run();
+  return answer;
 }
 
 describe("requestPasswordResetLink", () => {
@@ -106,6 +117,23 @@ describe("requestPasswordResetLink", () => {
     expect(await request(EMAIL)).toEqual(ok());
     expect(mocks.getAccountState).not.toHaveBeenCalled();
     expect(mocks.sendEmail).not.toHaveBeenCalled();
+  });
+
+  // The lookup and the send would be in the time of the answer.
+  it("answers before it looks anything up", async () => {
+    const { defer, count } = deferredTasks();
+
+    await requestPasswordResetLink(EMAIL, ORIGIN, null, "en", defer);
+
+    expect(count()).toBe(1);
+    expect(mocks.getAccountState).not.toHaveBeenCalled();
+  });
+
+  it("logs a failure of what runs after the answer", async () => {
+    mocks.getAccountState.mockRejectedValue(new Error("database down"));
+
+    expect(await request(EMAIL)).toEqual(ok());
+    expect(mocks.error).toHaveBeenCalledOnce();
   });
 
   it("refuses openly only a client address that used up its sends", async () => {

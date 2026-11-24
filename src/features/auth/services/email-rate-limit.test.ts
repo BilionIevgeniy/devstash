@@ -50,8 +50,7 @@ describe("checkEmailSend", () => {
     expect(await check()).toEqual({ status: "ip-limited", reset: 42 });
   });
 
-  // An error would show which addresses exist: registration asks only for a
-  // pending account.
+  // An outage answers in no other words than a send.
   it.each([consumeRateLimit, consumeIpRateLimit])(
     "sends nothing and stays neutral while the limiter is unavailable",
     async (limiter) => {
