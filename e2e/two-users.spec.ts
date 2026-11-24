@@ -74,7 +74,9 @@ test("the next user of the tab sees none of the last one's data or plan", async 
   await expect(sidebar.getByText("Free", { exact: true })).toBeVisible();
 
   await visit(page);
-  for (let step = 0; step < ROUTES.length; step++) {
+  // Back through B's own pages only: one more would reach the sign-in page,
+  // which loads as a new document after the app (FreshAuthDocument).
+  for (let step = 1; step < ROUTES.length; step++) {
     await page.goBack();
     await waitForAnswers(page);
     await expect(page.getByText(titleOfA)).toHaveCount(0);

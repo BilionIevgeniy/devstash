@@ -5,6 +5,7 @@ import { ConsentRoot } from "@/components/common/consent/ConsentRoot";
 import { PrivacySettingsButton } from "@/components/common/consent/PrivacySettingsButton";
 import { AppToaster } from "@/components/common/providers/AppToaster";
 import { I18nProvider } from "@/components/common/providers/I18nProvider";
+import { FreshAuthDocument } from "@/features/auth/components/FreshAuthDocument";
 import { messagesFor } from "@/i18n/messages";
 
 // The description of every page under this layout, in its language; the
@@ -41,6 +42,7 @@ export default async function AuthLayout({ children }: LayoutProps<"/">) {
       </div>
       <AppToaster />
       <ConsentRoot />
+      <FreshAuthDocument />
     </I18nProvider>
   );
 }

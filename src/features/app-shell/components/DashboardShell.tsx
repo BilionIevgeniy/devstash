@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 
-import { useState, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
 import { TopBar } from "@/features/app-shell/_internal/components/TopBar";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { AppFooter } from "@/features/app-shell/_internal/components/AppFooter";
+import { markAppShellShown } from "@/features/auth/components/app-shell-document";
 import { useReloadOnRestore } from "@/features/auth/components/hooks/use-reload-on-restore";
 
 interface DashboardShellProps {
@@ -42,6 +43,8 @@ export function DashboardShell({
   // Back to an app page from the browser's back-forward cache after a
   // sign-out must not show the ended session's data.
   useReloadOnRestore();
+  // An auth page later in this document loads as a new one (FreshAuthDocument).
+  useEffect(() => markAppShellShown(), []);
   const locale = useLocale();
   const [isSidebarOpen, setIsSidebarOpen] = useState(defaultSidebarOpen);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
