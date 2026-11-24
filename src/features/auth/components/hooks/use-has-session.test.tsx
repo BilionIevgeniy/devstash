@@ -154,6 +154,35 @@ describe("a primed check", () => {
     expect(fetchHasSession).toHaveBeenCalledTimes(2);
   });
 
+  // The navbar stays mounted from page to page; a call to action mounts anew.
+  it("is asked again by a later caller while an earlier one stays", async () => {
+    const now = vi.spyOn(Date, "now").mockReturnValue(1_000);
+    primeSessionCheck();
+    const navbar = renderHook(() => useHasSession());
+    await act(async () => {});
+    expect(navbar.result.current).toBe(true);
+
+    now.mockReturnValue(12_000);
+    fetchHasSession.mockResolvedValue(false);
+    renderHook(() => useHasSession());
+    await act(async () => {});
+
+    expect(fetchHasSession).toHaveBeenCalledTimes(2);
+    expect(navbar.result.current).toBe(false);
+  });
+
+  it("is shared while it runs for someone, however long that takes", async () => {
+    const now = vi.spyOn(Date, "now").mockReturnValue(1_000);
+    fetchHasSession.mockReturnValue(new Promise(() => undefined));
+    primeSessionCheck();
+    renderHook(() => useHasSession());
+
+    now.mockReturnValue(12_000);
+    renderHook(() => useHasSession());
+
+    expect(fetchHasSession).toHaveBeenCalledOnce();
+  });
+
   it("is aborted by its last caller while it runs, which is no failure", async () => {
     fetchHasSession.mockImplementation(
       (signal: AbortSignal) =>

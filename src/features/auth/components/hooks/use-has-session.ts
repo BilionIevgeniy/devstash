@@ -35,6 +35,8 @@ interface RunningCheck {
   callers: number;
   /** Set for a check that started before any caller mounted. */
   primedAt: number | null;
+  /** It has its answer, or failed. Only a primed check outlives this. */
+  settled: boolean;
 }
 let running: RunningCheck | null = null;
 
@@ -45,27 +47,36 @@ const PRIMED_FOR_MS = 10_000;
 
 function startCheck(primedAt: number | null): RunningCheck {
   const controller = new AbortController();
-  const check = { controller, callers: 0, primedAt };
+  const check: RunningCheck = {
+    controller,
+    callers: 0,
+    primedAt,
+    settled: false,
+  };
   fetchHasSession(controller.signal)
     .then(remember)
     .catch(() => {
       if (!controller.signal.aborted && lastAnswer === null) remember(false);
     })
     .finally(() => {
+      check.settled = true;
       // A primed check stays for its callers, who may mount after the answer.
       if (running === check && primedAt === null) running = null;
     });
   return check;
 }
 
-function isStale({ primedAt, callers }: RunningCheck): boolean {
-  if (primedAt === null || callers > 0) return false;
+// Also while its first callers are still there: the navbar stays mounted from
+// page to page, and what mounts later asks again. A check that still runs for
+// someone is shared whatever its age.
+function isStale({ primedAt, callers, settled }: RunningCheck): boolean {
+  if (primedAt === null || (callers > 0 && !settled)) return false;
   return Date.now() - primedAt > PRIMED_FOR_MS;
 }
 
 function joinCheck(): () => void {
   if (running && isStale(running)) {
-    running.controller.abort();
+    if (running.callers === 0) running.controller.abort();
     running = null;
   }
   running ??= startCheck(null);
