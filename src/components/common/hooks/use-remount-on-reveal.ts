@@ -12,7 +12,10 @@ export function useRemountOnReveal(): number {
   const [generation, setGeneration] = useState(0);
 
   // The cleanup runs when the route is hidden, and when it unmounts for good,
-  // where the update is dropped.
+  // where the update is dropped. It also runs whenever React disconnects the
+  // layout effects: a Suspense boundary above that shows its fallback again
+  // for a suspend outside a transition (none may sit above a consumer), and in
+  // development StrictMode and Fast Refresh, where a consumer mounts twice.
   useLayoutEffect(
     () => () => {
       setGeneration((current) => current + 1);

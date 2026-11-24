@@ -49,9 +49,17 @@ Cache Components keeps a route the user left mounted but hidden (React's `<Activ
 
 The dialogs and dropdowns of the shared layout were not affected: the layout is never hidden. `useUnsavedChanges` and the other listeners subscribe in effects, so they detach while hidden and come back with the route. `e2e/activity.spec.ts` pins each case.
 
+The key also changes whenever React disconnects the layout effects for another reason: a Suspense boundary above that shows its fallback again because something suspended outside a transition, and in development StrictMode's simulated unmount and Fast Refresh. So no suspend outside a transition may sit above a part that takes the key (navigations, `refresh()` and `useActionState` all run in transitions); in development each such part mounts twice.
+
+### Ending a session leaves the document
+
+A route kept mounted outlives the session it was rendered for. A sign-out, a password change and a deleted account were Server Action redirects, soft navigations, so Back showed the last user's pages (found by the auth audit, pinned by `e2e/sign-out.spec.ts`). They now end the session with `signOut({ redirect: false })`, and the browser loads the next page as a new document with `location.replace` (`leaveSession`, `features/auth/components/leave-session.ts`), which drops every hidden route and the history entry. The cookie deletion re-renders the current page, which may redirect to sign-in on its own; the callers leave on that redirect error too, never following it as a soft navigation. The app shell also reloads a page the browser restores from its own back-forward cache (`useReloadOnRestore`, `pageshow` with `persisted`), which Playwright's Chromium never does, so that case has no end-to-end test. `/switch-account` keeps its redirect: it is reached only by a document load.
+
+Known and left: a session that ends on its own (expiry, or the sessions a password change on another device revoked) still reaches `/sign-in` through `getSessionUser`'s soft redirect, so Back can show that same user's hidden pages.
+
 ### Errors and tests
 
-- With Partial Prefetching on, Next.js 16.4 called `onRequestError` twice for one error of a Server Component, with two digests; the page shows the first. `onRequestError` drops a twin within five seconds (same method, URL, route type, class and top frame); with Partial Prefetching off there is none, and the guard stays for Next.js 17
+- With Partial Prefetching on, Next.js 16.4 called `onRequestError` twice for one error of a Server Component, with two digests (the page shows the first). With it off there is one call, so no guard drops a report: one would hide a real second failure of the same URL. When Partial Prefetching is turned on, `e2e/egress.spec.ts` ("one event per error") fails on the twin, and the guard comes with that change
 - Chromium reports some prefetches as unfinished after their last byte, so `networkidle` may never come. The end-to-end tests wait for the answers instead (`waitForAnswers`, `e2e/support/network.ts`): the session cookie comes with the headers
 
 ## Consequences
