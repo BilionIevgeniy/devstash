@@ -104,6 +104,10 @@ export function PaletteBody({ search, ...handlers }: PaletteBodyProps) {
         {failure && <RetryOption onRetry={search.retry} />}
         {results && !isEmpty && (
           <PaletteMatches
+            // Mounted anew when the answer comes, also for a row that was there
+            // before: cmdk selects a first option only among rows that mount,
+            // and would leave aria-activedescendant on a row that is gone.
+            key={isPending ? "stale" : "fresh"}
             results={results}
             isStale={isPending}
             footer={

@@ -71,6 +71,13 @@ function renderPalette() {
 const answer = (query: string, outcome: SearchOutcome) =>
   act(async () => reads.get(query)?.resolve(outcome));
 
+function expectNoDanglingRow() {
+  for (const role of ["combobox", "listbox"]) {
+    const id = screen.getByRole(role).getAttribute("aria-activedescendant");
+    if (id !== null) expect(document.getElementById(id)).not.toBeNull();
+  }
+}
+
 describe("PaletteResults", () => {
   it("shows the recent items for an empty input", async () => {
     renderPalette();
@@ -141,6 +148,39 @@ describe("PaletteResults", () => {
     expect(
       screen.getByRole("option", { name: "Recent snippet" }),
     ).toHaveAttribute("aria-disabled", "true");
+  });
+
+  // A row of the recent list that also matches keeps its place in the list.
+  it("selects the first result, so Enter opens it", async () => {
+    const user = renderPalette();
+    await answer("", found("Recent snippet", "React hooks"));
+    await user.type(screen.getByRole("combobox"), "react");
+    await act(() => vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS));
+
+    await answer("react", found("React hooks"));
+    expect(screen.getByRole("option", { selected: true })).toHaveAccessibleName(
+      "React hooks",
+    );
+
+    await user.keyboard("{Enter}");
+    expect(open).toHaveBeenCalledOnce();
+  });
+
+  // A screen reader would be sent to an option that does not exist.
+  it.each([
+    ["some", found("React hooks")],
+    ["none", found()],
+    ["a failure", { status: "error" } as const],
+  ])("names no row that is gone, with %s as the answer", async (_, outcome) => {
+    const user = renderPalette();
+    await answer("", found("Recent snippet", "React hooks"));
+    await user.keyboard("{ArrowDown}{ArrowUp}");
+    await user.type(screen.getByRole("combobox"), "react");
+    await act(() => vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS));
+    expectNoDanglingRow();
+
+    await answer("react", outcome);
+    expectNoDanglingRow();
   });
 
   it("says when nothing matches", async () => {
