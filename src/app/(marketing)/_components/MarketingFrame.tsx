@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { ConsentRoot } from "@/components/common/consent/ConsentRoot";
 import { AppToaster } from "@/components/common/providers/AppToaster";
+import { SkipLink } from "@/components/common/SkipLink";
 import { I18nProvider } from "@/components/common/providers/I18nProvider";
 import type { Locale } from "@/i18n/config";
 import { pickMessages } from "@/i18n/messages";
@@ -9,7 +10,6 @@ import { pickMessages } from "@/i18n/messages";
 import { Footer } from "./Footer";
 import { MARKETING_NAMESPACES } from "./marketing-namespaces";
 import { Navbar } from "./Navbar";
-import { SkipLink } from "./SkipLink";
 
 interface MarketingFrameProps {
   locale: Locale;
@@ -30,7 +30,7 @@ export function MarketingFrame({ locale, children }: MarketingFrameProps) {
         lang={locale}
         className="pb-(--consent-inset) text-[15px] leading-[1.6]"
       >
-        <SkipLink locale={locale} />
+        <SkipLink />
         <Navbar />
         {children}
         <Footer locale={locale} />

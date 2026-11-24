@@ -43,6 +43,33 @@ test.describe("signed in", () => {
     await expectNoSeriousViolations(page);
   });
 
+  // The shell's <main> scrolls and is no Tab stop of its own.
+  test("the skip link leads past the navigation and leaves Back alone", async ({
+    page,
+  }) => {
+    await page.goto("/dashboard");
+    const skip = page.getByRole("link", { name: "Skip to content" });
+    await page.keyboard.press("Tab");
+    await expect(skip).toBeFocused();
+
+    // The palette opens only once React has hydrated the page.
+    await openPalette(page);
+    await page.keyboard.press("Escape");
+    await skip.focus();
+    await page.keyboard.press("Enter");
+    await expect(page.getByRole("main")).toBeFocused();
+    await expect(page).toHaveURL("/dashboard");
+
+    await page.getByRole("link", { name: "Favorites" }).first().click();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Favorites" }),
+    ).toBeVisible();
+    await page.goBack();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Dashboard" }),
+    ).toBeVisible();
+  });
+
   test("the search palette has no serious violations", async ({ page }) => {
     await page.goto("/dashboard");
     const palette = await openPalette(page);

@@ -62,5 +62,6 @@
     "accept": "Allow",
     "decline": "Decline",
     "settings": "Privacy settings"
-  }
+  },
+  "skipToContent": "Skip to content"
 }

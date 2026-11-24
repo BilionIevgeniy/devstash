@@ -1,6 +1,6 @@
+import { MAIN_CONTENT_ID } from "@/components/common/main-content";
 import type { LegalContent } from "../../_legal/types";
 import { LegalDocument } from "./LegalDocument";
-import { MAIN_CONTENT_ID } from "../SkipLink";
 
 interface LegalPageProps {
   /** `impressum` or `datenschutz`: the ids of the two documents derive from it. */

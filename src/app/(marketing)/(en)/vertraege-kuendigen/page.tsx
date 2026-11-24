@@ -1,3 +1,4 @@
+import { MAIN_CONTENT_ID } from "@/components/common/main-content";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
@@ -6,7 +7,6 @@ import { getSignedInUserId } from "@/features/auth/nextauth/session";
 import { CancelContractForm } from "@/features/billing/components/CancelContractForm";
 import { CancelContractFormSkeleton } from "@/features/billing/components/CancelContractFormSkeleton";
 import { getContractState } from "@/features/billing/queries";
-import { MAIN_CONTENT_ID } from "@/app/(marketing)/_components/SkipLink";
 
 export const metadata: Metadata = {
   title: "Verträge hier kündigen / Cancel contracts here - DevStash",
