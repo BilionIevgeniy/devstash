@@ -36,10 +36,11 @@ Rules that apply to every file:
 | 20  | [UX, accessibility and consent](../20.ux-a11y-and-consent.md)                    | SHOULD              | [x]    |
 | 21  | [Full E2E suite](../21.e2e-full.md)                                              | MUST before 22      | [x]    |
 | 22  | [CSP and Cache Components](../22.csp-and-cache-components.md)                    | SHOULD              | [x]    |
-| 23  | [Final review pass](23.final-review-pass.md)                                     | SHOULD, last        | [ ]    |
+| 23  | [Pre-show hardening](23.pre-show-hardening.md)                                   | MUST                | [ ]    |
 | 24  | [Functions and database closer to the users](24.region-closer-to-users.md)       | SHOULD              | [ ]    |
+| 25  | [Final review pass](25.final-review-pass.md)                                     | SHOULD, last        | [ ]    |
 
-**Dependencies:** 4 defines the test database used by 5 and 21 · 5 needs 2 and 4 · 6 needs 2 · 7 needs 3 · 12 needs 7 and 8 · 14 needs 3 and 11 · 16 runs with no other branch open · 18 needs 17 live (the drop of the `@ignore`d columns) · 19 needs 17 (cron dispatcher, HMAC rate limits) and 18 (downgrade of custom types) · 20 needs 16 (one stats component) · 21 needs 15–20 (UI before the baselines) · 22 needs 21 · 23 needs all.
+**Dependencies:** 4 defines the test database used by 5 and 21 · 5 needs 2 and 4 · 6 needs 2 · 7 needs 3 · 12 needs 7 and 8 · 14 needs 3 and 11 · 16 runs with no other branch open · 18 needs 17 live (the drop of the `@ignore`d columns) · 19 needs 17 (cron dispatcher, HMAC rate limits) and 18 (downgrade of custom types) · 20 needs 16 (one stats component) · 21 needs 15–20 (UI before the baselines) · 22 needs 21 · 23 needs 22 (its tests come before its refactors, commit by commit) · 24 needs 23 · 25 needs all.
 
 ## Order principles
 
@@ -87,10 +88,10 @@ The deferred list was split on 2026-11-14. Accepted ADRs and historical specs th
 | Demo data                                                                                          | 16 (seed), the README (the seed differs on purpose)                                                                                                          |
 | Tooling: Prettier, CI build cache, copy-paste, crowded folders                                     | 16                                                                                                                                                           |
 | Tooling: ESLint 10                                                                                 | Watch in `todo-before-live.md`                                                                                                                               |
-| Tests: mutation check                                                                              | 23                                                                                                                                                           |
+| Tests: mutation check                                                                              | 25                                                                                                                                                           |
 | Tests: `useItemFavorites`, own Upstash database, change-password journey                           | 21                                                                                                                                                           |
 | Languages: the root `Toaster`                                                                      | 20                                                                                                                                                           |
-| UI review: full Playwright pass                                                                    | 23                                                                                                                                                           |
+| UI review: full Playwright pass                                                                    | 25                                                                                                                                                           |
 | UI review: the other findings                                                                      | 20 (the palette axe violations were fixed in 14)                                                                                                             |
 | UI review: social proof                                                                            | `todo-before-live.md`                                                                                                                                        |
 | UI review: an email link for another account                                                       | 17                                                                                                                                                           |
