@@ -1,8 +1,9 @@
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
-import type { Locale } from "@/i18n/config";
+import { homePath, type Locale } from "@/i18n/config";
 
 import { ChaosAnimation } from "../chaos/ChaosAnimation";
 import { DashboardPreview } from "./DashboardPreview";
@@ -25,13 +26,17 @@ export async function HeroSection({ locale }: { locale: Locale }) {
           <p className="marketing-lead mt-6">{t("lead")}</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <StartAction label={t("getStarted")} />
+            {/* A plain anchor pushes a history entry the router does not know:
+                Back onto it would change the URL alone. */}
             <Button
               asChild
               variant="outline"
               size="lg"
               className="h-11 px-5 text-[15px]"
             >
-              <a href="#features">{t("seeFeatures")}</a>
+              <Link href={`${homePath(locale)}#features`}>
+                {t("seeFeatures")}
+              </Link>
             </Button>
           </div>
         </div>

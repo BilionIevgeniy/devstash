@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { MAIN_CONTENT_ID } from "@/components/common/main-content";
 import type { LegalContent } from "../../_legal/types";
 import { LegalDocument } from "./LegalDocument";
@@ -20,13 +22,14 @@ export function LegalPage({ slug, de, en }: LegalPageProps) {
     >
       <div className="mx-auto max-w-3xl wrap-break-word">
         <p className="mb-8 text-sm">
-          <a
+          {/* Not a plain anchor: the router must know its history entry. */}
+          <Link
             lang="en"
             href={`#${slug}-en`}
             className="underline underline-offset-4"
           >
             English version below
-          </a>
+          </Link>
         </p>
         <LegalDocument id={`${slug}-de`} lang="de" {...de} />
         <hr className="my-16" />
