@@ -76,7 +76,14 @@ async function handle(request: IncomingMessage, response: ServerResponse) {
 
   const header = request.headers["content-encoding"];
   const contentEncoding = typeof header === "string" ? header : null;
-  const body = decode(await readBody(request), contentEncoding);
+  let body: string | null;
+  try {
+    body = decode(await readBody(request), contentEncoding);
+  } catch {
+    // A body that does not decompress is recorded unread, so the spec fails
+    // on it instead of never seeing it.
+    body = null;
+  }
   recorded.push({
     method: request.method ?? "",
     url: request.url ?? "",

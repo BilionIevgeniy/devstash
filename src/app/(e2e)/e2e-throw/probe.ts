@@ -7,7 +7,8 @@
 // the one thing of an error that does leave, so the spec can count the events
 // of each path.
 
-export type ProbeKind = "Server" | "Route" | "Action" | "Render" | "Handler";
+export type ProbeKind =
+  "Server" | "Route" | "Logged" | "Action" | "Render" | "Handler";
 
 export interface ProbeSecrets {
   token: string;

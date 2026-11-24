@@ -8,7 +8,7 @@ import { probeError, readProbeSecrets } from "../probe";
 // test from meeting its own earlier report.
 export async function GET(request: NextRequest): Promise<Response> {
   const params = request.nextUrl.searchParams;
-  const error = Object.assign(probeError("Route", readProbeSecrets(params)), {
+  const error = Object.assign(probeError("Logged", readProbeSecrets(params)), {
     code: params.get("run") ?? "E2E_PROBE",
   });
   await logger.error("The end-to-end probe failed", {

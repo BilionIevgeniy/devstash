@@ -59,13 +59,19 @@ async function waitForServerLog(name: string): Promise<void> {
   await expect.poll(async () => (await serverLog()).includes(name)).toBe(true);
 }
 
-async function throwInBrowser(page: Page, secrets: Secrets, button: string) {
+async function throwInBrowser(
+  page: Page,
+  secrets: Secrets,
+  button: string,
+  eventClass: string,
+) {
   await page.goto(probeUrl("client", secrets));
-  // A click before hydration does nothing, so it is repeated until it takes.
+  // A click before hydration does nothing, so it is repeated until its own
+  // event is in: an earlier event of the test must not count.
   await expect(async () => {
     await page.getByRole("button", { name: button }).click();
     await expect
-      .poll(() => ingestRequests().then((r) => r.length))
+      .poll(() => eventsWith(eventClass), { timeout: 2_000 })
       .toBeGreaterThan(0);
   }).toPass();
 }
@@ -106,7 +112,9 @@ test("each server error is one event, without its message, and the log keeps it 
   // Still one each once everything has arrived.
   for (const name of [
     "E2eServerProbeError",
+    "E2eRouteProbeError",
     "E2eActionProbeError",
+    "E2eLoggedProbeError",
     "The end-to-end probe failed",
   ]) {
     expect(await eventsWith(name)).toBe(1);
@@ -118,10 +126,20 @@ test("a render error and an event handler error in the browser are one event eac
 }) => {
   const secrets = probeSecrets();
 
-  await throwInBrowser(page, secrets, "Throw in a handler");
+  await throwInBrowser(
+    page,
+    secrets,
+    "Throw in a handler",
+    "E2eHandlerProbeError",
+  );
   await expectOneEvent("E2eHandlerProbeError");
 
-  await throwInBrowser(page, secrets, "Throw while rendering");
+  await throwInBrowser(
+    page,
+    secrets,
+    "Throw while rendering",
+    "E2eRenderProbeError",
+  );
   await expectOneEvent("E2eRenderProbeError");
 
   await expectNothingLeaked(secrets);
@@ -139,7 +157,12 @@ test("a page in use sends nothing until an error happens, and stores nothing of 
   await waitForAnswers(page);
 
   // The sentinel: once its event is in, anything sent before it would be too.
-  await throwInBrowser(page, probeSecrets(), "Throw in a handler");
+  await throwInBrowser(
+    page,
+    probeSecrets(),
+    "Throw in a handler",
+    "E2eHandlerProbeError",
+  );
   await expectOneEvent("E2eHandlerProbeError");
 
   const requests = await ingestRequests();

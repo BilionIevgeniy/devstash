@@ -29,6 +29,24 @@ export function trackAnswers(context: BrowserContext): void {
   });
   context.on("response", (response) => settle(response.request()));
   context.on("requestfailed", settle);
+  // A request of a page that closed mid-flight never settles: it goes with
+  // its page, so it cannot hold every later wait of the test.
+  context.on("page", (page) => {
+    page.on("close", () => {
+      for (const request of waiting.requests) {
+        if (pageOf(request) === page) settle(request);
+      }
+    });
+  });
+}
+
+function pageOf(request: Request): Page | null {
+  try {
+    return request.frame().page();
+  } catch {
+    // A service worker's request has no frame.
+    return null;
+  }
 }
 
 export async function waitForAnswers(page: Page): Promise<void> {
