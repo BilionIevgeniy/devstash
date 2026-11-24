@@ -1,5 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { cspDirectives } from "../src/lib/http/csp";
+import { pageExtensionsFor } from "./e2e-build";
 import { buildE2eServerEnv } from "./e2e-server-env";
 
 const INPUT = {
@@ -66,16 +68,45 @@ describe("buildE2eServerEnv", () => {
     expect(buildE2eServerEnv(INPUT).R2_ENDPOINT).toBe("http://localhost:3102");
   });
 
-  it("keeps Sentry off: no DSN, and no token to upload source maps with", () => {
+  it("sends Sentry's events to the local stand-in, with no token to upload source maps with", () => {
     const env = buildE2eServerEnv(INPUT);
 
     expect(env).toMatchObject({
-      NEXT_PUBLIC_SENTRY_DSN: "",
-      SENTRY_DSN: "",
+      NEXT_PUBLIC_SENTRY_DSN: "http://e2epublickey@localhost:3104/1",
+      SENTRY_DSN: "http://e2epublickey@localhost:3104/1",
       SENTRY_AUTH_TOKEN: "",
       SENTRY_ORG: "",
       SENTRY_PROJECT: "",
     });
+  });
+
+  it("builds a policy that admits the stand-ins it points at", () => {
+    const env = buildE2eServerEnv(INPUT);
+    const directives = cspDirectives({
+      sentryDsn: env.NEXT_PUBLIC_SENTRY_DSN,
+      r2: {
+        accountId: env.R2_ACCOUNT_ID,
+        bucket: env.R2_BUCKET_NAME,
+        endpoint: env.R2_ENDPOINT,
+      },
+      dev: false,
+      preview: false,
+    });
+
+    expect(directives["connect-src"]).toEqual(
+      expect.arrayContaining([
+        "http://localhost:3102",
+        "http://localhost:3104",
+      ]),
+    );
+    expect(directives["img-src"]).toContain("http://localhost:3102");
+  });
+
+  it("compiles the throw routes, and only outside Vercel", () => {
+    const env = buildE2eServerEnv(INPUT);
+
+    expect(pageExtensionsFor(env)).toContain("e2e.tsx");
+    expect(env.VERCEL).toBeUndefined();
   });
 
   it("never lets the legal pages treat the run as production", () => {

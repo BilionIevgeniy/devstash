@@ -53,7 +53,7 @@ export function AiAnswerView({
         <p className="text-xs text-muted-foreground">{inputCutMessage}</p>
       )}
       <div {...aiMarkProps(true)}>
-        <MarkdownPreview value={text} images="drop" />
+        <MarkdownPreview value={text} />
       </div>
       {isCutShort && (
         <p className="text-xs text-destructive">{cutShortMessage}</p>

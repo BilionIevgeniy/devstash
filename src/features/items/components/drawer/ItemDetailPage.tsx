@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { useErrorText } from "@/components/common/hooks/use-error-text";
+import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { systemTypeNameForSlug } from "@/features/item-types/domain/item-type";
 import { ItemDrawerSkeleton } from "@/features/items/_internal/components/drawer/ItemDrawerSkeleton";
@@ -42,6 +43,9 @@ export function ItemDetailPage({
   const router = useRouter();
   const errorText = useErrorText();
   const syncItems = useSyncItemQueries();
+  // Monaco's cleanup disposes the editor while the route is hidden, and it
+  // does not come back on its own: the view mounts anew on return (ADR 0037).
+  const revealKey = useRemountOnReveal();
 
   async function handleDelete(id: string): Promise<boolean> {
     try {
@@ -70,6 +74,7 @@ export function ItemDetailPage({
   return (
     <div className="flex flex-col rounded-lg border bg-card">
       <ItemDetailView
+        key={revealKey}
         item={item}
         detail={detail}
         canUseAi={canUseAi}

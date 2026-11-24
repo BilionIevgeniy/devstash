@@ -44,3 +44,7 @@ What the suite does not cover: Upstash's own script execution and limits, and R2
 - The e2e job needs no secret and runs on fork and Dependabot PRs. A developer starts two containers once (README).
 - The `E2E_UPSTASH_*` secrets are deleted under Actions and Dependabot once the open Dependabot PRs run on the new workflow.
 - A screen change is a baseline update in the same PR, from the job's artifact.
+
+## Addendum (2026-11-19)
+
+A fourth stand-in, for Sentry's ingest: `scripts/fake-sentry.ts` on port 3104 records every request, decoded (gzip, deflate, br; any other encoding is refused and recorded), and the test build's `NEXT_PUBLIC_SENTRY_DSN` and `SENTRY_DSN` point at it, so every run sends its events there and `e2e/egress.spec.ts` reads them (ADR 0016, ADR 0036). The test server is started through `scripts/e2e-start.ts`, which also writes its log to `playwright/server.log`. A test waits for the answers of its requests (`waitForAnswers`), not for `networkidle` (ADR 0037).

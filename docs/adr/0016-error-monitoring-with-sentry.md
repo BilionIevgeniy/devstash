@@ -90,3 +90,7 @@ The check is manual. To repeat it after an upgrade of `@sentry/nextjs`, do the s
 - Readable stack traces: the upload and deletion of source maps with the real token run only in the Production build. Check the first production error for a mapped stack
 - A caught error in the Stripe webhook is flushed before the answer (shown locally on `next start`); to be shown on the first Preview deploy
 - The alert filter can only be set to `production` once Sentry has seen that environment: send one test error from the live site, then edit the alert
+
+## Addendum (2026-11-19)
+
+The check of "Verified on the wire" now runs on every end-to-end run (feature 22, [ADR 0036](0036-content-security-policy.md)): `e2e/egress.spec.ts` against the stand-in ingest `scripts/fake-sentry.ts`, with throw routes compiled only in the test build (`src/app/(e2e)/`, `E2E_BUILD=1`, refused on Vercel). It asserts what the manual check did: one event per error, none of a token, an email, a title or a Prisma-like message in any decoded body or in the server's log, and nothing from a page in use before a sentinel error; a Content-Security-Policy violation fails it too. Not automated: the 75 seconds of idle (the sentinel stands in for them) and the outgoing trace headers of the server. "Next.js writes an uncaught error to the Vercel log with its message" no longer holds: `installSafeConsoleError` writes such an error as its class, codes and frames (ADR 0036). An `@sentry/nextjs` bump is merged once the e2e job, and with it this spec, is green.

@@ -3,7 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { config } from "dotenv";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { hashTestPassword, makePro, writeSnippets } from "./e2e-rows";
-import { requireE2eUserEmail } from "./e2e-user";
+import { E2E_MANY_FAVORITES, requireE2eUserEmail } from "./e2e-user";
 import { requireTestDatabase } from "./require-dev-database";
 import { createVerifiedTestUser } from "./test-database";
 
@@ -18,7 +18,12 @@ config({ path: ".env.test", quiet: true });
 // One below the Free item limit, so the next create is the last one allowed.
 export const E2E_NEAR_LIMIT_ROWS = 49;
 
-export const FRESH_USER_KINDS = ["free", "near-limit", "pro"] as const;
+export const FRESH_USER_KINDS = [
+  "free",
+  "near-limit",
+  "pro",
+  "many-favorites",
+] as const;
 export type FreshUserKind = (typeof FRESH_USER_KINDS)[number];
 
 function isKind(value: string | undefined): value is FreshUserKind {
@@ -46,7 +51,22 @@ async function main() {
     if (kind === "near-limit") {
       await writeSnippets(prisma, userId, E2E_NEAR_LIMIT_ROWS, "Seeded item");
     }
-    if (kind === "pro") await makePro(prisma, userId);
+    if (kind === "pro" || kind === "many-favorites") {
+      await makePro(prisma, userId);
+    }
+    if (kind === "many-favorites") {
+      const start = Date.UTC(2026, 0, 1);
+      await writeSnippets(
+        prisma,
+        userId,
+        E2E_MANY_FAVORITES,
+        "Favorite",
+        (i) => ({
+          isFavorite: true,
+          favoritedAt: new Date(start + i * 60_000),
+        }),
+      );
+    }
     process.stdout.write(email);
   } finally {
     await prisma.$disconnect();

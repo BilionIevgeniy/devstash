@@ -29,4 +29,15 @@ describe("RootError", () => {
       { error },
     );
   });
+
+  it("leads home in each language, to that language's homepage", () => {
+    render(<RootError error={new Error("x")} retry={() => {}} />);
+
+    expect(
+      screen.getByRole("link", { name: "Go to the homepage" }),
+    ).toHaveAttribute("href", "/");
+    const german = screen.getByRole("link", { name: "Zur Startseite" });
+    expect(german).toHaveAttribute("href", "/de");
+    expect(german).toHaveAttribute("lang", "de");
+  });
 });

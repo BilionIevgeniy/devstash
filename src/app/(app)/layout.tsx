@@ -24,7 +24,11 @@ import { EditorPreferencesProvider } from "@/features/editor/components/EditorPr
 import { getEditorPreferences } from "@/features/editor/queries";
 import { messagesFor } from "@/i18n/messages";
 
-export const dynamic = "force-dynamic";
+// The layout reads the request at its top (the locale, the sidebar cookie)
+// and every page below reads the session, so this segment blocks on the
+// server and has no static shell (ADR 0037). A text-free fallback would have
+// to guess the sidebar's width and would shift the page when the shell came.
+export const instant = false;
 
 // The description of every page under this layout, in its language; the
 // title stays the root layout's "DevStash". Never indexed: the same rule goes

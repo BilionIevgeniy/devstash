@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { CONTENT_MAX } from "../src/features/items/domain/item-fields";
 import {
   createSnippet,

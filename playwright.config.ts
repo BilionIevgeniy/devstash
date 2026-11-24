@@ -4,6 +4,7 @@ import { AUTH_FILE, E2E_ORIGIN, E2E_PORT } from "./e2e/support/storage-state";
 import { buildE2eServerEnv } from "./scripts/e2e-server-env";
 import { FAKE_OPENAI_PORT } from "./scripts/fake-openai";
 import { FAKE_R2_PORT } from "./scripts/fake-r2";
+import { FAKE_SENTRY_PORT } from "./scripts/fake-sentry";
 import { FAKE_UPSTASH_PORT } from "./scripts/fake-upstash";
 import { requireTestDatabase } from "./scripts/require-dev-database";
 
@@ -77,9 +78,16 @@ export default defineConfig({
       reuseExistingServer: false,
     },
     {
+      command: "npx tsx scripts/fake-sentry.ts",
+      url: `http://localhost:${FAKE_SENTRY_PORT}/health`,
+      reuseExistingServer: false,
+    },
+    {
       // `next start` listens on every interface by default; the test server
-      // signs sessions with a public AUTH_SECRET, so it stays on this machine.
-      command: "npm run build && npm run start -- --hostname localhost",
+      // signs sessions with a public AUTH_SECRET, so it stays on this machine
+      // (scripts/e2e-start.ts passes --hostname localhost and also writes the
+      // server's log to a file for e2e/egress.spec.ts).
+      command: "npm run build && npx tsx scripts/e2e-start.ts",
       url: ORIGIN,
       reuseExistingServer: false,
       timeout: BUILD_AND_START_TIMEOUT_MS,

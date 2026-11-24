@@ -1,5 +1,6 @@
 import { FAKE_OPENAI_PORT } from "./fake-openai";
 import { FAKE_R2_ENDPOINT } from "./fake-r2";
+import { FAKE_SENTRY_DSN } from "./fake-sentry";
 import { FAKE_UPSTASH_URL, SRH_TOKEN } from "./fake-upstash";
 
 // The environment of the server the end-to-end tests start (`npm run build`,
@@ -65,8 +66,12 @@ export function buildE2eServerEnv({
     OPENAI_BASE_URL: `http://localhost:${FAKE_OPENAI_PORT}/v1`,
     // Empty on purpose: no DSN keeps the SDK off, and no token means the build
     // uploads nothing and generates no source maps.
-    NEXT_PUBLIC_SENTRY_DSN: "",
-    SENTRY_DSN: "",
+    // The stand-in ingest (scripts/fake-sentry.ts), in the bundle and on the
+    // server, for e2e/egress.spec.ts.
+    NEXT_PUBLIC_SENTRY_DSN: FAKE_SENTRY_DSN,
+    SENTRY_DSN: FAKE_SENTRY_DSN,
+    // Compiles the throw routes of src/app/(e2e)/ (scripts/e2e-build.ts).
+    E2E_BUILD: "1",
     SENTRY_AUTH_TOKEN: "",
     SENTRY_ORG: "",
     SENTRY_PROJECT: "",

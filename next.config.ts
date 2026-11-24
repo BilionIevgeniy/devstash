@@ -3,22 +3,35 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 import packageJson from "./package.json";
+import { pageExtensionsFor } from "./scripts/e2e-build";
+import { buildContentSecurityPolicy, CSP_HEADER } from "./src/lib/http/csp";
 import { NOINDEX_PATHS } from "./src/lib/http/noindex-paths";
 
 // Where scripts/copy-monaco.mjs puts the editor. The exact version in the path
 // is what lets the files be cached for good.
 const MONACO_PATH = `/monaco/${packageJson.dependencies["monaco-editor"]}`;
 
-// Sent with every response. The CSP covers framing, plugins and <base> only:
-// a full policy, static-compatible, with room for Monaco's workers, R2 and
-// GitHub avatars, is feature 22 (context/features/plan/22.csp-and-cache-components.md). HSTS goes out in production
-// only and without includeSubDomains, which would bind every subdomain of a
-// custom domain to HTTPS for two years.
-const SECURITY_HEADERS = [
-  {
-    key: "Content-Security-Policy",
-    value: "frame-ancestors 'none'; object-src 'none'; base-uri 'self'",
+// The Content-Security-Policy (ADR 0036), built from the origins this build
+// talks to. headers() is read at build time, so the values of the build's
+// environment are the ones that ship.
+const CONTENT_SECURITY_POLICY = buildContentSecurityPolicy({
+  sentryDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  r2: {
+    accountId: process.env.R2_ACCOUNT_ID,
+    bucket: process.env.R2_BUCKET_NAME,
+    endpoint: process.env.R2_ENDPOINT,
   },
+  dev: process.env.NODE_ENV === "development",
+  preview: process.env.VERCEL_ENV === "preview",
+});
+
+// Sent with every response. The policy was report-only until the end-to-end
+// suite ran green with it; e2e/support/test.ts fails a test on any violation.
+// HSTS goes out in production only and without
+// includeSubDomains, which would bind every subdomain of a custom domain to
+// HTTPS for two years.
+const SECURITY_HEADERS = [
+  { key: CSP_HEADER, value: CONTENT_SECURITY_POLICY },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -33,6 +46,21 @@ const SECURITY_HEADERS = [
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  // Static shells (ADR 0037): the marketing and legal pages are static and
+  // stay so (ensureStatic), the app and auth layouts read the request and say
+  // so (instant = false). Nothing per user is cached on the server.
+  cacheComponents: true,
+  // Off on purpose, measured (docs/performance.md): every app route reads the
+  // session, so each link's App Shell is a server render with its database
+  // reads, and a page view made about twice the queries for the same TTFB and
+  // LCP. Next.js logs a warning for it; revisit with Next.js 17, or once the
+  // app's layout no longer reads the request (ADR 0037).
+  partialPrefetching: false,
+  // The throw routes of the end-to-end build only (scripts/e2e-build.ts).
+  pageExtensions: pageExtensionsFor({
+    E2E_BUILD: process.env.E2E_BUILD,
+    VERCEL: process.env.VERCEL,
+  }),
   devIndicators: false,
   poweredByHeader: false,
   env: {

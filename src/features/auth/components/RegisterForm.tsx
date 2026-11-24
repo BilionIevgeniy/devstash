@@ -17,6 +17,7 @@ import {
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
 import type { FormActionState } from "@/features/auth/types";
+import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
 
 const FIELDS = [
   { name: "name", label: "name", type: "text", autoComplete: "name" },
@@ -66,7 +67,14 @@ async function submit(_previous: State, formData: FormData): Promise<State> {
     : { error: result, values, registeredEmail: null };
 }
 
+// Mounted anew when its route shows again (useRemountOnReveal, ADR 0037): the
+// route stays mounted while hidden, and a password typed and left must not
+// wait in the page for the user's return.
 export function RegisterForm() {
+  return <RegisterFormBody key={useRemountOnReveal()} />;
+}
+
+function RegisterFormBody() {
   const [state, formAction, isPending] = useActionState(submit, INITIAL_STATE);
   // Gone while a new attempt runs, so a repeated error is announced again.
   const error = isPending ? null : state.error;

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { SIGNED_OUT } from "./support/storage-state";
 
 // What a crawler and a link preview see. A visitor has no session, so the

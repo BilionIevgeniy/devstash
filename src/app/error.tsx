@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { BilingualErrorText } from "@/components/common/BilingualErrorText";
+import { BilingualHomeLinks } from "@/components/common/BilingualHomeLinks";
 
 import { ErrorState } from "@/components/common/ErrorState";
 import { useReportError } from "@/components/common/hooks/use-report-error";
@@ -34,11 +34,7 @@ export default function RootError({
         <Button onClick={retry}>
           <BilingualErrorText part="retry" />
         </Button>
-        <Button asChild variant="outline">
-          <Link href="/">
-            <BilingualErrorText part="home" />
-          </Link>
-        </Button>
+        <BilingualHomeLinks variant="outline" />
       </ErrorState>
     </main>
   );

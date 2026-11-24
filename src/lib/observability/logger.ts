@@ -99,3 +99,27 @@ export const logger = {
     }
   },
 };
+
+// Next.js writes an error that nobody caught (a render, a route, an action)
+// with its own console.error(error), and the message of a Prisma error quotes
+// the arguments of the failed call: an email address, a title. From register()
+// in instrumentation.ts on, an Error handed to console.error is written as its
+// class, codes and frames instead, as logger.error writes it; text passes as
+// it is. Crash output of the process itself (an uncaught exception that ends
+// it) does not go through console and is not covered (ADR 0036).
+let consoleWrapped = false;
+
+function withoutErrorMessages(args: unknown[]): unknown[] {
+  return args.map((arg) =>
+    arg instanceof Error ? JSON.stringify({ error: describeError(arg) }) : arg,
+  );
+}
+
+export function installSafeConsoleError(): void {
+  if (consoleWrapped) return;
+  consoleWrapped = true;
+  const original = console.error.bind(console);
+  console.error = (...args: unknown[]) => {
+    original(...withoutErrorMessages(args));
+  };
+}

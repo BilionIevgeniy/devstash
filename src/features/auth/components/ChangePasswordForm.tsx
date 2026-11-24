@@ -12,12 +12,15 @@ import {
   emptyFormValues,
   formValues,
 } from "@/features/auth/_internal/domain/form-values";
+import { SIGN_IN_AFTER_PASSWORD_CHANGE_PATH } from "@/features/auth/domain/auth-paths";
 import {
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
+import { leaveSession } from "@/features/auth/components/leave-session";
 import type { FormActionState } from "@/features/auth/types";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
+import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -45,7 +48,10 @@ const FIELDS = [
 ] as const;
 
 const FIELD_NAMES = FIELDS.map(({ name }) => name);
-type State = FormActionState<(typeof FIELD_NAMES)[number]>;
+type State = FormActionState<(typeof FIELD_NAMES)[number]> & {
+  /** Set once the sign-in page is loading: the form stays locked until then. */
+  leaving?: boolean;
+};
 const INITIAL_STATE: State = {
   error: null,
   values: emptyFormValues(FIELD_NAMES),
@@ -73,22 +79,28 @@ async function submit(formData: FormData): Promise<State> {
   }
 
   // The change revoked every session, this one included; signing out clears
-  // the cookie and redirects to /sign-in, which says that the password
-  // changed: a toast here would leave with this layout's toast region.
+  // the cookie, then the browser loads /sign-in as a new document, which says
+  // that the password changed (leaveSession, ADR 0037): a toast here would
+  // leave with this layout's toast region. The cookie deletion re-renders the
+  // page, which can redirect on its own: that is left the same way.
+  // A failed sign-out leaves too: every session is already revoked, and the
+  // sign-in page says that the password changed.
   try {
     await signOutAfterPasswordChange();
-  } catch (error) {
-    // The sign-out's redirect arrives here too, and must go on.
-    unstable_rethrow(error);
-    return {
-      error: { error: "passwordUpdatedReload" },
-      values: INITIAL_STATE.values,
-    };
+  } catch {
+    // The redirect error and any other end the same way.
   }
-  return INITIAL_STATE;
+  leaveSession(SIGN_IN_AFTER_PASSWORD_CHANGE_PATH);
+  return { ...INITIAL_STATE, leaving: true };
 }
 
+// A password typed and left must not wait in the page for the user's return:
+// the route stays mounted while hidden (ADR 0037), so the form mounts anew.
 export function ChangePasswordForm() {
+  return <PasswordForm key={useRemountOnReveal()} />;
+}
+
+function PasswordForm() {
   const t = useTranslations("auth");
   const [state, formAction, isPending] = useActionState(
     (_previous: State, formData: FormData) => submit(formData),
@@ -127,8 +139,10 @@ export function ChangePasswordForm() {
             {errorText(error)}
           </p>
         )}
-        <Button type="submit" disabled={isPending}>
-          {isPending ? t("changePassword.pending") : t("changePassword.submit")}
+        <Button type="submit" disabled={isPending || state.leaving}>
+          {isPending || state.leaving
+            ? t("changePassword.pending")
+            : t("changePassword.submit")}
         </Button>
       </form>
     </div>

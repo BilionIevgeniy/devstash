@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { E2E_USER_PASSWORD, requireE2eUserEmail } from "../scripts/e2e-user";
-import { signInThroughForm } from "./support/sign-in";
+import { signInThroughForm, signOutThroughMenu } from "./support/sign-in";
 import { SIGNED_OUT } from "./support/storage-state";
 
 // The homepage exists twice, `/` and `/de`, both static: the language is the
@@ -85,6 +85,10 @@ test.describe("the homepage in two languages", () => {
       await expect(
         page.getByRole("heading", { level: 1, name: "Anmelden" }),
       ).toBeVisible();
+
+      // The way back leads to the German homepage, not to /.
+      await page.getByRole("link", { name: "Zurück zur Startseite" }).click();
+      await expect(page).toHaveURL(/\/de$/);
     });
   });
 });
@@ -233,10 +237,9 @@ test.describe("the language switch", () => {
     // Every answer of a signed-in request sets the session cookie again, so
     // one still on its way after the sign-out would sign the browser back in
     // (see endSession in signed-out.spec.ts).
-    await page.waitForLoadState("networkidle");
-    await userMenu.click();
-    await page.getByRole("menuitem", { name: "Abmelden" }).click();
-    await expect(page).toHaveURL(/\/$/);
+    await signOutThroughMenu(page, { trigger: userMenu, item: "Abmelden" });
+    // The homepage in German, not the English one.
+    await expect(page).toHaveURL(/\/de$/);
 
     await page.goto("/sign-in");
     await page

@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { E2E_LIST_ROWS } from "../scripts/e2e-user";
 import { LISTS_AUTH_FILE } from "./support/storage-state";
 

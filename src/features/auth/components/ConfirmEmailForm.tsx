@@ -21,6 +21,7 @@ import {
   finishEmailLink,
   type DoneStep,
 } from "@/features/auth/_internal/components/finish-email-link";
+import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
 
 const FIELD_NAMES = ["password"] as const;
 type State = FormActionState<(typeof FIELD_NAMES)[number]>;
@@ -64,7 +65,14 @@ interface ConfirmEmailFormProps {
   switchReason?: AccountSwitchReason | null;
 }
 
-export function ConfirmEmailForm({
+// Mounted anew when its route shows again (useRemountOnReveal, ADR 0037): the
+// route stays mounted while hidden, and a password typed and left must not
+// wait in the page for the user's return.
+export function ConfirmEmailForm(props: ConfirmEmailFormProps) {
+  return <ConfirmEmailFormBody key={useRemountOnReveal()} {...props} />;
+}
+
+function ConfirmEmailFormBody({
   email,
   token,
   switchReason = null,

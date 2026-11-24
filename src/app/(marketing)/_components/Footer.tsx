@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cacheLife } from "next/cache";
 import { getTranslations } from "next-intl/server";
 
 import { Logo } from "@/components/common/Logo";
@@ -21,20 +22,65 @@ interface FooterEntry {
   lang?: string;
 }
 
+// The year of the copyright line. The pages are prerendered (ensureStatic),
+// so the clock is read in a cache scope and read again once a day: the page
+// is regenerated in the background when the entry is stale (ADR 0037).
+async function copyrightYear(): Promise<number> {
+  "use cache";
+  cacheLife("days");
+  return new Date().getFullYear();
+}
+
 const FOOTER_LINK =
   "inline-flex items-center transition-colors hover:text-foreground max-md:min-h-11";
+
+interface FooterColumnProps {
+  heading: string;
+  entries: FooterEntry[];
+  /** After the links: the button that opens the consent banner again. */
+  withPrivacySettings?: boolean;
+}
+
+function FooterColumn({
+  heading,
+  entries,
+  withPrivacySettings,
+}: FooterColumnProps) {
+  return (
+    <nav aria-label={heading}>
+      <h3 className="font-mono text-[13px] font-medium">{heading}</h3>
+      <ul className="mt-3 grid gap-2 text-sm text-muted-foreground">
+        {entries.map(({ label, href, lang }) => (
+          <li key={label}>
+            <Link
+              href={href}
+              lang={lang}
+              className={FOOTER_LINK}
+              prefetch={href === CANCEL_CONTRACTS_PATH ? false : null}
+            >
+              {label}
+            </Link>
+          </li>
+        ))}
+        {withPrivacySettings && (
+          <li>
+            <PrivacySettingsButton className={FOOTER_LINK} />
+          </li>
+        )}
+      </ul>
+    </nav>
+  );
+}
 
 // Only pages that exist. A link is added here in the commit that adds its page.
 // The in-page links lead to the homepage of the footer's own language.
 export async function Footer({ locale }: { locale: Locale }) {
-  const t = await getTranslations({ locale, namespace: "marketing" });
+  const [t, year] = await Promise.all([
+    getTranslations({ locale, namespace: "marketing" }),
+    copyrightYear(),
+  ]);
   const home = homePath(locale);
-  const columns: {
-    heading: string;
-    entries: FooterEntry[];
-    /** After the links: the button that opens the consent banner again. */
-    withPrivacySettings?: boolean;
-  }[] = [
+  const columns: FooterColumnProps[] = [
     {
       heading: t("footer.product"),
       entries: [
@@ -69,24 +115,8 @@ export async function Footer({ locale }: { locale: Locale }) {
               {t("footer.tagline")}
             </p>
           </div>
-          {columns.map(({ heading, entries, withPrivacySettings }) => (
-            <nav key={heading} aria-label={heading}>
-              <h3 className="font-mono text-[13px] font-medium">{heading}</h3>
-              <ul className="mt-3 grid gap-2 text-sm text-muted-foreground">
-                {entries.map(({ label, href, lang }) => (
-                  <li key={label}>
-                    <Link href={href} lang={lang} className={FOOTER_LINK}>
-                      {label}
-                    </Link>
-                  </li>
-                ))}
-                {withPrivacySettings && (
-                  <li>
-                    <PrivacySettingsButton className={FOOTER_LINK} />
-                  </li>
-                )}
-              </ul>
-            </nav>
+          {columns.map((column) => (
+            <FooterColumn key={column.heading} {...column} />
           ))}
           <nav aria-label={t("language.label")}>
             <h3 className="font-mono text-[13px] font-medium">
@@ -98,7 +128,7 @@ export async function Footer({ locale }: { locale: Locale }) {
           </nav>
         </div>
         <p className="mt-12 border-t pt-6 text-[13px] text-dim">
-          {t("footer.rights", { year: new Date().getFullYear() })}
+          {t("footer.rights", { year })}
         </p>
       </div>
     </footer>

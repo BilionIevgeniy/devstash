@@ -24,6 +24,7 @@ import {
   finishEmailLink,
   type DoneStep,
 } from "@/features/auth/_internal/components/finish-email-link";
+import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
 
 const FIELDS = [
   { name: "password", label: "newPassword" },
@@ -74,7 +75,14 @@ interface ResetPasswordFormProps {
   switchReason?: AccountSwitchReason | null;
 }
 
-export function ResetPasswordForm({
+// Mounted anew when its route shows again (useRemountOnReveal, ADR 0037): the
+// route stays mounted while hidden, and a password typed and left must not
+// wait in the page for the user's return.
+export function ResetPasswordForm(props: ResetPasswordFormProps) {
+  return <ResetPasswordFormBody key={useRemountOnReveal()} {...props} />;
+}
+
+function ResetPasswordFormBody({
   email,
   token,
   switchReason = null,

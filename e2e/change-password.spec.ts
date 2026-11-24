@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { E2E_USER_PASSWORD } from "../scripts/e2e-user";
 import { signInFreshUser } from "./support/fresh-user";
 import { signInThroughForm } from "./support/sign-in";

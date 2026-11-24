@@ -1,5 +1,7 @@
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { createSnippet, itemHeading, uniqueTitle } from "./support/items";
+import { waitForAnswers } from "./support/network";
 
 // A session that ends while a page is open: the next Server Action must take
 // the user to sign-in, not show an error toast. The cookies are cleared only
@@ -8,16 +10,26 @@ const SIGN_IN_URL = /\/sign-in/;
 
 // A false error toast may show for a moment and go with the navigation, so
 // every error toast (Sonner marks it with data-type="error") is recorded from
-// now on. The navigation is client-side: the window and its record stay.
+// now on, in the test: the sign-in page loads as a new document after the app
+// (FreshAuthDocument, ADR 0037), which drops anything kept in the window.
+const seenErrorToasts = new Set<string>();
+
 async function recordErrorToasts(page: Page) {
+  seenErrorToasts.clear();
+  await page.exposeFunction("reportErrorToast", (text: string) => {
+    seenErrorToasts.add(text);
+  });
   await page.evaluate(() => {
-    const seen = new Set<string>();
-    Object.assign(window, { seenErrorToasts: seen });
+    const report = (
+      window as unknown as {
+        reportErrorToast: (text: string) => Promise<void>;
+      }
+    ).reportErrorToast;
     new MutationObserver(() => {
       const toasts = document.querySelectorAll(
         '[data-sonner-toast][data-type="error"]',
       );
-      for (const toast of toasts) seen.add(toast.textContent ?? "");
+      for (const toast of toasts) void report(toast.textContent ?? "");
     }).observe(document.body, { childList: true, subtree: true });
   });
 }
@@ -26,17 +38,15 @@ async function recordErrorToasts(page: Page) {
 // page fires many (the prefetches of the sidebar links after a load). So the
 // session ends only once the network is quiet; then the toasts are recorded.
 async function endSession(page: Page) {
-  await page.waitForLoadState("networkidle");
+  await waitForAnswers(page);
   await page.context().clearCookies();
   await recordErrorToasts(page);
 }
 
 async function expectSentToSignIn(page: Page) {
   await expect(page).toHaveURL(SIGN_IN_URL);
-  const seen = await page.evaluate(() => [
-    ...(window as unknown as { seenErrorToasts: Set<string> }).seenErrorToasts,
-  ]);
-  expect(seen).toEqual([]);
+  await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+  expect([...seenErrorToasts]).toEqual([]);
 }
 
 test("a star clicked after the session ended goes to sign-in", async ({

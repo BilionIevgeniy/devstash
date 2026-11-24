@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
-import { expect, test, type FileChooser } from "@playwright/test";
+import type { FileChooser } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { signInFreshUser } from "./support/fresh-user";
 import {
   createSnippet,

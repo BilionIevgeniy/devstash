@@ -10,6 +10,7 @@ import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ErrorCode, ErrorRef } from "@/i18n/error-codes";
+import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
 
 interface SignInFormProps {
   callbackUrl: string;
@@ -17,7 +18,14 @@ interface SignInFormProps {
   initialError?: ErrorCode;
 }
 
-export function SignInForm({ callbackUrl, initialError }: SignInFormProps) {
+// Mounted anew when its route shows again (useRemountOnReveal, ADR 0037): the
+// route stays mounted while hidden, and a password typed and left must not
+// wait in the page for the user's return.
+export function SignInForm(props: SignInFormProps) {
+  return <SignInFormBody key={useRemountOnReveal()} {...props} />;
+}
+
+function SignInFormBody({ callbackUrl, initialError }: SignInFormProps) {
   const [state, formAction, isPending] = useActionState(
     signInWithCredentials,
     null,

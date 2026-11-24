@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { createSnippet, uniqueTitle } from "./support/items";
 import { openPalette } from "./support/palette";
 

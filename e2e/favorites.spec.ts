@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { signInFreshUser } from "./support/fresh-user";
 import { createSnippet, itemLink, uniqueTitle } from "./support/items";
 import { SIGNED_OUT } from "./support/storage-state";

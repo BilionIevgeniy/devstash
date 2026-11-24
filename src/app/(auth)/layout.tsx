@@ -5,6 +5,7 @@ import { ConsentRoot } from "@/components/common/consent/ConsentRoot";
 import { PrivacySettingsButton } from "@/components/common/consent/PrivacySettingsButton";
 import { AppToaster } from "@/components/common/providers/AppToaster";
 import { I18nProvider } from "@/components/common/providers/I18nProvider";
+import { FreshAuthDocument } from "@/features/auth/components/FreshAuthDocument";
 import { messagesFor } from "@/i18n/messages";
 
 // The description of every page under this layout, in its language; the
@@ -18,6 +19,10 @@ export async function generateMetadata(): Promise<Metadata> {
     robots: { index: false, follow: false },
   };
 }
+
+// Reads the locale of the request at its top, so the segment blocks on the
+// server, as it did before Cache Components (ADR 0037).
+export const instant = false;
 
 // The sign-in, registration and email-link pages, in the locale of the request:
 // the cookie the user chose, else the browser's language (ADR 0024). Reading it
@@ -37,6 +42,7 @@ export default async function AuthLayout({ children }: LayoutProps<"/">) {
       </div>
       <AppToaster />
       <ConsentRoot />
+      <FreshAuthDocument />
     </I18nProvider>
   );
 }

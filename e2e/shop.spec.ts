@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { uniqueTitle } from "./support/items";
 import { SIGNED_OUT } from "./support/storage-state";
 

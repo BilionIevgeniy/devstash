@@ -1,4 +1,5 @@
-import { expect, test, type Locator } from "@playwright/test";
+import type { Locator } from "@playwright/test";
+import { expect, test } from "./support/test";
 import { signInFreshUser } from "./support/fresh-user";
 import { itemHeading, openCreateDialog, uniqueTitle } from "./support/items";
 import { SIGNED_OUT } from "./support/storage-state";
