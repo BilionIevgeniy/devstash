@@ -12,7 +12,7 @@ import {
   type ItemListParams,
 } from "@/features/items/domain/list/list-params";
 import { ITEMS_PER_PAGE } from "@/features/items/domain/list/pagination";
-import { getItemsOfType } from "@/features/items/queries";
+import { getItemsOfType } from "@/features/items/queries/type-page";
 import { getUserFileListItems } from "@/features/items/services/file-list";
 import { getUserGalleryItems } from "@/features/items/services/gallery";
 import { pageSkip } from "@/lib/pagination";

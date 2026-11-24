@@ -1,4 +1,4 @@
-import { readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
@@ -48,6 +48,19 @@ if (unlistedFeatures.length > 0 || staleFeatures.length > 0) {
     "FEATURE_RANKS in eslint.config.mjs is out of sync with src/features " +
       `(no rank: ${unlistedFeatures.join(", ") || "none"}; ` +
       `no folder: ${staleFeatures.join(", ") || "none"})`,
+  );
+}
+
+// A feature's queries are one file or one folder, never both: a reader finds a
+// read in one place (ADR 0017).
+const hasPath = (path) => existsSync(new URL(path, import.meta.url));
+const mixedQueries = FEATURE_NAMES.flatMap((name) => [
+  `./src/features/${name}/queries`,
+  `./src/features/${name}/_internal/queries`,
+]).filter((path) => hasPath(`${path}.ts`) && hasPath(path));
+if (mixedQueries.length > 0) {
+  throw new Error(
+    `A file and a folder for the same queries (ADR 0017): ${mixedQueries.join(", ")}`,
   );
 }
 
@@ -196,7 +209,7 @@ const NO_PRISMA_MESSAGE =
 // the names prisma and tx, so a read through tx, which shares a transaction with
 // a write, stays in the service.
 const NO_READ_IN_SERVICE_MESSAGE =
-  "A read goes in queries.ts; one that returns a secret goes in _internal/queries.ts. Only a read through tx stays in a service.";
+  "A read goes in the queries; one that returns a secret goes in the _internal queries. Only a read through tx stays in a service.";
 const NO_WRITE_IN_QUERIES_MESSAGE =
   "queries.ts only reads: a write, a transaction or raw SQL goes in a service.";
 const READ_IN_SERVICE_SELECTORS = [

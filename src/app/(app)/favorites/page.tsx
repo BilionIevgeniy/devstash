@@ -2,7 +2,7 @@ import { FavoriteLists } from "@/app/(app)/favorites/_components/FavoriteLists";
 import { getTranslations } from "next-intl/server";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { getEntitlements } from "@/features/billing/queries";
-import { getFavoriteCollections } from "@/features/collections/queries";
+import { getFavoriteCollections } from "@/features/collections/queries/favorites";
 import { ItemDrawerProvider } from "@/features/items/components/drawer/ItemDrawerProvider";
 import {
   countFavoriteItems,

@@ -1,9 +1,9 @@
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { BillingSection } from "@/features/billing/components/BillingSection";
 import { getBillingOverview } from "@/features/billing/queries";
-import { getCollectionStats } from "@/features/collections/queries";
+import { getCollectionStats } from "@/features/collections/queries/dashboard";
 import { LockedFilesRow } from "@/features/items/components/lists/LockedFilesRow";
-import { getItemStats } from "@/features/items/queries";
+import { getItemStats } from "@/features/items/queries/dashboard";
 import { getUserLockedFileCount } from "@/features/items/services/locked-files";
 import { isStripeTestMode } from "@/lib/vendors/stripe";
 

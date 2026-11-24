@@ -3,7 +3,7 @@ import "server-only";
 import {
   itemTagsSelect,
   toTagFields,
-} from "@/features/items/_internal/queries";
+} from "@/features/items/_internal/queries/selects";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/postgres/prisma";
 

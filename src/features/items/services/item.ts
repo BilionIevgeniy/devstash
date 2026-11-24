@@ -12,11 +12,11 @@ import {
   editableUpdate,
 } from "@/features/items/domain/item-fields";
 import { toSearchTags } from "@/features/items/domain/search-text";
-import { getItemFileKey } from "@/features/items/_internal/queries";
+import { getItemFileKey } from "@/features/items/_internal/queries/item-detail";
 import { userCanEditText } from "@/features/items/services/text-access";
 import { FREE_ITEM_LIMIT } from "@/features/billing/domain/limits";
 import { changesOnlyCollections } from "@/features/items/domain/text-lock";
-import { getItemEditState } from "@/features/items/queries";
+import { getItemEditState } from "@/features/items/queries/edit-state";
 import type { UpdateItemInput } from "@/features/items/schemas";
 import { getUserItemDetail } from "@/features/items/services/item-detail";
 import { userCanUseType } from "@/features/items/services/type-access";

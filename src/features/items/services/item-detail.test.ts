@@ -11,7 +11,7 @@ vi.mock("@/features/billing/queries", () => ({ getEntitlements }));
 vi.mock("@/features/items/services/text-access", () => ({
   getItemEditMode: vi.fn(async () => "full"),
 }));
-vi.mock("@/features/items/_internal/queries", () => ({
+vi.mock("@/features/items/_internal/queries/item-detail", () => ({
   getItemDetail,
   getItemDetailOfType,
 }));

@@ -3,7 +3,7 @@ import "server-only";
 import {
   dashboardItemSelect,
   toDashboardItem,
-} from "@/features/items/_internal/queries";
+} from "@/features/items/_internal/queries/selects";
 import {
   favoriteKeyset,
   pinnedKeyset,

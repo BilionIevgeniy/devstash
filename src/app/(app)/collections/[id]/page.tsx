@@ -8,7 +8,7 @@ import { PaginationNav } from "@/components/common/lists/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { getEntitlements } from "@/features/billing/queries";
 import { CollectionHeaderActions } from "@/features/collections/components/CollectionHeaderActions";
-import { getCollectionById } from "@/features/collections/queries";
+import { getCollectionById } from "@/features/collections/queries/list";
 import { collectionIdSchema } from "@/features/collections/schemas";
 import { ItemDrawerProvider } from "@/features/items/components/drawer/ItemDrawerProvider";
 import { getUserCollectionListing } from "@/features/items/services/collection-listing";

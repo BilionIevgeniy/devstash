@@ -4,7 +4,7 @@ import { toSearchPreview } from "@/features/items/_internal/domain/search-previe
 import {
   cardItemSelect,
   toDashboardItem,
-} from "@/features/items/_internal/queries";
+} from "@/features/items/_internal/queries/selects";
 import { rankUserItemIds } from "@/features/items/_internal/queries/search-ranking";
 import { copyValueOf } from "@/features/items/domain/item-fields";
 import {

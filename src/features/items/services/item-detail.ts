@@ -3,7 +3,7 @@ import "server-only";
 import {
   getItemDetail,
   getItemDetailOfType,
-} from "@/features/items/_internal/queries";
+} from "@/features/items/_internal/queries/item-detail";
 import { signItemFile } from "@/features/items/_internal/services/file-urls";
 import { getEntitlements } from "@/features/billing/queries";
 import { canUseType } from "@/features/items/domain/item-fields";

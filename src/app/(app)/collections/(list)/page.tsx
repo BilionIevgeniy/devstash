@@ -5,7 +5,7 @@ import CollectionsLoading from "@/app/(app)/collections/(list)/loading";
 import { PaginationNav } from "@/components/common/lists/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { CollectionCard } from "@/features/collections/components/CollectionCard";
-import { getUserCollections } from "@/features/collections/queries";
+import { getUserCollections } from "@/features/collections/queries/list";
 import { parsePage } from "@/lib/pagination";
 
 async function CollectionsContent({ page }: { page: number }) {

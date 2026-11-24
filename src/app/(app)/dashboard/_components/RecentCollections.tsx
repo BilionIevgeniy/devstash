@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { CollectionCard } from "@/features/collections/components/CollectionCard";
-import { getRecentCollections } from "@/features/collections/queries";
+import { getRecentCollections } from "@/features/collections/queries/dashboard";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 
 export async function RecentCollections() {

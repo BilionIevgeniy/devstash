@@ -4,7 +4,10 @@ import {
   seedTenants,
   type Tenants,
 } from "../../../../test/integration/fixtures";
-import { searchUserCollections } from "@/features/collections/queries/search";
+import {
+  getRecentSearchableCollections,
+  searchUserCollections,
+} from "@/features/collections/queries/search";
 import { prisma } from "@/lib/postgres/prisma";
 
 // Read-only: one seed for the file. A and B both have "React Patterns" and
@@ -56,5 +59,20 @@ describe("searchUserCollections", () => {
 
   it("answers punctuation alone with nothing", async () => {
     expect(await find(t.a.userId, "!!")).toEqual([]);
+  });
+});
+
+describe("getRecentSearchableCollections", () => {
+  it("lists only the caller's collections", async () => {
+    const both = ({ collections }: Tenants["a"]) => [
+      collections.main,
+      collections.favorite,
+    ];
+    const [a, b] = await Promise.all([
+      getRecentSearchableCollections(t.a.userId),
+      getRecentSearchableCollections(t.b.userId),
+    ]);
+    expect(idsOf(a).sort()).toEqual([...both(t.a), described].sort());
+    expect(idsOf(b).sort()).toEqual(both(t.b).sort());
   });
 });

@@ -16,7 +16,10 @@ import {
 import { typeListing } from "@/features/items/domain/item-fields";
 import { itemListHref } from "@/features/items/domain/list/list-params";
 import { ITEMS_PER_PAGE } from "@/features/items/domain/list/pagination";
-import { countItemsOfType, getTypeTagNames } from "@/features/items/queries";
+import {
+  countItemsOfType,
+  getTypeTagNames,
+} from "@/features/items/queries/type-page";
 import { parseItemListParams } from "@/features/items/schemas";
 import { userCanUseType } from "@/features/items/services/type-access";
 import { pagePosition } from "@/lib/pagination";

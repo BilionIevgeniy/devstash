@@ -54,7 +54,7 @@ features/<name>/
   domain/<topic>.ts      pure rules: limits, gating, expiry, ranking, serializers
   schemas.ts             Zod shapes of every input
   types.ts               view and result types (JSON-safe), and the handle a component hands to its parent through `ref`
-  queries.ts             reads of the feature's own models; may split into queries/<topic>.ts (ADR 0017)
+  queries.ts             reads of the feature's own models; or a folder queries/<topic>.ts, never both (ADR 0017)
   services/<topic>.ts    every write and every multi-step operation
   actions/<noun>.ts      Server Actions ("use server" files export only async functions)
   components/            React components, grouped by topic when the folder grows
@@ -97,7 +97,7 @@ A type lives with the value it comes from.
 | Derived from a constant, or the arguments or result of one function                                                                      | the file of that constant or function         | `TypeIconName` (item-types/domain), `EditableFields` (items/domain), `ItemTypeRow` (item-types/domain), `EmailSendCheck` (auth/services), `ActionEmailCopy` (auth/_internal/emails) |
 | Used by one file only                                                                                                                    | that file, not exported                       | `UpdateItemActionResult` (items/actions)                                                                                                                                            |
 
-There is no `types/` folder; `types.ts` splits into `types/<topic>.ts` only when it grows. `queries.ts` and `_internal/queries.ts` split the same way into `queries/<topic>.ts`, and every file there keeps the query role and its lint ([ADR 0017](../docs/adr/0017-queries-split-by-topic.md)).
+There is no `types/` folder; `types.ts` splits into `types/<topic>.ts` only when it grows. `queries.ts` and `_internal/queries.ts` are each one file or one folder `queries/<topic>.ts`, never both (the lint throws); every file there keeps the query role and its lint, and shared selects and mappers are in `_internal/queries/selects.ts`, which reads nothing ([ADR 0017](../docs/adr/0017-queries-split-by-topic.md)).
 
 ## Old paths in specs
 

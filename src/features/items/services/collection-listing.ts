@@ -4,7 +4,7 @@ import { getEntitlements } from "@/features/billing/queries";
 import {
   getCollectionItemRecords,
   getCollectionTypeCounts,
-} from "@/features/items/_internal/queries";
+} from "@/features/items/_internal/queries/collection-records";
 import {
   groupItemsByType,
   type TypeGroup,

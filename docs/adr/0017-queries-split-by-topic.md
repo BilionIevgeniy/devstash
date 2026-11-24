@@ -34,3 +34,10 @@ First use: `items/_internal/queries/type-list.ts`, the `where` and `orderBy` of 
 - A query file splits by what it reads, and every part keeps the lint of the role
 - An import names the topic (`@/features/items/_internal/queries/type-list`); `@/features/items/_internal/queries` still resolves to the file
 - A reviewer checks that a new file in the folder starts with `import "server-only"` (not linted, the same as `queries.ts`)
+
+## Amendment (2026-11-24, feature 23)
+
+The last sentence of the decision ("The file and the folder may stand side by side") ended with the last reads moved:
+
+- A feature uses either the file or the folder, in each of the two places (`queries`, `_internal/queries`) on its own. A small feature keeps its one file (`auth`, `billing`, `editor`, `item-types`); `items` and `collections` use folders in both places. `eslint.config.mjs` throws when a file and a folder stand side by side.
+- `items/_internal/queries/selects.ts` holds the orders, selects and mappers the queries share: shapes, no reads. `collections/_internal/queries/collection-rows.ts` holds the shared read of a list's rows with its selects.

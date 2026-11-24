@@ -1,5 +1,5 @@
 import { getSignedInUserId } from "@/features/auth/nextauth/session";
-import { getCollectionOptions } from "@/features/collections/queries";
+import { getCollectionOptions } from "@/features/collections/queries/list";
 import { fail } from "@/lib/errors/action-result";
 import { jsonError, jsonOk } from "@/lib/http/api-response";
 import { logger } from "@/lib/observability/logger";

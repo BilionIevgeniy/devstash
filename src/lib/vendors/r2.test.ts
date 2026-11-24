@@ -7,7 +7,10 @@ vi.mock("@aws-sdk/client-s3", () => {
   const command = (name: string) =>
     class {
       readonly name = name;
-      constructor(readonly input: Record<string, unknown>) {}
+      readonly input: Record<string, unknown>;
+      constructor(input: Record<string, unknown>) {
+        this.input = input;
+      }
     };
   return {
     S3Client: class {

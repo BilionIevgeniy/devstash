@@ -34,3 +34,7 @@ Option 2 in both.
 - A page past the end shows the last page with no redirect, so the URL can name a page that no longer exists until the next click
 - A change of `?page` keeps the segment, so `loading.tsx` does not show. Each paginated page renders its content in `<Suspense key={page}>` with that file as the fallback
 - `items/_internal/queries.ts` also holds code that is not about the key: the selects and mappers shared with the public reads, since moving them the other way would export Prisma-shaped helpers to every higher feature, and `getCollectionTypeCounts`, which shares its `where` with `getCollectionItemRecords` and has no caller outside the collection listing service
+
+## Amendment (2026-11-24, feature 23)
+
+`items/_internal/queries.ts` is a folder since [ADR 0017](0017-queries-split-by-topic.md) was amended: the reads that hand out the object key are in `_internal/queries/item-detail.ts`, `collection-records.ts`, `file-records.ts` and `type-list.ts`.
