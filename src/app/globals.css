@@ -11,7 +11,23 @@
   --color-dim: #8a8a8a;
   --color-raised: #1f1f1f;
   --color-chaos: #0f0f0f;
+  /* A wait that is not worth showing at once: in after 300 ms. */
+  --animate-pending-spin:
+    pending-in 200ms ease-out 300ms both, pending-turn 1s linear infinite;
+  --animate-pending-dot: pending-in 200ms ease-out 300ms both;
   --animate-arrow-pulse: arrow-pulse 2s ease-in-out infinite;
+
+  @keyframes pending-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes pending-turn {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 
   @keyframes arrow-pulse {
     0%,

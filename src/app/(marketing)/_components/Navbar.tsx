@@ -7,7 +7,10 @@ import { useRef, useState } from "react";
 
 import { Logo } from "@/components/common/Logo";
 import { Button } from "@/components/ui/button";
-import { useHasSession } from "@/features/auth/components/hooks/use-has-session";
+import {
+  primeSessionCheck,
+  useHasSession,
+} from "@/features/auth/components/hooks/use-has-session";
 import { homePath } from "@/i18n/config";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +23,9 @@ import {
   DASHBOARD_PATH,
   SIGN_IN_PATH,
 } from "@/features/auth/domain/auth-paths";
+
+// Asked while the page hydrates, so the answer is often there at the mount.
+if (typeof window !== "undefined") primeSessionCheck();
 
 const PANEL_ID = "mobile-nav";
 const DESKTOP_LINK = "transition-colors hover:text-foreground";
@@ -69,11 +75,13 @@ function MemberAction({ hidden }: { hidden: boolean }) {
 }
 
 // Sign in and the main action, which depend on the session, stacked in one
-// cell (SessionAwareAction): the language link beside them never moves.
+// cell (SessionAwareAction): the language link beside them never moves. The
+// placeholder is one for two buttons, so it has the look of neither.
 function SessionActions() {
   return (
     <SessionAwareAction
       className="items-center"
+      pendingVariant="secondary"
       cellClassName="flex items-center gap-2 justify-self-end"
       guest={(hidden) => <GuestActions hidden={hidden} />}
       member={(hidden) => <MemberAction hidden={hidden} />}
@@ -138,7 +146,7 @@ export function Navbar() {
       {open && (
         <MobileNavPanel
           id={PANEL_ID}
-          signedIn={hasSession === true}
+          hasSession={hasSession}
           onClose={() => setOpen(false)}
         />
       )}

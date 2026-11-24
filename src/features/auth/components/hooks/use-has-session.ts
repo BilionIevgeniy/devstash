@@ -33,25 +33,42 @@ function remember(answer: boolean): void {
 interface RunningCheck {
   controller: AbortController;
   callers: number;
+  /** Set for a check that started before any caller mounted. */
+  primedAt: number | null;
 }
 let running: RunningCheck | null = null;
 
-function startCheck(): RunningCheck {
+// How long the answer of a primed check stands in for the first callers' own.
+// The navbar's module could be loaded long before it mounts, and a visitor
+// signs in meanwhile.
+const PRIMED_FOR_MS = 10_000;
+
+function startCheck(primedAt: number | null): RunningCheck {
   const controller = new AbortController();
-  const check = { controller, callers: 0 };
+  const check = { controller, callers: 0, primedAt };
   fetchHasSession(controller.signal)
     .then(remember)
     .catch(() => {
       if (!controller.signal.aborted && lastAnswer === null) remember(false);
     })
     .finally(() => {
-      if (running === check) running = null;
+      // A primed check stays for its callers, who may mount after the answer.
+      if (running === check && primedAt === null) running = null;
     });
   return check;
 }
 
+function isStale({ primedAt, callers }: RunningCheck): boolean {
+  if (primedAt === null || callers > 0) return false;
+  return Date.now() - primedAt > PRIMED_FOR_MS;
+}
+
 function joinCheck(): () => void {
-  running ??= startCheck();
+  if (running && isStale(running)) {
+    running.controller.abort();
+    running = null;
+  }
+  running ??= startCheck(null);
   const check = running;
   check.callers += 1;
   return () => {
@@ -60,6 +77,14 @@ function joinCheck(): () => void {
     check.controller.abort();
     if (running === check) running = null;
   };
+}
+
+/**
+ * Starts the check before its first caller mounts, for a module that renders
+ * one: the callers of the first mount share it, also once it has its answer.
+ */
+export function primeSessionCheck(): void {
+  running ??= startCheck(Date.now());
 }
 
 /** Forgets the tab's answer. For tests only. */

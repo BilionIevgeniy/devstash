@@ -89,13 +89,24 @@ test.describe("signed in", () => {
 test.describe("signed out", () => {
   test.use({ storageState: SIGNED_OUT });
 
-  for (const path of [
-    "/",
-    "/de",
-    "/sign-in",
-    "/register",
-    "/forgot-password",
-  ]) {
+  // The calls to action come with the session's answer: the scan reads them,
+  // not the placeholder.
+  for (const [path, action] of [
+    ["/", "Get Started"],
+    ["/de", "Loslegen"],
+  ] as const) {
+    test(`${path} has no serious violations`, async ({ page }) => {
+      await page.goto(path);
+      await expect(
+        page
+          .getByRole("banner")
+          .getByRole("link", { name: action, exact: true }),
+      ).toBeVisible();
+      await expectNoSeriousViolations(page);
+    });
+  }
+
+  for (const path of ["/sign-in", "/register", "/forgot-password"]) {
     test(`${path} has no serious violations`, async ({ page }) => {
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -113,6 +124,11 @@ test.describe("a first visit", () => {
     await page.goto("/");
     await expect(
       page.getByRole("region", { name: "Performance measurement" }),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByRole("banner")
+        .getByRole("link", { name: "Get Started", exact: true }),
     ).toBeVisible();
     await expectNoSeriousViolations(page);
   });

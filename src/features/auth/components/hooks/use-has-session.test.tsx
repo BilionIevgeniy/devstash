@@ -9,6 +9,7 @@ vi.mock("@/features/auth/_internal/components/fetch-has-session", () => ({
 
 import {
   forgetSessionAnswer,
+  primeSessionCheck,
   useHasSession,
 } from "@/features/auth/components/hooks/use-has-session";
 
@@ -93,5 +94,82 @@ describe("useHasSession", () => {
     await act(async () => {});
 
     expect(result.current).toBe(true);
+  });
+});
+
+describe("a primed check", () => {
+  beforeEach(() => {
+    forgetSessionAnswer();
+    fetchHasSession.mockResolvedValue(true);
+  });
+
+  it("is shared by every caller of the first mount, also after its answer", async () => {
+    primeSessionCheck();
+    await act(async () => {});
+
+    const first = renderHook(() => useHasSession());
+    const second = renderHook(() => useHasSession());
+    await act(async () => {});
+
+    expect(fetchHasSession).toHaveBeenCalledOnce();
+    expect(first.result.current).toBe(true);
+    expect(second.result.current).toBe(true);
+  });
+
+  it("is shared while it still runs, and starts only once", async () => {
+    const answer = Promise.withResolvers<boolean>();
+    fetchHasSession.mockReturnValue(answer.promise);
+    primeSessionCheck();
+    primeSessionCheck();
+
+    const { result } = renderHook(() => useHasSession());
+    expect(result.current).toBeNull();
+    await act(async () => answer.resolve(false));
+
+    expect(result.current).toBe(false);
+    expect(fetchHasSession).toHaveBeenCalledOnce();
+  });
+
+  it("is over when its last caller has left: the next mount asks again", async () => {
+    primeSessionCheck();
+    renderHook(() => useHasSession()).unmount();
+    await act(async () => {});
+
+    renderHook(() => useHasSession());
+    await act(async () => {});
+
+    expect(fetchHasSession).toHaveBeenCalledTimes(2);
+  });
+
+  // The visitor may have signed in since.
+  it("is too old for a caller that mounts much later", async () => {
+    const now = vi.spyOn(Date, "now").mockReturnValue(1_000);
+    primeSessionCheck();
+    await act(async () => {});
+
+    now.mockReturnValue(12_000);
+    renderHook(() => useHasSession());
+    await act(async () => {});
+
+    expect(fetchHasSession).toHaveBeenCalledTimes(2);
+  });
+
+  it("is aborted by its last caller while it runs, which is no failure", async () => {
+    fetchHasSession.mockImplementation(
+      (signal: AbortSignal) =>
+        new Promise((_resolve, reject) => {
+          signal.addEventListener("abort", () => reject(signal.reason));
+        }),
+    );
+    primeSessionCheck();
+    const signal: AbortSignal = fetchHasSession.mock.calls[0][0];
+
+    renderHook(() => useHasSession()).unmount();
+    await act(async () => {});
+    expect(signal.aborted).toBe(true);
+
+    fetchHasSession.mockReturnValue(new Promise(() => undefined));
+    const { result } = renderHook(() => useHasSession());
+    expect(result.current).toBeNull();
   });
 });

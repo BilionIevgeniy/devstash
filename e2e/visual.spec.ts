@@ -92,7 +92,12 @@ test.describe("signed out", () => {
 
   test("homepage", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    // The calls to action come with the session's answer, all at once.
+    await expect(
+      page
+        .getByRole("banner")
+        .getByRole("link", { name: "Get Started", exact: true }),
+    ).toBeVisible();
     // The hero's icons drift, and even at rest each gets a random tilt
     // (chaos-simulation.ts): the panel is masked, the rest is compared.
     await expectScreen(page, "homepage", [

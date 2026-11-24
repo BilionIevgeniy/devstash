@@ -10,11 +10,18 @@ const PANEL_LINK = "flex min-h-11 items-center text-muted-foreground";
 
 interface MobileNavPanelProps {
   id: string;
-  signedIn: boolean;
+  /** Null until the answer comes. */
+  hasSession: boolean | null;
   onClose: () => void;
 }
 
-export function MobileNavPanel({ id, signedIn, onClose }: MobileNavPanelProps) {
+// The row that depends on the session comes last: when the answer takes it
+// away, nothing under it moves. Until then its place is kept, with no guess.
+export function MobileNavPanel({
+  id,
+  hasSession,
+  onClose,
+}: MobileNavPanelProps) {
   const t = useTranslations("marketing");
   const home = homePath(useLocale());
 
@@ -31,12 +38,17 @@ export function MobileNavPanel({ id, signedIn, onClose }: MobileNavPanelProps) {
         <Link href={`${home}#pricing`} className={PANEL_LINK} onClick={onClose}>
           {t("nav.pricing")}
         </Link>
-        {!signedIn && (
+        <LanguageLink variant="name" className={PANEL_LINK} />
+        {hasSession === false && (
           <Link href={SIGN_IN_PATH} className={PANEL_LINK}>
             {t("nav.signIn")}
           </Link>
         )}
-        <LanguageLink variant="name" className={PANEL_LINK} />
+        {hasSession === null && (
+          <span aria-hidden="true" className={PANEL_LINK}>
+            <span className="h-4 w-14 rounded-md bg-muted" />
+          </span>
+        )}
       </div>
     </nav>
   );
