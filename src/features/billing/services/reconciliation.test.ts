@@ -50,7 +50,7 @@ describe("reconcileSubscriptions", () => {
 
     expect(mocks.syncSubscription).toHaveBeenCalledWith("cus_1", "sub_1", {
       quiet: true,
-      request: { timeout: 8_000, maxNetworkRetries: 0 },
+      request: { timeout: 5_000, maxNetworkRetries: 0 },
     });
     expect(report).toEqual({
       counts: {
@@ -87,7 +87,7 @@ describe("reconcileSubscriptions", () => {
     expect(mocks.syncSubscription).toHaveBeenCalledTimes(1);
     expect(mocks.syncSubscription).toHaveBeenCalledWith("cus_1", "sub_new", {
       quiet: true,
-      request: { timeout: 8_000, maxNetworkRetries: 0 },
+      request: { timeout: 5_000, maxNetworkRetries: 0 },
     });
   });
 
@@ -174,7 +174,7 @@ describe("reconcileSubscriptions", () => {
     const report = await reconcileSubscriptions({ now: NOW, deadline: 10_000 });
 
     expect(report.stoppedEarly).toBe(true);
-    expect(mocks.syncSubscription).toHaveBeenCalledTimes(9);
+    expect(mocks.syncSubscription).toHaveBeenCalledTimes(7);
     expect(mocks.syncSubscription).toHaveBeenLastCalledWith(
       "cus_new",
       "sub_new",
@@ -261,7 +261,7 @@ describe("reconcileSubscriptions", () => {
     await reconcileSubscriptions({ now: NOW, deadline: LATER });
 
     expect(mocks.list).toHaveBeenCalledWith(expect.anything(), {
-      timeout: 8_000,
+      timeout: 5_000,
       maxNetworkRetries: 0,
     });
   });

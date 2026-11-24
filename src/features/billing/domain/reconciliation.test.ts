@@ -77,7 +77,7 @@ describe("rotateForDay", () => {
 
 describe("rowsDeadline", () => {
   it("leaves the second pass a share of the time that is left", () => {
-    expect(rowsDeadline(1_000, 11_000)).toBe(8_000);
+    expect(rowsDeadline(1_000, 11_000)).toBe(6_000);
   });
 
   it("is over at once when no time is left", () => {

@@ -24,7 +24,7 @@ import { getStripe, type StripeSubscription } from "@/lib/vendors/stripe";
 const STRIPE_PAGE_SIZE = 100;
 // The SDK waits 80 seconds and retries by itself, longer than the whole run:
 // one stalled request would outlive every deadline here.
-const STRIPE_REQUEST = { timeout: 8_000, maxNetworkRetries: 0 };
+const STRIPE_REQUEST = { timeout: 5_000, maxNetworkRetries: 0 };
 
 interface Counts {
   checked: number;
@@ -127,7 +127,8 @@ async function reconcileLive(
 
 // The daily job's part for billing (app/api/cron/daily, ADR 0033): webhooks
 // lost for longer than Stripe's three days of retries leave a row stale, so
-// once a day every row is compared with Stripe. The write is the sync's (the
+// once a day the rows are compared with Stripe, as many as the time allows and
+// from another start each day. The write is the sync's (the
 // lock, the read inside it, written by customer, ADR 0012), so the job is
 // idempotent, and a row that is right costs one Stripe read and no write. Each
 // pass has its own share of the time, so neither keeps the other from running.

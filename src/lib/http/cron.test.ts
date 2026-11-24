@@ -108,7 +108,7 @@ describe("runCronJobs", () => {
     });
   });
 
-  // A job that overruns, or leaves time over, moves no one's deadline.
+  // Fixed from the start of the run, whatever a job really takes.
   it("gives each job its own time, what is left over going on to the next", async () => {
     const deadlines: number[] = [];
     const run: CronJob["run"] = async ({ deadline }) => {

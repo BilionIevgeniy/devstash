@@ -16,8 +16,9 @@ export function rotateForDay<T>(rows: readonly T[], now: Date): T[] {
 }
 
 // Of the time left to the job: the rest is the second pass's, which runs
-// whether or not the first one got to the end.
-const ROWS_SHARE = 0.7;
+// whether or not the first one got to the end. Half, so a last row that takes
+// the whole timeout of its Stripe request still leaves time for it.
+const ROWS_SHARE = 0.5;
 
 export function rowsDeadline(now: number, deadline: number): number {
   if (now >= deadline) return deadline;
