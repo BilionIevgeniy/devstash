@@ -35,7 +35,7 @@ Rules that apply to every file:
 | 19  | [A real shop in test mode](../19.real-shop-in-test-mode.md)                      | MUST                | [x]    |
 | 20  | [UX, accessibility and consent](../20.ux-a11y-and-consent.md)                    | SHOULD              | [x]    |
 | 21  | [Full E2E suite](../21.e2e-full.md)                                              | MUST before 22      | [x]    |
-| 22  | [CSP and Cache Components](../22.csp-and-cache-components.md)                    | SHOULD              | [ ]    |
+| 22  | [CSP and Cache Components](../22.csp-and-cache-components.md)                    | SHOULD              | [x]    |
 | 23  | [Final review pass](23.final-review-pass.md)                                     | SHOULD, last        | [ ]    |
 | 24  | [Functions and database closer to the users](24.region-closer-to-users.md)       | SHOULD              | [ ]    |
 
