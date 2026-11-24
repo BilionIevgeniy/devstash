@@ -1,7 +1,7 @@
 import { act, renderHook } from "../../../../../test/intl";
 import { describe, expect, it, vi } from "vitest";
 
-import { fail, ok } from "@/lib/errors/action-result";
+import { ok } from "@/lib/errors/action-result";
 
 const { signOutUser, leaveSession, toastError } = vi.hoisted(() => ({
   signOutUser: vi.fn(),
@@ -40,25 +40,15 @@ describe("useSignOut", () => {
     expect(leaveSession).toHaveBeenCalledExactlyOnceWith("/");
   });
 
-  it("stays and says so when the sign-out fails", async () => {
+  it("leaves after a failure too, which it names", async () => {
     signOutUser.mockRejectedValue(new Error("network"));
     const { result } = renderHook(() => useSignOut());
 
     await act(async () => result.current());
 
-    expect(leaveSession).not.toHaveBeenCalled();
     expect(toastError).toHaveBeenCalledExactlyOnceWith(
       "Something went wrong. Please try again.",
     );
-  });
-
-  it("shows a refusal's words and stays", async () => {
-    signOutUser.mockResolvedValue(fail("generic"));
-    const { result } = renderHook(() => useSignOut());
-
-    await act(async () => result.current());
-
-    expect(leaveSession).not.toHaveBeenCalled();
-    expect(toastError).toHaveBeenCalledOnce();
+    expect(leaveSession).toHaveBeenCalledExactlyOnceWith("/");
   });
 });

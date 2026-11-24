@@ -65,4 +65,14 @@ describe("useDeleteAccount", () => {
     expect(leaveSession).toHaveBeenCalledExactlyOnceWith("/");
     expect(result.current.error).toBeNull();
   });
+
+  it("leaves when the account is already gone and only the answer was lost", async () => {
+    deleteAccount.mockResolvedValue(fail("signedOut"));
+    const { result } = renderHook(() => useDeleteAccount());
+
+    await act(async () => result.current.submit({ password: "pw" }));
+
+    expect(leaveSession).toHaveBeenCalledExactlyOnceWith("/");
+    expect(result.current.error).toBeNull();
+  });
 });

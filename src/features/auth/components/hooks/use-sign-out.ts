@@ -12,6 +12,8 @@ import { isNavigationError } from "@/lib/errors/navigation-error";
 // (leaveSession, ADR 0037). The action's cookie deletion re-renders the page,
 // which can redirect to sign-in on its own: that is left the same way, never
 // followed as a soft navigation, which would keep the user's pages for Back.
+// A failure leaves too, after its toast: the cookie may already be gone with
+// a lost answer, and the new document shows the session as it really is.
 // No pending mark: the menu closes on the click, and nothing can be sent twice.
 export function useSignOut(): () => Promise<void> {
   const home = homePath(useLocale());
@@ -19,16 +21,9 @@ export function useSignOut(): () => Promise<void> {
 
   return async function signOut() {
     try {
-      const result = await signOutUser();
-      if (!result.success) {
-        toast.error(errorText(result));
-        return;
-      }
+      await signOutUser();
     } catch (error) {
-      if (!isNavigationError(error)) {
-        toast.error(errorText("generic"));
-        return;
-      }
+      if (!isNavigationError(error)) toast.error(errorText("generic"));
     }
     leaveSession(home);
   };

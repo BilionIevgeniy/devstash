@@ -34,7 +34,9 @@ export function useDeleteAccount() {
     startTransition(async () => {
       try {
         const result = await deleteAccount(input);
-        if (result.success) leave();
+        // signedOut: an earlier attempt already deleted the account and
+        // ended the session, and only its answer was lost.
+        if (result.success || result.error === "signedOut") leave();
         else setError(result);
       } catch (error) {
         if (isNavigationError(error)) leave();

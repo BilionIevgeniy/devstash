@@ -19,7 +19,6 @@ import {
 } from "@/features/auth/domain/password-reset";
 import { leaveSession } from "@/features/auth/components/leave-session";
 import type { FormActionState } from "@/features/auth/types";
-import { isNavigationError } from "@/lib/errors/navigation-error";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
 import { Button } from "@/components/ui/button";
@@ -84,15 +83,12 @@ async function submit(formData: FormData): Promise<State> {
   // that the password changed (leaveSession, ADR 0037): a toast here would
   // leave with this layout's toast region. The cookie deletion re-renders the
   // page, which can redirect on its own: that is left the same way.
+  // A failed sign-out leaves too: every session is already revoked, and the
+  // sign-in page says that the password changed.
   try {
     await signOutAfterPasswordChange();
-  } catch (error) {
-    if (!isNavigationError(error)) {
-      return {
-        error: { error: "passwordUpdatedReload" },
-        values: INITIAL_STATE.values,
-      };
-    }
+  } catch {
+    // The redirect error and any other end the same way.
   }
   leaveSession(SIGN_IN_AFTER_PASSWORD_CHANGE_PATH);
   return { ...INITIAL_STATE, leaving: true };

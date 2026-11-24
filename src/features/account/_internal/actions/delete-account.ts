@@ -43,7 +43,16 @@ export async function deleteAccount(
   // The browser then loads the homepage as a new document (leaveSession in
   // useDeleteAccount, ADR 0037): a redirect would be a soft navigation that
   // keeps the settings of a deleted account mounted for Back.
-  await signOut({ redirect: false });
+  // The account is gone either way: a failed sign-out is logged, and the
+  // session of a deleted user cannot be used.
+  try {
+    await signOut({ redirect: false });
+  } catch (error) {
+    await logger.error("Signing out after the account deletion failed", {
+      error,
+      userId,
+    });
+  }
   return ok();
 }
 

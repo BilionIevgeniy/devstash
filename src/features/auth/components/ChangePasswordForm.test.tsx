@@ -198,7 +198,7 @@ describe("ChangePasswordForm", () => {
     expect(screen.getByLabelText("Confirm new password")).toHaveValue("");
   });
 
-  it("says to reload when the sign-out fails after the password changed, and empties the fields", async () => {
+  it("leaves for sign-in even when the sign-out fails after the password changed", async () => {
     changePassword.mockResolvedValue(SUCCESS);
     signOutAfterPasswordChange.mockRejectedValue(new Error("network"));
     const user = userEvent.setup();
@@ -206,11 +206,12 @@ describe("ChangePasswordForm", () => {
 
     await fillAndSubmit(user);
 
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Password updated. Reload the page to sign in again.",
+    await waitFor(() =>
+      expect(leaveSession).toHaveBeenCalledExactlyOnceWith(
+        "/sign-in?notice=password-changed",
+      ),
     );
-    expect(screen.getByLabelText("New password")).toHaveValue("");
-    expect(screen.getByLabelText("Current password")).toHaveValue("");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("leaves the same way when the page's re-render redirects, never as a soft navigation", async () => {
