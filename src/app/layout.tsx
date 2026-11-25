@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { ThemeScript } from "@/components/common/theme/ThemeScript";
+import { ThemeSync } from "@/components/common/theme/ThemeSync";
 import { getSiteOrigin } from "@/lib/http/app-url";
 import { geistMono, geistSans } from "./fonts";
 import "./globals.css";
@@ -13,14 +15,25 @@ export const metadata: Metadata = {
     "A developer knowledge hub for snippets, commands, prompts, notes, files, images, links and custom types.",
 };
 
+// `dark` is the server's class, the theme of a visitor who never chose and of
+// a browser without JavaScript. ThemeScript corrects it before the first paint
+// and ThemeSync afterwards, so React must not compare <html>'s class
+// (suppressHydrationWarning). Nothing here reads the request (ADR 0039).
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
       data-scroll-behavior="smooth"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} dark h-full scroll-pb-(--consent-inset) antialiased motion-safe:scroll-smooth`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <head>
+        <ThemeScript />
+      </head>
+      <body className="min-h-full flex flex-col">
+        <ThemeSync />
+        {children}
+      </body>
     </html>
   );
 }
