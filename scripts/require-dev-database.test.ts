@@ -15,8 +15,9 @@ function url(host: string): string {
   return `postgresql://user:secret@${host}/neondb?sslmode=require`;
 }
 
-// Development before the move to Frankfurt (ADR 0038).
+// The endpoints before the move to Frankfurt (ADR 0038).
 const OLD_DEV_HOST = "ep-calm-voice-b4zvdl6z.c-6.us-east-2.aws.neon.tech";
+const OLD_PROD_HOST = "ep-twilight-hat-b4ay1zs8.c-6.us-east-2.aws.neon.tech";
 
 describe("isDevDatabase", () => {
   it("is true only for the development endpoint", () => {
@@ -109,6 +110,11 @@ describe("isTestDatabase", () => {
     expect(isTestDatabase(url(PROD_HOST), PROD_HOST)).toBe(false);
     const pooledProd = PROD_HOST.replace(/^([^.]+)\./, "$1-pooler.");
     expect(isTestDatabase(url(pooledProd), pooledProd)).toBe(false);
+  });
+
+  it("refuses the old endpoints, which are the backup of the move", () => {
+    expect(isTestDatabase(url(OLD_DEV_HOST), OLD_DEV_HOST)).toBe(false);
+    expect(isTestDatabase(url(OLD_PROD_HOST), OLD_PROD_HOST)).toBe(false);
   });
 
   it("refuses a pooled host, which migrate deploy cannot use", () => {

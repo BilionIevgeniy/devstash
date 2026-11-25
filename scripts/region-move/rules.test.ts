@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { DEV_DATABASE_HOST, PROD_DATABASE_HOST } from "../neon-endpoints";
-import { differences, MOVE_HOSTS, parseConnection, pooled } from "./rules";
+import {
+  differences,
+  emptyTables,
+  MOVE_HOSTS,
+  parseConnection,
+  pooled,
+  requireSame,
+} from "./rules";
 
 function url(host: string, rest = "/neondb?sslmode=require"): string {
   return `postgresql://owner:s%40cret@${host}${rest}`;
@@ -41,9 +48,11 @@ describe("parseConnection", () => {
     }
   });
 
-  it("connects to the host of the URL whatever its parameters say", () => {
-    const hidden = url(target, `/neondb?host=${source}`);
-    expect(parseConnection("TARGET_URL", hidden, target).host).toBe(target);
+  it.each(["host", "hostaddr"])("refuses a %s parameter", (name) => {
+    const hidden = url(target, `/neondb?${name}=${source}`);
+    expect(() => parseConnection("TARGET_URL", hidden, target)).toThrow(
+      "TARGET_URL must not have a host parameter",
+    );
   });
 
   it("refuses a missing or incomplete URL without printing it", () => {
@@ -89,5 +98,37 @@ describe("differences", () => {
       "lost: only in the source",
       "rows: differs",
     ]);
+  });
+});
+
+describe("requireSame", () => {
+  const { target } = MOVE_HOSTS.production;
+  const one = parseConnection("TARGET_URL", url(target), target);
+
+  it("refuses another database or role", () => {
+    expect(() =>
+      requireSame(one, { ...one }, ["database", "user"]),
+    ).not.toThrow();
+    const other = { ...one, database: "postgres", user: "someone" };
+    expect(() => requireSame(one, other, ["database"])).toThrow(
+      "a different database",
+    );
+    expect(() => requireSame(one, other, ["user"])).toThrow("a different user");
+  });
+});
+
+describe("emptyTables", () => {
+  it("finds the tables an app database always has rows in", () => {
+    const full = {
+      "rows User": "2 rows, a",
+      "rows ItemType": "7 rows, b",
+      "rows _prisma_migrations": "20 rows, c",
+      "rows Tag": "0 rows, d",
+    };
+    expect(emptyTables(full)).toEqual([]);
+    expect(emptyTables({ ...full, "rows User": "0 rows, a" })).toEqual([
+      "User",
+    ]);
+    expect(emptyTables({})).toEqual(["User", "ItemType", "_prisma_migrations"]);
   });
 });

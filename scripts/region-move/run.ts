@@ -13,11 +13,14 @@ import {
 } from "./database";
 import {
   differences,
+  emptyTables,
   MOVE_COMMANDS,
   MOVE_HOSTS,
   MOVE_NAMES,
   parseConnection,
   pooled,
+  pooledHost,
+  requireSame,
   type Connection,
   type MoveCommand,
   type MoveName,
@@ -63,6 +66,7 @@ async function unfreeze({ source }: Move) {
 
 async function copy(move: Move) {
   const [source, target] = [move.source(), move.target()];
+  requireSame(source, target, ["database"]);
   if (!(await isReadOnly(source))) {
     throw new Error(`${source.host} is not frozen: run freeze first`);
   }
@@ -76,6 +80,7 @@ async function copy(move: Move) {
 }
 
 async function verify({ source, target }: Move) {
+  requireSame(source(), target(), ["database"]);
   const [before, after] = [
     await fingerprint(source()),
     await fingerprint(target()),
@@ -86,6 +91,8 @@ async function verify({ source, target }: Move) {
   if (await isReadOnly(target())) {
     throw new Error(`${target().host} is read-only`);
   }
+  const empty = emptyTables(after);
+  if (empty.length > 0) throw new Error(`No rows in ${empty.join(", ")}`);
   const found = differences(before, after);
   if (found.length > 0) {
     throw new Error(`The two sides differ:\n${found.join("\n")}`);
@@ -93,22 +100,39 @@ async function verify({ source, target }: Move) {
   console.log(`Equal: ${Object.keys(after).length} checks`);
 }
 
-// What the build and the app will do with the two values. It proves the file,
-// not what was pasted into Vercel.
-async function urls({ name, env }: Move) {
-  const databaseUrl = env.VERCEL_DATABASE_URL;
-  const directUrl = env.VERCEL_DIRECT_URL;
+// What the build and the app will do with the two values, through the URLs as
+// they are. It proves the file, not what was pasted into Vercel.
+async function urls({ name, env, source, target }: Move) {
+  const { VERCEL_DATABASE_URL: databaseUrl, VERCEL_DIRECT_URL: directUrl } =
+    env;
   const decision = decideMigration({
     vercelEnv: name === "production" ? "production" : "preview",
     directUrl,
     databaseUrl,
   });
   if (!decision.migrate) throw new Error(decision.reason);
+  const host = target().host;
+  const app = parseConnection(
+    "VERCEL_DATABASE_URL",
+    databaseUrl,
+    pooledHost(host),
+  );
+  const direct = parseConnection("VERCEL_DIRECT_URL", directUrl, host);
+  for (const connection of [app, direct]) {
+    requireSame(connection, target(), ["database", "user"]);
+  }
+  // The role the freeze ends the sessions of is the one the app connects as.
+  requireSame(app, source(), ["user"]);
   for (const connectionString of [databaseUrl, directUrl]) {
     const client = new Client({ connectionString });
     await client.connect();
-    await client.query("SELECT 1");
-    console.log(`${client.host} answers`);
+    const { rows } = await client.query<{ count: number }>(
+      'SELECT count(*)::int AS count FROM "_prisma_migrations"',
+    );
+    await client.query('UPDATE "User" SET "id" = "id" WHERE false');
+    console.log(
+      `${client.host} answers: ${rows[0].count} migrations, writable`,
+    );
     await client.end();
   }
 }

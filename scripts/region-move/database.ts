@@ -44,14 +44,30 @@ export async function setReadOnly(
   });
 }
 
+// Ends every session of the role that began before this one, so before the
+// change that was committed ahead of it, and proves it. A session of another
+// role is not ours to end: then nothing here can promise a freeze. Neon's own
+// roles do not write to the app's tables.
 export async function terminateOthers(connection: Connection): Promise<void> {
-  await withClient(connection, (client) =>
-    client.query(
-      `SELECT pg_terminate_backend(pid) FROM pg_stat_activity
-       WHERE datname = current_database() AND usename = current_user
-         AND pid <> pg_backend_pid()`,
-    ),
-  );
+  const others = `FROM pg_stat_activity
+    WHERE datname = current_database() AND pid <> pg_backend_pid()
+      AND backend_type = 'client backend'`;
+  await withClient(connection, async (client) => {
+    await client.query(
+      `SELECT pg_terminate_backend(pid, 5000) ${others} AND usename = current_user`,
+    );
+    const { rows } = await client.query<{ role: string }>(
+      `SELECT DISTINCT usename AS role ${others}
+         AND usename NOT IN ('cloud_admin', 'neon_service')
+         AND (usename <> current_user OR backend_start <
+           (SELECT backend_start FROM pg_stat_activity
+            WHERE pid = pg_backend_pid()))`,
+    );
+    if (rows.length > 0) {
+      const roles = rows.map(({ role }) => role).join(", ");
+      throw new Error(`Sessions from before are still open: ${roles}`);
+    }
+  });
 }
 
 export async function isReadOnly(connection: Connection): Promise<boolean> {
@@ -115,11 +131,18 @@ use() {
   from="$1SSL"; export PGSSLMODE="\${!from}"
   from="$1BINDING"; export PGCHANNELBINDING="\${!from}"
 }
+# Only the errors' first lines: a DETAIL or a CONTEXT can hold a row.
+quiet() {
+  "$@" 2>/tmp/move.err || {
+    grep -E '^(pg_dump|pg_restore|psql): error' /tmp/move.err >&2 || true
+    exit 1
+  }
+}
 use SOURCE_
-pg_dump --format=custom --no-owner --no-privileges --no-comments --file=/tmp/move.dump
+quiet pg_dump --format=custom --no-owner --no-privileges --no-comments --file=/tmp/move.dump
 use TARGET_
-pg_restore --no-owner --no-privileges --exit-on-error --single-transaction --dbname="$PGDATABASE" /tmp/move.dump
-psql --quiet --no-psqlrc --command='ANALYZE'
+quiet pg_restore --no-owner --no-privileges --exit-on-error --single-transaction --dbname="$PGDATABASE" /tmp/move.dump
+quiet psql --quiet --no-psqlrc --command='ANALYZE'
 `;
 
 // The values reach the container by the names of its variables, so no password
@@ -172,8 +195,21 @@ UNION ALL
 SELECT 'relation ' || relname, relkind::text FROM pg_class
 WHERE relnamespace = 'public'::regnamespace AND relkind IN ('r', 'v', 'm', 'S')
 UNION ALL
-SELECT 'database', concat_ws(' | ', datcollate, datctype,
-  pg_encoding_to_char(encoding)) FROM pg_database
+SELECT 'schema ' || nspname, 'exists' FROM pg_namespace
+WHERE nspname !~ '^pg_' AND nspname <> 'information_schema'
+UNION ALL
+SELECT 'functions', count(*)::text FROM pg_proc p
+WHERE pronamespace = 'public'::regnamespace AND NOT EXISTS
+  (SELECT FROM pg_depend WHERE objid = p.oid AND deptype = 'e')
+UNION ALL
+SELECT 'triggers', count(*)::text FROM pg_trigger WHERE NOT tgisinternal
+UNION ALL
+SELECT 'enums', count(*)::text FROM pg_enum
+UNION ALL
+SELECT 'policies', count(*)::text FROM pg_policy
+UNION ALL
+SELECT 'database', concat_ws(' | ', datcollate, datctype, datlocprovider,
+  datlocale, pg_encoding_to_char(encoding)) FROM pg_database
 WHERE datname = current_database()
 `;
 
