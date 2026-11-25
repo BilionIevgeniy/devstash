@@ -59,9 +59,29 @@ async function cancelAtPeriodEnd(userId: string): Promise<Effect> {
   await getStripe().subscriptions.update(ref.subscriptionId, {
     cancel_at_period_end: true,
   });
-  await syncSubscription(ref.customerId, ref.subscriptionId);
-  const after = await getContractState(userId);
-  return { status: "cancelled", periodEnd: periodEndOf(after.periodEnd) };
+  return {
+    status: "cancelled",
+    periodEnd: periodEndOf(await syncedPeriodEnd(userId, ref)),
+  };
+}
+
+// Stripe has accepted the cancellation, so a sync that fails must not turn it
+// into an error: the webhook brings the row up to date, a second attempt would
+// find the contract ending and confirm nothing, and the holder still gets the
+// confirmation. The period end is then the row's from before.
+async function syncedPeriodEnd(
+  userId: string,
+  ref: { customerId: string; subscriptionId: string },
+): Promise<string | null> {
+  try {
+    await syncSubscription(ref.customerId, ref.subscriptionId);
+  } catch (error) {
+    await logger.error("Syncing a cancelled subscription failed", {
+      error,
+      userId,
+    });
+  }
+  return (await getContractState(userId)).periodEnd;
 }
 
 // Sent only when a running contract was ended (cancelAtPeriodEnd), which is

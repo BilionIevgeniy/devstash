@@ -103,6 +103,22 @@ describe("cancelOwnSubscription", () => {
     );
   });
 
+  it("still confirms it when the sync after Stripe's answer fails", async () => {
+    mocks.syncSubscription.mockRejectedValue(new Error("connection lost"));
+
+    const result = await cancelOwnSubscription(
+      "user-1",
+      { kind: "ordinary" },
+      "en",
+      NOW,
+    );
+
+    expect(result.success).toBe(true);
+    expect(mocks.sendEmail.mock.calls[0][0].text).toContain(
+      "December 18, 2026",
+    );
+  });
+
   it("refuses when no subscription runs", async () => {
     mocks.getContractState.mockReset().mockResolvedValue({
       status: "none",
