@@ -77,6 +77,8 @@ test.describe("signed in", () => {
     await expect(
       palette.getByRole("option", { name: new RegExp(VISUAL_DRAWER_ITEM) }),
     ).toBeVisible();
+    // The recent list holds that row too: wait for the answer.
+    await expect(palette.getByRole("option")).toHaveCount(1);
     await expectScreen(page, "palette");
   });
 

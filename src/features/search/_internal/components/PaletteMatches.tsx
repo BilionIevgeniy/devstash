@@ -34,6 +34,9 @@ export function PaletteMatches({
 }: PaletteMatchesProps) {
   const t = useTranslations("search");
   const tCommon = useTranslations("common");
+  // A stale row is another option than the fresh one: cmdk would otherwise call
+  // it selected as it mounts, and keep its id when it is gone.
+  const state = isStale ? "stale" : "fresh";
   return (
     <>
       {items.length > 0 && (
@@ -41,7 +44,7 @@ export function PaletteMatches({
           {items.map((item) => (
             <CommandItem
               key={item.id}
-              value={`item-${item.id}`}
+              value={`${state}-item-${item.id}`}
               disabled={isStale}
               onSelect={() => onSelectItem(item)}
               className={cn(item.isLocked && "opacity-50")}
@@ -76,7 +79,7 @@ export function PaletteMatches({
           {collections.map((collection) => (
             <CommandItem
               key={collection.id}
-              value={`collection-${collection.id}`}
+              value={`${state}-collection-${collection.id}`}
               disabled={isStale}
               onSelect={() => onSelectCollection(collection)}
             >
