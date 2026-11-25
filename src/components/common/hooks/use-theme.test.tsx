@@ -9,11 +9,14 @@ import {
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 import { act, renderHook } from "../../../../test/intl";
 
+// Storage, other tabs and the back-forward cache are proved in
+// storage-store.test.tsx; this file proves the theme's own rules.
 function useBoth() {
   return { theme: useTheme(), resolved: useResolvedTheme() };
 }
 
-// A matchMedia the test can switch, since jsdom has none.
+// A matchMedia the test can switch, since jsdom has none. Counts the queries
+// made, so a test can see that a snapshot does not make one each time.
 function stubSystem(initiallyDark: boolean) {
   const listeners = new Set<() => void>();
   const query = {
@@ -23,10 +26,14 @@ function stubSystem(initiallyDark: boolean) {
     removeEventListener: (_type: string, listener: () => void) =>
       listeners.delete(listener),
   };
-  vi.stubGlobal("matchMedia", () => query);
-  return (dark: boolean) => {
-    query.matches = dark;
-    for (const listener of listeners) listener();
+  const matchMedia = vi.fn(() => query);
+  vi.stubGlobal("matchMedia", matchMedia);
+  return {
+    matchMedia,
+    switchTo(dark: boolean) {
+      query.matches = dark;
+      for (const listener of listeners) listener();
+    },
   };
 }
 
@@ -37,7 +44,6 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
-  vi.restoreAllMocks();
 });
 
 describe("useTheme", () => {
@@ -57,74 +63,31 @@ describe("useTheme", () => {
   });
 
   it("follows the system while the choice is system", () => {
-    const switchSystem = stubSystem(true);
+    const system = stubSystem(true);
     const { result } = renderHook(useBoth);
     act(() => setTheme("system"));
     expect(result.current.resolved).toBe("dark");
 
-    act(() => switchSystem(false));
+    act(() => system.switchTo(false));
     expect(result.current).toEqual({ theme: "system", resolved: "light" });
 
     act(() => setTheme("dark"));
-    act(() => switchSystem(true));
-    act(() => switchSystem(false));
+    act(() => system.switchTo(true));
+    act(() => system.switchTo(false));
     expect(result.current.resolved).toBe("dark");
   });
 
-  it("takes a choice made in another tab", () => {
+  // The first render asks before the subscription exists; after that, every
+  // snapshot reads the subscription's query.
+  it("makes no new query for a snapshot while subscribed", () => {
+    const system = stubSystem(false);
+    window.localStorage.setItem(THEME_STORAGE_KEY, "system");
     const { result } = renderHook(useBoth);
-    act(() => {
-      window.dispatchEvent(
-        new StorageEvent("storage", {
-          key: THEME_STORAGE_KEY,
-          newValue: "light",
-        }),
-      );
-    });
-    expect(result.current.theme).toBe("light");
+    system.matchMedia.mockClear();
 
-    // The other tab cleared its storage.
-    act(() => {
-      window.dispatchEvent(new StorageEvent("storage", { key: null }));
-    });
-    expect(result.current.theme).toBe("dark");
-  });
-
-  it("reads storage again when the page comes back from the cache", () => {
-    const { result } = renderHook(useBoth);
-    window.localStorage.setItem(THEME_STORAGE_KEY, "light");
-
-    act(() => {
-      window.dispatchEvent(
-        new PageTransitionEvent("pageshow", { persisted: false }),
-      );
-    });
-    expect(result.current.theme).toBe("dark");
-
-    act(() => {
-      window.dispatchEvent(
-        new PageTransitionEvent("pageshow", { persisted: true }),
-      );
-    });
-    expect(result.current.theme).toBe("light");
-  });
-
-  // Playwright's Chromium never restores a page from the back-forward cache
-  // (ADR 0037), so this case is proved here only.
-  it("keeps a choice storage refused, also after the cache", () => {
-    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
-      throw new DOMException("Quota exceeded", "QuotaExceededError");
-    });
-    const { result } = renderHook(useBoth);
-
-    act(() => setTheme("light"));
-    expect(result.current.theme).toBe("light");
-
-    act(() => {
-      window.dispatchEvent(
-        new PageTransitionEvent("pageshow", { persisted: true }),
-      );
-    });
-    expect(result.current.theme).toBe("light");
+    act(() => system.switchTo(true));
+    act(() => system.switchTo(false));
+    expect(result.current.resolved).toBe("light");
+    expect(system.matchMedia).not.toHaveBeenCalled();
   });
 });
