@@ -41,11 +41,15 @@ interface Move {
   target: () => Connection;
 }
 
+// PgBouncer remembers the default it saw first and sets it on every session, so
+// a pooled connection keeps the old one until the compute, and the pooler with
+// it, has restarted. Then the same command passes.
 async function assertWrites(connection: Connection, expected: boolean) {
   for (const side of [connection, pooled(connection)]) {
     if ((await acceptsWrites(side)) !== expected) {
       throw new Error(
-        `${side.host} ${expected ? "still refuses" : "still accepts"} writes`,
+        `${side.host} ${expected ? "still refuses" : "still accepts"} writes. ` +
+          "Restart the compute in the Neon console and run this again",
       );
     }
     console.log(`${side.host} ${expected ? "accepts" : "refuses"} writes`);
@@ -75,6 +79,7 @@ async function copy(move: Move) {
   }
   // No session that was opened before the freeze may write during the dump.
   await terminateOthers(source);
+  await assertWrites(source, false);
   copyDatabase(source, target);
   await verify(move);
 }

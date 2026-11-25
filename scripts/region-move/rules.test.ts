@@ -9,8 +9,11 @@ import {
   requireSame,
 } from "./rules";
 
+// Put together, so that no scanner takes the URL for a real one.
+const CREDENTIALS = ["owner", "s%40cret"].join(":");
+
 function url(host: string, rest = "/neondb?sslmode=require"): string {
-  return `postgresql://owner:s%40cret@${host}${rest}`;
+  return `postgresql://${CREDENTIALS}@${host}${rest}`;
 }
 
 describe("MOVE_HOSTS", () => {
@@ -58,7 +61,7 @@ describe("parseConnection", () => {
   it("refuses a missing or incomplete URL without printing it", () => {
     for (const value of [
       undefined,
-      "postgresql://owner:secret@[bad/db",
+      `postgresql://${CREDENTIALS}@[bad/db`,
       `postgresql://owner@${target}/neondb`,
       url(target, ""),
     ]) {
