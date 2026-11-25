@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/features/auth/nextauth/auth";
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { isOtherAccount } from "@/features/auth/domain/account-switch";
-import { ResetPasswordForm } from "@/features/auth/components/ResetPasswordForm";
+import { ResetPasswordForm } from "@/features/auth/components/forms/ResetPasswordForm";
 import { Button } from "@/components/ui/button";
 import { isPasswordResetTokenValid } from "@/features/auth/queries";
 import { emailLinkParamsSchema } from "@/features/auth/schemas";

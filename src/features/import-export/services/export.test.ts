@@ -41,7 +41,7 @@ async function readAll(stream: ReadableStream<Uint8Array>): Promise<string> {
 describe("exportUserData", () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    getEntitlements.mockResolvedValue({ isPro: true });
+    getEntitlements.mockResolvedValue({ isPro: true, canExport: true });
     consumeRateLimit.mockResolvedValue({
       success: true,
       remaining: 0,
@@ -52,12 +52,20 @@ describe("exportUserData", () => {
   });
 
   it("refuses a Free user before the rate limit is used", async () => {
-    getEntitlements.mockResolvedValue({ isPro: false });
+    getEntitlements.mockResolvedValue({ isPro: false, canExport: false });
 
     await expect(exportUserData("user-1", NOW)).resolves.toEqual({
       status: "forbidden",
     });
     expect(consumeRateLimit).not.toHaveBeenCalled();
+  });
+
+  it("gives a user whose Pro ended the export", async () => {
+    getEntitlements.mockResolvedValue({ isPro: false, canExport: true });
+
+    await expect(exportUserData("user-1", NOW)).resolves.toMatchObject({
+      status: "ok",
+    });
   });
 
   it("refuses a second export within the minute", async () => {

@@ -423,3 +423,76 @@ describe("list page query schemas", () => {
     expect(parsed.error?.issues[0]?.message).toBe("invalidRequest");
   });
 });
+
+describe("the limits of an upload and of the AI claims", () => {
+  const CREATE = {
+    typeName: "file",
+    title: "Notes",
+    tags: [],
+    collectionIds: [],
+  };
+  const withFile = (key: string, name: string) =>
+    createItemSchema.safeParse({ ...CREATE, file: { key, name } });
+
+  it("takes a key of up to 512 characters and a name that is not blank", () => {
+    const key = (length: number) => `${"k".repeat(length - 4)}.txt`;
+    expect(withFile(key(512), "a.txt").success).toBe(true);
+    expect(withFile(key(513), "a.txt").success).toBe(false);
+    expect(withFile("", "a").success).toBe(false);
+    expect(withFile("k", "  ").error?.issues[0].message).toBe(
+      "fileNameRequired",
+    );
+    expect(withFile(key(20), "  a.txt ").data?.file?.name).toBe("a.txt");
+  });
+
+  it("claims nothing for AI unless the form says so", () => {
+    const parsed = updateItemSchema.parse({
+      title: "T",
+      tags: [],
+      collectionIds: [],
+      aiGenerated: {},
+    });
+    expect(parsed.aiGenerated).toEqual({
+      description: false,
+      content: false,
+      tags: [],
+    });
+  });
+
+  it.each([
+    ["21 claimed tags", Array.from({ length: 21 }, (_, i) => String(i))],
+    ["a claimed tag over 50 characters", ["x".repeat(51)]],
+  ])("refuses %s", (_what, tags) => {
+    expect(
+      updateItemSchema.safeParse({
+        title: "T",
+        tags: [],
+        collectionIds: [],
+        aiGenerated: { tags },
+      }).success,
+    ).toBe(false);
+  });
+
+  it("trims a claimed tag, so it matches the saved one", () => {
+    expect(
+      updateItemSchema.parse({
+        title: "T",
+        tags: [],
+        collectionIds: [],
+        aiGenerated: { tags: [" react "] },
+      }).aiGenerated.tags,
+    ).toEqual(["react"]);
+  });
+
+  it("refuses a cursor or a type id that is far too long", () => {
+    expect(
+      pinnedPageQuerySchema.safeParse({
+        typeId: "t".repeat(65),
+        sort: "newest",
+      }).success,
+    ).toBe(false);
+    expect(
+      pinnedPageQuerySchema.safeParse({ typeId: "", sort: "newest" }).success,
+    ).toBe(false);
+  });
+});

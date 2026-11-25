@@ -9,11 +9,13 @@ import { ImportButton } from "@/features/import-export/_internal/components/Impo
 
 interface DataSectionProps {
   isPro: boolean;
+  canExport: boolean;
 }
 
 // Export and import of the settings page. The plan comes from the page's
-// panel; the route and the actions check it again.
-export function DataSection({ isPro }: DataSectionProps) {
+// panel; the route and the actions check it again. A user whose Pro ended
+// keeps the export.
+export function DataSection({ isPro, canExport }: DataSectionProps) {
   const t = useTranslations("importExport");
   return (
     <section className="space-y-4">
@@ -30,7 +32,10 @@ export function DataSection({ isPro }: DataSectionProps) {
           </div>
         ) : (
           <div className="flex flex-wrap items-center gap-3">
-            <p className="text-sm">{t("proOnly")}</p>
+            {canExport && <ExportButton />}
+            <p className="text-sm">
+              {canExport ? t("importProOnly") : t("proOnly")}
+            </p>
             <Button asChild variant="outline">
               <Link href={UPGRADE_PATH}>{t("upgrade")}</Link>
             </Button>

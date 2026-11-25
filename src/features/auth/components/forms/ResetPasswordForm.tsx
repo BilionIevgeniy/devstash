@@ -15,6 +15,7 @@ import {
   MIN_PASSWORD_LENGTH,
 } from "@/features/auth/domain/password-reset";
 import type { FormActionState } from "@/features/auth/types";
+import { useMismatchField } from "@/features/auth/_internal/components/hooks/use-mismatch-field";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,6 +96,7 @@ function ResetPasswordFormBody({
   // Gone while a new attempt runs, so a repeated error is announced again.
   const error = isPending ? null : state.error;
   const errorText = useErrorText();
+  const { errorId, fieldProps } = useMismatchField(error);
 
   return (
     <form action={formAction} className="space-y-4">
@@ -112,11 +114,12 @@ function ResetPasswordFormBody({
             required
             minLength={MIN_PASSWORD_LENGTH}
             maxLength={MAX_PASSWORD_LENGTH}
+            {...(name === "confirmPassword" && fieldProps)}
           />
         </div>
       ))}
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p id={errorId} role="alert" className="text-sm text-destructive">
           {errorText(error)}
         </p>
       )}

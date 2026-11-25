@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Upload } from "lucide-react";
 import { useRef, type ChangeEvent } from "react";
 
+import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +28,14 @@ function buttonLabel(
   return t("import");
 }
 
+// Mounted anew when the settings show again (useRemountOnReveal, ADR 0037):
+// hiding the route stops a run at its next batch, so the button must not come
+// back "Importing…" with nothing running.
 export function ImportButton() {
+  return <ImportControl key={useRemountOnReveal()} />;
+}
+
+function ImportControl() {
   const t = useTranslations("importExport");
   const { state, isBusy, isRefreshing, start } = useImport();
   const errorText = useErrorText();

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export interface ShowMoreProps {
   /** The words of the button: "Load more" under a list, "Show more" in a group. */
@@ -32,6 +33,10 @@ export function ShowMore({
   onFocusRow,
 }: ShowMoreProps) {
   const t = useTranslations("common.list");
+  // The space of the button stays once there was one, so the last page does not
+  // move what is below; a list that never had more reserves none.
+  const [hadMore, setHadMore] = useState(hasMore);
+  if (hasMore && !hadMore) setHadMore(true);
   const [seenCount, setSeenCount] = useState(rowCount);
   const [announcement, setAnnouncement] = useState("");
   // The row count when the button asked, so its first new row takes the focus.
@@ -57,7 +62,12 @@ export function ShowMore({
   }
 
   return (
-    <div className="flex min-h-9 flex-col items-center justify-center gap-1 py-2">
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center gap-1",
+        (hadMore || failed) && "min-h-9 py-2",
+      )}
+    >
       {failed && !isLoading && (
         <p className="text-sm text-muted-foreground">{t("loadFailed")}</p>
       )}

@@ -3,7 +3,7 @@ import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { useErrorText } from "@/components/common/hooks/use-error-text";
-import { useMountedRef } from "@/features/ai/_internal/components/hooks/use-mounted-ref";
+import { useMountedRef } from "@/components/common/hooks/use-mounted-ref";
 import type { ActionResult } from "@/lib/errors/action-result";
 
 /** The item as the form holds it, saved or not. */

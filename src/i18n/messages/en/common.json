@@ -2,6 +2,11 @@
   "meta": {
     "description": "A developer knowledge hub for snippets, commands, prompts, notes, files, images, links and custom types."
   },
+  "appNotFound": {
+    "title": "Page not found",
+    "description": "This page does not exist or was deleted.",
+    "home": "Go to the dashboard"
+  },
   "appError": {
     "title": "Something went wrong",
     "description": "This page could not be loaded. Check your connection and try again.",

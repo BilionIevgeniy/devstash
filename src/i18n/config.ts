@@ -46,7 +46,7 @@ function acceptedLanguages(header: string): string[] {
         .map((option) => /^q=([\d.]+)$/.exec(option.trim())?.[1])
         .find((value) => value !== undefined);
       return {
-        language: range.split("-")[0].toLowerCase(),
+        language: range.split("-")[0].trim().toLowerCase(),
         q: q ? Number(q) : 1,
         index,
       };

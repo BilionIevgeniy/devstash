@@ -46,3 +46,10 @@ describe("tooManyAttemptsParams", () => {
     });
   });
 });
+
+describe("getRetryAfterSeconds", () => {
+  it("counts milliseconds up to whole seconds", () => {
+    expect(getRetryAfterSeconds(60_000, 0)).toBe(60);
+    expect(getRetryAfterSeconds(60_001, 0)).toBe(61);
+  });
+});

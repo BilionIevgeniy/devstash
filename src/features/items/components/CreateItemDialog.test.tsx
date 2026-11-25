@@ -1,3 +1,4 @@
+import { Activity } from "react";
 import { act, render, screen, waitFor } from "../../../../test/intl";
 import userEvent from "@testing-library/user-event";
 import type { ComponentProps } from "react";
@@ -161,6 +162,25 @@ describe("CreateItemDialog", () => {
       await screen.findByText("Caught: NEXT_REDIRECT"),
     ).toBeInTheDocument();
     expect(toast.error).not.toHaveBeenCalled();
+  });
+});
+
+describe("CreateItemDialog in a route that was left", () => {
+  it("is closed when the route shows again", async () => {
+    const user = userEvent.setup();
+    const route = (mode: "visible" | "hidden") => (
+      <Activity mode={mode}>
+        <CreateItemDialog defaultType="snippet" isPro={false} />
+      </Activity>
+    );
+    const { rerender } = render(route("visible"));
+    await user.click(screen.getByRole("button", { name: "New Snippet" }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    rerender(route("hidden"));
+    rerender(route("visible"));
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });
 

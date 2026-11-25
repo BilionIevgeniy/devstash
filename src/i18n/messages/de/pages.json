@@ -16,8 +16,8 @@
     "viewAll": "Alle anzeigen",
     "noCollections": "Noch keine Sammlungen.",
     "items": "Einträge",
-    "favoriteItems": "Favorisierte Einträge",
-    "favoriteCollections": "Favorisierte Sammlungen"
+    "favoriteItems": "Favoriten: Einträge",
+    "favoriteCollections": "Favoriten: Sammlungen"
   },
   "favorites": {
     "title": "Favoriten",

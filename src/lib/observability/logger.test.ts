@@ -295,3 +295,31 @@ describe("installSafeConsoleError", () => {
     });
   });
 });
+
+describe("what logger.error hands to Sentry", () => {
+  it("is only text under a key that ends in Id", async () => {
+    const context = {
+      userId: "u1",
+      itemId: "i1",
+      email: "alice@example.com",
+      countId: 5,
+    } as unknown as { itemId: string };
+    await logger.error("Only ids reach Sentry", context);
+
+    expect(captureSafeError).toHaveBeenCalledWith(
+      undefined,
+      "Only ids reach Sentry",
+      { userId: "u1", ids: { itemId: "i1" } },
+    );
+  });
+
+  it("is each failure again once 200 others have been seen", async () => {
+    await logger.error("First of many");
+    for (let i = 0; i < 200; i++) await logger.error(`Other failure ${i}`);
+    vi.mocked(captureSafeError).mockClear();
+
+    await logger.error("First of many");
+
+    expect(captureSafeError).toHaveBeenCalledOnce();
+  });
+});

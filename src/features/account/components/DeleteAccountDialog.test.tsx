@@ -1,4 +1,4 @@
-import { render, screen } from "../../../../test/intl";
+import { render, screen, waitFor } from "../../../../test/intl";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -68,9 +68,31 @@ describe("DeleteAccountDialog without a password", () => {
     );
 
     expect(await screen.findByRole("alert")).toHaveTextContent("20");
+    // The pending label goes in its own commit, after the one of the error.
     expect(
-      screen.getByRole("button", { name: "Email me a confirmation link" }),
+      await screen.findByRole("button", {
+        name: "Email me a confirmation link",
+      }),
     ).toBeEnabled();
+  });
+
+  it("stays open on Esc while the link is sent", async () => {
+    const sent = Promise.withResolvers<ReturnType<typeof ok>>();
+    requestAccountDeletionLink.mockReturnValue(sent.promise);
+    const user = await openGitHubDialog();
+    await user.click(
+      screen.getByRole("button", { name: "Email me a confirmation link" }),
+    );
+
+    await user.keyboard("{Escape}");
+
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+    sent.resolve(ok());
+    await screen.findByRole("status");
+    await waitFor(async () => {
+      await user.keyboard("{Escape}");
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    });
   });
 
   it("starts again from the send button once closed and reopened", async () => {
@@ -90,6 +112,25 @@ describe("DeleteAccountDialog without a password", () => {
 });
 
 describe("DeleteAccountDialog with a password", () => {
+  it("stays open on Esc while the delete runs, and shows its refusal", async () => {
+    const deleted = Promise.withResolvers<ReturnType<typeof fail>>();
+    deleteAccount.mockReturnValue(deleted.promise);
+    const user = userEvent.setup();
+    render(<DeleteAccountDialog hasPassword email={EMAIL} />);
+    await user.click(screen.getByRole("button", { name: "Delete account" }));
+    await user.type(
+      screen.getByLabelText("Enter your password to confirm"),
+      "pw-123456",
+    );
+    await user.click(screen.getByRole("button", { name: "Delete account" }));
+
+    await user.keyboard("{Escape}");
+
+    expect(screen.getByRole("button", { name: "Deleting…" })).toBeDisabled();
+    deleted.resolve(fail("incorrectPassword"));
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+  });
+
   it("deletes with the typed password", async () => {
     deleteAccount.mockResolvedValue(fail("incorrectPassword"));
     const user = userEvent.setup();

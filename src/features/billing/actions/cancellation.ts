@@ -12,9 +12,9 @@ import {
 } from "@/features/billing/schemas";
 import {
   cancelOwnSubscription,
-  checkCancellationLimit,
   processCancellationDeclaration,
 } from "@/features/billing/services/cancellation";
+import { checkCancellationLimit } from "@/features/billing/services/cancellation-limits";
 import { isLocale, DEFAULT_LOCALE } from "@/i18n/config";
 import { fail, ok, type ActionResult } from "@/lib/errors/action-result";
 import { firstIssue } from "@/lib/errors/validation";

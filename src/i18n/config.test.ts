@@ -55,3 +55,15 @@ describe("otherLocale", () => {
     expect(otherLocale("de")).toBe("en");
   });
 });
+
+describe("resolveLocale and the header's notation", () => {
+  it("reads the weights whatever the blanks and case", () => {
+    expect(resolveLocale(undefined, "en;q=0.5, DE-DE ; q=0.9")).toBe("de");
+    expect(resolveLocale(undefined, "de;q=0.1 , en ;q=0.8")).toBe("en");
+  });
+
+  it("takes no weight from a malformed one", () => {
+    expect(resolveLocale(undefined, "de;xq=0.1, en;q=0.5")).toBe("de");
+    expect(resolveLocale(undefined, "en;q=0.5, de;q=0.1x")).toBe("de");
+  });
+});

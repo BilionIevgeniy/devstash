@@ -50,8 +50,6 @@ export const TYPE_COLOR_KEYS = {
   "#6366f1": "indigo",
 } as const satisfies Record<TypeColor, string>;
 
-export type TypeColorKey = (typeof TYPE_COLOR_KEYS)[TypeColor];
-
 // The icons a type can take: those of the system types. TypeIcon maps each
 // name to its component, typed by this list, so the two cannot drift.
 export const TYPE_ICON_NAMES = [

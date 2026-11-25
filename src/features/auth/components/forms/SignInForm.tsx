@@ -64,7 +64,7 @@ function SignInFormBody({ callbackUrl, initialError }: SignInFormProps) {
           </label>
           <Link
             href="/forgot-password"
-            className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            className="inline-flex items-center text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline max-md:min-h-11"
           >
             {t("signIn.forgot")}
           </Link>

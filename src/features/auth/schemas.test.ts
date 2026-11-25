@@ -14,6 +14,8 @@ import {
   registerSchema,
   resetPasswordSchema,
   signInSchema,
+  accountSwitchReasonSchema,
+  confirmEmailSchema,
 } from "@/features/auth/schemas";
 
 interface ParseOutcome {
@@ -337,5 +339,38 @@ describe("emailLinkParamsSchema", () => {
       email: "ada@example.com",
     });
     expect(result.success).toBe(false);
+  });
+});
+
+describe("the schemas of the email links", () => {
+  const LINK = { email: "ada@example.com", token: "t" };
+
+  it("want a token", () => {
+    expect(emailLinkParamsSchema.safeParse(LINK).success).toBe(true);
+    expect(
+      emailLinkParamsSchema.safeParse({ ...LINK, token: "" }).success,
+    ).toBe(false);
+    expect(
+      confirmEmailSchema.safeParse({ ...LINK, token: "", password: "p" })
+        .success,
+    ).toBe(false);
+  });
+
+  it("want a password, and refuse one too long to hash", () => {
+    const confirm = (password: string) =>
+      confirmEmailSchema.safeParse({ ...LINK, password });
+    expect(confirm("p").success).toBe(true);
+    expect(confirm("").error?.issues[0].message).toBe("passwordRequired");
+    expect(confirm("p".repeat(10_000)).error?.issues[0].message).toBe(
+      "passwordTooLong",
+    );
+  });
+});
+
+describe("accountSwitchReasonSchema", () => {
+  it("keeps a known reason and drops any other", () => {
+    expect(accountSwitchReasonSchema.parse("github")).toBe("github");
+    expect(accountSwitchReasonSchema.parse("evil")).toBeNull();
+    expect(accountSwitchReasonSchema.parse(undefined)).toBeNull();
   });
 });

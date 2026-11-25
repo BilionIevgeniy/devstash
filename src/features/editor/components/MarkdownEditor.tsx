@@ -158,7 +158,7 @@ function ReadOnlyMarkdown({
         value={copyValue ?? value}
         copyLabel={copyLabel ?? t("copyContent")}
       >
-        <span className="ml-auto font-mono text-xs text-muted-foreground">
+        <span className="ml-auto min-w-0 truncate font-mono text-xs text-muted-foreground">
           markdown
         </span>
         {headerActions}

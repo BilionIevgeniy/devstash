@@ -40,3 +40,24 @@ describe("consumeLocalRateLimit", () => {
     expect(consumeLocalRateLimit(POLICY, "oldest", now)).toBe(true);
   });
 });
+
+describe("the window of consumeLocalRateLimit", () => {
+  it("lasts its seconds, not less", () => {
+    const now = 30_000_000;
+    consumeLocalRateLimit(POLICY, "e", now);
+    consumeLocalRateLimit(POLICY, "e", now);
+    expect(consumeLocalRateLimit(POLICY, "e", now + 59_999)).toBe(false);
+  });
+
+  it("forgets the oldest key only once it holds 10,000", () => {
+    const now = 40_000_000;
+    consumeLocalRateLimit(POLICY, "kept", now);
+    consumeLocalRateLimit(POLICY, "kept", now);
+    consumeLocalRateLimit(POLICY, "next", now);
+    expect(consumeLocalRateLimit(POLICY, "kept", now)).toBe(false);
+    for (let i = 0; i < 10_000; i++) {
+      consumeLocalRateLimit(POLICY, `filler-${i}`, now);
+    }
+    expect(consumeLocalRateLimit(POLICY, "kept", now)).toBe(true);
+  });
+});

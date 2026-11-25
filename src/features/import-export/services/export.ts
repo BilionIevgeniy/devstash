@@ -64,15 +64,15 @@ function exportStream(
   });
 }
 
-// Pro only, once a minute (the plan is checked first, so a Free user's
-// refusal uses up nothing). A RateLimitUnavailableError propagates, so the
+// Pro, or a Pro that has ended (the AGB promise the export then), once a minute
+// (the plan is checked first, so a Free user's refusal uses up nothing). A RateLimitUnavailableError propagates, so the
 // route answers that export is unavailable.
 export async function exportUserData(
   userId: string,
   now: Date,
 ): Promise<ExportResult> {
-  const { isPro } = await getEntitlements(userId);
-  if (!isPro) return { status: "forbidden" };
+  const { canExport } = await getEntitlements(userId);
+  if (!canExport) return { status: "forbidden" };
 
   const limit = await consumeRateLimit(EXPORT_BY_USER, userId);
   if (!limit.success) return { status: "rate-limited", reset: limit.reset };

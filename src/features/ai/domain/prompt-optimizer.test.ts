@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   acceptBlocker,
-  hasMarkdownImage,
   PROMPT_OPTIMIZE_INSTRUCTIONS,
   promptOptimizeInput,
 } from "@/features/ai/domain/prompt-optimizer";
@@ -14,20 +13,6 @@ describe("promptOptimizeInput", () => {
     expect(PROMPT_OPTIMIZE_INSTRUCTIONS).not.toContain("Review");
     expect(input).toContain("Title: Review");
     expect(input.trimEnd().endsWith("</item>")).toBe(true);
-  });
-});
-
-describe("hasMarkdownImage", () => {
-  it.each([
-    "See ![chart](https://x.test/a.png?d=secret)",
-    "![logo][ref]\n\n[ref]: https://x.test/a.png",
-    "![]( https://x.test )",
-  ])("finds an image in %j", (text) => {
-    expect(hasMarkdownImage(text)).toBe(true);
-  });
-
-  it("does not take a link or a lone ! for an image", () => {
-    expect(hasMarkdownImage("Read [docs](https://x.test)! Now.")).toBe(false);
   });
 });
 
@@ -61,10 +46,11 @@ describe("acceptBlocker: whether Accept is offered", () => {
     expect(acceptBlocker({ ...ready, text: "  " })).not.toBeNull();
   });
 
-  it("does not offer an answer with an image", () => {
+  // The read view never loads an image (ADR 0036), so one is no reason.
+  it("offers an answer that shows image syntax", () => {
     expect(
       acceptBlocker({ ...ready, text: "Do it ![x](https://x.test)" }),
-    ).not.toBeNull();
+    ).toBeNull();
   });
 });
 

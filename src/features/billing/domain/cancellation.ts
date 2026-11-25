@@ -23,6 +23,15 @@ export const CANCEL_BY_EMAIL = {
   windowSeconds: HOUR_SECONDS,
 } as const;
 
+// The signed-in declaration for good cause on a contract that already ends: it
+// changes nothing by itself, so each one is only mail, to the operator and the
+// holder.
+export const CANCEL_BY_USER = {
+  name: "cancel:user",
+  limit: 3,
+  windowSeconds: HOUR_SECONDS,
+} as const;
+
 export type ContractStatus = "none" | "live" | "cancelling";
 
 /** What the cancellation page shows a signed-in user; JSON-safe. */

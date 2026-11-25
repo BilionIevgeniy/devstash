@@ -23,7 +23,7 @@ export function ItemsHeader({
   const t = useTranslations("common");
 
   return (
-    <header className="flex items-start justify-between gap-4">
+    <header className="flex flex-wrap items-start justify-between gap-4">
       <div>
         <h1 className="flex items-center gap-3 text-3xl font-bold">
           <TypeIcon

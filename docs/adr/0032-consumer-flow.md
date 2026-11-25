@@ -94,7 +94,7 @@ This record is the design and our reading of the law. It is not legal advice: a 
 - **Signed in:**
   - The page shows the contract: running with its renewal date, already ending, or none.
   - The consumer chooses an ordinary cancellation, or one for good cause with a reason.
-  - `cancelOwnContract` sets `cancel_at_period_end` on the Stripe subscription at once, syncs it, and emails the confirmation. A contract that already ends is left alone: no Stripe call and no second email.
+  - `cancelOwnContract` sets `cancel_at_period_end` on the Stripe subscription at once, syncs it, and emails the confirmation. A contract that already ends is left alone: no Stripe call, and no second email for an ordinary cancellation. One for good cause is offered there too (added 2026-11-25): the notice to the operator is all that carries it, so it fails when the notice does not go out, it is confirmed to the holder, and it is limited (`cancel:user`).
 - **Signed out:**
   - The form takes name, the account's email, the type and the reason.
   - The submission is the declaration.

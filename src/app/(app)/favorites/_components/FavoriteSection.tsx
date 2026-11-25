@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 // Shared with loading.tsx, so the title does not move when the content commits.
 export const FAVORITE_SECTION_HEADER =
-  "flex h-8 items-center justify-between gap-3";
+  "flex h-8 items-center justify-between gap-3 max-md:h-11";
 
 interface FavoriteSectionProps {
   title: string;

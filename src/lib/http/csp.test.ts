@@ -89,3 +89,16 @@ describe("cspDirectives", () => {
     expect(buildContentSecurityPolicy(PRODUCTION)).not.toContain("vercel");
   });
 });
+
+describe("the R2 origin", () => {
+  it.each([{ accountId: undefined }, { bucket: undefined }])(
+    "is left out without %j",
+    (missing) => {
+      const directives = cspDirectives({
+        ...PRODUCTION,
+        r2: { ...PRODUCTION.r2, ...missing },
+      });
+      expect(directives["connect-src"].join(" ")).not.toContain("cloudflare");
+    },
+  );
+});

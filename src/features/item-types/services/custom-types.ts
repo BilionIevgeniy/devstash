@@ -74,8 +74,8 @@ export async function createCustomType(
 }
 
 // A rename changes the name and never the slug, so the URLs of the type and
-// its items keep working. Pro only, like the create; what a downgrade does to
-// the types is feature 19's.
+// its items keep working. Pro only, like the create: a former Pro user keeps
+// the types as they are (ADR 0032).
 export async function updateCustomType(
   userId: string,
   typeId: string,

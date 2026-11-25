@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { CheckEmailNotice } from "@/features/auth/_internal/components/CheckEmailNotice";
 import { postRegistration } from "@/features/auth/_internal/components/fetch-register";
+import { useMismatchField } from "@/features/auth/_internal/components/hooks/use-mismatch-field";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,6 +80,7 @@ function RegisterFormBody() {
   // Gone while a new attempt runs, so a repeated error is announced again.
   const error = isPending ? null : state.error;
   const errorText = useErrorText();
+  const { errorId, fieldProps } = useMismatchField(error);
   const t = useTranslations("auth");
 
   if (state.registeredEmail) {
@@ -101,11 +103,12 @@ function RegisterFormBody() {
             required
             minLength={type === "password" ? MIN_PASSWORD_LENGTH : undefined}
             maxLength={type === "password" ? MAX_PASSWORD_LENGTH : undefined}
+            {...(name === "confirmPassword" && fieldProps)}
           />
         </div>
       ))}
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p id={errorId} role="alert" className="text-sm text-destructive">
           {errorText(error)}
         </p>
       )}

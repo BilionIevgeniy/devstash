@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { DeleteAccountDialog } from "@/features/account/components/DeleteAccountDialog";
-import { ChangePasswordForm } from "@/features/auth/components/ChangePasswordForm";
+import { ChangePasswordForm } from "@/features/auth/components/forms/ChangePasswordForm";
 import { getUserProfile } from "@/features/auth/queries";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";

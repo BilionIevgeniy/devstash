@@ -41,11 +41,7 @@ export function ItemDrawerTrigger({
 
   if (isLocked(item)) {
     if (action) return <LockedItemCard item={item}>{children}</LockedItemCard>;
-    return (
-      <LockedItemRow title={item.title} className={className}>
-        {children}
-      </LockedItemRow>
-    );
+    return <LockedItemRow className={className}>{children}</LockedItemRow>;
   }
 
   const triggerClass = cn(

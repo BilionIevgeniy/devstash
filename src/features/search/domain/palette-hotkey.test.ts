@@ -54,3 +54,14 @@ describe("isPaletteHotkey", () => {
     ).toBe(false);
   });
 });
+
+describe("the key of another layout", () => {
+  it("goes by its place, unless it types one Latin letter", () => {
+    const cmd = (key: string, code = "KeyK") =>
+      isPaletteHotkey(press({ metaKey: true, key, code }));
+    expect(cmd("л")).toBe(true);
+    expect(cmd("Dead")).toBe(true);
+    expect(cmd("1a")).toBe(true);
+    expect(cmd("J")).toBe(false);
+  });
+});

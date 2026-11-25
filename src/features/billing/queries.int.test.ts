@@ -18,8 +18,12 @@ describe("getEntitlements and getBillingOverview", () => {
   it("read each user's own plan", async () => {
     await expect(getEntitlements(t.a.userId)).resolves.toEqual({
       isPro: false,
+      canExport: false,
     });
-    await expect(getEntitlements(t.b.userId)).resolves.toEqual({ isPro: true });
+    await expect(getEntitlements(t.b.userId)).resolves.toEqual({
+      isPro: true,
+      canExport: true,
+    });
     await expect(getBillingOverview(t.a.userId)).resolves.toMatchObject({
       isPro: false,
       hasBillingAccount: false,

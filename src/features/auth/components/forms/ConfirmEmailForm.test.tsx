@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "../../../../test/intl";
+import { render, screen, waitFor } from "../../../../../test/intl";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -17,7 +17,7 @@ vi.mock("@/features/auth/_internal/actions/email-verification", () => ({
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
 vi.mock("sonner", () => ({ toast: { success: toastSuccess } }));
 
-import { ConfirmEmailForm } from "@/features/auth/components/ConfirmEmailForm";
+import { ConfirmEmailForm } from "@/features/auth/components/forms/ConfirmEmailForm";
 
 const SUCCESS: AuthActionState = { success: true, data: null, error: null };
 

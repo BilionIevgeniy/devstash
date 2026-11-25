@@ -1,4 +1,4 @@
-import { render, screen } from "../../../../test/intl";
+import { render, screen } from "../../../../../test/intl";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -16,7 +16,7 @@ vi.mock("@/features/auth/_internal/actions/email-verification", () => ({
   resendVerificationEmail: vi.fn(),
 }));
 
-import { RegisterForm } from "@/features/auth/components/RegisterForm";
+import { RegisterForm } from "@/features/auth/components/forms/RegisterForm";
 
 const ACCEPTED: RegisterResult = { success: true };
 const TOO_MANY: RegisterResult = {
@@ -106,6 +106,10 @@ describe("RegisterForm", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Passwords do not match",
     );
+    const confirm = screen.getByLabelText("Confirm password");
+    expect(confirm).toHaveFocus();
+    expect(confirm).toBeInvalid();
+    expect(confirm).toHaveAccessibleDescription("Passwords do not match");
     expect(postRegistration).not.toHaveBeenCalled();
   });
 

@@ -9,7 +9,10 @@ import { bilingualDate } from "@/features/billing/_internal/components/cancel/bi
 import { CancellationFields } from "@/features/billing/_internal/components/cancel/CancellationFields";
 import { DeclarationRecord } from "@/features/billing/_internal/components/cancel/DeclarationRecord";
 import { useCancellation } from "@/features/billing/_internal/components/hooks/use-cancellation";
-import type { ContractState } from "@/features/billing/domain/cancellation";
+import {
+  CANCELLATION_KINDS,
+  type ContractState,
+} from "@/features/billing/domain/cancellation";
 import type { ErrorRef } from "@/i18n/error-codes";
 import { errorTextFrom } from "@/i18n/error-text";
 import deErrors from "@/i18n/messages/de/errors.json";
@@ -33,6 +36,8 @@ function BilingualError({ error }: { error: ErrorRef }) {
     </p>
   );
 }
+
+const EXTRAORDINARY_ONLY = ["extraordinary"] as const;
 
 interface CancelContractFormProps {
   /** Null for a visitor who is not signed in. */
@@ -72,7 +77,11 @@ export function CancelContractForm({ contract }: CancelContractFormProps) {
     );
   }
 
-  const canCancel = !signedIn || contract.status === "live";
+  const canCancel = !signedIn || contract.status !== "none";
+  // A contract that already ends can still be ended sooner, for good cause
+  // (cancelOwnSubscription tells the operator).
+  const kinds =
+    contract?.status === "cancelling" ? EXTRAORDINARY_ONLY : CANCELLATION_KINDS;
   return (
     <div className="space-y-6">
       {contract && <ContractLine contract={contract} />}
@@ -81,6 +90,7 @@ export function CancelContractForm({ contract }: CancelContractFormProps) {
           <CancellationFields
             values={state.values}
             signedIn={signedIn}
+            kinds={kinds}
             disabled={isPending}
           />
           {state.error && !isPending && <BilingualError error={state.error} />}

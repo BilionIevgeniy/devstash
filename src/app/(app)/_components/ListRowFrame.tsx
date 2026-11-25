@@ -4,8 +4,9 @@ import { LIST_ROW_HEIGHT } from "@/app/(app)/_components/ListRow";
 import { cn } from "@/lib/utils";
 
 // Two controls wide on every row, so the dates of a section with one control
-// line up with those of a section with two. Shared with the loading.tsx files.
-export const LIST_ROW_ACTIONS_WIDTH = "w-16 shrink-0";
+// line up with those of a section with two; on a phone each control is 44px.
+// Shared with the loading.tsx files.
+export const LIST_ROW_ACTIONS_WIDTH = "w-16 shrink-0 max-md:w-22";
 
 // An unset control shows on hover or focus where the device can hover, and
 // always on touch. Opacity, not `hidden`: Tab has to reach it.

@@ -10,6 +10,7 @@ import {
   fetchSearchResults,
   type SearchOutcome,
 } from "@/features/search/_internal/components/fetch-search-results";
+import { SEARCH_TEXT_MAX } from "@/features/search/domain/limits";
 import { toSearchMatch } from "@/features/items/domain/search-text";
 import type { PaletteResults } from "@/features/search/types";
 
@@ -89,7 +90,9 @@ function replaceRequest(
 export function usePaletteSearch(text: string): PaletteSearch {
   // A text that can match nothing ("r", "!!") is sent nowhere: the recent list
   // stays, as for an empty text.
-  const query = toSearchMatch(text) === null ? "" : text.trim();
+  // A pasted text longer than the route takes is searched by its start.
+  const start = text.trim().slice(0, SEARCH_TEXT_MAX).trimEnd();
+  const query = toSearchMatch(start) === null ? "" : start;
   const [recent, setRecent] = useState<SearchOutcome | null>(null);
   const [search, setSearch] = useState<SettledSearch | null>(null);
   const [moreFor, setMoreFor] = useState<string | null>(null);

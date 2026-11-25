@@ -107,3 +107,34 @@ describe("list pages", () => {
     expect(splitPage([1, 2], 2)).toEqual({ rows: [1, 2], hasMore: false });
   });
 });
+
+describe("decodeListCursor with a tampered cursor", () => {
+  const encode = (text: string) =>
+    btoa(text).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+  it.each([
+    ["a character before", `*${encodeListCursor("newest", ["a"])}`],
+    ["a character after", `${encodeListCursor("newest", ["a"])}*`],
+    ["an empty text", ""],
+    ["bytes that are not UTF-8", encode("\xff\xfe")],
+    ["a number", encode("5")],
+    ["null", encode("null")],
+    ["no sort", encode('{"v":["a"]}')],
+    ["a sort that is no text", encode('{"s":5,"v":["a"]}')],
+    ["no values", encode('{"s":"newest"}')],
+    ["values that are no list", encode('{"s":"newest","v":"a"}')],
+  ])("refuses %s", (_what, cursor) => {
+    expect(decodeListCursor(cursor, "newest", ["text"])).toBeNull();
+  });
+
+  it.each([
+    "x2026-01-01T00:00:00.000Z",
+    "2026-01-01T00:00:00.000Zx",
+    "2026-13-45T00:00:00.000Z",
+    "2026-01-01",
+  ])("refuses %j as a date", (date) => {
+    expect(
+      decodeListCursor(encodeListCursor("newest", [date]), "newest", ["date"]),
+    ).toBeNull();
+  });
+});

@@ -20,7 +20,7 @@ export function DrawerSection({
 }: DrawerSectionProps) {
   return (
     <section className="space-y-2">
-      <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+      <h2 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
         {Icon && <Icon className="size-4" />}
         {title}
         {/* The space keeps the heading's name two words for a screen reader;
@@ -31,7 +31,7 @@ export function DrawerSection({
             <AiGeneratedLabel />
           </>
         )}
-      </h3>
+      </h2>
       <div {...aiMarkProps(aiGenerated)}>{children}</div>
     </section>
   );

@@ -239,3 +239,35 @@ describe("liveSubscriptionCheck", () => {
     ).toBe("duplicate");
   });
 });
+
+describe("the consent of a subscription", () => {
+  it("is none when either part is missing", () => {
+    const date = "2026-11-18T09:00:00.000Z";
+    expect(consentFromMetadata({ termsVersion: "v1" })).toBeNull();
+    expect(consentFromMetadata({ withdrawalWaiverAt: date })).toBeNull();
+    expect(
+      consentFromMetadata({ termsVersion: "v1", withdrawalWaiverAt: date }),
+    ).toEqual({ termsVersion: "v1", withdrawalWaiverAt: new Date(date) });
+  });
+
+  it("is written again only when the row holds another", () => {
+    const withdrawalWaiverAt = new Date("2026-11-18T09:00:00Z");
+    const consent = { termsVersion: "v1", withdrawalWaiverAt };
+    const row: SubscriptionRowState = {
+      status: "active",
+      stripeSubscriptionId: "sub_1",
+      currentPeriodEnd: PERIOD_END,
+      cancelAtPeriodEnd: false,
+      confirmedSubscriptionId: "sub_1",
+      ...consent,
+    };
+    const plan = (patch: Partial<SubscriptionRowState>) =>
+      syncPlan({ ...row, ...patch }, { ...snapshot("active"), consent }).write;
+    expect(plan({})).toBeNull();
+    expect(plan({ termsVersion: "v0" })).not.toBeNull();
+    expect(plan({ withdrawalWaiverAt: new Date(0) })).not.toBeNull();
+    expect(
+      syncPlan({ ...row, ...consent }, snapshot("active")).write,
+    ).toBeNull();
+  });
+});

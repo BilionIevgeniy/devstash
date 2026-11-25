@@ -1,6 +1,5 @@
 import "server-only";
 
-import { tooManyAttemptsParams } from "@/lib/http/retry-after";
 import { getUserIdByEmail, getUserProfile } from "@/features/auth/queries";
 import {
   buildCancellationEmail,
@@ -9,10 +8,6 @@ import {
 } from "@/features/billing/_internal/emails/cancellation-email";
 import { getLiveSubscriptionRef } from "@/features/billing/_internal/queries";
 import { syncSubscription } from "@/features/billing/_internal/services/subscription-sync";
-import {
-  CANCEL_BY_EMAIL,
-  CANCEL_BY_IP,
-} from "@/features/billing/domain/cancellation";
 import { getContractState } from "@/features/billing/queries";
 import type {
   CancellationDeclarationInput,
@@ -22,13 +17,7 @@ import type { Locale } from "@/i18n/config";
 import { fail, ok, type OperationResult } from "@/lib/errors/action-result";
 import { OPERATOR } from "@/lib/legal/operator";
 import { logger } from "@/lib/observability/logger";
-import {
-  consumeIpRateLimit,
-  consumeRateLimit,
-  isRateLimitConfigured,
-  RateLimitUnavailableError,
-} from "@/lib/vendors/rate-limit";
-import { consumeLocalRateLimit } from "@/lib/vendors/local-rate-limit";
+import { checkOwnDeclarationLimit } from "@/features/billing/services/cancellation-limits";
 import { getStripe } from "@/lib/vendors/stripe";
 import { sendEmail } from "@/lib/vendors/email";
 
@@ -59,9 +48,33 @@ async function cancelAtPeriodEnd(userId: string): Promise<Effect> {
   await getStripe().subscriptions.update(ref.subscriptionId, {
     cancel_at_period_end: true,
   });
-  await syncSubscription(ref.customerId, ref.subscriptionId);
-  const after = await getContractState(userId);
-  return { status: "cancelled", periodEnd: periodEndOf(after.periodEnd) };
+  return {
+    status: "cancelled",
+    periodEnd: periodEndOf(
+      await syncedPeriodEnd(userId, ref, before.periodEnd),
+    ),
+  };
+}
+
+// Stripe has accepted the cancellation, so a sync that fails must not turn it
+// into an error: the webhook brings the row up to date, a second attempt would
+// find the contract ending and confirm nothing, and the holder still gets the
+// confirmation. The period end is then the row's from before.
+async function syncedPeriodEnd(
+  userId: string,
+  ref: { customerId: string; subscriptionId: string },
+  before: string | null,
+): Promise<string | null> {
+  try {
+    await syncSubscription(ref.customerId, ref.subscriptionId);
+    return (await getContractState(userId)).periodEnd;
+  } catch (error) {
+    await logger.error("Syncing a cancelled subscription failed", {
+      error,
+      userId,
+    });
+    return before;
+  }
 }
 
 // Sent only when a running contract was ended (cancelAtPeriodEnd), which is
@@ -114,6 +127,25 @@ function extraordinaryFacts(
   };
 }
 
+// The notice is all that carries this declaration, so one that does not go out
+// is a failure the holder sees and can repeat. Then the confirmation, as for
+// every declaration of the holder (§ 312k (4) BGB).
+async function declareEarlierEnd(
+  userId: string,
+  record: CancellationRecord,
+): Promise<OperationResult<{ declaredAt: string }>> {
+  const limit = await checkOwnDeclarationLimit(userId, record.declaredAt);
+  if (!limit.success) return limit;
+  const isNotified = await notifyOperator(
+    "Extraordinary cancellation of a contract already ending",
+    extraordinaryFacts(record, { userId }),
+    userId,
+  );
+  if (!isNotified) return fail("emailSendFailed");
+  await confirmToHolder(userId, record);
+  return ok({ declaredAt: record.declaredAt.toISOString() });
+}
+
 // The signed-in cancellation (§ 312k BGB): it takes effect at once, and the
 // confirmation goes to the account's address.
 export async function cancelOwnSubscription(
@@ -127,17 +159,15 @@ export async function cancelOwnSubscription(
   // Already ending: the first declaration was confirmed. One for good cause
   // asks for an earlier end, which the operator decides by hand.
   if (effect.status === "already") {
-    if (input.kind === "extraordinary") {
-      await notifyOperator(
-        "Extraordinary cancellation of a contract already ending",
-        extraordinaryFacts(
-          { locale, ...input, declaredAt: now, periodEnd: effect.periodEnd },
-          { userId },
-        ),
-        userId,
-      );
+    if (input.kind !== "extraordinary") {
+      return ok({ declaredAt: now.toISOString() });
     }
-    return ok({ declaredAt: now.toISOString() });
+    return declareEarlierEnd(userId, {
+      locale,
+      ...input,
+      declaredAt: now,
+      periodEnd: effect.periodEnd,
+    });
   }
 
   const record: CancellationRecord = {
@@ -155,53 +185,6 @@ export async function cancelOwnSubscription(
     );
   }
   return ok({ declaredAt: now.toISOString() });
-}
-
-const OUTAGE_LIMIT_FAILED = fail("tooManyAttemptsNoTime");
-
-// While Upstash is down the declaration is taken anyway, counted only in the
-// memory of this instance.
-function checkLocally(email: string, ip: string | null, now: Date) {
-  const time = now.getTime();
-  const allowed =
-    (!ip || consumeLocalRateLimit(CANCEL_BY_IP, ip, time)) &&
-    consumeLocalRateLimit(CANCEL_BY_EMAIL, email, time);
-  return allowed ? ok() : OUTAGE_LIMIT_FAILED;
-}
-
-// The limits of the signed-out form. A refusal depends only on how often a
-// request comes, so it may say so. When Upstash is down the declaration is
-// taken anyway, bounded per instance: a consumer's cancellation must never be
-// lost to an outage of ours (ADR 0032); consumeRateLimit has logged it. A
-// missing setting is not an outage: it throws, so the form fails loudly.
-export async function checkCancellationLimit(
-  email: string,
-  ip: string | null,
-  now: Date,
-): Promise<OperationResult> {
-  if (!isRateLimitConfigured()) {
-    throw new Error("Rate limiting is not configured");
-  }
-  try {
-    for (const check of [
-      () => consumeIpRateLimit(CANCEL_BY_IP, ip),
-      () => consumeRateLimit(CANCEL_BY_EMAIL, email),
-    ]) {
-      const result = await check();
-      if (!result.success) {
-        return fail(
-          "tooManyAttempts",
-          tooManyAttemptsParams(result.reset, now.getTime()),
-        );
-      }
-    }
-    return ok();
-  } catch (error) {
-    if (error instanceof RateLimitUnavailableError) {
-      return checkLocally(email, ip, now);
-    }
-    throw error;
-  }
 }
 
 // Only a declaration that ended a running contract is confirmed, and the

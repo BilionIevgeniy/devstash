@@ -50,3 +50,21 @@ describe("requestGitHubProfile", () => {
     expect(profile.email).toBeNull();
   });
 });
+
+describe("requestGitHubProfile with a private address", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("takes the verified primary address of the list", async () => {
+    stubGitHub({ id: 1, email: null }, [
+      { email: "ada@example.com", primary: true, verified: true },
+    ]);
+
+    const profile = await requestGitHubProfile({
+      tokens: { access_token: "t" },
+    });
+
+    expect(profile).toEqual({ id: 1, email: "ada@example.com" });
+  });
+});

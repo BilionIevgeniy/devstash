@@ -9,6 +9,7 @@ import {
   useDialogControl,
   type DialogControl,
 } from "@/components/common/hooks/use-dialog-control";
+import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
 import { ListLoadError } from "@/components/common/lists/ListLoadError";
 import { Button } from "@/components/ui/button";
 import {
@@ -124,7 +125,15 @@ interface CreateItemDialogProps {
   controlled?: DialogControl;
 }
 
-export function CreateItemDialog({
+// Mounted anew, and so closed, when its route shows again (useRemountOnReveal,
+// ADR 0037): an editor its cleanup disposed throws on return, and an upload
+// aborted on the way would stay at its last percent. Whoever leaves while a
+// create runs gets no success toast, and a refused one only its error.
+export function CreateItemDialog(props: CreateItemDialogProps) {
+  return <CreateDialog key={useRemountOnReveal()} {...props} />;
+}
+
+function CreateDialog({
   defaultType,
   customTypeNames = NO_CUSTOM_TYPES,
   isPro,

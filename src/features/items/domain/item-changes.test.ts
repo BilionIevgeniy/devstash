@@ -159,3 +159,27 @@ describe("isMissingRequired", () => {
     );
   });
 });
+
+describe("blanks around an edit", () => {
+  it("are no change on either side", () => {
+    expect(changed({ title: "  useDebounce " })).toBe(false);
+    const padded = { ...initial, title: " useDebounce" };
+    expect(hasItemChanges(snippet, padded, initial)).toBe(false);
+    const blank = { ...initial, content: "  \n" };
+    expect(hasItemChanges(snippet, blank, { ...blank, content: "" })).toBe(
+      false,
+    );
+    expect(hasItemChanges(snippet, blank, initial)).toBe(true);
+    expect(changed({ content: " " })).toBe(true);
+  });
+
+  it("make no URL", () => {
+    expect(
+      isMissingRequired(
+        editableFields("link"),
+        { title: "Docs", url: "  " },
+        false,
+      ),
+    ).toBe(true);
+  });
+});

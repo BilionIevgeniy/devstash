@@ -127,6 +127,32 @@ describe("CancelContractForm signed in", () => {
     ).toBeInTheDocument();
   });
 
+  it("takes a good-cause cancellation of a contract that already ends", async () => {
+    cancelOwnContract.mockResolvedValue(DECLARED);
+    const user = userEvent.setup();
+    render(
+      <CancelContractForm
+        contract={{
+          status: "cancelling",
+          periodEnd: "2026-12-18T00:00:00.000Z",
+        }}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("radio", { name: /Ordinary/ }),
+    ).not.toBeInTheDocument();
+    await user.type(screen.getByLabelText(/Reason, for good cause/), "Moving");
+    await user.click(
+      screen.getByRole("button", { name: "Jetzt kündigen / Cancel now" }),
+    );
+
+    expect(cancelOwnContract).toHaveBeenCalledWith({
+      kind: "extraordinary",
+      reason: "Moving",
+    });
+  });
+
   it("offers nothing to cancel when no contract runs", () => {
     render(
       <CancelContractForm contract={{ status: "none", periodEnd: null }} />,
@@ -153,6 +179,8 @@ describe("CancelContractForm signed in", () => {
         /endet am 18\. Dezember 2026 \/ Already cancelled, ends on December 18, 2026/,
       ),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("radio", { name: /Ordinary/ }),
+    ).not.toBeInTheDocument();
   });
 });

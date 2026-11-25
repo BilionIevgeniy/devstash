@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { EmailLinkDeletion } from "@/features/account/_internal/components/EmailLinkDeletion";
@@ -21,15 +22,22 @@ interface DeleteAccountDialogProps {
 
 // An account with a password confirms with it here. One without (GitHub only)
 // gets a link at its address and deletes on the page the link opens. The body
-// unmounts when the dialog closes, so it opens again from the start.
+// unmounts when the dialog closes, so it opens again from the start. While its
+// request runs the dialog stays open, Esc included: the account may be gone.
 export function DeleteAccountDialog({
   hasPassword,
   email,
 }: DeleteAccountDialogProps) {
   const t = useTranslations("account");
+  const [isOpen, setIsOpen] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+
+  function handleOpenChange(open: boolean) {
+    if (!isPending) setIsOpen(open);
+  }
 
   return (
-    <AlertDialog>
+    <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>
         <Button variant="destructive">{t("deleteTitle")}</Button>
       </AlertDialogTrigger>
@@ -41,9 +49,9 @@ export function DeleteAccountDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         {hasPassword ? (
-          <PasswordDeletion />
+          <PasswordDeletion onPendingChange={setIsPending} />
         ) : (
-          <EmailLinkDeletion email={email} />
+          <EmailLinkDeletion email={email} onPendingChange={setIsPending} />
         )}
       </AlertDialogContent>
     </AlertDialog>

@@ -14,8 +14,8 @@ export const FREE_PLAN_FEATURES = [
   "basicSearch",
 ] as const;
 
-// What Pro gives today: the upgrade page sells these, so nothing unbuilt goes
-// here. The homepage adds its roadmap lines on top.
+// What Pro gives today: the upgrade page and the homepage sell these, so
+// nothing unbuilt goes here.
 export const PRO_PLAN_FEATURES = [
   "unlimitedItems",
   "unlimitedCollections",
@@ -25,15 +25,11 @@ export const PRO_PLAN_FEATURES = [
   "aiExplain",
   "aiOptimize",
   "customTypes",
+  "exportJson",
 ] as const;
 
-/** The roadmap lines the homepage adds to the Pro card. */
-export const PRO_ROADMAP_FEATURES = ["exportJson"] as const;
-
 export type PlanFeature =
-  | (typeof FREE_PLAN_FEATURES)[number]
-  | (typeof PRO_PLAN_FEATURES)[number]
-  | (typeof PRO_ROADMAP_FEATURES)[number];
+  (typeof FREE_PLAN_FEATURES)[number] | (typeof PRO_PLAN_FEATURES)[number];
 
 /** The number a plan line counts, for the lines that have one. */
 export function planFeatureCount(feature: PlanFeature): number | undefined {
@@ -46,6 +42,15 @@ const MONTHS_PER_YEAR = 12;
 
 export interface Entitlements {
   isPro: boolean;
+  /** Pro, or a Pro subscription that has ended: the AGB (section 7) promise
+   * that exporting stays possible then. */
+  canExport: boolean;
+}
+
+/** The columns of a subscription row the plan is read from. */
+export interface PlanRow {
+  status: string;
+  currentPeriodEnd: Date | null;
 }
 
 export function proYearlyPricePerMonth(): number {
@@ -108,16 +113,27 @@ export function isProStatus(status: string): boolean {
   return PRO_STATUSES.includes(status);
 }
 
+// The Stripe statuses of a subscription that was Pro and is not any more.
+const FORMER_PRO_STATUSES = ["canceled", "unpaid", "paused"];
+
+// A row has a period only from a Stripe subscription. The one a checkout opens
+// has none, and is "incomplete". An account whose deletion failed half-way
+// keeps its period (services/customer.ts), so the export too.
+function wasPro({ status, currentPeriodEnd }: PlanRow): boolean {
+  return currentPeriodEnd !== null && FORMER_PRO_STATUSES.includes(status);
+}
+
 // A user with no subscription row passes null and is on the Free plan.
-export function entitlementsFor(status: string | null): Entitlements {
-  return { isPro: status !== null && isProStatus(status) };
+export function entitlementsFor(row: PlanRow | null): Entitlements {
+  const isPro = row !== null && isProStatus(row.status);
+  return { isPro, canExport: isPro || (row !== null && wasPro(row)) };
 }
 
 export function billingOverviewFor(
   subscription: { status: string; stripeCustomerId: string | null } | null,
 ): BillingOverview {
   return {
-    ...entitlementsFor(subscription?.status ?? null),
+    isPro: subscription !== null && isProStatus(subscription.status),
     hasBillingAccount: Boolean(subscription?.stripeCustomerId),
     paymentIssue: subscription?.status === PAYMENT_ISSUE_STATUS,
   };

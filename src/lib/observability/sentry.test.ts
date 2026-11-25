@@ -261,3 +261,22 @@ describe("flushSentry", () => {
     expect(flush).toHaveBeenCalledWith(2000);
   });
 });
+
+describe("what the SDK may collect", () => {
+  it("is nothing of a user or of a request, in every part", () => {
+    expect(sentryBaseOptions(DSN).dataCollection).toEqual({
+      userInfo: false,
+      cookies: false,
+      httpHeaders: false,
+      httpBodies: [],
+      urlQueryParams: false,
+      graphQL: { document: false, variables: false },
+      genAI: { inputs: false, outputs: false },
+      mcp: { inputs: false, outputs: false },
+      databaseQueryData: false,
+      queues: false,
+      stackFrameVariables: false,
+      frameContextLines: 0,
+    });
+  });
+});

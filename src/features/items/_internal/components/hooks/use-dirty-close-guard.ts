@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 
 // Keeps a sheet with unsaved edits open until the user discards them. The
 // edit form reports through setDirty; the sheet's onOpenChange goes through
@@ -7,6 +7,16 @@ export function useDirtyCloseGuard(onOpenChange: (open: boolean) => void) {
   const [isConfirmingClose, setIsConfirmingClose] = useState(false);
   // Whether the edit form holds unsaved edits; read only when the sheet closes.
   const isDirtyRef = useRef(false);
+
+  // The sheet closes when its route is hidden (useItemSheet), so its question
+  // must not come back over no sheet.
+  useLayoutEffect(
+    () => () => {
+      isDirtyRef.current = false;
+      setIsConfirmingClose(false);
+    },
+    [],
+  );
 
   // Esc, the overlay and the close button all land here: with unsaved edits
   // the sheet stays open until the user discards them.

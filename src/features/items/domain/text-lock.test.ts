@@ -63,3 +63,23 @@ describe("changesOnlyCollections", () => {
     ).toBe(true);
   });
 });
+
+describe("tags of the same number", () => {
+  it("are the same only when every one is there", () => {
+    const stored = {
+      title: "T",
+      description: null,
+      content: null,
+      language: null,
+      url: null,
+      tags: ["a", "b"],
+    };
+    const same = (tags: string[]) =>
+      changesOnlyCollections(editableFields("note"), stored, {
+        title: "T",
+        tags,
+      });
+    expect(same(["B", "a"])).toBe(true);
+    expect(same(["a", "c"])).toBe(false);
+  });
+});

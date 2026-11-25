@@ -31,7 +31,11 @@ async function CollectionsContent({ page }: { page: number }) {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {collections.map((collection) => (
-            <CollectionCard key={collection.id} collection={collection} />
+            <CollectionCard
+              key={collection.id}
+              collection={collection}
+              headingLevel="h2"
+            />
           ))}
         </div>
       )}

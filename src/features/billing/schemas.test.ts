@@ -4,6 +4,7 @@ import {
   cancellationDeclarationSchema,
   checkoutOrderSchema,
   ownCancellationSchema,
+  checkoutSessionIdSchema,
 } from "@/features/billing/schemas";
 
 const ORDER = { plan: "monthly", acceptTerms: true, waiveWithdrawal: true };
@@ -74,5 +75,36 @@ describe("ownCancellationSchema", () => {
     expect(ownCancellationSchema.safeParse({ kind: "later" }).success).toBe(
       false,
     );
+  });
+});
+
+describe("the limits of the cancellation forms", () => {
+  it("wants a reason for a good-cause cancellation of one's own contract", () => {
+    const result = ownCancellationSchema.safeParse({ kind: "extraordinary" });
+    expect(result.error?.issues[0].message).toBe("cancellationReasonRequired");
+    expect(ownCancellationSchema.safeParse({ kind: "ordinary" }).success).toBe(
+      true,
+    );
+  });
+
+  it.each([
+    ["a reason", { reason: "x".repeat(2001) }],
+    ["a name", { name: "x".repeat(201) }],
+  ])("refuses %s over its limit", (_what, field) => {
+    expect(
+      cancellationDeclarationSchema.safeParse({
+        kind: "extraordinary",
+        reason: "x",
+        name: "Ada",
+        email: "ada@example.com",
+        ...field,
+      }).success,
+    ).toBe(false);
+  });
+
+  it("takes a Checkout session id of up to 255 characters", () => {
+    const id = (length: number) => "cs_".padEnd(length, "x");
+    expect(checkoutSessionIdSchema.safeParse(id(255)).success).toBe(true);
+    expect(checkoutSessionIdSchema.safeParse(id(256)).success).toBe(false);
   });
 });

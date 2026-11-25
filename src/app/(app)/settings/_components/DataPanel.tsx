@@ -4,6 +4,6 @@ import { DataSection } from "@/features/import-export/components/DataSection";
 
 export async function DataPanel() {
   const { id: userId } = await getSessionUser();
-  const { isPro } = await getEntitlements(userId);
-  return <DataSection isPro={isPro} />;
+  const { isPro, canExport } = await getEntitlements(userId);
+  return <DataSection isPro={isPro} canExport={canExport} />;
 }

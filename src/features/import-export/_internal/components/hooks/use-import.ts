@@ -1,8 +1,12 @@
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 
 import { useLeaveWarning } from "@/components/common/hooks/use-leave-warning";
-import { runImport } from "@/features/import-export/_internal/components/run-import";
+import { useMountedRef } from "@/components/common/hooks/use-mounted-ref";
+import {
+  importTotal,
+  runImport,
+} from "@/features/import-export/_internal/components/run-import";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
 import {
   IMPORT_FILE_MAX_BYTES,
@@ -42,16 +46,9 @@ export function useImport() {
   const syncItems = useSyncItemQueries();
   const [state, setState] = useState<ImportState>({ status: "idle" });
   const [isRefreshing, startTransition] = useTransition();
-  const isMounted = useRef(true);
+  const isMounted = useMountedRef();
   const isBusy =
     state.status === "reading" || state.status === "running" || isRefreshing;
-
-  useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
 
   useLeaveWarning(isBusy);
 
@@ -71,20 +68,20 @@ export function useImport() {
       return;
     }
 
-    const { collections, items } = parsed.data;
-    const total = collections.length + items.length;
+    const total = importTotal(parsed.data);
     setState({ status: "running", done: 0, total });
     const run = await runImport(parsed.data, {
       onProgress: (done, total) => setState({ status: "running", done, total }),
       isCancelled: () => !isMounted.current,
     });
-    if (!run || !isMounted.current) return;
-    // New items and collections: the cached lists and options are only marked
-    // stale (ADR 0025); none of them is on this page.
+    // New items and collections, also those of a run that stopped on the way:
+    // the cached lists and options are only marked stale (ADR 0025); none of
+    // them is on this page.
     await Promise.all([
       syncItems({ kind: "created" }),
       syncItems({ kind: "collections" }),
     ]);
+    if (!run || !isMounted.current) return;
     startTransition(() => {
       setState({ status: "done", ...run });
       router.refresh();

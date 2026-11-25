@@ -6,10 +6,8 @@ import { Suspense, useState, type ReactNode, type Ref } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EditorHeader } from "@/features/editor/_internal/components/EditorHeader";
 import { MonacoEditor } from "@/features/editor/_internal/components/MonacoEditor";
-import {
-  editorLanguage,
-  languageLabel,
-} from "@/features/editor/domain/code-language";
+import { useLanguageLabel } from "@/features/editor/components/hooks/use-language-label";
+import { editorLanguage } from "@/features/editor/domain/code-language";
 import type { EditorHandle } from "@/features/editor/types";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +43,7 @@ export function CodeEditor({
   ref,
 }: CodeEditorProps) {
   const t = useTranslations("editor");
+  const languageLabel = useLanguageLabel();
   const minHeight = readOnly ? MIN_READ_HEIGHT : MIN_EDIT_HEIGHT;
   const fallbackHeight = readOnly ? READ_FALLBACK_HEIGHT : EDIT_FALLBACK_HEIGHT;
   const [height, setHeight] = useState(minHeight);
@@ -56,7 +55,7 @@ export function CodeEditor({
   return (
     <div className="overflow-hidden rounded-md border bg-card">
       <EditorHeader value={value} copyLabel={t("copyCode")}>
-        <span className="ml-auto font-mono text-xs text-muted-foreground">
+        <span className="ml-auto min-w-0 truncate font-mono text-xs text-muted-foreground">
           {languageLabel(language)}
         </span>
         {headerActions}

@@ -12,6 +12,8 @@ import {
   textEditsAllowed,
   withinFreeCollectionLimit,
   withinFreeItemLimit,
+  FREE_COLLECTION_LIMIT,
+  planFeatureCount,
 } from "@/features/billing/domain/limits";
 
 describe("yearly Pro pricing", () => {
@@ -45,15 +47,47 @@ describe("reachedFreeLimit", () => {
   });
 });
 
+const PERIOD_END = new Date("2026-12-01T00:00:00Z");
+
 describe("entitlementsFor", () => {
   it.each(["active", "trialing", "past_due"])("grants Pro for %s", (status) => {
-    expect(entitlementsFor(status).isPro).toBe(true);
+    expect(entitlementsFor({ status, currentPeriodEnd: PERIOD_END })).toEqual({
+      isPro: true,
+      canExport: true,
+    });
+  });
+
+  it.each(["canceled", "unpaid", "paused"])(
+    "keeps the export for a Pro that ended (%s)",
+    (status) => {
+      expect(entitlementsFor({ status, currentPeriodEnd: PERIOD_END })).toEqual(
+        { isPro: false, canExport: true },
+      );
+    },
+  );
+
+  it.each(["incomplete", "incomplete_expired"])(
+    "gives no export for a subscription never paid (%s)",
+    (status) => {
+      expect(
+        entitlementsFor({ status, currentPeriodEnd: PERIOD_END }).canExport,
+      ).toBe(false);
+    },
+  );
+
+  it("gives no export for a row that never had a period", () => {
+    expect(
+      entitlementsFor({ status: "incomplete", currentPeriodEnd: null })
+        .canExport,
+    ).toBe(false);
   });
 
   it.each(["canceled", "incomplete", "incomplete_expired", "unpaid", "paused"])(
     "does not grant Pro for %s",
     (status) => {
-      expect(entitlementsFor(status).isPro).toBe(false);
+      expect(
+        entitlementsFor({ status, currentPeriodEnd: PERIOD_END }).isPro,
+      ).toBe(false);
     },
   );
 
@@ -63,7 +97,7 @@ describe("entitlementsFor", () => {
   });
 
   it("puts a user without a subscription on the Free plan", () => {
-    expect(entitlementsFor(null).isPro).toBe(false);
+    expect(entitlementsFor(null)).toEqual({ isPro: false, canExport: false });
   });
 });
 
@@ -124,5 +158,13 @@ describe("textEditsAllowed", () => {
 
   it("closes it for Free over the limit", () => {
     expect(textEditsAllowed(false, FREE_ITEM_LIMIT + 1)).toBe(false);
+  });
+});
+
+describe("planFeatureCount", () => {
+  it("counts the two lines with a limit, and no other", () => {
+    expect(planFeatureCount("items")).toBe(FREE_ITEM_LIMIT);
+    expect(planFeatureCount("collections")).toBe(FREE_COLLECTION_LIMIT);
+    expect(planFeatureCount("aiTags")).toBeUndefined();
   });
 });

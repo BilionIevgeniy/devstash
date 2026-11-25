@@ -28,7 +28,6 @@
     "answer": "Optimized",
     "copy": "Copy optimized prompt",
     "cutMessage": "The optimized prompt was cut short. Try again.",
-    "image": "The optimized prompt contains an image, so it cannot be used as is. Copy it instead.",
     "unchanged": "The prompt is already in good shape: nothing to change.",
     "promptCut": "Only the start of this long prompt was read, so the result cannot replace it. Copy what you need.",
     "question": "Use this prompt?",

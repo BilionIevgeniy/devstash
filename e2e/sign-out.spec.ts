@@ -82,8 +82,12 @@ test("a session revoked on another device leaves nothing behind for Back", async
   await expect(device).toHaveURL(SIGN_IN_URL);
   await other.close();
 
+  // The URL is the sign-in page's before its new document has loaded, and Back
+  // in between has no page to act on: wait for the document.
+  const newDocument = page.waitForEvent("load");
   await page.getByRole("link", { name: "Favorites" }).first().click();
   await expect(page).toHaveURL(SIGN_IN_URL);
+  await newDocument;
   await page.goBack();
   await expect(page.getByText(title)).toHaveCount(0);
 });

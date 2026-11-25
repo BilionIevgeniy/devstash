@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/features/auth/nextauth/auth";
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { GitHubAuthSection } from "@/features/auth/components/GitHubAuthSection";
-import { SignInForm } from "@/features/auth/components/SignInForm";
+import { SignInForm } from "@/features/auth/components/forms/SignInForm";
 import { PASSWORD_CHANGED_NOTICE } from "@/features/auth/domain/auth-paths";
 import { safeCallbackPath } from "@/features/auth/domain/callback-url";
 import type { ErrorCode } from "@/i18n/error-codes";

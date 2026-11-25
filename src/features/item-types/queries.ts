@@ -65,8 +65,8 @@ export async function getItemTypeBySlug(
   return type ? toItemTypeInfo(type) : null;
 }
 
-// The shared system types, and the caller's own types once custom types exist:
-// someone else's custom type is never read, whatever ids come in.
+// The shared system types and the caller's own: someone else's custom type is
+// never read, whatever ids come in.
 export async function getItemTypesById(
   userId: string,
   typeIds: string[],

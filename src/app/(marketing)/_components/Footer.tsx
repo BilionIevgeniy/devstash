@@ -48,7 +48,7 @@ function FooterColumn({
 }: FooterColumnProps) {
   return (
     <nav aria-label={heading}>
-      <h3 className="font-mono text-[13px] font-medium">{heading}</h3>
+      <h2 className="font-mono text-[13px] font-medium">{heading}</h2>
       <ul className="mt-3 grid gap-2 text-sm text-muted-foreground">
         {entries.map(({ label, href, lang }) => (
           <li key={label}>
@@ -119,9 +119,9 @@ export async function Footer({ locale }: { locale: Locale }) {
             <FooterColumn key={column.heading} {...column} />
           ))}
           <nav aria-label={t("language.label")}>
-            <h3 className="font-mono text-[13px] font-medium">
+            <h2 className="font-mono text-[13px] font-medium">
               {t("language.label")}
-            </h3>
+            </h2>
             <p className="mt-3 text-sm text-muted-foreground">
               <LanguageLink variant="name" className={FOOTER_LINK} />
             </p>

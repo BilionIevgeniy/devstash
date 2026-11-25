@@ -1,5 +1,6 @@
 import { act, render, screen } from "../../../../../test/intl";
 import userEvent from "@testing-library/user-event";
+import { Activity } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { importTypes, importCollections, importItems, refresh } = vi.hoisted(
@@ -253,6 +254,38 @@ describe("ImportButton", () => {
     });
 
     expect(importItems).not.toHaveBeenCalled();
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it("is ready again once the settings show again after a run was left", async () => {
+    const items = Promise.withResolvers<object>();
+    importItems.mockReturnValue(items.promise);
+    const { rerender } = render(
+      <Activity mode="visible">
+        <ImportButton />
+      </Activity>,
+    );
+    await choose(jsonFile(exportFile));
+    expect(
+      await screen.findByRole("button", { name: "Importing… 1 of 3" }),
+    ).toBeDisabled();
+
+    rerender(
+      <Activity mode="hidden">
+        <ImportButton />
+      </Activity>,
+    );
+    await act(async () =>
+      items.resolve({ success: true, error: null, data: summary() }),
+    );
+    rerender(
+      <Activity mode="visible">
+        <ImportButton />
+      </Activity>,
+    );
+
+    expect(screen.getByRole("button", { name: "Import JSON" })).toBeEnabled();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
     expect(refresh).not.toHaveBeenCalled();
   });
 });

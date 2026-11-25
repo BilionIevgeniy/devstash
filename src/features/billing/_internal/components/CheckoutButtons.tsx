@@ -50,7 +50,8 @@ function PlanButtons({ testMode }: CheckoutButtonsProps) {
 }
 
 // The choice of a plan in the billing section, then the order step. /upgrade
-// chooses by its switch. Mounted fresh after Back from Stripe.
+// chooses by its switch. Mounted fresh after Back, from Stripe or
+// within the app (usePageRestoreKey).
 export function CheckoutButtons({ testMode }: CheckoutButtonsProps) {
   return <PlanButtons key={usePageRestoreKey()} testMode={testMode} />;
 }

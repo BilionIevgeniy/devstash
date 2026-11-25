@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "../../../../test/intl";
+import { render, screen, waitFor } from "../../../../../test/intl";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -20,7 +20,7 @@ vi.mock("@/features/auth/_internal/actions/password-reset", () => ({
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
 vi.mock("sonner", () => ({ toast: { success: toastSuccess } }));
 
-import { ResetPasswordForm } from "@/features/auth/components/ResetPasswordForm";
+import { ResetPasswordForm } from "@/features/auth/components/forms/ResetPasswordForm";
 
 const SUCCESS: AuthActionState = { success: true, data: null, error: null };
 
@@ -83,6 +83,10 @@ describe("ResetPasswordForm", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Passwords do not match",
     );
+    const confirm = screen.getByLabelText("Confirm new password");
+    expect(confirm).toHaveFocus();
+    expect(confirm).toBeInvalid();
+    expect(confirm).toHaveAccessibleDescription("Passwords do not match");
     expect(resetPassword).not.toHaveBeenCalled();
     expect(screen.getByLabelText("Confirm new password")).toHaveValue(
       "another-password",
