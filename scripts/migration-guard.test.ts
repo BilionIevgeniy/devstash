@@ -1,12 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { decideMigration } from "./migration-guard";
 
-const DEV = "ep-calm-voice-b4zvdl6z.c-6.us-east-2.aws.neon.tech";
-const DEV_POOLER = "ep-calm-voice-b4zvdl6z-pooler.c-6.us-east-2.aws.neon.tech";
-const PROD = "ep-twilight-hat-b4ay1zs8.c-6.us-east-2.aws.neon.tech";
+const DEV = "ep-soft-art-bhqrx5ln.c-10.eu-central-1.aws.neon.tech";
+const DEV_POOLER =
+  "ep-soft-art-bhqrx5ln-pooler.c-10.eu-central-1.aws.neon.tech";
+const PROD = "ep-green-mud-bhzhz461.c-10.eu-central-1.aws.neon.tech";
 const PROD_POOLER =
-  "ep-twilight-hat-b4ay1zs8-pooler.c-6.us-east-2.aws.neon.tech";
-const OTHER = "ep-other-branch-b4aaaaaa.c-6.us-east-2.aws.neon.tech";
+  "ep-green-mud-bhzhz461-pooler.c-10.eu-central-1.aws.neon.tech";
+const OTHER = "ep-other-branch-b4aaaaaa.c-10.eu-central-1.aws.neon.tech";
+// The endpoints before the move to Frankfurt (ADR 0038): a build that still
+// has the old variables must not migrate them.
+const OLD_DEV = "ep-calm-voice-b4zvdl6z.c-6.us-east-2.aws.neon.tech";
+const OLD_PROD = "ep-twilight-hat-b4ay1zs8.c-6.us-east-2.aws.neon.tech";
 
 function url(host: string, database = "neondb"): string {
   return `postgresql://user:secret@${host}/${database}?sslmode=require`;
@@ -66,6 +71,19 @@ describe("decideMigration", () => {
         }).migrate,
       ).toBe(false);
     }
+  });
+
+  it.each([
+    ["production", OLD_PROD],
+    ["preview", OLD_DEV],
+  ])("refuses the endpoint %s had before Frankfurt", (vercelEnv, host) => {
+    expect(
+      decideMigration({
+        vercelEnv,
+        directUrl: url(host),
+        databaseUrl: url(host),
+      }).migrate,
+    ).toBe(false);
   });
 
   it("refuses a runtime URL on another endpoint or database", () => {

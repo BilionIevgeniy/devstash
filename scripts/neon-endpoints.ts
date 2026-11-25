@@ -2,9 +2,9 @@
 // credential, so they live in git, where a change to them is reviewed. Moving
 // a branch to a new endpoint means changing the line here.
 export const DEV_DATABASE_HOST =
-  "ep-calm-voice-b4zvdl6z.c-6.us-east-2.aws.neon.tech";
+  "ep-soft-art-bhqrx5ln.c-10.eu-central-1.aws.neon.tech";
 export const PROD_DATABASE_HOST =
-  "ep-twilight-hat-b4ay1zs8.c-6.us-east-2.aws.neon.tech";
+  "ep-green-mud-bhzhz461.c-10.eu-central-1.aws.neon.tech";
 
 const POOLER_SUFFIX = /^([^.]+)-pooler\./;
 

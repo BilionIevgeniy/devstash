@@ -6,22 +6,28 @@ import {
   requireTestDatabase,
 } from "./require-dev-database";
 
-const DEV_HOST = "ep-calm-voice-b4zvdl6z.c-6.us-east-2.aws.neon.tech";
-const PROD_HOST = "ep-twilight-hat-b4ay1zs8.c-6.us-east-2.aws.neon.tech";
-const TEST_BRANCH_HOST = "ep-test-branch-a1b2c3.c-6.us-east-2.aws.neon.tech";
+const DEV_HOST = "ep-soft-art-bhqrx5ln.c-10.eu-central-1.aws.neon.tech";
+const PROD_HOST = "ep-green-mud-bhzhz461.c-10.eu-central-1.aws.neon.tech";
+const TEST_BRANCH_HOST =
+  "ep-test-branch-a1b2c3.c-10.eu-central-1.aws.neon.tech";
 
 function url(host: string): string {
   return `postgresql://user:secret@${host}/neondb?sslmode=require`;
 }
 
+// Development before the move to Frankfurt (ADR 0038).
+const OLD_DEV_HOST = "ep-calm-voice-b4zvdl6z.c-6.us-east-2.aws.neon.tech";
+
 describe("isDevDatabase", () => {
   it("is true only for the development endpoint", () => {
     expect(
-      isDevDatabase(url("ep-calm-voice-b4zvdl6z.c-6.us-east-2.aws.neon.tech")),
+      isDevDatabase(
+        url("ep-soft-art-bhqrx5ln.c-10.eu-central-1.aws.neon.tech"),
+      ),
     ).toBe(true);
     expect(
       isDevDatabase(
-        url("ep-twilight-hat-b4ay1zs8.c-6.us-east-2.aws.neon.tech"),
+        url("ep-green-mud-bhzhz461.c-10.eu-central-1.aws.neon.tech"),
       ),
     ).toBe(false);
   });
@@ -29,20 +35,24 @@ describe("isDevDatabase", () => {
   it("is true for the pooled host of the development endpoint", () => {
     expect(
       isDevDatabase(
-        url("ep-calm-voice-b4zvdl6z-pooler.c-6.us-east-2.aws.neon.tech"),
+        url("ep-soft-art-bhqrx5ln-pooler.c-10.eu-central-1.aws.neon.tech"),
       ),
     ).toBe(true);
     expect(
       isDevDatabase(
-        url("ep-twilight-hat-b4ay1zs8-pooler.c-6.us-east-2.aws.neon.tech"),
+        url("ep-green-mud-bhzhz461-pooler.c-10.eu-central-1.aws.neon.tech"),
       ),
     ).toBe(false);
+  });
+
+  it("is false for the development endpoint before Frankfurt", () => {
+    expect(isDevDatabase(url(OLD_DEV_HOST))).toBe(false);
   });
 
   it("is false for a host that only contains the development one", () => {
     expect(
       isDevDatabase(
-        url("ep-calm-voice-b4zvdl6z.c-6.us-east-2.aws.neon.tech.example.com"),
+        url("ep-soft-art-bhqrx5ln.c-10.eu-central-1.aws.neon.tech.example.com"),
       ),
     ).toBe(false);
   });
@@ -52,7 +62,7 @@ describe("requireDevDatabase", () => {
   it("lets a script run on the development endpoint", () => {
     expect(() =>
       requireDevDatabase(
-        url("ep-calm-voice-b4zvdl6z.c-6.us-east-2.aws.neon.tech"),
+        url("ep-soft-art-bhqrx5ln.c-10.eu-central-1.aws.neon.tech"),
       ),
     ).not.toThrow();
   });
@@ -60,7 +70,7 @@ describe("requireDevDatabase", () => {
   it("refuses the production endpoint", () => {
     expect(() =>
       requireDevDatabase(
-        url("ep-twilight-hat-b4ay1zs8.c-6.us-east-2.aws.neon.tech"),
+        url("ep-green-mud-bhzhz461.c-10.eu-central-1.aws.neon.tech"),
       ),
     ).toThrow("is not the development database");
   });
@@ -68,7 +78,7 @@ describe("requireDevDatabase", () => {
   it("refuses a host that only contains the development one", () => {
     expect(() =>
       requireDevDatabase(
-        url("ep-calm-voice-b4zvdl6z.c-6.us-east-2.aws.neon.tech.example.com"),
+        url("ep-soft-art-bhqrx5ln.c-10.eu-central-1.aws.neon.tech.example.com"),
       ),
     ).toThrow("is not the development database");
   });
@@ -133,9 +143,9 @@ describe("isTestDatabase against a hidden target", () => {
   });
 
   it("refuses another name of the development or production endpoint", () => {
-    const otherName = "ep-twilight-hat-b4ay1zs8.us-east-2.aws.neon.tech";
+    const otherName = "ep-green-mud-bhzhz461.eu-central-1.aws.neon.tech";
     expect(isTestDatabase(url(otherName), otherName)).toBe(false);
-    const devOther = "ep-calm-voice-b4zvdl6z.us-east-2.aws.neon.tech";
+    const devOther = "ep-soft-art-bhqrx5ln.eu-central-1.aws.neon.tech";
     expect(isTestDatabase(url(devOther), devOther)).toBe(false);
   });
 
