@@ -52,7 +52,7 @@ export async function Sidebar() {
         <div className="shrink-0 px-2 pb-2 md:hidden">
           <Button
             asChild
-            className="gradient-fill w-full text-background hover:opacity-90"
+            className="gradient-fill w-full text-on-gradient hover:opacity-90"
           >
             <Link href={UPGRADE_PATH}>
               <Sparkles />

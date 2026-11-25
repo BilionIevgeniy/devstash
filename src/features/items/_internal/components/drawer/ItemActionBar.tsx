@@ -50,10 +50,10 @@ export function ItemActionBar({
         onClick={favorite.toggle}
         className={cn(
           "max-md:min-w-11 aria-disabled:opacity-50",
-          favorite.isFavorite && "text-yellow-400 hover:text-yellow-400",
+          favorite.isFavorite && "text-favorite hover:text-favorite",
         )}
       >
-        <Star className={cn(favorite.isFavorite && "fill-yellow-400")} />
+        <Star className={cn(favorite.isFavorite && "fill-favorite")} />
         <span className={ACTION_LABEL}>{t("items.actions.favorite")}</span>
       </Button>
       <Button

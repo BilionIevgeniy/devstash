@@ -25,7 +25,7 @@ function FavoriteLink({ collection }: CollectionLinkProps) {
       match="exact"
       className={LINK_CLASS}
     >
-      <Star className="size-4 shrink-0 fill-yellow-400 text-yellow-400" />
+      <Star className="size-4 shrink-0 fill-favorite text-favorite" />
       <span className="truncate">{collection.name}</span>
       <ItemCount value={collection.itemCount} />
     </SidebarNavLink>

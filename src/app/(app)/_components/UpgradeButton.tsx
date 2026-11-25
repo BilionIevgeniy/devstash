@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 // The gradient is an image over the variant's background, so the variant's own
 // hover would not show.
-const GRADIENT = "gradient-fill text-background hover:opacity-90";
+const GRADIENT = "gradient-fill text-on-gradient hover:opacity-90";
 
 // Streams into the top bar, so the shell does not wait for the plan. The label
 // from `sm` up, the icon alone below it, where the bar has no room.
