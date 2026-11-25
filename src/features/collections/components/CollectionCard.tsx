@@ -9,12 +9,17 @@ import type { DashboardCollection } from "@/features/collections/types";
 
 interface CollectionCardProps {
   collection: DashboardCollection;
+  /** The level below the heading the cards stand under. */
+  headingLevel?: "h2" | "h3";
 }
 
 // The link stretches over the whole card through its ::after, and the actions
 // sit above it: a button may not be inside a link, and a click on it must not
 // navigate.
-export function CollectionCard({ collection }: CollectionCardProps) {
+export function CollectionCard({
+  collection,
+  headingLevel: Heading = "h3",
+}: CollectionCardProps) {
   const { types } = collection;
   const accentColor = collectionAccent(types);
   const t = useTranslations("common");
@@ -26,14 +31,14 @@ export function CollectionCard({ collection }: CollectionCardProps) {
       style={accentColor ? { borderLeftColor: accentColor } : undefined}
     >
       <div className="pr-16">
-        <h3 className="truncate font-medium">
+        <Heading className="truncate font-medium">
           <Link
             href={`/collections/${collection.id}`}
             className="outline-none after:absolute after:-inset-px after:-left-1 after:rounded-lg focus-visible:after:ring-2 focus-visible:after:ring-ring"
           >
             {collection.name}
           </Link>
-        </h3>
+        </Heading>
       </div>
       <p className="text-sm text-muted-foreground">
         {t("itemCount", { count: collection.itemCount })}
