@@ -8,6 +8,8 @@ Nothing new is written here unless it cannot be built at all (the rule is "Found
 
 - **AI Act Art. 50 (2) by 2026-12-02.** Decided without a lawyer and built in feature 15 ([ADR 0027](../docs/adr/0027-marking-ai-generated-output.md)): every saved AI output is flagged per field, marked in the markup and carried in the export. What stays here is the lawyer's check of that decision before live, including the two departures from the Code of Practice the ADR records: no watermark on long text (the optimized prompt, the Explain answer), and the export's marks not digitally signed (Sub-measure 1.1.1).
 
+- **Delete the old Neon project seven days after the move to Frankfurt.** `devstash` (`purple-voice-82062641`, Ohio) is the read-only backup of the moment of the switch ([ADR 0038](../docs/adr/0038-frankfurt-region.md)) and holds accounts that may have been erased since. Then drop its sentence from the Neon row of `docs/privacy/processing-record.md`.
+
 ## Tax adviser
 
 Researched only briefly on 2026-11-06, from secondary sources ([ADR 0014](../docs/adr/0014-launch-mode.md)). The code (Stripe Tax, gross EUR prices, tax ids in Checkout) is built in test mode by feature 19; these are the decisions it needs from an adviser.
@@ -30,7 +32,7 @@ Feature 19 writes these texts and flows in test mode; before live a lawyer signs
 
 ## Vendors and privacy
 
-- **Vendor facts in the privacy notice are unconfirmed.** In `docs/privacy/processing-record.md` the DPA (accepted, date), the transfer mechanism (DPF or SCCs) and the region of Vercel, Neon, R2, OpenAI, Stripe, Resend and Upstash are still `⟦OPERATOR⟧`. The owner chose not to research them on 2026-11-11 (portfolio project), so `_legal/datenschutz/vendors.*.tsx` words them as what each provider's terms offer. Accept each DPA as the operator, confirm the facts, and make that wording exact.
+- **Vendor facts in the privacy notice are unconfirmed.** In `docs/privacy/processing-record.md` the DPA (accepted, date) and the transfer mechanism (DPF or SCCs) are still `⟦OPERATOR⟧`, and so is the region of R2, OpenAI, Stripe and Resend. The owner chose not to research them on 2026-11-11 (portfolio project), so `_legal/datenschutz/vendors.*.tsx` words them as what each provider's terms offer. Accept each DPA as the operator, confirm the facts, and make that wording exact.
 
 ## Switching Stripe to live
 
