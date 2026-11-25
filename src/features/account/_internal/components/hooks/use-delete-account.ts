@@ -29,6 +29,13 @@ export function useDeleteAccount() {
     leaveSession(home);
   }
 
+  // An update after an await is outside the transition: wrapped again, the
+  // refusal lands in the commit that ends the pending state, so the error
+  // never shows next to a button still saying "Deleting…".
+  function refuse(ref: ErrorRef) {
+    startTransition(() => setError(ref));
+  }
+
   function submit(input: DeleteAccountInput) {
     setError(null);
     startTransition(async () => {
@@ -37,10 +44,10 @@ export function useDeleteAccount() {
         // signedOut: an earlier attempt already deleted the account and
         // ended the session, and only its answer was lost.
         if (result.success || result.error === "signedOut") leave();
-        else setError(result);
+        else refuse(result);
       } catch (error) {
         if (isNavigationError(error)) leave();
-        else setError({ error: "generic" });
+        else refuse({ error: "generic" });
       }
     });
   }
