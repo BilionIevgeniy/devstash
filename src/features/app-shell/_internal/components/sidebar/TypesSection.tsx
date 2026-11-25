@@ -38,7 +38,7 @@ export function TypesSection({ itemTypes, isPro }: TypesSectionProps) {
                 <TypeIcon
                   name={type.icon}
                   className="size-4"
-                  style={{ color: type.color }}
+                  typeColor={type.color}
                 />
                 <span>{typeLabel(typeName, type.name, "other")}</span>
                 {requiresPro(type.name) && <ProBadge />}

@@ -18,7 +18,7 @@ function TypeCount({ type }: { type: SidebarItemType }) {
       <TypeIcon
         name={type.icon}
         className="size-4 shrink-0"
-        style={{ color: type.color }}
+        typeColor={type.color}
       />
       <span>{typeLabel(typeName, type.name, "other")}</span>
       <span className="ml-auto text-sm font-medium tabular-nums">

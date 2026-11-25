@@ -37,11 +37,7 @@ export function ItemDrawerHeader({
         className="flex size-12 shrink-0 items-center justify-center rounded-md"
         style={{ backgroundColor: iconBackground }}
       >
-        <TypeIcon
-          name={type.icon}
-          className="size-6"
-          style={{ color: type.color }}
-        />
+        <TypeIcon name={type.icon} className="size-6" typeColor={type.color} />
       </div>
       <div className="min-w-0 space-y-2">
         {variant === "sheet" ? (

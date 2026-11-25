@@ -28,7 +28,7 @@ export function CustomTypeListRow({
         name={type.icon}
         aria-hidden
         className="size-4 shrink-0"
-        style={{ color: type.color }}
+        typeColor={type.color}
       />
       <Link
         href={typePagePath(type.slug)}

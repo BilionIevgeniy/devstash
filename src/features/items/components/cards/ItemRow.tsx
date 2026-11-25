@@ -33,11 +33,7 @@ export function ItemRow({ item }: ItemRowProps) {
         className="flex size-10 shrink-0 items-center justify-center rounded-md"
         style={{ backgroundColor: iconBackground }}
       >
-        <TypeIcon
-          name={type.icon}
-          className="size-5"
-          style={{ color: type.color }}
-        />
+        <TypeIcon name={type.icon} className="size-5" typeColor={type.color} />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">

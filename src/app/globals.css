@@ -57,6 +57,21 @@
   color: transparent;
 }
 
+/* A type's colour as ink (typeInk in item-types/components/type-color.ts,
+   ADR 0039): the stored colour on dark; on light its lightness is held at 0.5
+   at most, at least 4.8:1 on white and on --muted for every colour of the
+   palette, so a yellow note stays readable. A browser without relative
+   colours (Safari before 18) gets the colour mixed with black. */
+@utility text-type {
+  color: color-mix(in oklab, var(--type-color) 55%, black);
+  @supports (color: oklch(from red l c h)) {
+    color: oklch(from var(--type-color) min(l, 0.5) c h);
+  }
+  @variant dark {
+    color: var(--type-color);
+  }
+}
+
 @utility marketing-container {
   width: 100%;
   max-width: 1168px;

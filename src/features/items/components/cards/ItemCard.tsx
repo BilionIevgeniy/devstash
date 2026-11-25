@@ -31,7 +31,7 @@ export function ItemCard({ item }: ItemCardProps) {
           <TypeIcon
             name={type.icon}
             className="size-5"
-            style={{ color: type.color }}
+            typeColor={type.color}
           />
         </div>
         {/* Room for the buttons over the corner (ItemCardTrigger). */}

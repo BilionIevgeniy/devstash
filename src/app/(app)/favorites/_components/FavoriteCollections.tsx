@@ -12,7 +12,22 @@ import {
   type FavoriteCollectionSort,
 } from "@/features/collections/domain/favorite-sort";
 import type { FavoriteCollection } from "@/features/collections/types";
+import { typeInk } from "@/features/item-types/components/type-color";
 import { cn } from "@/lib/utils";
+
+// The accent of the collection's most used type, or grey for an empty one.
+function CollectionIcon({ color }: { color: FavoriteCollection["color"] }) {
+  const ink = typeInk(color);
+  return (
+    <Folder
+      className={cn(
+        "size-4 shrink-0",
+        ink?.className ?? "text-muted-foreground",
+      )}
+      style={ink?.style}
+    />
+  );
+}
 
 interface FavoriteCollectionsProps {
   collections: FavoriteCollection[];
@@ -56,17 +71,7 @@ export function FavoriteCollections({
             className={LIST_ROW_WRAPPER}
           >
             <ListRow
-              icon={
-                <Folder
-                  className={cn(
-                    "size-4 shrink-0",
-                    !collection.color && "text-muted-foreground",
-                  )}
-                  style={
-                    collection.color ? { color: collection.color } : undefined
-                  }
-                />
-              }
+              icon={<CollectionIcon color={collection.color} />}
               title={collection.name}
               badge={t("collectionBadge")}
               date={collection.favoritedAt}
