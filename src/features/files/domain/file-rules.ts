@@ -102,7 +102,12 @@ export function contentTypeFor(
   kind: FileKind,
   fileName: string,
 ): string | null {
-  return FILE_KIND_RULES[kind].contentTypes[fileExtension(fileName)] ?? null;
+  const { contentTypes } = FILE_KIND_RULES[kind];
+  const extension = fileExtension(fileName);
+  // Own keys only: "notes.constructor" must not find the object's prototype.
+  return Object.hasOwn(contentTypes, extension)
+    ? contentTypes[extension]
+    : null;
 }
 
 export function maxFileSize(kind: FileKind): number {

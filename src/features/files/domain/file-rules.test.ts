@@ -229,3 +229,20 @@ describe("upload ages", () => {
     expect(isUploadClaimable(null, now)).toBe(true);
   });
 });
+
+describe("an extension named like a member of every object", () => {
+  it("is not an accepted file type", () => {
+    expect(contentTypeFor("file", "notes.constructor")).toBeNull();
+    expect(checkDeclaredFile("file", "notes.constructor", 10)).toEqual({
+      error: "unsupportedFileType",
+    });
+  });
+});
+
+describe("formatted sizes at the edges of a unit", () => {
+  it("moves to the next unit at 1024, and stays in MB after that", () => {
+    expect(fileSizeParts(1023)).toMatchObject({ unit: "B" });
+    expect(fileSizeParts(1024)).toMatchObject({ unit: "KB" });
+    expect(fileSizeParts(5 * 1024 * 1024 * 1024)).toMatchObject({ unit: "MB" });
+  });
+});

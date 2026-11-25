@@ -16,7 +16,11 @@ const CODE_TYPES = ["snippet", "command"];
 const LANGUAGE_TYPES = ["snippet", "command"];
 const URL_TYPES = ["link"];
 // The item type name to the kind of upload it stores.
-const FILE_TYPES: Record<string, FileKind> = { file: "file", image: "image" };
+// A Map, not an object: a custom type may be named "constructor".
+const FILE_TYPES = new Map<string, FileKind>([
+  ["file", "file"],
+  ["image", "image"],
+]);
 const TAG_SEPARATOR = ",";
 const TEXT_CONTENT_TYPE = "TEXT";
 const URL_CONTENT_TYPE = "URL";
@@ -57,7 +61,7 @@ export function editableFields(typeName: string): EditableFields {
     codeEditor: custom || CODE_TYPES.includes(typeName),
     language: custom || LANGUAGE_TYPES.includes(typeName),
     url: URL_TYPES.includes(typeName),
-    file: FILE_TYPES[typeName] ?? null,
+    file: FILE_TYPES.get(typeName) ?? null,
   };
 }
 

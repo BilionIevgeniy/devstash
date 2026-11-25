@@ -395,3 +395,13 @@ describe("itemFormError", () => {
     ).toMatchObject({ field: "url" });
   });
 });
+
+describe("a custom type named like a member of every object", () => {
+  it.each(["constructor", "toString", "__proto__"])(
+    "%s is a text type, not an upload",
+    (name) => {
+      expect(editableFields(name).file).toBeNull();
+      expect(requiresPro(name)).toBe(false);
+    },
+  );
+});
