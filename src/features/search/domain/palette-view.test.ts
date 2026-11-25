@@ -67,3 +67,24 @@ describe("paletteView", () => {
     ).toMatchObject({ isEmpty: false, results: FOUND });
   });
 });
+
+describe("an answer that is no answer yet", () => {
+  it("is never empty, and one that came is not loading", () => {
+    expect(
+      paletteView({ outcome: null, previous: null, isPending: false }),
+    ).toEqual({
+      isLoading: true,
+      failure: null,
+      results: null,
+      isEmpty: false,
+    });
+    const results = { items: [], collections: [], nextCursor: null };
+    expect(
+      paletteView({
+        outcome: { status: "ready", results },
+        previous: null,
+        isPending: false,
+      }),
+    ).toEqual({ isLoading: false, failure: null, results, isEmpty: true });
+  });
+});

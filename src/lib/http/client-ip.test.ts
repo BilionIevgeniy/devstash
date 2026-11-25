@@ -125,3 +125,21 @@ describe("getClientIp: IPv4-mapped IPv6", () => {
     );
   });
 });
+
+describe("getClientIp: IPv6 written in other ways", () => {
+  it("is one /64 whatever the notation", () => {
+    const full = "2001:db8:1:2:3:4:5:6";
+    expect(ipFrom({ "x-real-ip": full })).toBe("2001:db8:1:2::/64");
+    expect(ipFrom({ "x-real-ip": "2001:db8::6" })).toBe("2001:db8:0:0::/64");
+    expect(ipFrom({ "x-real-ip": " 2001:db8:1:2::1%eth0 " })).toBe(
+      "2001:db8:1:2::/64",
+    );
+  });
+
+  it("is the IPv4 address only of a mapped one", () => {
+    expect(ipFrom({ "x-real-ip": "::ffff:203.0.113.7" })).toBe("203.0.113.7");
+    expect(ipFrom({ "x-real-ip": "0:0:0:0:1:ffff:cb00:7107" })).toBe(
+      "0:0:0:0::/64",
+    );
+  });
+});

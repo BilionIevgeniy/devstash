@@ -142,3 +142,16 @@ describe("acceptedAiClaims", () => {
     ).toEqual(["react"]);
   });
 });
+
+describe("acceptedAiClaims and blanks", () => {
+  it("claims the accepted summary with blanks around it, and no blank field", () => {
+    const claims = (description: string, accepted: string) =>
+      acceptedAiClaims(
+        { description, tags: "" },
+        { description: accepted, tags: [] },
+      ).description;
+    expect(claims(" A summary. ", "A summary.")).toBe(true);
+    expect(claims("A summary.", " A summary. ")).toBe(true);
+    expect(claims("  ", "  ")).toBe(false);
+  });
+});

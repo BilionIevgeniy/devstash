@@ -33,3 +33,12 @@ describe("hasCollectionChanges", () => {
     );
   });
 });
+
+describe("blanks around a collection's fields", () => {
+  it("are no change on either side", () => {
+    const plain = { name: "React", description: "Hooks" };
+    const padded = { name: " React ", description: " Hooks " };
+    expect(hasCollectionChanges(plain, padded)).toBe(false);
+    expect(hasCollectionChanges(padded, plain)).toBe(false);
+  });
+});

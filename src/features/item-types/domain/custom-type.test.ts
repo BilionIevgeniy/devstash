@@ -75,3 +75,11 @@ describe("sameTypeName", () => {
     expect(sameTypeName("Recipes", "Recipe")).toBe(false);
   });
 });
+
+describe("sameTypeName", () => {
+  it("ignores blanks and case on either side", () => {
+    expect(sameTypeName(" RECIPE ", "recipe")).toBe(true);
+    expect(sameTypeName("recipe", " RECIPE ")).toBe(true);
+    expect(sameTypeName("recipe", "recipes")).toBe(false);
+  });
+});

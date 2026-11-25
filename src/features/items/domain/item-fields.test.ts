@@ -405,3 +405,28 @@ describe("a custom type named like a member of every object", () => {
     },
   );
 });
+
+describe("tags and URLs at their edges", () => {
+  it("finds and adds a tag whatever its blanks and case", () => {
+    expect(hasTag("react", " React ")).toBe(true);
+    expect(appendTag("hooks", " react ")).toBe("hooks, react");
+  });
+
+  it("takes a tag of exactly the limit and a URL with blanks around it", () => {
+    const error = (values: { url: string; tags: string }) =>
+      itemFormError(editableFields("link"), { content: "", ...values });
+    expect(error({ url: " https://x.test ", tags: "" })).toBeNull();
+    expect(error({ url: "   ", tags: "x".repeat(TAG_MAX) })).toBeNull();
+    expect(error({ url: "", tags: "x".repeat(TAG_MAX + 1) })).toMatchObject({
+      field: "tags",
+    });
+  });
+
+  it("reads no file name for a type that has no field at all", () => {
+    const none = { ...editableFields("note"), content: false };
+    expect(aiSource(none, { content: "c", url: "u", fileName: "f" })).toEqual({
+      kind: "none",
+      text: "",
+    });
+  });
+});
