@@ -146,6 +146,8 @@ Vercel. A push to `main` deploys production. Vercel runs `npm run vercel-build`:
 
 Two secrets have no default and are set in Vercel for Production and Preview, a different value in each (`openssl rand -hex 32`), and in `.env` locally: `RATE_LIMIT_HASH_KEY` keys the HMAC that names the rate-limit counters in Upstash (without it rate limiting fails closed and sign-in stops working; a new value resets every counter once), and `CRON_SECRET` signs the calls of Vercel Cron.
 
+Preview needs `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` as well, the same as Production: without them every preview refuses sign-in, for the same reason. The counters stay apart, since each environment has its own `RATE_LIMIT_HASH_KEY`.
+
 ### Stripe in test mode
 
 The shop sells in EUR with VAT included and Stripe Tax ([ADR 0033](docs/adr/0033-tax-prices-and-payment-policy.md)). Before a purchase works in a sandbox, the account owner makes these Dashboard settings (all steps in [docs/archive/stripe-integration-plan.md](docs/archive/stripe-integration-plan.md), section 7):
