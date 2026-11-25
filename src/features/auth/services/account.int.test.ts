@@ -170,6 +170,26 @@ describe("stale registration", () => {
     ).resolves.toBe(1);
   });
 
+  it("deletes that registration only", async () => {
+    const createdAt = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000);
+    const [gone, kept] = await Promise.all(
+      ["gone@example.com", "kept@example.com"].map((email) =>
+        prisma.user.create({ data: { email, password: "hash", createdAt } }),
+      ),
+    );
+    const verified = await verifyStaleRegistration(gone.id, new Date());
+    if (!verified) throw new Error("No proof for a stale registration");
+
+    await expect(deleteVerifiedUserRows(verified)).resolves.toBe(true);
+
+    await expect(
+      prisma.user.findMany({
+        where: { id: { in: [gone.id, kept.id] } },
+        select: { id: true },
+      }),
+    ).resolves.toEqual([{ id: kept.id }]);
+  });
+
   it("gives no proof for a verified tenant", async () => {
     await expect(
       verifyStaleRegistration(t.a.userId, new Date()),

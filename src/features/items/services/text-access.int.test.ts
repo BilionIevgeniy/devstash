@@ -4,7 +4,10 @@ import {
   type Tenants,
 } from "../../../../test/integration/fixtures";
 import { FREE_ITEM_LIMIT } from "@/features/billing/domain/limits";
-import { userCanEditText } from "@/features/items/services/text-access";
+import {
+  getItemEditMode,
+  userCanEditText,
+} from "@/features/items/services/text-access";
 import { prisma } from "@/lib/postgres/prisma";
 
 // The text lock counts the caller's own items only: B, a former Pro user far
@@ -34,5 +37,15 @@ describe("userCanEditText", () => {
   it("locks the owner of the many items and no other user", async () => {
     expect(await userCanEditText(t.b.userId)).toBe(false);
     expect(await userCanEditText(t.a.userId)).toBe(true);
+    expect(await getItemEditMode(t.b.userId)).toBe("collectionsOnly");
+    expect(await getItemEditMode(t.a.userId)).toBe("full");
+  });
+
+  it("locks no Pro user, however many items", async () => {
+    await prisma.subscription.update({
+      where: { userId: t.b.userId },
+      data: { status: "active" },
+    });
+    expect(await userCanEditText(t.b.userId)).toBe(true);
   });
 });

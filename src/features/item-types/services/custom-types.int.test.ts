@@ -80,6 +80,31 @@ describe("createCustomType", () => {
     expect(again).toMatchObject({ success: false, error: "typeNameTaken" });
   });
 
+  it("creates one of two types of the same name ordered at once", async () => {
+    const both = await Promise.all([
+      createCustomType(t.b.userId, { ...RECIPES, name: "Twice" }),
+      createCustomType(t.b.userId, { ...RECIPES, name: "twice" }),
+    ]);
+    expect(both.filter((result) => result.success)).toHaveLength(1);
+  });
+
+  it("stops at 50 types", async () => {
+    await prisma.itemType.createMany({
+      data: Array.from({ length: 49 }, (_, index) => ({
+        userId: t.b.userId,
+        name: `Type ${index}`,
+        slug: `type-${index}`,
+        icon: "Code",
+      })),
+    });
+    await expect(
+      createCustomType(t.b.userId, { ...RECIPES, name: "One more" }),
+    ).resolves.toMatchObject({
+      success: false,
+      error: "customTypeLimitReached",
+    });
+  });
+
   it("gives another user the same slug: slugs are per owner", async () => {
     await makeAPro();
     const ofA = await createCustomType(t.a.userId, RECIPES);
@@ -100,6 +125,33 @@ describe("updateCustomType", () => {
       id: typeOfB.id,
       name: "Cooking",
     });
+  });
+
+  it("changes that type only, and not to the name of another", async () => {
+    const other = await createCustomType(t.b.userId, {
+      ...RECIPES,
+      name: "Runbooks",
+    });
+    const rename = (name: string) =>
+      updateCustomType(t.b.userId, typeOfB.id, { ...RECIPES, name });
+
+    await expect(rename("RUNBOOKS")).resolves.toMatchObject({
+      error: "typeNameTaken",
+    });
+    await expect(rename("recipes")).resolves.toMatchObject({ success: true });
+    const names = (await getCustomTypes(t.b.userId)).map(({ name }) => name);
+    expect(names.toSorted()).toEqual(["Runbooks", "recipes"]);
+    expect(other.success).toBe(true);
+  });
+
+  it("is refused once Pro has ended", async () => {
+    await prisma.subscription.update({
+      where: { userId: t.b.userId },
+      data: { status: "canceled" },
+    });
+    await expect(
+      updateCustomType(t.b.userId, typeOfB.id, { ...RECIPES, name: "Late" }),
+    ).resolves.toMatchObject({ error: "customTypesProOnly" });
   });
 
   it("cannot rename another user's type", async () => {
@@ -123,6 +175,14 @@ describe("deleteCustomType", () => {
       success: true,
     });
     await expect(getCustomTypes(t.b.userId)).resolves.toEqual([]);
+  });
+
+  it("deletes that type only", async () => {
+    await createCustomType(t.b.userId, { ...RECIPES, name: "Kept" });
+    await deleteCustomType(t.b.userId, typeOfB.id);
+    await expect(getCustomTypes(t.b.userId)).resolves.toMatchObject([
+      { name: "Kept" },
+    ]);
   });
 
   it("refuses a type that still has items", async () => {

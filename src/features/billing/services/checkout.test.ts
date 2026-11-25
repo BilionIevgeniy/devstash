@@ -59,6 +59,7 @@ vi.mock("@/features/billing/_internal/services/subscription-sync", () => ({
 vi.stubEnv("STRIPE_PRICE_ID_MONTHLY", "price_monthly");
 vi.stubEnv("STRIPE_PRICE_ID_YEARLY", "price_yearly");
 
+import { lockForTransaction } from "@/lib/postgres/advisory-lock";
 import { TERMS_VERSION } from "@/lib/legal/terms";
 import {
   confirmCheckoutSession,
@@ -92,6 +93,16 @@ describe("createCheckoutSession", () => {
     expect(result.success).toBe(false);
     expect(mocks.createCustomer).not.toHaveBeenCalled();
     expect(mocks.createCheckout).not.toHaveBeenCalled();
+  });
+
+  // The lock is the whole guard against two tabs that order at once.
+  it("opens the session under a lock of the user", async () => {
+    await createCheckoutSession(USER, MONTHLY, ORIGIN);
+
+    expect(lockForTransaction).toHaveBeenCalledExactlyOnceWith(
+      expect.anything(),
+      "checkout:user-1",
+    );
   });
 
   it("reuses a stored customer", async () => {

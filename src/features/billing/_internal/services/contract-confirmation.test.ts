@@ -40,6 +40,18 @@ describe("sendContractConfirmation", () => {
     expect(email.to).toBe("dev@example.com");
     expect(email.idempotencyKey).toBe("contract-confirmation/sub_1");
     expect(email.subject).toBe("Dein Vertrag über DevStash Pro");
+    expect(email.text).toMatch(/Preis: 72\s€ pro Jahr/);
+  });
+
+  it("states the order as it was: monthly, in English", async () => {
+    await sendContractConfirmation({
+      ...CLAIMED,
+      metadata: { locale: "xx", plan: "monthly" },
+    });
+
+    const email = mocks.sendEmail.mock.calls[0][0];
+    expect(email.subject).not.toContain("Vertrag");
+    expect(email.text).toContain("Price: €8 per month");
   });
 
   it("answers false when the email fails, so the row stays unmarked", async () => {
