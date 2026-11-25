@@ -5,7 +5,7 @@ import type { VendorId } from "../vendors";
 const TEXTS: Record<VendorId, string> = {
   vercel:
     "Hosting und Auslieferung der Website und der Anwendung. Bei jedem Aufruf entstehen Server-Protokolle mit IP-Adresse und Anfragedaten. Die Anwendung läuft in der Region Frankfurt am Main. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.",
-  neon: "Datenbank: speichert Ihr Konto und alle Ihre Inhalte mit Ausnahme der Dateien. Standort: AWS-Region eu-central-1 (Frankfurt am Main). Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.",
+  neon: "Datenbank: speichert Ihr Konto und alle Ihre Inhalte mit Ausnahme der Dateien. Standort: AWS-Region eu-central-1 (Frankfurt am Main). Nach dem Umzug im November 2026 bleibt für sieben Tage eine schreibgeschützte Sicherungskopie in der bisherigen Region us-east-2 (Ohio, USA) und wird dann gelöscht; ein in dieser Zeit gelöschtes Konto ist darin bis dahin noch enthalten. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.",
   cloudflare:
     "Cloudflare R2: nicht öffentlicher Speicher für hochgeladene Dateien und Bilder. Die Dateien sind nur über kurzzeitig gültige, signierte Adressen abrufbar. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.",
   openai:

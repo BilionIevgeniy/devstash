@@ -1,6 +1,6 @@
 # Record of processing activities (Art. 30 GDPR)
 
-**Status: draft for the operator.** Facts as of 2026-11-11, the regions of Vercel, Neon and Upstash as of 2026-11-25. This is engineering documentation, not legal advice. `⟦OPERATOR: …⟧` marks what only the owner can know or decide (dates of accepted DPAs, regions, transfer mechanisms); nothing marked so has been guessed. The privacy notice (`src/app/(marketing)/_legal/datenschutz/`) is written from this file, and the reasons behind the launch mode are in [ADR 0014](../adr/0014-launch-mode.md).
+**Status: draft for the operator.** Facts as of 2026-11-11, the regions of Vercel and Neon as of the move of feature 24 (November 2026), that of Upstash as of 2026-11-25. This is engineering documentation, not legal advice. `⟦OPERATOR: …⟧` marks what only the owner can know or decide (dates of accepted DPAs, regions, transfer mechanisms); nothing marked so has been guessed. The privacy notice (`src/app/(marketing)/_legal/datenschutz/`) is written from this file, and the reasons behind the launch mode are in [ADR 0014](../adr/0014-launch-mode.md).
 
 **Owner decision, 2026-11-11:** this is a portfolio project, and the owner chose not to research the vendor facts. Every `⟦OPERATOR⟧` below about a DPA, a transfer mechanism or a region therefore stays open, and the published notice only says what each provider's own terms offer (processing terms, and per provider the DPF or SCCs), not that each has been checked. `context/todo-before-live.md` ("Vendors and privacy") keeps the item for the day real users or live payments arrive.
 
@@ -107,4 +107,4 @@ Access, rectification (by email: the profile page is read-only, and the user cha
 | ---------- | ------------------------------------------------------------------------------------- |
 | 2026-11-11 | First version for the legal pages feature                                             |
 | 2026-11-11 | Sentry (feature 6): the activity, the vendor row, the cookie check and the measures   |
-| 2026-11-25 | Vercel functions and Neon moved to Frankfurt (feature 24); the region of Upstash read |
+| 2026-11    | Vercel functions and Neon moved to Frankfurt (feature 24); the region of Upstash read |
