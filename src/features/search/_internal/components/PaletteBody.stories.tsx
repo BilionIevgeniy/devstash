@@ -37,7 +37,8 @@ const RESULTS: PaletteResults = {
       id: "item-upload",
       title: "Upload a release asset",
       description: null,
-      preview: null,
+      // A locked row with a preview line: axe checks both lines of it.
+      preview: "release-notes.pdf",
       previewAiGenerated: false,
       isFavorite: false,
       isPinned: false,
