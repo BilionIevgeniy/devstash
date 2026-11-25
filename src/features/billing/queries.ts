@@ -19,9 +19,9 @@ export const getEntitlements = cache(
   async (userId: string): Promise<Entitlements> => {
     const subscription = await prisma.subscription.findUnique({
       where: { userId },
-      select: { status: true },
+      select: { status: true, currentPeriodEnd: true },
     });
-    return entitlementsFor(subscription?.status ?? null);
+    return entitlementsFor(subscription);
   },
 );
 

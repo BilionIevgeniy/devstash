@@ -2,6 +2,7 @@
   "title": "Daten",
   "description": "Lade alle Einträge und Sammlungen als JSON herunter oder importiere einen DevStash-Export. Dateien und Bilder kommen als Download-Links, die nach etwa einer Stunde ablaufen. Ein Import überspringt, was schon da ist, und stellt keine Favoriten, angehefteten Einträge oder Daten wieder her.",
   "proOnly": "Export und Import gehören zu Pro.",
+  "importProOnly": "Der Import ist Teil von Pro.",
   "upgrade": "Auf Pro upgraden",
   "export": "JSON exportieren",
   "exporting": "Wird exportiert …",

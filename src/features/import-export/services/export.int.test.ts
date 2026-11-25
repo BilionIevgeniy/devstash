@@ -69,4 +69,15 @@ describe("exportUserData", () => {
       status: "forbidden",
     });
   });
+
+  it("stays possible once Pro has ended", async () => {
+    await prisma.subscription.update({
+      where: { userId: t.b.userId },
+      data: { status: "canceled" },
+    });
+
+    const file = await exportOf(t.b.userId);
+
+    expect(idsOf(file.items).toSorted()).toEqual(allItemIds(t.b).toSorted());
+  });
 });

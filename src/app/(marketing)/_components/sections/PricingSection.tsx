@@ -12,7 +12,6 @@ import { usePlanText } from "@/features/billing/components/hooks/use-plan-text";
 import {
   FREE_PLAN_FEATURES,
   PRO_PLAN_FEATURES,
-  PRO_ROADMAP_FEATURES,
 } from "@/features/billing/domain/limits";
 
 import { DASHBOARD_PATH } from "@/features/auth/domain/auth-paths";
@@ -70,9 +69,6 @@ function PlanAction({
   );
 }
 
-// The roadmap line on top of what Pro gives today: the export is JSON only.
-const PRO_FEATURES = [...PRO_PLAN_FEATURES, ...PRO_ROADMAP_FEATURES];
-
 interface PricingSectionProps {
   /** A line under the cards, rendered by the page: it needs the server. */
   note?: ReactNode;
@@ -114,7 +110,7 @@ export function PricingSection({ note }: PricingSectionProps) {
             <ScrollFadeIn className="h-full">
               <PricingCard
                 {...plan.pro(isYearly)}
-                features={plan.features(PRO_FEATURES)}
+                features={plan.features(PRO_PLAN_FEATURES)}
                 highlighted
                 action={
                   <PlanAction
