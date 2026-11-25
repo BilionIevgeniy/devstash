@@ -68,8 +68,11 @@ describe("DeleteAccountDialog without a password", () => {
     );
 
     expect(await screen.findByRole("alert")).toHaveTextContent("20");
+    // The pending label goes in its own commit, after the one of the error.
     expect(
-      screen.getByRole("button", { name: "Email me a confirmation link" }),
+      await screen.findByRole("button", {
+        name: "Email me a confirmation link",
+      }),
     ).toBeEnabled();
   });
 
