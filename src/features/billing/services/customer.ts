@@ -23,7 +23,6 @@ export async function deleteBillingCustomer(userId: string): Promise<void> {
       status: "canceled",
       stripeCustomerId: null,
       stripeSubscriptionId: null,
-      currentPeriodEnd: null,
     },
   });
 }

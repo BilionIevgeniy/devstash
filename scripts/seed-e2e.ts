@@ -67,7 +67,13 @@ async function seedOverLimitUser(
   passwordHash: string,
 ): Promise<void> {
   const userId = await createVerifiedTestUser(prisma, { email, passwordHash });
-  await prisma.subscription.create({ data: { userId, status: "canceled" } });
+  await prisma.subscription.create({
+    data: {
+      userId,
+      status: "canceled",
+      currentPeriodEnd: new Date(Date.UTC(2026, 0, 1)),
+    },
+  });
   await prisma.itemType.create({
     data: {
       userId,

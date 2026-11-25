@@ -28,7 +28,6 @@ const CLEARED_ROW = {
     status: "canceled",
     stripeCustomerId: null,
     stripeSubscriptionId: null,
-    currentPeriodEnd: null,
   },
 };
 

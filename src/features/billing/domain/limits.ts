@@ -117,8 +117,8 @@ export function isProStatus(status: string): boolean {
 const FORMER_PRO_STATUSES = ["canceled", "unpaid", "paused"];
 
 // A row has a period only from a Stripe subscription. The one a checkout opens
-// has none (and is "incomplete"), and neither has the one of an account whose
-// deletion failed half-way (services/customer.ts).
+// has none, and is "incomplete". An account whose deletion failed half-way
+// keeps its period (services/customer.ts), so the export too.
 function wasPro({ status, currentPeriodEnd }: PlanRow): boolean {
   return currentPeriodEnd !== null && FORMER_PRO_STATUSES.includes(status);
 }

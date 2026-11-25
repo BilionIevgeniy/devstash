@@ -77,7 +77,8 @@ describe("entitlementsFor", () => {
 
   it("gives no export for a row that never had a period", () => {
     expect(
-      entitlementsFor({ status: "canceled", currentPeriodEnd: null }).canExport,
+      entitlementsFor({ status: "incomplete", currentPeriodEnd: null })
+        .canExport,
     ).toBe(false);
   });
 
