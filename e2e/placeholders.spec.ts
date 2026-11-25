@@ -13,17 +13,20 @@ import { PAINTED_THEMES, startInTheme } from "./support/theme";
 
 const SESSION = "**/api/auth/session";
 
-// Every answer of /api/auth/session waits until the returned function runs.
+// Every answer of /api/auth/session waits until the returned function runs;
+// one asked for after that goes through at once. The handler stays: a route
+// it caught and never continued would hang even after an unroute.
 async function holdSessionAnswer(page: Page): Promise<() => Promise<void>> {
   const held: Route[] = [];
-  await page.route(SESSION, (route) => {
-    held.push(route);
+  let released = false;
+  await page.route(SESSION, async (route) => {
+    if (released) await route.continue();
+    else held.push(route);
   });
   return async () => {
     await expect.poll(() => held.length).toBeGreaterThan(0);
+    released = true;
     await Promise.all(held.map((route) => route.continue()));
-    // A request still caught by the handler is let through by the unroute.
-    await page.unroute(SESSION);
   };
 }
 
@@ -49,7 +52,8 @@ async function lookOf(locator: Locator): Promise<Look> {
 }
 
 // A placeholder is hidden from assistive technology, so no role finds it:
-// it is found by that attribute, next to the action it stands for.
+// it is found by that attribute, next to the action it stands for (the one
+// exception to "Selectors by role and label only" in coding-standards.md).
 // The navbar's own placeholder is the button-like child of its wrapper.
 const navbarPlaceholder = (page: Page) =>
   page.getByRole("banner").locator('span[aria-hidden="true"] > span').first();
