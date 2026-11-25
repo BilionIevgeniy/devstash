@@ -12,7 +12,7 @@ import {
 } from "@/lib/http/legal-paths";
 
 const LEGAL_LINK =
-  "inline-flex min-h-11 items-center underline underline-offset-4 transition-colors hover:text-foreground";
+  "inline-flex min-h-11 min-w-11 items-center justify-center underline underline-offset-4 transition-colors hover:text-foreground";
 
 interface AuthCardProps {
   title: string;

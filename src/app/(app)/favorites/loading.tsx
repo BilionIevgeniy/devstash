@@ -16,7 +16,7 @@ function SectionSkeleton({ rows }: SectionSkeletonProps) {
     <section className="space-y-2">
       <div className={FAVORITE_SECTION_HEADER}>
         <Skeleton className="h-5 w-28" />
-        <Skeleton className={cn(SORT_SELECT_WIDTH, "h-8")} />
+        <Skeleton className={cn(SORT_SELECT_WIDTH, "h-8 max-md:h-11")} />
       </div>
       <div>
         {Array.from({ length: rows }, (_, index) => (

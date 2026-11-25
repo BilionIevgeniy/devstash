@@ -18,7 +18,7 @@ export default function PinnedLoading() {
         <Skeleton className="mt-1 h-6 w-56" />
       </header>
       <div className={PINNED_SORT_ROW}>
-        <Skeleton className={cn(SORT_SELECT_WIDTH, "h-8")} />
+        <Skeleton className={cn(SORT_SELECT_WIDTH, "h-8 max-md:h-11")} />
       </div>
       {GROUP_ROWS.map((rows, index) => (
         <PinnedGroupSkeleton key={index} rows={rows} />

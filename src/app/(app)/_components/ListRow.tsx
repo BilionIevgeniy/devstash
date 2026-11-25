@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 // Shared with the loading.tsx files, so the skeleton rows are as tall as the
 // real ones.
-export const LIST_ROW_HEIGHT = "h-9";
+export const LIST_ROW_HEIGHT = "h-9 max-md:h-11";
 // For what wraps a row, the drawer trigger or a link, so both act the same. The
 // ring is inset: the rows touch, and a neighbour would paint over an outer one.
 export const LIST_ROW_WRAPPER =
@@ -40,7 +40,7 @@ export function ListRow({ icon, title, badge, date }: ListRowProps) {
       )}
       <time
         dateTime={date.toISOString()}
-        className="w-14 shrink-0 text-right text-xs text-muted-foreground"
+        className="min-w-14 shrink-0 text-right text-xs whitespace-nowrap text-muted-foreground"
       >
         {format.dateTime(date, "short")}
       </time>

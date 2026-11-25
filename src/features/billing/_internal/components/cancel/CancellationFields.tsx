@@ -68,7 +68,10 @@ export function CancellationFields({
           {t("kind")}
         </legend>
         {kinds.map((kind) => (
-          <label key={kind} className="flex items-center gap-2 text-sm">
+          <label
+            key={kind}
+            className="flex items-center gap-2 text-sm max-md:min-h-11"
+          >
             <input
               type="radio"
               name="kind"

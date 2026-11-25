@@ -16,7 +16,7 @@ export async function RecentCollections() {
         <h2 className="text-lg font-semibold">{t("collections")}</h2>
         <Link
           href="/collections"
-          className="text-sm text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground max-md:min-h-11 max-md:min-w-11 max-md:justify-end"
         >
           {t("viewAll")}
         </Link>

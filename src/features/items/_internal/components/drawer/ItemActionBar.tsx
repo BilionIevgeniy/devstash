@@ -49,7 +49,7 @@ export function ItemActionBar({
         aria-disabled={favorite.isPending}
         onClick={favorite.toggle}
         className={cn(
-          "aria-disabled:opacity-50",
+          "max-md:min-w-11 aria-disabled:opacity-50",
           favorite.isFavorite && "text-yellow-400 hover:text-yellow-400",
         )}
       >
@@ -62,7 +62,7 @@ export function ItemActionBar({
         aria-pressed={pin.isPinned}
         aria-disabled={pin.isPending}
         onClick={pin.toggle}
-        className="aria-disabled:opacity-50"
+        className="max-md:min-w-11 aria-disabled:opacity-50"
         style={pin.isPinned && typeColor ? { color: typeColor } : undefined}
       >
         <Pin className={cn(pin.isPinned && "fill-current")} />
@@ -72,6 +72,7 @@ export function ItemActionBar({
         <CopyButton
           value={copyValue}
           label={t("items.actions.copyNamed", { title })}
+          className="max-md:min-w-11"
         >
           <span className={ACTION_LABEL}>{t("common.actions.copy")}</span>
         </CopyButton>
@@ -79,7 +80,7 @@ export function ItemActionBar({
       <Button
         type="button"
         variant="ghost"
-        className="ml-auto"
+        className="ml-auto max-md:min-w-11"
         disabled={!canEdit}
         onClick={onEdit}
       >

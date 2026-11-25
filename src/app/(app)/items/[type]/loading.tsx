@@ -26,7 +26,7 @@ export default function ItemsByTypeLoading() {
         <Skeleton className="mt-1 h-5 w-20" />
       </header>
       <div className="space-y-4">
-        <Skeleton className={cn(SORT_SELECT_WIDTH, "h-8")} />
+        <Skeleton className={cn(SORT_SELECT_WIDTH, "h-8 max-md:h-11")} />
         <ListingSkeleton listing={listing} />
       </div>
     </div>

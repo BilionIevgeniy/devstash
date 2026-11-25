@@ -32,7 +32,7 @@ export async function Sidebar() {
       <div className="flex h-16 shrink-0 items-center gap-2 px-4">
         <Link
           href={DASHBOARD_PATH}
-          className="flex items-center gap-2 rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="flex items-center gap-2 rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50 max-md:min-h-11"
         >
           <Layers className="size-6 text-primary" />
           <span className="text-lg font-semibold">DevStash</span>

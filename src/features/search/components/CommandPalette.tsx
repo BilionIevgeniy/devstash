@@ -67,7 +67,7 @@ export function CommandPalette() {
           aria-haspopup="dialog"
           aria-keyshortcuts="Meta+K Control+K"
           aria-label={t("placeholder")}
-          className="size-8 justify-center font-normal text-muted-foreground lg:w-full lg:justify-start lg:pr-12"
+          className="size-8 justify-center max-md:size-11 font-normal text-muted-foreground lg:w-full lg:justify-start lg:pr-12"
           onClick={open}
         >
           <Search />

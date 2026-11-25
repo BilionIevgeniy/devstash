@@ -61,7 +61,7 @@ export function PinnedGroup({
             aria-expanded={isOpen}
             aria-controls={panelId}
             onClick={onToggle}
-            className="flex h-8 items-center gap-1 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex h-8 max-md:h-11 items-center gap-1 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <span>
               <span>{label}</span>{" "}

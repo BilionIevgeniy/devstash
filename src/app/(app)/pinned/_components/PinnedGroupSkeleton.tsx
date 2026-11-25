@@ -5,11 +5,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 // Here and not there: loading.tsx renders on the server, and PinnedGroup holds
 // client code.
 export const PINNED_GROUP_HEADER =
-  "flex h-8 items-center justify-between gap-3";
+  "flex h-8 items-center justify-between gap-3 max-md:h-11";
 
 // The row of the one sort above the groups, shared with loading.tsx the same
 // way.
-export const PINNED_SORT_ROW = "flex h-8 justify-end";
+export const PINNED_SORT_ROW = "flex h-8 justify-end max-md:h-11";
 
 interface PinnedGroupSkeletonProps {
   rows: number;
