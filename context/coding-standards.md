@@ -88,7 +88,7 @@ The interface is English and German ([ADR 0024](../docs/adr/0024-locale-decision
 - A primitive added with `npx shadcn add` is formatted and linted like our own code: `npx prettier --write <file>` (shadcn writes no semicolons), then `npm run lint`, whose canonical-class rule covers `components/ui` too (`npx eslint --fix <file>` for a hit)
 - The format is Prettier's defaults (`.prettierrc`), pinned in `package.json`: the editor formats on save (`.vscode/settings.json`), `npm run format` formats everything, and `npm run format:check` fails CI on a file that differs. A commit that only reformats goes into `.git-blame-ignore-revs`
 - No inline styles. Two exceptions: the Open Graph image (`app/(marketing)/_components/og-image.tsx`) is styled with `style` objects only, since Satori, which draws an `ImageResponse`, reads no classes; and a type's color, read from `ItemType.color` (the system colors and the fixed palette `TYPE_COLORS` of `item-types/domain/custom-type.ts`, never a free value), which is data and no class can name ([ADR 0031](../docs/adr/0031-custom-item-types.md))
-- Dark mode only for now: `dark` is fixed on `<html>` and nothing lets a user change it; the light tokens wait for `context/features/plan/26.light-theme.md`
+- Dark mode only for now: `dark` is fixed on `<html>` and nothing lets a user change it; the light tokens wait for `context/features/26.light-theme.md`
 
 ## UI/UX
 
