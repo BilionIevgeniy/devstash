@@ -2,6 +2,7 @@
   "title": "Editor",
   "fontSize": "Schriftgröße",
   "tabSize": "Tab-Breite",
+  "spaces": "{count, plural, one {# Leerzeichen} other {# Leerzeichen}}",
   "theme": "Design",
   "wordWrap": "Zeilenumbruch",
   "minimap": "Minimap",

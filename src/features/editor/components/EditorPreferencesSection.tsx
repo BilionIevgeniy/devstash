@@ -26,10 +26,6 @@ const FONT_SIZE_OPTIONS = FONT_SIZES.map((size) => ({
   value: String(size),
   label: `${size}px`,
 }));
-const TAB_SIZE_OPTIONS = TAB_SIZES.map((size) => ({
-  value: String(size),
-  label: `${size} spaces`,
-}));
 const THEME_OPTIONS = EDITOR_THEMES.map((theme) => ({
   value: theme,
   label: EDITOR_THEME_LABELS[theme],
@@ -94,7 +90,10 @@ export function EditorPreferencesSection() {
         <PreferenceSelect
           label={t("tabSize")}
           value={String(preferences.tabSize)}
-          options={TAB_SIZE_OPTIONS}
+          options={TAB_SIZES.map((size) => ({
+            value: String(size),
+            label: t("spaces", { count: size }),
+          }))}
           onChange={(value) => change({ tabSize: Number(value) })}
         />
         <PreferenceSelect

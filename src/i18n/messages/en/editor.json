@@ -2,6 +2,7 @@
   "title": "Editor",
   "fontSize": "Font size",
   "tabSize": "Tab size",
+  "spaces": "{count, plural, one {# space} other {# spaces}}",
   "theme": "Theme",
   "wordWrap": "Word wrap",
   "minimap": "Minimap",
