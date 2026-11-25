@@ -54,7 +54,7 @@ The create of an item resolves its type through `getUserItemTypeByName`, so nobo
 
 A fixed palette of twelve hex values (`TYPE_COLORS`: the seven system colors and five more) and the icon set of the system types (`TYPE_ICON_NAMES`, which also types the map of `TypeIcon`). The schema refuses any other value.
 
-The colors are hex values in the list, not CSS tokens. Every type color, the system types' included, is rendered from `ItemType.color` through `style`, in about twenty components. A token would mean rewriting all of them and the system rows. A type's color is data that no class can name, so it is the second exception to "No inline styles" in `coding-standards.md`.
+The colors are hex values in the list, not CSS tokens. Every type color, the system types' included, is rendered from `ItemType.color` through `style`, in about twenty components. A token would mean rewriting all of them and the system rows. A type's color is data that no class can name, so it is the second exception to "No inline styles" in `coding-standards.md`. (Amended by [ADR 0039](0039-theme-choice.md): as ink, on an icon or a text, the color goes through `style` as the variable `--type-color`, painted by the class `text-type`, which darkens it on a light ground; `typeInk` and `TypeIcon`'s `typeColor` hold both halves. Backgrounds and borders take it as before.)
 
 A color is never removed from the list: a type that stores it would fail the schema on an edit that does not touch the color.
 

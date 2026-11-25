@@ -201,11 +201,25 @@ export const GENERAL_DE: LegalSection[] = [
           </li>
         </ul>
         <p>
-          Im lokalen Speicher Ihres Browsers (kein Cookie) halten wir{" "}
-          <code>devstash-consent</code>: Ihre Antwort auf das Banner, damit wir
-          nicht erneut fragen, bis Sie sie ändern oder den Speicher löschen. Sie
-          verlässt Ihren Browser nie.
+          Im lokalen Speicher Ihres Browsers (kein Cookie) halten wir zwei
+          Einträge, auf derselben Grundlage (§ 25 Abs. 2 Nr. 2 TDDDG). Keiner
+          verlässt je Ihren Browser:
         </p>
+        <ul>
+          <li>
+            <code>devstash-consent</code>: Ihre Antwort auf das Banner, damit
+            wir nicht erneut fragen, bis Sie sie ändern oder den Speicher
+            löschen.
+          </li>
+          <li>
+            <code>devstash-theme</code>: die von Ihnen gewählte Darstellung
+            (System, Hell oder Dunkel). Wird nur gespeichert, wenn Sie sie in
+            den Einstellungen, im Nutzermenü oder am Fuß der Website auswählen,
+            und auf jeder Seite gelesen, damit sie in dieser Darstellung öffnet,
+            bis Sie sie ändern oder den Speicher löschen. Ohne diesen Eintrag
+            ist die Website dunkel.
+          </li>
+        </ul>
         <p>
           Auf der Website tragen die Anmelde-Cookies zusätzlich das Präfix{" "}
           <code>__Secure-</code> oder <code>__Host-</code>.
