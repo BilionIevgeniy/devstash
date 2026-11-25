@@ -113,3 +113,20 @@ No long task and a star answered within one frame and a half: no virtualization 
 
 - A dynamic page pays the Atlantic once (`fra1::iad1` in `x-vercel-id`): about 100 ms of the TTFB of a visitor in Germany before any database read. The 2.2 s outlier is a cold start
 - The database latency inside the region (`iad1` to Neon in `us-east-2`) was not measured: it needs Neon's query statistics of the production branch, which is read only on the owner's explicit request (project CLAUDE.md). No pool change was made without numbers
+
+## The move to Frankfurt (feature 24)
+
+[ADR 0038](adr/0038-frankfurt-region.md) moves the functions from `iad1` to `fra1` and Neon from `us-east-2` to `eu-central-1`. Measured from Germany with curl against production: 31 requests a second apart, each on a new connection; the first is listed apart, because it can meet a cold function and a suspended database. Total time and not only TTFB, since the first byte of a prerendered page comes from the edge and the part a function renders follows it.
+
+```bash
+for i in $(seq 31); do
+  curl -s -o /dev/null -D /tmp/headers -w "%{time_starttransfer} %{time_total} " "https://devstash.ievgenbilion.de$URL_PATH"
+  grep -iE "^x-vercel-(cache|id)" /tmp/headers | tr -d '\r' | tr '\n' ' '; echo; sleep 1
+done
+```
+
+| `URL_PATH`                                                | What it takes                                       | Before (2026-11-25): first | Median total | Min–max    | Median TTFB |
+| --------------------------------------------------------- | --------------------------------------------------- | -------------------------: | -----------: | ---------- | ----------: |
+| `/impressum`                                              | the edge in `fra1` (control)                        |                     158 ms |        92 ms | 78–212 ms  |       79 ms |
+| `/api/auth/session`                                       | a function in `iad1`, no database read              |                    1766 ms |       187 ms | 171–259 ms |      186 ms |
+| `/reset-password?email=probe%40example.com&token=unknown` | the shell from `fra1`, then a function and one read |                    3735 ms |       309 ms | 214–558 ms |       75 ms |
