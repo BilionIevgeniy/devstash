@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
 
-// A key that changes when the browser shows the page again from its
-// back/forward cache (Back from Stripe). Keyed by it, the checkout UI mounts
+// A key that changes when the page shows again: from the browser's
+// back/forward cache (Back from Stripe), or as a route Next.js kept mounted
+// but hidden (Back within the app, ADR 0037). Keyed by it, the checkout UI mounts
 // fresh: the pending redirect ends, the order dialog is closed and its consent
 // boxes are clear, since a consent must never come back ticked (ADR 0032).
-export function usePageRestoreKey(): number {
+export function usePageRestoreKey(): string {
+  const revealKey = useRemountOnReveal();
   const [key, setKey] = useState(0);
 
   useEffect(() => {
@@ -15,5 +18,5 @@ export function usePageRestoreKey(): number {
     return () => window.removeEventListener("pageshow", handlePageShow);
   }, []);
 
-  return key;
+  return `${key}-${revealKey}`;
 }

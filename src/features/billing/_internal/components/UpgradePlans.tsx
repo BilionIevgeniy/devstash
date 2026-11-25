@@ -74,7 +74,7 @@ function Plans({ testMode }: UpgradePlansProps) {
   );
 }
 
-// Mounted fresh after Back from Stripe (usePageRestoreKey).
+// Mounted fresh after Back, from Stripe or within the app (usePageRestoreKey).
 export function UpgradePlans({ testMode }: UpgradePlansProps) {
   return <Plans key={usePageRestoreKey()} testMode={testMode} />;
 }

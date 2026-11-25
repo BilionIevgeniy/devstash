@@ -88,7 +88,11 @@ export function OrderReview({ plan, onClose, testMode }: OrderReviewProps) {
   const { isPending, run } = useBillingRedirect();
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [waiveWithdrawal, setWaiveWithdrawal] = useState(false);
-  const period = plan ?? "monthly";
+  // The last plan stays in the dialog while it slides out, so a yearly order
+  // does not close on the monthly price.
+  const [lastPlan, setLastPlan] = useState<Plan>(plan ?? "monthly");
+  if (plan !== null && plan !== lastPlan) setLastPlan(plan);
+  const period = plan ?? lastPlan;
 
   // A consent never comes back ticked: closing clears both boxes, so another
   // plan, or the same one again, is agreed to afresh.
@@ -111,7 +115,7 @@ export function OrderReview({ plan, onClose, testMode }: OrderReviewProps) {
           <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>{t("description", { period })}</DialogDescription>
         </DialogHeader>
-        <OrderSummary plan={plan ?? "monthly"} />
+        <OrderSummary plan={period} />
         <div className="space-y-3">
           <ConsentBox
             checked={acceptTerms}
