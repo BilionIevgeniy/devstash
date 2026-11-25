@@ -114,6 +114,15 @@ describe("usePaletteSearch", () => {
     expect(namesOf(result.current.outcome)).toEqual(["recent"]);
   });
 
+  it("searches the start of a pasted text longer than the route takes", async () => {
+    renderSearch(`${"word ".repeat(40)}`);
+    await pause();
+
+    const sent = String(fetchSearchResults.mock.lastCall?.[0]);
+    expect(sent.length).toBeLessThanOrEqual(100);
+    expect(sent.startsWith("word word")).toBe(true);
+  });
+
   it("sends one request per pause in typing", async () => {
     const { rerender } = renderSearch();
     for (const value of ["r", "re", "rea", "reac", "react"]) {
