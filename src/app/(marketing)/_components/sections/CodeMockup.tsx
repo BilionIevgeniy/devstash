@@ -3,10 +3,11 @@ import { Sparkles } from "lucide-react";
 type TokenKind = "key" | "fn" | "type";
 type Token = string | [TokenKind, string];
 
+// Darker on a light card (ADR 0039), as stored on a dark one.
 const TOKEN_CLASSES: Record<TokenKind, string> = {
-  key: "text-[#a78bfa]",
-  fn: "text-[#60a5fa]",
-  type: "text-[#34d399]",
+  key: "text-[#7c3aed] dark:text-[#a78bfa]",
+  fn: "text-[#2563eb] dark:text-[#60a5fa]",
+  type: "text-[#047857] dark:text-[#34d399]",
 };
 
 const T: Token = ["type", "T"];
@@ -68,9 +69,9 @@ export function CodeMockup({ codeLabel, tagsLabel }: CodeMockupProps) {
     <div className="min-w-0 overflow-hidden rounded-[14px] border bg-card">
       <div className="flex h-10 items-center gap-3 border-b px-4">
         <span aria-hidden="true" className="flex gap-1.5">
-          <i className="size-2.5 rounded-full bg-white/18" />
-          <i className="size-2.5 rounded-full bg-white/18" />
-          <i className="size-2.5 rounded-full bg-white/18" />
+          <i className="size-2.5 rounded-full bg-black/18 dark:bg-white/18" />
+          <i className="size-2.5 rounded-full bg-black/18 dark:bg-white/18" />
+          <i className="size-2.5 rounded-full bg-black/18 dark:bg-white/18" />
         </span>
         <span className="font-mono text-xs text-dim">use-debounce.ts</span>
       </div>

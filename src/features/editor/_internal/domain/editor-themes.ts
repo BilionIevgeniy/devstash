@@ -29,7 +29,9 @@ const SCROLLBAR_COLORS = {
 };
 
 // Monaco takes hex colors, not CSS variables: these follow the dark tokens in
-// globals.css (--card, --muted, --muted-foreground, --border).
+// globals.css (--card, --muted, --muted-foreground, --border). Every editor
+// theme is dark, whatever the app's theme: on a light page the code block
+// stays dark, a choice of its own in the editor preferences (ADR 0039).
 const DEVSTASH_DARK: MonacoThemeData = {
   base: "vs-dark",
   inherit: true,
