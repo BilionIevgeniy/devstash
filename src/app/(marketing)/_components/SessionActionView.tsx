@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+import { PendingSpinner } from "./PendingSpinner";
+
 type ButtonVariant = NonNullable<
   Parameters<typeof buttonVariants>[0]
 >["variant"];
@@ -18,6 +20,12 @@ export interface SessionActionProps {
   member: (hidden: boolean) => ReactNode;
   /** The look of the placeholder: the variant of the buttons it stands for. */
   pendingVariant?: ButtonVariant;
+  /**
+   * A placeholder of its own, for answers whose buttons differ (the navbar's):
+   * it sits in the shared cell, aligns itself, and is hidden from assistive
+   * technology and without script here. Replaces the one of `pendingVariant`.
+   */
+  pending?: ReactNode;
   className?: string;
   /** The layout of each variant's cell. */
   cellClassName?: string;
@@ -36,7 +44,7 @@ function PendingPlaceholder({ variant }: { variant?: ButtonVariant }) {
         "pointer-events-none col-start-1 row-start-1 h-auto self-stretch justify-self-stretch no-script:hidden",
       )}
     >
-      <span className="size-4 animate-pending-spin rounded-full border-2 border-current border-t-transparent motion-reduce:size-1.5 motion-reduce:animate-pending-dot motion-reduce:border-0 motion-reduce:bg-current" />
+      <PendingSpinner />
     </span>
   );
 }
@@ -56,6 +64,7 @@ export function SessionActionView({
   guest,
   member,
   pendingVariant,
+  pending,
   className,
   cellClassName = "grid",
 }: SessionActionViewProps) {
@@ -84,7 +93,17 @@ export function SessionActionView({
       >
         {member(memberHidden)}
       </div>
-      {isPending && <PendingPlaceholder variant={pendingVariant} />}
+      {isPending &&
+        (pending ? (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none col-start-1 row-start-1 grid no-script:hidden"
+          >
+            {pending}
+          </span>
+        ) : (
+          <PendingPlaceholder variant={pendingVariant} />
+        ))}
     </div>
   );
 }
