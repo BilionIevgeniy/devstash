@@ -172,6 +172,29 @@ describe("ItemDrawerProvider", () => {
     });
   });
 
+  it("asks nothing about a sheet that its hidden route has closed", async () => {
+    queueAnswers(1);
+    const onDrawer = vi.fn();
+    const user = userEvent.setup();
+    const route = (mode: "visible" | "hidden") => (
+      <Activity mode={mode}>
+        <ItemDrawerProvider>
+          <Capture onDrawer={onDrawer} />
+        </ItemDrawerProvider>
+      </Activity>
+    );
+    const { rerender } = render(route("visible"));
+    await act(async () => onDrawer.mock.lastCall?.[0].open(ALPHA));
+    await user.click(screen.getByRole("button", { name: "Edit something" }));
+    await user.keyboard("{Escape}");
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+
+    rerender(route("hidden"));
+    rerender(route("visible"));
+
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+  });
+
   it("closes its sheet when its route is hidden", async () => {
     queueAnswers(1);
     const onDrawer = vi.fn();

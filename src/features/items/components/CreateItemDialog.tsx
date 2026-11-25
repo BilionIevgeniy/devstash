@@ -127,7 +127,8 @@ interface CreateItemDialogProps {
 
 // Mounted anew, and so closed, when its route shows again (useRemountOnReveal,
 // ADR 0037): an editor its cleanup disposed throws on return, and an upload
-// aborted on the way would stay at its last percent.
+// aborted on the way would stay at its last percent. Whoever leaves while a
+// create runs gets no success toast, and a refused one only its error.
 export function CreateItemDialog(props: CreateItemDialogProps) {
   return <CreateDialog key={useRemountOnReveal()} {...props} />;
 }
