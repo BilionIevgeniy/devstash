@@ -94,6 +94,11 @@ async function sendAll<T>(
   return { summary, error: null };
 }
 
+/** How many records a run goes through, for its progress. */
+export function importTotal(file: ImportFile): number {
+  return file.types.length + file.collections.length + file.items.length;
+}
+
 // Custom types first, so the items find them by name, then the collections,
 // so each item is sent with the ids its collections have in this account
 // (ADR 0020). Stops at the first batch that fails.
@@ -101,8 +106,10 @@ export async function runImport(
   file: ImportFile,
   options: ImportRunOptions,
 ): Promise<ImportRun | null> {
-  const total = file.types.length + file.collections.length + file.items.length;
-  const progressed = { ...options, progress: { done: 0, total } };
+  const progressed = {
+    ...options,
+    progress: { done: 0, total: importTotal(file) },
+  };
   const idMap: Record<string, string> = {};
 
   const afterTypes = await sendAll(
