@@ -25,7 +25,7 @@ export function BillingToggle({
         checked={yearly}
         onCheckedChange={onChange}
         disabled={disabled}
-        className="px-px data-checked:bg-[#8b5cf6] data-[size=default]:h-6 data-[size=default]:w-11 *:data-[slot=switch-thumb]:size-4.5! *:data-[slot=switch-thumb]:bg-on-accent! [&[data-state=checked]>[data-slot=switch-thumb]]:translate-x-5.5!"
+        className="px-px data-checked:bg-[#8b5cf6] data-[size=default]:h-6 data-[size=default]:w-11 *:data-[slot=switch-thumb]:size-4.5! [&[data-state=checked]>[data-slot=switch-thumb]]:bg-on-accent! [&[data-state=checked]>[data-slot=switch-thumb]]:translate-x-5.5!"
       />
       <span>{t("yearly")}</span>
       <span className="rounded-full border px-2 py-0.5 text-xs text-foreground">
