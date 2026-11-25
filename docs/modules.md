@@ -100,8 +100,8 @@ A module writes only the models it owns and reads only its own models. A relatio
 ### import-export
 
 - **Owns:** no model; the export format and the export ([ADR 0019](adr/0019-export-without-file-bytes.md)), the import in batches ([ADR 0020](adr/0020-import-as-batched-data-input.md)), the data section of the settings page. It writes through the owners' services, never straight to Prisma
-- **`services/export`:** Pro, once a minute, then the stream, for `app/api/export`
-- **`components/DataSection`:** composed by the settings page, which passes the plan
+- **`services/export`:** Pro or a Pro that has ended (`canExport`), once a minute, then the stream, for `app/api/export`
+- **`components/DataSection`:** composed by the settings page, which passes the plan and whether the export is open
 - **Uses:** `auth`, `billing`, `item-types`, `items`, `collections`
 
 ### account

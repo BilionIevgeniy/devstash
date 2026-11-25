@@ -60,7 +60,7 @@ app/(app)/profile/page.tsx
 **Submitting a form** (forgot password):
 
 ```text
-components/ForgotPasswordForm.tsx       client component
+components/forms/ForgotPasswordForm.tsx client component
   -> requestPasswordReset               auth/_internal/actions/password-reset.ts   Server Action, the entry point: parses, reads the IP and origin
      -> emailSchema                     auth/schemas.ts                            validates the input
      -> requestPasswordResetLink        auth/services/password-reset.ts            the operation, the only call the action makes
@@ -100,7 +100,8 @@ features/auth/
     next-auth.d.ts           types: adds id to the session user
   actions/
     sign-in.ts               Server Actions the rest of the app calls: sign in, switch account, sign out
-  components/                forms, dialogs and cards (SignInForm, RegisterForm, ChangePasswordForm, ...)
+  components/                cards, buttons and helpers of the session
+    forms/                   SignInForm, RegisterForm, ChangePasswordForm, ...
     hooks/                   use-has-session: a static page learns of the session after mount
   domain/                    pure rules: password length in bytes, token expiry and links, rate-limit
                              policies, when to resend a verification and when a registration is stale
