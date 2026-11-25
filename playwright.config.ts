@@ -37,7 +37,11 @@ export default defineConfig({
     timeout: EXPECT_TIMEOUT_MS,
     // A small absolute budget, not a ratio: a changed border or button color
     // (a few hundred pixels) must fail, anti-aliasing noise must not.
-    toHaveScreenshot: { maxDiffPixels: 100 },
+    // The threshold is how far one pixel may be off: 0.02 is about 5 of 255
+    // grey levels. Playwright's default of 0.2 is about 53 and let a whole row
+    // of the dark palette turn from --popover to --muted (15 levels) unseen;
+    // 0.05 would still miss a card that loses its background (13 levels).
+    toHaveScreenshot: { maxDiffPixels: 100, threshold: 0.02 },
   },
   // A missing baseline is written and its test passes; the e2e job then fails
   // on the changed snapshot folder (.github/workflows/ci.yml). A changed one is
