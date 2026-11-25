@@ -125,8 +125,14 @@ for i in $(seq 31); do
 done
 ```
 
-| `URL_PATH`                                                | What it takes                                       | Before (2026-11-25): first | Median total | Min–max    | Median TTFB |
-| --------------------------------------------------------- | --------------------------------------------------- | -------------------------: | -----------: | ---------- | ----------: |
-| `/impressum`                                              | the edge in `fra1` (control)                        |                     158 ms |        92 ms | 78–212 ms  |       79 ms |
-| `/api/auth/session`                                       | a function in `iad1`, no database read              |                    1766 ms |       187 ms | 171–259 ms |      186 ms |
-| `/reset-password?email=probe%40example.com&token=unknown` | the shell from `fra1`, then a function and one read |                    3735 ms |       309 ms | 214–558 ms |       75 ms |
+Both on 2026-11-25, the numbers before in the morning and the ones after it minutes after the switch:
+
+| `URL_PATH`                                                | What it takes                                       | Median total before |  after | Min–max before | after      | Median TTFB before | after |
+| --------------------------------------------------------- | --------------------------------------------------- | ------------------: | -----: | -------------- | ---------- | -----------------: | ----: |
+| `/impressum`                                              | the edge in `fra1` (control)                        |               92 ms |  87 ms | 78–212 ms      | 76–293 ms  |              79 ms | 74 ms |
+| `/api/auth/session`                                       | a function (`iad1`, then `fra1`), no database read  |              187 ms |  88 ms | 171–259 ms     | 75–166 ms  |             186 ms | 88 ms |
+| `/reset-password?email=probe%40example.com&token=unknown` | the shell from `fra1`, then a function and one read |              309 ms | 138 ms | 214–558 ms     | 113–213 ms |              75 ms | 79 ms |
+
+- A function answers in half the time: the Atlantic was about 100 ms of it. With one read the page is done 171 ms sooner, while its first byte, the shell from the edge, did not change. The control barely moved, so it is not the network of the day
+- The first requests are not compared: before, they met a cold function and a suspended database (1766 ms and 3735 ms); after, both were warm. Seen on the way: the first read right after the deploy took 2369 ms and the first one ten minutes later 2709 ms, so the move does not cure a cold start: of the function (`/api/auth/session`, which reads no database, took 1766 ms cold), and of the database, which Neon's Free plan suspends after 5 minutes. A ping that keeps it awake is no answer: 0.25 CU around the clock is about 183 CU-hours a month, the plan has 100 per project, and when they are used up the database stops until the month ends
+- The production database's own query statistics were not read: the decision did not need them

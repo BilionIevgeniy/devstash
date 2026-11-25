@@ -109,6 +109,7 @@ A modular monolith: one folder per feature in `src/features/`, ranked, and a fea
 - [docs/architecture.md](docs/architecture.md): the guide for newcomers, with examples and the reference (operations, background work, public API, known risks)
 - [context/architecture-rules.md](context/architecture-rules.md): the short rulebook
 - [docs/modules.md](docs/modules.md): what each module owns and exposes
+- [docs/runbooks/frankfurt-move.md](docs/runbooks/frankfurt-move.md): the move of the database and the functions to Frankfurt, step by step
 - [docs/performance.md](docs/performance.md): how bundle size and Web Vitals are measured, and the numbers
 - [docs/adr/](docs/adr/README.md): the decisions behind the rules
 - [docs/archive/](docs/archive/): the analyses item CRUD, the AI features and Stripe were built from, kept as they were; where one disagrees with the code or an ADR, it is outdated. Section 7 of the Stripe one is still the Dashboard setup
