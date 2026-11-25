@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { PanelLeft, Pin, Star } from "lucide-react";
@@ -9,6 +9,8 @@ import { CommandPalette } from "@/features/search/components/CommandPalette";
 
 interface TopBarProps {
   onToggleSidebar: () => void;
+  /** Where the focus goes back to when the mobile drawer closes. */
+  drawerButtonRef: Ref<HTMLButtonElement>;
   onOpenDrawer: () => void;
   upgradeButton: ReactNode;
   newItemButton: ReactNode;
@@ -16,13 +18,14 @@ interface TopBarProps {
 
 export function TopBar({
   onToggleSidebar,
+  drawerButtonRef,
   onOpenDrawer,
   upgradeButton,
   newItemButton,
 }: TopBarProps) {
   const t = useTranslations("shell");
   return (
-    <header className="flex h-16 shrink-0 items-center gap-4 border-b px-4">
+    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-2 sm:gap-4 sm:px-4">
       <Button
         variant="ghost"
         size="icon"
@@ -33,6 +36,7 @@ export function TopBar({
         <PanelLeft />
       </Button>
       <Button
+        ref={drawerButtonRef}
         variant="ghost"
         size="icon"
         aria-label={t("openSidebar")}

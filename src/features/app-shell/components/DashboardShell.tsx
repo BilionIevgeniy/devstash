@@ -1,20 +1,15 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 
-import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
 import { MAIN_CONTENT_ID } from "@/components/common/main-content";
 import { SkipLink } from "@/components/common/SkipLink";
+import { MobileDrawer } from "@/features/app-shell/_internal/components/MobileDrawer";
 import { TopBar } from "@/features/app-shell/_internal/components/TopBar";
 import { sidebarCookie } from "@/features/app-shell/domain/sidebar";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { AppFooter } from "@/features/app-shell/_internal/components/AppFooter";
 import { markAppShellShown } from "@/features/auth/components/app-shell-document";
@@ -41,7 +36,6 @@ export function DashboardShell({
   defaultSidebarOpen,
   children,
 }: DashboardShellProps) {
-  const t = useTranslations("shell");
   // Back to an app page from the browser's back-forward cache after a
   // sign-out must not show the ended session's data.
   useReloadOnRestore();
@@ -50,6 +44,7 @@ export function DashboardShell({
   const locale = useLocale();
   const [isSidebarOpen, setIsSidebarOpen] = useState(defaultSidebarOpen);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const drawerButtonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   const [drawerPathname, setDrawerPathname] = useState(pathname);
 
@@ -66,14 +61,6 @@ export function DashboardShell({
     document.cookie = sidebarCookie(next);
   }
 
-  // A link to the page already shown does not change the pathname, so a
-  // click on any link closes the drawer too.
-  function handleDrawerClick(event: MouseEvent<HTMLDivElement>) {
-    if (event.target instanceof Element && event.target.closest("a[href]")) {
-      setIsDrawerOpen(false);
-    }
-  }
-
   return (
     <div lang={locale} className="flex h-screen">
       <SkipLink />
@@ -86,33 +73,29 @@ export function DashboardShell({
         {sidebar}
       </aside>
 
-      <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <SheetContent
-          side="left"
-          className="data-[side=left]:w-64 gap-0 p-0"
-          showCloseButton={false}
-          onClickCapture={handleDrawerClick}
-        >
-          <SheetTitle className="sr-only">{t("navigation")}</SheetTitle>
-          <SheetDescription className="sr-only">
-            {t("navigationDescription")}
-          </SheetDescription>
-          {sidebar}
-        </SheetContent>
-      </Sheet>
+      <MobileDrawer
+        isOpen={isDrawerOpen}
+        onOpenChange={setIsDrawerOpen}
+        returnFocusRef={drawerButtonRef}
+      >
+        {sidebar}
+      </MobileDrawer>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar
           onToggleSidebar={toggleSidebar}
+          drawerButtonRef={drawerButtonRef}
           onOpenDrawer={() => setIsDrawerOpen(true)}
           upgradeButton={upgradeButton}
           newItemButton={newItemButton}
         />
         <main
           id={MAIN_CONTENT_ID}
-          className="flex-1 outline-none scroll-pb-(--consent-inset) overflow-y-auto p-6 pb-[calc(--spacing(6)+var(--consent-inset,0px))]"
+          className="flex flex-1 flex-col outline-none scroll-pb-(--consent-inset) overflow-y-auto p-6 pb-[calc(--spacing(6)+var(--consent-inset,0px))]"
         >
-          {children}
+          {/* At least as tall as the screen, so the footer does not jump when a
+              skeleton gives way to a shorter or longer page. */}
+          <div className="flex-[1_0_auto]">{children}</div>
           <AppFooter />
         </main>
       </div>
