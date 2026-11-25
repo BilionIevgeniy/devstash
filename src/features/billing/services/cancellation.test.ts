@@ -46,9 +46,9 @@ vi.mock("@/lib/observability/logger", () => ({
 
 import {
   cancelOwnSubscription,
-  checkCancellationLimit,
   processCancellationDeclaration,
 } from "@/features/billing/services/cancellation";
+import { checkCancellationLimit } from "@/features/billing/services/cancellation-limits";
 import { OPERATOR } from "@/lib/legal/operator";
 import { logger } from "@/lib/observability/logger";
 
@@ -105,6 +105,10 @@ describe("cancelOwnSubscription", () => {
 
   it("still confirms it when the sync after Stripe's answer fails", async () => {
     mocks.syncSubscription.mockRejectedValue(new Error("connection lost"));
+    mocks.getContractState
+      .mockReset()
+      .mockResolvedValueOnce({ status: "live", periodEnd: PERIOD_END })
+      .mockRejectedValue(new Error("connection lost"));
 
     const result = await cancelOwnSubscription(
       "user-1",
@@ -168,8 +172,62 @@ describe("cancelOwnSubscription", () => {
     );
 
     expect(mocks.updateSubscription).not.toHaveBeenCalled();
-    expect(mocks.sendEmail).toHaveBeenCalledOnce();
-    expect(mocks.sendEmail.mock.calls[0][0].to).toBe(OPERATOR.email);
+    expect(mocks.sendEmail.mock.calls.map(([email]) => email.to)).toEqual([
+      OPERATOR.email,
+      "ada@example.com",
+    ]);
+  });
+
+  describe("for good cause, on a contract that already ends", () => {
+    const declare = () =>
+      cancelOwnSubscription(
+        "user-1",
+        { kind: "extraordinary", reason: "Moving abroad" },
+        "en",
+        NOW,
+      );
+
+    beforeEach(() => {
+      mocks.getContractState.mockReset().mockResolvedValue({
+        status: "cancelling",
+        periodEnd: PERIOD_END,
+      });
+    });
+
+    it("fails when the operator's notice, its only carrier, does not go out", async () => {
+      mocks.sendEmail.mockResolvedValue({
+        success: false,
+        data: null,
+        error: "emailSendFailed",
+      });
+
+      await expect(declare()).resolves.toMatchObject({
+        success: false,
+        error: "emailSendFailed",
+      });
+      expect(mocks.sendEmail).toHaveBeenCalledOnce();
+    });
+
+    it("is limited per user, and taken while the limiter is down", async () => {
+      mocks.consumeRateLimit.mockResolvedValueOnce({
+        success: false,
+        remaining: 0,
+        reset: NOW.getTime() + 5 * 60_000,
+      });
+      await expect(declare()).resolves.toMatchObject({
+        error: "tooManyAttempts",
+        params: { minutes: 5 },
+      });
+      expect(mocks.sendEmail).not.toHaveBeenCalled();
+
+      mocks.consumeRateLimit.mockRejectedValueOnce(new Unavailable());
+      await expect(declare()).resolves.toMatchObject({ success: true });
+    });
+
+    it("sends nothing for an ordinary one", async () => {
+      await cancelOwnSubscription("user-1", { kind: "ordinary" }, "en", NOW);
+      expect(mocks.sendEmail).not.toHaveBeenCalled();
+    });
   });
 
   it("tells the operator about a cancellation for good cause", async () => {
