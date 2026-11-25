@@ -30,7 +30,7 @@ Two locks, because each covers what the other cannot:
 - **A Vercel WAF rule** denies everything but `GET` and `HEAD`, and the paths `/api/auth/callback` (the GitHub sign-in writes on `GET`) and `/api/cron`. Without it a flow that acts outside the database before it writes would do half its work: deleting a file item removes the R2 object first, deleting an account the Stripe customer first, the § 312k cancellation changes Stripe first. It has no host condition (the production deployment has other addresses) and no persistent action (that would block a visitor's reads too)
 - **The old database becomes read-only** (`ALTER DATABASE … SET default_transaction_read_only = on`, then every open session is ended, since the default is read at connect, and the compute is restarted). The restart is not optional: PgBouncer remembers the default it saw first and sets it on every pooled session, so without it the app would keep writing through the freeze, or stay read-only after it. The rehearsal on `development` found this, and a local PgBouncer reproduced both directions. `freeze` and `copy` therefore prove a refused write through the direct and the pooled host. This is the guarantee
 
-The copy is `pg_dump` into `pg_restore` in one transaction, without `--create`, which would carry the read-only default over. Then every table is compared by row count and hash, and the schema by its definitions. `scripts/region-move/` does this and refuses any pair of hosts but the old and the new endpoint of the same branch, a source that is not frozen and a target that has tables. It is deleted after the move; git keeps it.
+The copy is `pg_dump` into `pg_restore` in one transaction, without `--create`, which would carry the read-only default over. Then every table is compared by row count and hash, and the schema by its definitions. `scripts/region-move/` does this and refuses any pair of hosts but the old and the new endpoint of the same branch, a source that is not frozen and a target that has tables. It was deleted after the move; git keeps it (`2d522b6`).
 
 ### The order
 
@@ -44,7 +44,7 @@ Before: the PR is green and up to date, and no other PR is merged until the end.
 6. Sign-in, GitHub sign-in, an item with a file created and deleted; failed Stripe events are resent (the daily reconciliation, ADR 0033, would repair the rest)
 7. The `.env.move.*.local` files are deleted
 
-A second PR records the date and the numbers after the move and deletes `scripts/region-move/`.
+A second PR records the date and the numbers after the move and deletes `scripts/region-move/`. What was done, click by click: [the runbook](../runbooks/frankfurt-move.md).
 
 ### Rollback
 
@@ -61,3 +61,7 @@ A second PR records the date and the numbers after the move and deletes `scripts
 - A file put to R2 just before the rule may have no item; the sweep removes it after a day. Checkout and the customer portal are hosted by Stripe and stay usable; the reconciliation covers them
 - Calls to OpenAI, Stripe and Resend start in the EU now, and R2 is reached from there. The vendors stay US companies, so the transfer mechanisms in the processing record do not change
 - One region, no failover: Frankfurt down means DevStash down, as Washington was before
+
+## Addendum: the move (2026-11-25)
+
+Done as decided, with the site read-only for about 27 minutes (13:39 to 14:06 UTC): 268 checks equal, twice, the second one after the variables were changed. The `vercel.app` addresses answer 302 to a signed-out request (Vercel's own sign-in), not 403, which closes them too. The old project is deleted on 2026-12-02.
