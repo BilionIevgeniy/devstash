@@ -34,26 +34,29 @@ The copy is `pg_dump` into `pg_restore` in one transaction, without `--create`, 
 
 ### The order
 
-Before: the PR is green and up to date, no other PR is merged until the end, `development` has been moved the same way, and the Preview variables name the new `development`. The evening is announced, away from 03:00–04:00 UTC, when the daily cron runs: its upload sweep deletes R2 objects no row holds, so it must never see an empty, partial or stale database. Not done 30 minutes after the freeze: roll back.
+Before: the PR is green and up to date, and no other PR is merged until the end. `development` has been moved the same way; the Preview variables (and Development's, if set) and the local `.env` name the new `development`. The old Production `DATABASE_URL` and `DIRECT_URL` are kept outside Vercel, where a sensitive value cannot be read back, for the rollback. The evening is announced, away from 03:00–04:00 UTC, when the daily cron runs: its upload sweep deletes R2 objects no row holds, so it must never see an empty, partial or stale database. Not done 30 minutes after the freeze: roll back. One production deployment in the window; a second attempt means a rollback first.
 
 1. The owner signs in, then publishes the WAF rule. A `POST` answers 403 on the domain and on a `vercel.app` address. Wait five minutes, so that running functions and their `after()` work end
 2. `freeze production`, `copy production` (which ends with `verify`), `urls production`
 3. The Production `DATABASE_URL` and `DIRECT_URL` are changed in Vercel; the running deployment keeps its old values. Then the PR is merged: the guard accepts the host, `migrate deploy` applies nothing
 4. With the rule still on: `x-vercel-id` names a function in `fra1`, `/reset-password` with an unknown token answers, the owner opens the dashboard, an item and a file. `/api/auth/session` proves nothing, it keeps the token when the read fails
-5. **The rule is removed: the point of no return.** Nothing has written to the new database until here
+5. **The point of no return:** the password of the old project's `neondb_owner` is reset, so that the previous deployment, which still answers on its own `vercel.app` address, can read nothing and so delete nothing. Then the rule is removed. Nothing has written to the new database until here
 6. Sign-in, GitHub sign-in, an item with a file created and deleted; failed Stripe events are resent (the daily reconciliation, ADR 0033, would repair the rest)
-7. The password of the old project's `neondb_owner` is reset, and the `.env.move.*.local` files are deleted
+7. The `.env.move.*.local` files are deleted
+
+A second PR records the date and the numbers after the move and deletes `scripts/region-move/`.
 
 ### Rollback
 
-- **Before 5:** Instant Rollback, `unfreeze production` (it resets the default, ends every session and proves a write through the direct and the pooled host), and only then the rule off. Then the old variables and a PR that reverts this one, or `main` would keep the new host and every production build would be refused. Instant Rollback also stops Vercel from assigning the domain by itself until it is undone
+- **Before 3:** `unfreeze production` (it resets the default, ends every session and proves a write through the direct and the pooled host), then the rule off
+- **3 to 5:** put the old variables back; cancel every queued or running production build, or it would take the domain after the rollback and the two databases would part; if the new deployment is live, Instant Rollback (on Hobby it reaches only the previous deployment, hence one deployment in the window); check which deployment the domain serves; `unfreeze production`; the rule off last. Then a PR that reverts this one, or `main` would keep the new host and every production build would be refused. Vercel assigns no domain by itself after an Instant Rollback until that is undone
 - **After 5:** forward only
-- **A failed `verify` after a finished restore:** on the new branch only, and only before 3, `DROP SCHEMA public CASCADE; CREATE SCHEMA public;`, then copy again
+- **A second copy** (a failed `verify`, or after a rollback): on the new branch only, before 5, with no deployment live or building on it: `DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT USAGE ON SCHEMA public TO PUBLIC;`, then copy again
 
 ## Consequences
 
-- No Instant Rollback to a deployment from before this one, ever. Its variables name the old database, and its cron would act on stale rows: the sweep would delete files uploaded since, the purge of unverified accounts would delete the Stripe customer of a user who verified since. Step 7 enforces it: every read of such a deployment fails before it deletes anything
-- The old project stays seven days as a backup and is then deleted. Until then an erased account still exists in that copy; the processing record says so
+- No Instant Rollback to a deployment from before this one, ever. Its variables name the old database, and its cron would act on stale rows: the sweep would delete files uploaded since, the purge of unverified accounts would delete the Stripe customer of a user who verified since. Step 5 enforces it: every read of such a deployment fails before it deletes anything
+- The old project stays seven days as a backup and is then deleted. Until then an erased account still exists in that copy; the processing record and the privacy notice say so, and its endpoints stay on the list no test run may empty
 - A blocked Server Action gets a 403 and no result: a dialog shows the generic error, the sign-in form the error page. Accepted for a short, announced window
 - A file put to R2 just before the rule may have no item; the sweep removes it after a day. Checkout and the customer portal are hosted by Stripe and stay usable; the reconciliation covers them
 - Calls to OpenAI, Stripe and Resend start in the EU now, and R2 is reached from there. The vendors stay US companies, so the transfer mechanisms in the processing record do not change

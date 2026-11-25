@@ -72,3 +72,7 @@ Before Stripe goes to live mode (also in `context/todo.md`, "Germany: tax and le
 ## Addendum (2026-11-19)
 
 The consequence on Sentry and analytics is answered by [ADR 0016](0016-error-monitoring-with-sentry.md) for Sentry and [ADR 0034](0034-consent-and-field-measurement.md) for the first measurement: the real-user Web Vitals run only after consent in a banner, and the record and both languages of the notice name them.
+
+## Addendum (2026-11-25)
+
+The sentence that regions are documented and not changed is answered by [ADR 0038](0038-frankfurt-region.md): Neon and the functions are in Frankfurt.
