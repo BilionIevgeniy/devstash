@@ -12,6 +12,18 @@ describe("MarkdownPreview", () => {
     expect(container.querySelector("img")).toBeNull();
   });
 
+  it("names the boxes of a task list, and lets the keyboard reach long code", () => {
+    const { container } = render(
+      <MarkdownPreview value={"- [x] Ship\n- [ ] Rest\n\n```\ncode\n```"} />,
+    );
+
+    expect(screen.getByRole("checkbox", { name: "Done" })).toBeChecked();
+    expect(
+      screen.getByRole("checkbox", { name: "Not done" }),
+    ).not.toBeChecked();
+    expect(container.querySelector("pre")).toHaveAttribute("tabindex", "0");
+  });
+
   it("keeps links, opened in a new tab without the opener", () => {
     render(<MarkdownPreview value="[Docs](https://docs.example.com)" />);
 

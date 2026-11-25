@@ -83,6 +83,10 @@ describe("ResetPasswordForm", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Passwords do not match",
     );
+    const confirm = screen.getByLabelText("Confirm new password");
+    expect(confirm).toHaveFocus();
+    expect(confirm).toBeInvalid();
+    expect(confirm).toHaveAccessibleDescription("Passwords do not match");
     expect(resetPassword).not.toHaveBeenCalled();
     expect(screen.getByLabelText("Confirm new password")).toHaveValue(
       "another-password",
