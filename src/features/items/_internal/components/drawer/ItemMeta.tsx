@@ -23,8 +23,14 @@ export function ItemMeta({ detail, showCollections = true }: ItemMetaProps) {
         <DrawerSection title={t("fields.collections")} icon={Folder}>
           <div className="flex flex-wrap gap-2">
             {detail.collections.map((collection) => (
-              <Badge key={collection.id} variant="outline">
-                {collection.name}
+              <Badge
+                key={collection.id}
+                variant="outline"
+                className="max-w-full"
+              >
+                <span className="truncate" title={collection.name}>
+                  {collection.name}
+                </span>
               </Badge>
             ))}
           </div>

@@ -45,9 +45,11 @@ export function ItemDrawerHeader({
       </div>
       <div className="min-w-0 space-y-2">
         {variant === "sheet" ? (
-          <SheetTitle className="text-lg">{item.title}</SheetTitle>
+          <SheetTitle className="text-lg wrap-anywhere">
+            {item.title}
+          </SheetTitle>
         ) : (
-          <h1 className="font-heading text-lg font-medium text-foreground">
+          <h1 className="font-heading text-lg font-medium wrap-anywhere text-foreground">
             {item.title}
           </h1>
         )}

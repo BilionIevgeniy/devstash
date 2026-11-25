@@ -55,7 +55,7 @@ export function CodeEditor({
   return (
     <div className="overflow-hidden rounded-md border bg-card">
       <EditorHeader value={value} copyLabel={t("copyCode")}>
-        <span className="ml-auto font-mono text-xs text-muted-foreground">
+        <span className="ml-auto min-w-0 truncate font-mono text-xs text-muted-foreground">
           {languageLabel(language)}
         </span>
         {headerActions}

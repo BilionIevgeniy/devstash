@@ -8,18 +8,21 @@ interface StatCardProps {
 
 // One total with its label and icon: the dashboard's stats and the profile's
 // usage show the same card. The label stays on one line, so every card is as
-// tall as its skeleton (90px); a label cut short keeps its full text in
-// `title`.
+// tall as its skeleton (90px): the icon stands beside the number, and the
+// label has the whole width of the card.
 export function StatCard({ label, value, icon: Icon }: StatCardProps) {
   return (
-    <div className="flex items-center justify-between gap-2 rounded-lg border bg-card p-4">
-      <div className="min-w-0">
-        <p className="truncate text-sm text-muted-foreground" title={label}>
-          {label}
-        </p>
-        <p className="mt-1 text-2xl font-semibold">{value}</p>
+    <div className="rounded-lg border bg-card p-4">
+      <p
+        className="truncate text-sm text-muted-foreground max-sm:text-xs/5"
+        title={label}
+      >
+        {label}
+      </p>
+      <div className="mt-1 flex items-center justify-between gap-2">
+        <p className="text-2xl font-semibold">{value}</p>
+        <Icon className="size-5 shrink-0 text-muted-foreground" />
       </div>
-      <Icon className="size-5 shrink-0 text-muted-foreground" />
     </div>
   );
 }

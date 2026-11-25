@@ -27,7 +27,7 @@ export function EditorHeader({
 
 function WindowDots() {
   return (
-    <div className="flex gap-1.5" aria-hidden>
+    <div className="flex gap-1.5 max-sm:hidden" aria-hidden>
       <span className="size-3 rounded-full bg-[#ff5f57]" />
       <span className="size-3 rounded-full bg-[#febc2e]" />
       <span className="size-3 rounded-full bg-[#28c840]" />
