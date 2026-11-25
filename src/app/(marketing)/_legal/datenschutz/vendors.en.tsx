@@ -4,8 +4,8 @@ import type { VendorId } from "../vendors";
 
 const TEXTS: Record<VendorId, string> = {
   vercel:
-    "Hosting and delivery of the website and the application. Every visit creates server logs with the IP address and request data. The application runs in the Washington, D.C. region (USA). Legal basis: Art. 6 (1) f GDPR.",
-  neon: "Database: stores your account and all your content except files. Location: AWS region us-east-2 (Ohio, USA). Legal basis: Art. 6 (1) b GDPR.",
+    "Hosting and delivery of the website and the application. Every visit creates server logs with the IP address and request data. The application runs in the Frankfurt region (Germany). Legal basis: Art. 6 (1) f GDPR.",
+  neon: "Database: stores your account and all your content except files. Location: AWS region eu-central-1 (Frankfurt, Germany). After the move in November 2026 a read-only backup copy stays in the previous region us-east-2 (Ohio, USA) for seven days and is then deleted; an account deleted in that time is still in it until then. Legal basis: Art. 6 (1) b GDPR.",
   cloudflare:
     "Cloudflare R2: non-public storage for uploaded files and images. They can be retrieved only through short-lived signed addresses. Legal basis: Art. 6 (1) b GDPR.",
   openai:

@@ -41,6 +41,6 @@ Tests are colocated as `[name].test.ts` (node), `[name].test.tsx` (components an
 
 ## Neon MCP
 
-- For any request involving the Neon MCP (queries, schema inspection, migrations, branch operations), work only with the `development` branch of the `devstash` project
-- Always pass `branch_id` explicitly (development: `br-super-sound-b4wxm3u6`, project: `purple-voice-82062641`). If it's omitted, Neon falls back to the default branch, which is `production`
+- For any request involving the Neon MCP (queries, schema inspection, migrations, branch operations), work only with the `development` branch of the `devstash-eu` project (Frankfurt, ADR 0038)
+- Always pass `branch_id` explicitly (development: `br-raspy-sound-bh0suynz`, project: `lively-wildflower-46234559`). If it's omitted, Neon falls back to the default branch, which is `production`
 - Never read from, write to, or change the schema of the `production` branch unless I explicitly ask for it

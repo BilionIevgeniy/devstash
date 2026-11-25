@@ -2,6 +2,8 @@ import {
   DEV_DATABASE_HOST,
   endpointHost,
   isPoolerHost,
+  OLD_DEV_DATABASE_HOST,
+  OLD_PROD_DATABASE_HOST,
   PROD_DATABASE_HOST,
 } from "./neon-endpoints";
 
@@ -38,7 +40,12 @@ function endpointId(hostname: string): string {
 }
 
 const PROTECTED_ENDPOINT_IDS = new Set(
-  [DEV_DATABASE_HOST, PROD_DATABASE_HOST].map(endpointId),
+  [
+    DEV_DATABASE_HOST,
+    PROD_DATABASE_HOST,
+    OLD_DEV_DATABASE_HOST,
+    OLD_PROD_DATABASE_HOST,
+  ].map(endpointId),
 );
 
 // The message of a failed parse would carry the whole URL, password included.

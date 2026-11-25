@@ -359,6 +359,7 @@ Not checked by lint, so it is on the author and the reviewer: one call into a se
 
 - **CI** (`.github/workflows/ci.yml`) on every PR and every push to `main`: `ci` (lint, typecheck, tests and the build, with dummy env values), `integration` (the integration tests on a Postgres container) and `e2e` (the Playwright suite against the production build, after `ci`, with local stand-ins for OpenAI, R2 and Upstash and no secret, ADR 0035); the checks `ci`, `integration` and `e2e` are required before a merge
 - **Vercel** runs `npm run vercel-build` (`vercel.json`). `scripts/migration-guard.ts` lets production migrate only the production Neon endpoint and a preview only the `development` one, and fails the build otherwise; then `npm run build` runs
+- **One region, Frankfurt.** The functions run in `fra1` (`regions` in `vercel.json`, previews too) and Neon is in `aws-eu-central-1`; the two move together or not at all, since a page makes several queries. Never an Instant Rollback to a deployment from before the move: it names the old database ([ADR 0038](adr/0038-frankfurt-region.md))
 - **Previews share `development`.** A pushed migration is never edited, and a breaking change ships as expand, then contract in a later deploy ([ADR 0013](adr/0013-how-schema-changes-reach-production.md))
 
 ### Legal and privacy

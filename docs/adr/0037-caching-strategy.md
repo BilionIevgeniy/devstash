@@ -68,3 +68,7 @@ A session that ends on the server (expiry, or the sessions a password change on 
 - Every app page still renders per request: TTFB is the server's render plus the database. Production runs its functions in `iad1` against Neon in `us-east-2`; a visitor in Germany pays the Atlantic once for a dynamic page (`docs/performance.md`)
 - Revisit Partial Prefetching with Next.js 17, or once the app layout no longer reads the request (the locale in the URL instead of a cookie would allow a static shell with words)
 - `next build` prints a warning for `partialPrefetching: false`; it is deliberate
+
+## Addendum (2026-11-25)
+
+The regions named here (`iad1`, `us-east-2`) are the ones before [ADR 0038](0038-frankfurt-region.md), which moved the functions and Neon to Frankfurt.
