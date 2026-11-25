@@ -6,6 +6,7 @@ import { useState, useTransition, type MouseEvent } from "react";
 import { unstable_rethrow } from "next/navigation";
 
 import { requestAccountDeletionLink } from "@/features/account/_internal/actions/delete-account";
+import { useReportPending } from "@/features/account/_internal/components/hooks/use-report-pending";
 import { DeleteError } from "@/features/account/_internal/components/DeleteError";
 import {
   AlertDialogAction,
@@ -15,15 +16,25 @@ import {
 import type { ErrorRef } from "@/i18n/error-codes";
 import { IMPRINT_PATH } from "@/lib/http/legal-paths";
 
+interface EmailLinkDeletionProps {
+  email: string;
+  /** The dialog stays open while the link is sent. */
+  onPendingChange: (isPending: boolean) => void;
+}
+
 // The body of the delete dialog for an account with no password: it sends the
 // link that confirms the delete. Once sent, the send button gives way to Close,
 // which takes the focus, and the status is announced.
-export function EmailLinkDeletion({ email }: { email: string }) {
+export function EmailLinkDeletion({
+  email,
+  onPendingChange,
+}: EmailLinkDeletionProps) {
   const tActions = useTranslations("common.actions");
   const t = useTranslations("account");
   const [isPending, startTransition] = useTransition();
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<ErrorRef | null>(null);
+  useReportPending(isPending, onPendingChange);
 
   function handleSend(event: MouseEvent<HTMLButtonElement>) {
     // Keep the dialog open: it says where the link went.
