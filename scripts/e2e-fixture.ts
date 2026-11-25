@@ -3,6 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { config } from "dotenv";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { hashTestPassword, makePro, writeSnippets } from "./e2e-rows";
+import { writeSidebarRows } from "./e2e-skeleton-user";
 import { E2E_MANY_FAVORITES, requireE2eUserEmail } from "./e2e-user";
 import { requireTestDatabase } from "./require-dev-database";
 import { createVerifiedTestUser } from "./test-database";
@@ -23,6 +24,7 @@ export const FRESH_USER_KINDS = [
   "near-limit",
   "pro",
   "many-favorites",
+  "sidebar",
 ] as const;
 export type FreshUserKind = (typeof FRESH_USER_KINDS)[number];
 
@@ -51,8 +53,11 @@ async function main() {
     if (kind === "near-limit") {
       await writeSnippets(prisma, userId, E2E_NEAR_LIMIT_ROWS, "Seeded item");
     }
-    if (kind === "pro" || kind === "many-favorites") {
+    if (kind !== "free" && kind !== "near-limit") {
       await makePro(prisma, userId);
+    }
+    if (kind === "sidebar") {
+      await writeSidebarRows(prisma, userId);
     }
     if (kind === "many-favorites") {
       const start = Date.UTC(2026, 0, 1);

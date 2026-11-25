@@ -6,6 +6,7 @@ import {
   overLimitUserEmail,
   proUserEmail,
   requireE2eUserEmail,
+  skeletonUserEmail,
   visualUserEmail,
 } from "../scripts/e2e-user";
 import {
@@ -13,6 +14,7 @@ import {
   LISTS_AUTH_FILE,
   OVER_LIMIT_AUTH_FILE,
   PRO_AUTH_FILE,
+  SKELETON_AUTH_FILE,
   VISUAL_AUTH_FILE,
 } from "./support/storage-state";
 import { signInThroughForm } from "./support/sign-in";
@@ -57,4 +59,12 @@ setup("sign in the user of the screenshots", async ({ page }) => {
 
   await mkdir(dirname(VISUAL_AUTH_FILE), { recursive: true });
   await page.context().storageState({ path: VISUAL_AUTH_FILE });
+});
+
+setup("sign in the user of the loading states", async ({ page }) => {
+  await signInThroughForm(page, skeletonUserEmail(requireE2eUserEmail()));
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  await mkdir(dirname(SKELETON_AUTH_FILE), { recursive: true });
+  await page.context().storageState({ path: SKELETON_AUTH_FILE });
 });

@@ -15,6 +15,10 @@ export const OVER_LIMIT_AUTH_FILE = "playwright/.auth/over-limit-user.json";
 // accessibility scans (scripts/e2e-visual-user.ts).
 export const VISUAL_AUTH_FILE = "playwright/.auth/visual-user.json";
 
+// The session of the user whose rows fill the loading states
+// (scripts/e2e-skeleton-user.ts).
+export const SKELETON_AUTH_FILE = "playwright/.auth/skeleton-user.json";
+
 import { CONSENT_STORAGE_KEY, serializeConsent } from "../../src/lib/consent";
 
 // The origin of the test server (playwright.config.ts). Not 3000: a `npm run
