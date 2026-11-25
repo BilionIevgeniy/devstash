@@ -75,7 +75,7 @@ describe("entitlementsFor", () => {
     },
   );
 
-  it("gives no export for the row a checkout creates before any payment", () => {
+  it("gives no export for a row that never had a period", () => {
     expect(
       entitlementsFor({ status: "canceled", currentPeriodEnd: null }).canExport,
     ).toBe(false);

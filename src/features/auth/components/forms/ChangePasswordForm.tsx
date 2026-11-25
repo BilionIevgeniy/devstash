@@ -25,8 +25,6 @@ import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-rev
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-// The password is changed and every session is revoked, so a retry would only
-// be refused: the user is told to start over from the sign-in page.
 const FIELDS = [
   {
     name: "currentPassword",
