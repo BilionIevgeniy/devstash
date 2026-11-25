@@ -19,8 +19,6 @@ export const checkoutOrderSchema = z.object({
   acceptTerms: z.literal(true, { error: "orderConsentRequired" }),
   waiveWithdrawal: z.literal(true, { error: "orderConsentRequired" }),
 });
-export type CheckoutOrderInput = z.infer<typeof checkoutOrderSchema>;
-
 const cancellationFields = {
   kind: z.enum(CANCELLATION_KINDS),
   reason: z.string().trim().max(CANCELLATION_REASON_MAX).optional(),

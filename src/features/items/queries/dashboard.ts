@@ -5,12 +5,13 @@ import {
   NEWEST_FIRST,
   toItemCardData,
 } from "@/features/items/_internal/queries/selects";
+import { FREE_ITEM_LIMIT } from "@/features/billing/domain/limits";
 import type { ItemCardData, ItemStats } from "@/features/items/types";
 import { prisma } from "@/lib/postgres/prisma";
 
 const DASHBOARD_RECENT_ITEMS_LIMIT = 10;
-// Matches the planned item limit of the Free plan.
-const DASHBOARD_PINNED_ITEMS_LIMIT = 50;
+// A Free user can pin all of their items.
+const DASHBOARD_PINNED_ITEMS_LIMIT = FREE_ITEM_LIMIT;
 
 export async function getPinnedItems(userId: string): Promise<ItemCardData[]> {
   const items = await prisma.item.findMany({

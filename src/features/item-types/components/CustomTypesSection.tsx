@@ -20,7 +20,7 @@ interface CustomTypesSectionProps {
 }
 
 // A Free user with no types sees the upgrade; a former Pro user keeps the list
-// and can delete (feature 19 decides more), but not create or edit.
+// and can delete, but not create or edit (ADR 0032).
 export function CustomTypesSection({
   types,
   isPro,

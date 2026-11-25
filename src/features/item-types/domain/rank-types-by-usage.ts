@@ -1,3 +1,4 @@
+import { compareNames } from "@/lib/utils";
 import type { ItemTypeInfo } from "@/features/item-types/types";
 
 export function rankTypesByUsage(
@@ -18,6 +19,6 @@ export function rankTypesByUsage(
   }
 
   return ranked
-    .sort((a, b) => b.count - a.count || a.type.name.localeCompare(b.type.name))
+    .sort((a, b) => b.count - a.count || compareNames(a.type.name, b.type.name))
     .map(({ type }) => type);
 }

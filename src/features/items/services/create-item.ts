@@ -130,8 +130,8 @@ async function insertItem(
 // custom types; its stored name, not the input's case, decides the fields.
 //
 // An upload that is confirmed but not saved (a failure below, or a dialog
-// closed after the upload) stays in R2 until the account is purged: deleting
-// it here would break the retry, since the form still holds its key.
+// closed after the upload) stays in R2 until the daily sweep (ADR 0030):
+// deleting it here would break the retry, since the form still holds its key.
 export async function createUserItem(
   userId: string,
   input: CreateItemInput,
