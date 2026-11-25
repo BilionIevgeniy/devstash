@@ -1,5 +1,12 @@
-import type { Locator, Page, Route } from "@playwright/test";
 import { expect, test } from "./support/test";
+import {
+  actionPlaceholder,
+  expectSameLook,
+  holdSessionAnswer,
+  lookOf,
+  menuRowPlaceholder,
+  navbarPlaceholder,
+} from "./support/placeholders";
 import { SIGNED_OUT } from "./support/storage-state";
 import { PAINTED_THEMES, startInTheme } from "./support/theme";
 
@@ -7,76 +14,7 @@ import { PAINTED_THEMES, startInTheme } from "./support/theme";
 // (ADR 0037). Until the answer, a placeholder holds the place of each action
 // that depends on it, and it must have the size and look of the button that
 // replaces it ("No flash of the wrong state" in coding-standards.md). The
-// journeys and the screenshots wait for the answer, so they never see the
-// placeholder: this spec holds the answer back, measures the placeholder,
-// lets the answer through and measures the button that took its place.
-
-const SESSION = "**/api/auth/session";
-
-// Every answer of /api/auth/session waits until the returned function runs;
-// one asked for after that goes through at once. The handler stays: a route
-// it caught and never continued would hang even after an unroute.
-async function holdSessionAnswer(page: Page): Promise<() => Promise<void>> {
-  const held: Route[] = [];
-  let released = false;
-  await page.route(SESSION, async (route) => {
-    if (released) await route.continue();
-    else held.push(route);
-  });
-  return async () => {
-    await expect.poll(() => held.length).toBeGreaterThan(0);
-    released = true;
-    await Promise.all(held.map((route) => route.continue()));
-  };
-}
-
-interface Look {
-  left: number;
-  right: number;
-  width: number;
-  height: number;
-  background: string;
-}
-
-async function lookOf(locator: Locator): Promise<Look> {
-  return locator.evaluate((element) => {
-    const box = element.getBoundingClientRect();
-    return {
-      left: box.left,
-      right: box.right,
-      width: box.width,
-      height: box.height,
-      background: getComputedStyle(element).backgroundColor,
-    };
-  });
-}
-
-// A placeholder is hidden from assistive technology, so no role finds it:
-// it is found by that attribute, next to the action it stands for (the one
-// exception to "Selectors by role and label only" in coding-standards.md).
-// The navbar's own placeholder is the button-like child of its wrapper.
-const navbarPlaceholder = (page: Page) =>
-  page.getByRole("banner").locator('span[aria-hidden="true"] > span').first();
-
-// The hero's is the sibling of the cells of its action, found from the
-// guest's link, which is in the page but unseen until the answer.
-const heroPlaceholder = (page: Page) =>
-  page
-    .getByRole("main")
-    .getByRole("link", { name: "Get Started Free", includeHidden: true })
-    .first()
-    .locator(
-      'xpath=ancestor::div[span[@aria-hidden="true"]][1]/span[@aria-hidden="true"]',
-    );
-
-// Same height, the same right edge and the same colour as the button; at
-// least as wide (it holds the wider of the two answers' buttons).
-function expectSameLook(placeholder: Look, button: Look): void {
-  expect(placeholder.background).toBe(button.background);
-  expect(Math.abs(placeholder.height - button.height)).toBeLessThan(0.5);
-  expect(Math.abs(placeholder.right - button.right)).toBeLessThan(0.5);
-  expect(placeholder.width).toBeGreaterThanOrEqual(button.width - 0.5);
-}
+// loading states of the app are in skeletons.spec.ts.
 
 const ANSWERS = [
   {
@@ -84,12 +22,17 @@ const ANSWERS = [
     storageState: SIGNED_OUT,
     navbarButton: "Get Started",
     heroButton: "Get Started Free",
+    freeButton: "Get Started",
+    freeIndex: 0,
   },
   {
     name: "a signed-in visitor",
     storageState: undefined,
     navbarButton: "Dashboard",
     heroButton: "Open Dashboard",
+    freeButton: "Open Dashboard",
+    // After the hero's, before the one of the closing section.
+    freeIndex: 1,
   },
 ] as const;
 
@@ -115,7 +58,21 @@ for (const theme of PAINTED_THEMES) {
           await page.goto("/");
 
           const navbarBefore = await lookOf(navbarPlaceholder(page));
-          const heroBefore = await lookOf(heroPlaceholder(page));
+          const guestLink = (name: string) =>
+            page
+              .getByRole("main")
+              .getByRole("link", { name, exact: true, includeHidden: true })
+              .first();
+          const heroBefore = await lookOf(
+            actionPlaceholder(guestLink("Get Started Free")),
+          );
+          // The plan cards: the guest's link of each names its button.
+          const freeBefore = await lookOf(
+            actionPlaceholder(guestLink("Get Started")),
+          );
+          const proBefore = await lookOf(
+            actionPlaceholder(guestLink("Go Pro")),
+          );
 
           await release();
           const navbarButton = page
@@ -130,8 +87,69 @@ for (const theme of PAINTED_THEMES) {
 
           expectSameLook(navbarBefore, await lookOf(navbarButton));
           expectSameLook(heroBefore, await lookOf(heroButton));
+
+          const main = page.getByRole("main");
+          const planButton = (name: string) =>
+            main
+              .getByRole("link", { name, exact: true })
+              .filter({ visible: true });
+          expectSameLook(
+            freeBefore,
+            await lookOf(planButton(answer.freeButton).nth(answer.freeIndex)),
+          );
+          expectSameLook(proBefore, await lookOf(planButton("Go Pro").first()));
         });
       });
     }
+  }
+}
+
+// The row of a text link, whose look without its text is nothing: a muted bar
+// holds its place. It comes last, so nothing moves when the answer takes it.
+for (const theme of PAINTED_THEMES) {
+  for (const answer of ANSWERS) {
+    test.describe(`the phone menu, ${theme}, ${answer.name}`, () => {
+      test.use({
+        viewport: { width: 375, height: 800 },
+        ...(answer.storageState ? { storageState: answer.storageState } : {}),
+      });
+
+      test("the last row keeps its place until the answer", async ({
+        page,
+      }) => {
+        await startInTheme(page, theme);
+        const release = await holdSessionAnswer(page);
+        await page.goto("/");
+        const menu = page.getByRole("navigation", { name: "Mobile" });
+        await expect(async () => {
+          await page.getByRole("button", { name: "Open menu" }).click();
+          await expect(menu).toBeVisible({ timeout: 2_000 });
+        }).toPass();
+
+        const before = await lookOf(menuRowPlaceholder(menu));
+        const links = menu.getByRole("link");
+        const tops = async () =>
+          Promise.all(
+            (await links.all()).slice(0, 3).map(async (link) => {
+              const { top, height } = await lookOf(link);
+              return [top, height];
+            }),
+          );
+        const topsBefore = await tops();
+
+        await release();
+        const signIn = menu.getByRole("link", { name: "Sign In", exact: true });
+        if (answer.name === "a guest") {
+          await expect(signIn).toBeVisible();
+          const after = await lookOf(signIn);
+          expect(after.top).toBe(before.top);
+          expect(after.height).toBe(before.height);
+        } else {
+          await expect(menuRowPlaceholder(menu)).toHaveCount(0);
+          await expect(signIn).toBeHidden();
+        }
+        expect(await tops()).toEqual(topsBefore);
+      });
+    });
   }
 }
