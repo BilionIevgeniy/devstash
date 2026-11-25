@@ -128,3 +128,22 @@ describe("getBlockingReset", () => {
     ).toBe(NOW + MINUTE);
   });
 });
+
+// The windows are written as products of seconds: a slip there would make a
+// limit far too short or too long, and no other test would see it.
+describe("the windows", () => {
+  it.each([
+    ["LOGIN_BY_IP", 900],
+    ["LOGIN_BY_EMAIL_IP", 900],
+    ["LOGIN_BY_EMAIL_GLOBAL", 900],
+    ["REGISTER_BY_IP", 3600],
+    ["VERIFICATION_EMAIL_BY_ADDRESS", 60],
+    ["RESET_EMAIL_BY_ADDRESS", 60],
+    ["EMAIL_BY_IP", 3600],
+    ["CONFIRM_EMAIL_BY_ADDRESS", 900],
+    ["DELETION_EMAIL_BY_USER", 3600],
+    ["PASSWORD_CHECK_BY_USER", 900],
+  ] as const)("%s lasts %i seconds", (name, seconds) => {
+    expect(rateLimits[name].windowSeconds).toBe(seconds);
+  });
+});

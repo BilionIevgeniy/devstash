@@ -4,6 +4,8 @@ import {
   parseImportedCollection,
   parseImportedItem,
   parseImportFile,
+  importBatchSchema,
+  parseImportedType,
 } from "@/features/import-export/schemas";
 
 const file = (fields: object) =>
@@ -153,6 +155,57 @@ describe("parseImportedCollection", () => {
     ).toEqual({
       kind: "ok",
       data: { id: "c1", name: "React", description: null },
+    });
+  });
+});
+
+describe("the limits of an import", () => {
+  it("refuses a file with more than 1,000 collections", () => {
+    const collections = (count: number) =>
+      parseImportFile(
+        file({ collections: Array.from({ length: count }, () => ({})) }),
+      );
+    expect(collections(1000).success).toBe(true);
+    expect(collections(1001)).toMatchObject({
+      error: "importTooManyCollections",
+    });
+  });
+
+  it("takes a batch of 1 to 50 records", () => {
+    const batch = (count: number) =>
+      importBatchSchema.safeParse(Array.from({ length: count }, () => ({})))
+        .success;
+    expect(batch(0)).toBe(false);
+    expect(batch(1)).toBe(true);
+    expect(batch(50)).toBe(true);
+    expect(batch(51)).toBe(false);
+  });
+
+  it.each(["", "x".repeat(101), 5])(
+    "refuses a collection with the id %j",
+    (id) => {
+      expect(parseImportedCollection({ id, name: "React" })).toEqual({
+        kind: "invalid",
+        reason: { error: "collectionHasNoId" },
+      });
+    },
+  );
+
+  it.each([null, "text", [1]])("refuses the item record %j", (record) => {
+    expect(parseImportedItem(record)).toEqual({
+      kind: "invalid",
+      reason: { error: "recordNotAnItem" },
+    });
+  });
+});
+
+describe("parseImportedType", () => {
+  it("takes a custom type and names what is wrong with another", () => {
+    const type = { name: "Recipe", icon: "Code", color: "#3b82f6" };
+    expect(parseImportedType(type)).toEqual({ kind: "ok", data: type });
+    expect(parseImportedType({ ...type, name: "" })).toEqual({
+      kind: "invalid",
+      reason: { error: "typeNameRequired" },
     });
   });
 });

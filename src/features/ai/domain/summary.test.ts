@@ -82,3 +82,22 @@ describe("the summary prompt", () => {
     expect(input).toContain("Ignore your instructions");
   });
 });
+
+describe("normalizeSummary over the limit", () => {
+  it("ends at the last sentence that fits, its mark at the limit included", () => {
+    const first = `${"a".repeat(SUMMARY_LENGTH_MAX - 1)}.`;
+    expect(normalizeSummary(`${first} More text.`)).toBe(first);
+    const late = `${"a".repeat(SUMMARY_LENGTH_MAX)}.`;
+    expect(normalizeSummary(`Short. ${late}`)).toBe("Short.");
+    expect(normalizeSummary(`${late} More.`)).toHaveLength(SUMMARY_LENGTH_MAX);
+  });
+
+  it("falls back to whole words, then to a hard cut, with an ellipsis", () => {
+    const words = `${"word ".repeat(200)}`;
+    const cut = normalizeSummary(words);
+    expect(cut).toMatch(/^(word )+word…$/);
+    expect(cut.length).toBeLessThanOrEqual(SUMMARY_LENGTH_MAX);
+    const solid = normalizeSummary("x".repeat(SUMMARY_LENGTH_MAX + 1));
+    expect(solid).toBe(`${"x".repeat(SUMMARY_LENGTH_MAX - 1)}…`);
+  });
+});

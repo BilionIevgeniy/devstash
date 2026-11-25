@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { visibleListItems } from "@/features/items/domain/list/list-rows";
+import {
+  visibleListItems,
+  pendingRemovals,
+} from "@/features/items/domain/list/list-rows";
 
 const ITEMS = [{ id: "a" }, { id: "b" }];
 const NOTHING_HIDDEN: ReadonlySet<string> = new Set();
@@ -29,5 +32,19 @@ describe("visibleListItems", () => {
     expect(
       visibleListItems(ITEMS, NOTHING_HIDDEN, new Map([["a", true]])),
     ).toEqual(ITEMS);
+  });
+});
+
+describe("pendingRemovals", () => {
+  const LOADED = [{ id: "a" }, { id: "b" }, { id: "c" }];
+
+  it("counts an unstarred row and a deleted one, each once", () => {
+    const overrides = new Map([
+      ["a", false],
+      ["b", true],
+    ]);
+    expect(pendingRemovals(LOADED, new Set(), overrides)).toBe(1);
+    expect(pendingRemovals(LOADED, new Set(["a", "c"]), overrides)).toBe(2);
+    expect(pendingRemovals(LOADED, new Set(["elsewhere"]), new Map())).toBe(0);
   });
 });

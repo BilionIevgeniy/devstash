@@ -32,3 +32,24 @@ describe("isCutForModel", () => {
     expect(isCutForModel("abcd😀", 6)).toBe(false);
   });
 });
+
+describe("truncateForModel at its edges", () => {
+  it("leaves a text of exactly the limit alone", () => {
+    expect(truncateForModel("abcd", 4)).toBe("abcd");
+    expect(truncateForModel("abcde", 4)).toBe("abcd");
+  });
+
+  it.each(["\ud800\udc00", "\udbff\udfff"])(
+    "does not cut the pair %j in half",
+    (pair) => {
+      expect(truncateForModel(`ab${pair}`, 3)).toBe("ab");
+    },
+  );
+
+  it.each(["\ud7ff", "\udc00"])(
+    "cuts after %j, which opens no pair",
+    (char) => {
+      expect(truncateForModel(`ab${char}c`, 3)).toBe(`ab${char}`);
+    },
+  );
+});

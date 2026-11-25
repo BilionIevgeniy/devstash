@@ -43,3 +43,25 @@ describe("parseWebVital", () => {
     expect(parseWebVital(body)).toBeNull();
   });
 });
+
+describe("the edges of a Web Vital", () => {
+  it.each([
+    "/x/items/snippets",
+    "/x/items/a/b",
+    "/x/collections/a",
+    "/collections/a/b",
+  ])("puts %s in no group of a page", (path) => {
+    expect(pageGroup(path)).toBe("other");
+  });
+
+  it("takes 0 and the largest value, and nothing beyond", () => {
+    const lcp = (value: unknown) =>
+      parseWebVital({ name: "LCP", value, group: "/" });
+    expect(lcp(0)).not.toBeNull();
+    expect(lcp(120_000)).not.toBeNull();
+    expect(lcp(120_001)).toBeNull();
+    expect(lcp(-1)).toBeNull();
+    expect(lcp("5")).toBeNull();
+    expect(lcp(Number.NaN)).toBeNull();
+  });
+});
