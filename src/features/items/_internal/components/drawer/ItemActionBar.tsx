@@ -12,6 +12,7 @@ import {
   useItemPin,
 } from "@/features/items/components/hooks/use-item-drawer";
 import type { DashboardItem } from "@/features/items/types";
+import { typeInk } from "@/features/item-types/components/type-color";
 import { cn } from "@/lib/utils";
 
 // Five labelled buttons do not fit a phone, so there the labels are only read
@@ -36,9 +37,9 @@ export function ItemActionBar({
 }: ItemActionBarProps) {
   const t = useTranslations();
   const { id: itemId, title } = item;
-  const typeColor = item.type.color;
   const favorite = useItemFavorite(itemId, item.isFavorite);
   const pin = useItemPin(itemId, item.isPinned);
+  const pinInk = pin.isPinned ? typeInk(item.type.color) : undefined;
 
   return (
     <div className="flex items-center gap-1 border-b px-6 py-3">
@@ -50,10 +51,10 @@ export function ItemActionBar({
         onClick={favorite.toggle}
         className={cn(
           "max-md:min-w-11 aria-disabled:opacity-50",
-          favorite.isFavorite && "text-yellow-400 hover:text-yellow-400",
+          favorite.isFavorite && "text-favorite hover:text-favorite",
         )}
       >
-        <Star className={cn(favorite.isFavorite && "fill-yellow-400")} />
+        <Star className={cn(favorite.isFavorite && "fill-favorite")} />
         <span className={ACTION_LABEL}>{t("items.actions.favorite")}</span>
       </Button>
       <Button
@@ -62,8 +63,11 @@ export function ItemActionBar({
         aria-pressed={pin.isPinned}
         aria-disabled={pin.isPending}
         onClick={pin.toggle}
-        className="max-md:min-w-11 aria-disabled:opacity-50"
-        style={pin.isPinned && typeColor ? { color: typeColor } : undefined}
+        className={cn(
+          "max-md:min-w-11 aria-disabled:opacity-50",
+          pinInk && `${pinInk.className} hover:text-type`,
+        )}
+        style={pinInk?.style}
       >
         <Pin className={cn(pin.isPinned && "fill-current")} />
         <span className={ACTION_LABEL}>{t("items.actions.pin")}</span>

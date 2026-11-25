@@ -93,4 +93,40 @@ describe("SessionAwareAction", () => {
     expect(cellOf("Get Started")).toHaveClass("invisible");
     expect(cellOf("Open Dashboard")).not.toHaveClass("invisible");
   });
+
+  // The navbar's answers differ, so it brings a placeholder of its own.
+  describe("with a placeholder of its own", () => {
+    function renderWithOwnPlaceholder() {
+      return render(
+        <SessionAwareAction
+          pending={<span data-testid="own-placeholder" />}
+          guest={() => <a href="/register">Get Started</a>}
+          member={() => <a href="/dashboard">Open Dashboard</a>}
+        />,
+      );
+    }
+
+    it("shows it instead of the default one until the answer", () => {
+      useHasSession.mockReturnValue(null);
+      const { container } = renderWithOwnPlaceholder();
+
+      const wrapper = screen.getByTestId("own-placeholder").parentElement;
+      expect(wrapper).toHaveAttribute("aria-hidden", "true");
+      expect(wrapper).toHaveClass("pointer-events-none", "no-script:hidden");
+      // Its wrapper is the only placeholder: the default one is not drawn too.
+      expect(container.querySelectorAll('[aria-hidden="true"]')).toHaveLength(
+        1,
+      );
+    });
+
+    it.each([false, true])(
+      "takes it away once the session is %s",
+      (hasSession) => {
+        useHasSession.mockReturnValue(hasSession);
+        renderWithOwnPlaceholder();
+
+        expect(screen.queryByTestId("own-placeholder")).toBeNull();
+      },
+    );
+  });
 });

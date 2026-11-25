@@ -113,7 +113,7 @@ A module writes only the models it owns and reads only its own models. A relatio
 
 ### app-shell
 
-- **Owns:** nothing in the database; the frame of every signed-in page: shell, top bar, sidebar, skip link, the create menu of a phone, the language switch ([ADR 0024](adr/0024-locale-decision.md))
+- **Owns:** nothing in the database; the frame of every signed-in page: shell, top bar, sidebar, skip link, the create menu of a phone, the language switch ([ADR 0024](adr/0024-locale-decision.md)) and the theme in the user menu ([ADR 0039](adr/0039-theme-choice.md); the store and the picker are in `components/common`, since the marketing pages use them too)
 - **`components/`:** `DashboardShell` (takes the sidebar and the buttons that need the plan as slots, so it waits for no read), `CreateMenu`, `Sidebar`, `SidebarSkeleton`
 - **`domain/sidebar`, `schemas`:** the cookie of the open sidebar; the locale body of `POST /api/locale`
 - **Uses:** `auth`, `billing`, `item-types`, `items`, `collections`, `search`

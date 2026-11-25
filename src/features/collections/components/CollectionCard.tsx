@@ -52,7 +52,7 @@ export function CollectionCard({
             key={type.id}
             name={type.icon}
             className="size-4"
-            style={{ color: type.color }}
+            typeColor={type.color}
             aria-label={typeLabel(typeName, type.name, "one")}
           />
         ))}

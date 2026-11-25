@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 
+import { createStorageStore } from "@/components/common/hooks/storage-store";
 import {
   CONSENT_STORAGE_KEY,
   parseConsent,
@@ -17,46 +18,31 @@ export interface ConsentState {
 
 // One store for the tab, shared by the banner, the Privacy settings buttons
 // and the Web Vitals gate, in whichever provider layout they are (ADR 0034).
-// The answer is kept in memory too: with storage blocked, a click still takes
-// effect for this tab. Another tab's answer arrives through the `storage`
-// event.
-let state: ConsentState | undefined;
+// Storage, other tabs and the back-forward cache are the storage store's.
+let reopened = false;
 // The Privacy settings button that opened the banner again: it gets the focus
 // back once the banner is answered and gone.
 let opener: HTMLElement | null = null;
-const listeners = new Set<() => void>();
+let snapshot: ConsentState | undefined;
 
-function readStoredChoice(): ConsentChoice | null {
-  try {
-    return parseConsent(window.localStorage.getItem(CONSENT_STORAGE_KEY));
-  } catch {
-    return null;
-  }
-}
-
-function update(next: ConsentState): void {
-  state = next;
-  for (const listener of listeners) listener();
-}
-
-function onStorage(event: StorageEvent): void {
-  if (event.key !== CONSENT_STORAGE_KEY) return;
-  update({ choice: parseConsent(event.newValue), reopened: false });
-}
-
-function subscribe(listener: () => void): () => void {
-  if (listeners.size === 0) window.addEventListener("storage", onStorage);
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-    if (listeners.size === 0) window.removeEventListener("storage", onStorage);
-  };
-}
+const store = createStorageStore<ConsentChoice | null>({
+  key: CONSENT_STORAGE_KEY,
+  parse: parseConsent,
+  // Never called with null: only an answer is written.
+  serialize: (choice) => (choice ? serializeConsent(choice) : ""),
+  // An answer given elsewhere closes a banner opened again here.
+  onStoredChange: () => {
+    reopened = false;
+  },
+});
 
 /** The tab's consent, read from storage the first time it is asked for. */
 export function readConsent(): ConsentState {
-  state ??= { choice: readStoredChoice(), reopened: false };
-  return state;
+  const choice = store.read();
+  if (snapshot?.choice !== choice || snapshot.reopened !== reopened) {
+    snapshot = { choice, reopened };
+  }
+  return snapshot;
 }
 
 // The server and the first render of the browser know nothing, so nothing that
@@ -66,12 +52,8 @@ function readServerConsent(): undefined {
 }
 
 export function setConsent(choice: ConsentChoice): void {
-  try {
-    window.localStorage.setItem(CONSENT_STORAGE_KEY, serializeConsent(choice));
-  } catch {
-    // Storage is blocked: the answer holds for this tab only.
-  }
-  update({ choice, reopened: false });
+  reopened = false;
+  store.write(choice);
   const trigger = opener;
   opener = null;
   if (trigger?.isConnected) trigger.focus();
@@ -83,18 +65,21 @@ export function setConsent(choice: ConsentChoice): void {
  */
 export function reopenConsent(trigger?: HTMLElement): void {
   opener = trigger ?? null;
-  update({ ...readConsent(), reopened: true });
+  reopened = true;
+  store.notify();
 }
 
 /** Forgets the tab's state. For tests only. */
 export function forgetConsent(): void {
-  state = undefined;
+  store.forget();
+  reopened = false;
   opener = null;
+  snapshot = undefined;
 }
 
 // Undefined until the stored answer has been read, so a component can render
 // nothing instead of a guess: the banner never shows for one frame to a
 // visitor who already answered.
 export function useConsent(): ConsentState | undefined {
-  return useSyncExternalStore(subscribe, readConsent, readServerConsent);
+  return useSyncExternalStore(store.subscribe, readConsent, readServerConsent);
 }

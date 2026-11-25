@@ -31,7 +31,7 @@ export function SidebarItemLink({ item, isLocked }: SidebarItemLinkProps) {
       <TypeIcon
         name={item.type.icon}
         className="size-4 shrink-0"
-        style={{ color: item.type.color }}
+        typeColor={item.type.color}
       />
       <span className="truncate">{item.title}</span>
     </>

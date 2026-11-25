@@ -66,7 +66,7 @@ function FeatureCard({
       <h3 className="text-lg leading-[1.35] font-semibold tracking-[-0.01em]">
         {title}
         {pro && (
-          <span className="gradient-fill ml-1.5 inline-block rounded-full px-2 py-px align-[2px] text-[11px] font-semibold tracking-normal text-background">
+          <span className="gradient-fill ml-1.5 inline-block rounded-full px-2 py-px align-[2px] text-[11px] font-semibold tracking-normal text-on-gradient">
             {proLabel}
           </span>
         )}

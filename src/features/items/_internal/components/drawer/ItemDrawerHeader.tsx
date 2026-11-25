@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useLanguageLabel } from "@/features/editor/components/hooks/use-language-label";
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
+import { typeTint } from "@/features/item-types/components/type-color";
 import { typeLabel } from "@/features/item-types/domain/item-type";
 import type { DashboardItem } from "@/features/items/types";
 import { cn } from "@/lib/utils";
@@ -22,9 +23,6 @@ export function ItemDrawerHeader({
   const languageLabel = useLanguageLabel();
   const typeName = useTranslations("itemTypes");
   const { type } = item;
-  const iconBackground = type.color
-    ? `color-mix(in oklab, ${type.color} 10%, transparent)`
-    : undefined;
 
   return (
     <SheetHeader
@@ -35,13 +33,9 @@ export function ItemDrawerHeader({
     >
       <div
         className="flex size-12 shrink-0 items-center justify-center rounded-md"
-        style={{ backgroundColor: iconBackground }}
+        style={{ backgroundColor: typeTint(type.color) }}
       >
-        <TypeIcon
-          name={type.icon}
-          className="size-6"
-          style={{ color: type.color }}
-        />
+        <TypeIcon name={type.icon} className="size-6" typeColor={type.color} />
       </div>
       <div className="min-w-0 space-y-2">
         {variant === "sheet" ? (

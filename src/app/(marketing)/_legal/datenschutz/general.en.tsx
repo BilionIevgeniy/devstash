@@ -193,11 +193,23 @@ export const GENERAL_EN: LegalSection[] = [
           </li>
         </ul>
         <p>
-          In your browser&apos;s local storage (not a cookie) we keep{" "}
-          <code>devstash-consent</code>: your answer to the banner, so we do not
-          ask again, until you change it or clear the storage. It never leaves
-          your browser.
+          In your browser&apos;s local storage (not a cookie) we keep two
+          entries, on the same basis (§ 25 (2) no. 2 TDDDG). Neither ever leaves
+          your browser:
         </p>
+        <ul>
+          <li>
+            <code>devstash-consent</code>: your answer to the banner, so we do
+            not ask again, until you change it or clear the storage.
+          </li>
+          <li>
+            <code>devstash-theme</code>: the theme you chose (system, light or
+            dark). Stored only when you pick one in the settings, in the user
+            menu or at the bottom of the website, and read on every page so that
+            it opens in that theme, until you change it or clear the storage.
+            Without it, the website is dark.
+          </li>
+        </ul>
         <p>
           On the website the sign-in cookies also carry the prefix{" "}
           <code>__Secure-</code> or <code>__Host-</code>.

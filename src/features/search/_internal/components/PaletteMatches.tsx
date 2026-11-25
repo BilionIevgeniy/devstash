@@ -47,7 +47,9 @@ export function PaletteMatches({
               value={`${state}-item-${item.id}`}
               disabled={isStale}
               onSelect={() => onSelectItem(item)}
-              className={cn(item.isLocked && "opacity-50")}
+              // A locked row in muted text, not faded: half opacity took its
+              // preview line under 4.5:1 in both themes.
+              className={cn(item.isLocked && "text-muted-foreground")}
             >
               <TypeIcon
                 name={item.type.icon}

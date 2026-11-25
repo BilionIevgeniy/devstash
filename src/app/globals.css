@@ -5,12 +5,11 @@
 @custom-variant dark (&:is(.dark *));
 @custom-variant no-script (@media (scripting: none));
 
-/* Marketing homepage and the pricing table it shares with /upgrade */
+/* Text on the gradient fill and on the blue-violet accent: the same in both
+   themes, since the fill does not change. */
 @theme {
-  --color-brand: #a78bfa;
-  --color-dim: #8a8a8a;
-  --color-raised: #1f1f1f;
-  --color-chaos: #0f0f0f;
+  --color-on-gradient: oklch(0.145 0 0);
+  --color-on-accent: oklch(0.985 0 0);
   /* A wait that is not worth showing at once: in after 300 ms. */
   --animate-pending-spin:
     pending-in 200ms ease-out 300ms both, pending-turn 1s linear infinite;
@@ -42,14 +41,35 @@
   }
 }
 
+/* The fill is the same in both themes, with text-on-gradient on it; the
+   gradient as text darkens on a light ground. */
 @utility gradient-fill {
   background-image: linear-gradient(90deg, #60a5fa, #a78bfa);
 }
 
 @utility gradient-text {
-  background-image: linear-gradient(90deg, #60a5fa, #a78bfa);
+  background-image: linear-gradient(
+    90deg,
+    var(--gradient-text-from),
+    var(--gradient-text-to)
+  );
   background-clip: text;
   color: transparent;
+}
+
+/* A type's colour as ink (typeInk in item-types/components/type-color.ts,
+   ADR 0039): the stored colour on dark; on light its lightness is held at 0.5
+   at most, at least 4.8:1 on white and on --muted for every colour of the
+   palette, so a yellow note stays readable. A browser without relative
+   colours (Safari before 18) gets the colour mixed with black. */
+@utility text-type {
+  color: color-mix(in oklab, var(--type-color) 55%, black);
+  @supports (color: oklch(from red l c h)) {
+    color: oklch(from var(--type-color) min(l, 0.5) c h);
+  }
+  @variant dark {
+    color: var(--type-color);
+  }
 }
 
 @utility marketing-container {
@@ -85,6 +105,13 @@
 }
 
 @theme inline {
+  /* The marketing homepage and the pricing table it shares with /upgrade */
+  --color-brand: var(--brand);
+  --color-dim: var(--dim);
+  --color-raised: var(--raised);
+  --color-chaos: var(--chaos);
+  /* A set star */
+  --color-favorite: var(--favorite);
   --font-heading: var(--font-sans);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -129,6 +156,7 @@
 }
 
 :root {
+  color-scheme: light;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -140,13 +168,16 @@
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  /* Darker than shadcn's 0.556, which is 4.3:1 on --muted */
+  --muted-foreground: oklch(0.5 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
+  /* Darker than shadcn's, which is 4.4:1 on its own tint (destructive/10) */
+  --destructive: oklch(0.52 0.21 27);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* Darker than shadcn's 0.708 (2.6:1): a focus mark needs 3:1 on white */
+  --ring: oklch(0.55 0 0);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -160,7 +191,17 @@
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-ring: oklch(0.55 0 0);
+  --toast-success-text: oklch(0.45 0.13 150);
+  --toast-error-text: oklch(0.5 0.2 27);
+  --brand: #7c3aed;
+  --dim: #666666;
+  --raised: oklch(0.97 0 0);
+  --chaos: oklch(0.985 0 0);
+  /* A text colour: the drawer's star carries its label (4.9:1 on white) */
+  --favorite: oklch(55.4% 0.135 66.442);
+  --gradient-text-from: #2563eb;
+  --gradient-text-to: #7c3aed;
 }
 
 .dark {
@@ -196,6 +237,16 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --toast-success-text: oklch(0.85 0.15 150);
+  --toast-error-text: oklch(0.85 0.1 22);
+  --brand: #a78bfa;
+  --dim: #8a8a8a;
+  --raised: #1f1f1f;
+  --chaos: #0f0f0f;
+  /* Tailwind's yellow-400 */
+  --favorite: oklch(85.2% 0.199 91.936);
+  --gradient-text-from: #60a5fa;
+  --gradient-text-to: #a78bfa;
 }
 
 @layer base {

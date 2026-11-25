@@ -18,7 +18,7 @@ export function ChaosAnimation() {
   return (
     <div
       ref={boxRef}
-      className="group/chaos relative h-70 overflow-hidden rounded-[14px] border border-dashed border-white/18 bg-chaos no-script:flex no-script:flex-wrap no-script:content-center no-script:justify-center no-script:gap-6 no-script:p-6 md:h-100"
+      className="group/chaos relative h-70 overflow-hidden rounded-[14px] border border-dashed border-black/18 bg-chaos dark:border-white/18 no-script:flex no-script:flex-wrap no-script:content-center no-script:justify-center no-script:gap-6 no-script:p-6 md:h-100"
     >
       {CHAOS_ICONS.map(({ name, icon }) => (
         <span

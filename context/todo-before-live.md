@@ -29,6 +29,7 @@ Feature 19 writes these texts and flows in test mode; before live a lawyer signs
 - The downgrade terms: text read-only over the Free limit, custom types kept read-only (AGB section 7)
 - The AI Act decision of feature 15
 - § 25 TDDDG (feature 20, [ADR 0034](../docs/adr/0034-consent-and-field-measurement.md)): the Sentry browser SDK runs without consent, counted as strictly necessary because it reports only a failure of the service the visitor asked for; and the banner's wording, the log retention named for the Web Vitals, and Allow and Decline as equal buttons
+- § 25 TDDDG (feature 26, [ADR 0039](../docs/adr/0039-theme-choice.md)): the theme key `devstash-theme` in `localStorage`, written only on the visitor's explicit choice but read by an inline script on every page view, counted as strictly necessary for the setting the visitor asked for, so without consent
 
 ## Vendors and privacy
 

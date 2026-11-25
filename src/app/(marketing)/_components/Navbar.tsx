@@ -18,6 +18,7 @@ import { useEscapeToClose } from "./hooks/use-escape-to-close";
 import { useScrolled } from "./hooks/use-scrolled";
 import { LanguageLink } from "./links/LanguageLink";
 import { MobileNavPanel } from "./MobileNavPanel";
+import { NavActionPlaceholder } from "./NavActionPlaceholder";
 import { BUTTON_TRANSITION, SessionAwareAction } from "./SessionAwareAction";
 import {
   DASHBOARD_PATH,
@@ -75,13 +76,18 @@ function MemberAction({ hidden }: { hidden: boolean }) {
 }
 
 // Sign in and the main action, which depend on the session, stacked in one
-// cell (SessionAwareAction): the language link beside them never moves. The
-// placeholder is one for two buttons, so it has the look of neither.
+// cell (SessionAwareAction): the language link beside them never moves. Until
+// the answer, the main button's place holds a button of its look and size.
 function SessionActions() {
+  const t = useTranslations("marketing");
   return (
     <SessionAwareAction
       className="items-center"
-      pendingVariant="secondary"
+      pending={
+        <NavActionPlaceholder
+          labels={[t("nav.getStarted"), t("nav.dashboard")]}
+        />
+      }
       cellClassName="flex items-center gap-2 justify-self-end"
       guest={(hidden) => <GuestActions hidden={hidden} />}
       member={(hidden) => <MemberAction hidden={hidden} />}

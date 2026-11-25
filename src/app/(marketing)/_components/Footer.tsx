@@ -12,6 +12,7 @@ import {
 } from "@/lib/http/legal-paths";
 
 import { PrivacySettingsButton } from "@/components/common/consent/PrivacySettingsButton";
+import { ThemePicker } from "@/components/common/theme/ThemePicker";
 
 import { LanguageLink } from "./links/LanguageLink";
 
@@ -127,9 +128,12 @@ export async function Footer({ locale }: { locale: Locale }) {
             </p>
           </nav>
         </div>
-        <p className="mt-12 border-t pt-6 text-[13px] text-dim">
-          {t("footer.rights", { year })}
-        </p>
+        {/* The theme picker beside the copyright line: the columns above are
+            too narrow for its three choices (ADR 0039). */}
+        <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
+          <p className="text-[13px] text-dim">{t("footer.rights", { year })}</p>
+          <ThemePicker legendClassName="sr-only" />
+        </div>
       </div>
     </footer>
   );

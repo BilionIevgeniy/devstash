@@ -3,11 +3,15 @@
 import { BilingualErrorText } from "@/components/common/BilingualErrorText";
 import { ErrorState } from "@/components/common/ErrorState";
 import { useReportError } from "@/components/common/hooks/use-report-error";
+import { ThemeSync } from "@/components/common/theme/ThemeSync";
 import { Button } from "@/components/ui/button";
 import "./globals.css";
 
 // Replaces the root layout when that layout fails, so it brings its own
-// document, styles and the dark theme the root layout would have set.
+// document and styles. It is always rendered in the browser, into an empty
+// document of Next's (no inline script runs there), so ThemeSync puts the
+// visitor's theme on <html> before the paint; `dark` is the start, as in the
+// root layout.
 export default function GlobalError({
   error,
   retry,
@@ -23,6 +27,7 @@ export default function GlobalError({
   return (
     <html lang="en" className="dark h-full antialiased">
       <body className="flex min-h-full flex-col items-center justify-center p-6">
+        <ThemeSync />
         <title>
           Something went wrong · Etwas ist schiefgelaufen · DevStash
         </title>

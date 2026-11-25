@@ -63,7 +63,7 @@ export function CustomTypeFields({ values, onChange }: CustomTypeFieldsProps) {
                   name={icon}
                   aria-hidden
                   className="size-4"
-                  style={{ color: values.color }}
+                  typeColor={values.color}
                 />
               </span>
               <span className="sr-only">{t(`icons.${icon}`)}</span>

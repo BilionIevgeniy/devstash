@@ -27,7 +27,7 @@ export function CollectionSections({ sections }: CollectionSectionsProps) {
             <TypeIcon
               name={section.type.icon}
               className="size-5"
-              style={{ color: section.type.color }}
+              typeColor={section.type.color}
             />
             {typeLabel(typeName, section.type.name, "other")}
             <span className="text-sm font-normal text-muted-foreground">

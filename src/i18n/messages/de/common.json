@@ -38,6 +38,12 @@
     "switching": "Wird umgestellt …",
     "failed": "Die Sprache konnte nicht geändert werden. Bitte versuch es noch einmal."
   },
+  "theme": {
+    "label": "Darstellung",
+    "system": "System",
+    "light": "Hell",
+    "dark": "Dunkel"
+  },
   "actions": {
     "cancel": "Abbrechen",
     "delete": "Löschen",

@@ -49,3 +49,20 @@ describe("the navbar's mobile menu", () => {
     expect(menu.getAllByRole("link").at(-1)).toHaveAccessibleName("Sign In");
   });
 });
+
+// The guest's and the member's main buttons differ in text only, so the
+// placeholder is a main button as wide as the wider label, not a grey bar.
+describe("the navbar while the session is unknown", () => {
+  it("holds the main button's place with a button of its look", () => {
+    useHasSession.mockReturnValue(null);
+    render(<Navbar />);
+
+    const placeholder = screen
+      .getByRole("banner")
+      .querySelector('[aria-hidden="true"] > span');
+    expect(placeholder).toHaveClass("bg-primary");
+    expect(placeholder).not.toHaveClass("bg-secondary");
+    expect(placeholder).toHaveTextContent("Get Started");
+    expect(placeholder).toHaveTextContent("Dashboard");
+  });
+});

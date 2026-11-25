@@ -70,7 +70,7 @@ export function CollectionCardMenu({
           >
             <Star
               className={cn(
-                favorite.isFavorite && "fill-yellow-400 text-yellow-400",
+                favorite.isFavorite && "fill-favorite text-favorite",
               )}
             />
             {t("collections.actions.favorite")}

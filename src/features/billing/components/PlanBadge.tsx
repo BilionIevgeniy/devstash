@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 export function PlanBadge({ isPro }: { isPro: boolean }) {
   const t = useTranslations("shell.plan");
   if (isPro) {
-    return <Badge className="gradient-fill text-background">{t("pro")}</Badge>;
+    return <Badge className="gradient-fill text-on-gradient">{t("pro")}</Badge>;
   }
   return <Badge variant="secondary">{t("free")}</Badge>;
 }

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { useItemPin } from "@/features/items/components/hooks/use-item-drawer";
+import { typeInk } from "@/features/item-types/components/type-color";
 import { cn } from "@/lib/utils";
 
 interface ItemPinButtonProps {
@@ -28,6 +29,7 @@ export function ItemPinButton({
 }: ItemPinButtonProps) {
   const t = useTranslations("items.actions");
   const pin = useItemPin(itemId, isPinned, { undoable });
+  const ink = pin.isPinned ? typeInk(color) : undefined;
 
   return (
     <Button
@@ -38,8 +40,12 @@ export function ItemPinButton({
       aria-pressed={pin.isPinned}
       aria-disabled={pin.isPending}
       onClick={pin.toggle}
-      className="text-muted-foreground aria-disabled:opacity-50"
-      style={pin.isPinned && color ? { color } : undefined}
+      // The ghost variant's hover would take the colour away from a set pin.
+      className={cn(
+        "text-muted-foreground aria-disabled:opacity-50",
+        ink && `${ink.className} hover:text-type`,
+      )}
+      style={ink?.style}
     >
       <Pin className={cn(pin.isPinned && "fill-current")} />
     </Button>

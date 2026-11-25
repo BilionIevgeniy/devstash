@@ -42,6 +42,7 @@ One short file per decision that shapes the structure of the code, in the [MADR]
 | [0036](0036-content-security-policy.md)                            | A static Content-Security-Policy with exact origins, no nonce; no error message in the server log | accepted           |
 | [0037](0037-caching-strategy.md)                                   | Cache Components on, Partial Prefetching off, nothing per user cached on the server               | accepted           |
 | [0038](0038-frankfurt-region.md)                                   | Functions and database in Frankfurt, moved together with a short write freeze                     | accepted           |
+| [0039](0039-theme-choice.md)                                       | A theme the visitor chooses, kept in the browser and applied by an inline script before the paint | accepted           |
 
 Records up to 0026 that name `context/todo.md` mean the deferred list that was split on 2026-11-14 into the specs of `context/features/plan/` and `context/todo-before-live.md`; the table "Where the former `context/todo.md` went" in `context/features/plan/README.md` says where each item is now.
 

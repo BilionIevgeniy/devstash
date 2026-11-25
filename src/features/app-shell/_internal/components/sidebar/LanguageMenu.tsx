@@ -39,7 +39,9 @@ export function LanguageMenu() {
       <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
         {isPending ? t("switching") : t("label")}
       </DropdownMenuLabel>
-      <DropdownMenuRadioGroup value={locale}>
+      {/* A menu label names nothing: the group carries its own name, since
+          the menu holds two radio groups (theme and language). */}
+      <DropdownMenuRadioGroup value={locale} aria-label={t("label")}>
         {LOCALES.map((code) => (
           <DropdownMenuRadioItem
             key={code}

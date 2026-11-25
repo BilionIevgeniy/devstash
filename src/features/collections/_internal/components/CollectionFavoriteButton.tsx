@@ -28,10 +28,10 @@ export function CollectionFavoriteButton({
       onClick={favorite.toggle}
       className={cn(
         "aria-disabled:opacity-50",
-        favorite.isFavorite && "text-yellow-400 hover:text-yellow-400",
+        favorite.isFavorite && "text-favorite hover:text-favorite",
       )}
     >
-      <Star className={cn(favorite.isFavorite && "fill-yellow-400")} />
+      <Star className={cn(favorite.isFavorite && "fill-favorite")} />
     </Button>
   );
 }

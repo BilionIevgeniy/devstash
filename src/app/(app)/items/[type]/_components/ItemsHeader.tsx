@@ -29,7 +29,7 @@ export function ItemsHeader({
           <TypeIcon
             name={type.icon}
             className="size-7"
-            style={{ color: type.color }}
+            typeColor={type.color}
           />
           {typeLabel(typeName, type.name, "other")}
         </h1>

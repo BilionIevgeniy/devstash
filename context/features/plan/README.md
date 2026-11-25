@@ -39,9 +39,10 @@ Rules that apply to every file:
 | 23  | [Pre-show hardening](../23.pre-show-hardening.md)                                | MUST                | [x]    |
 | 24  | [Functions and database closer to the users](../24.region-closer-to-users.md)    | SHOULD              | [x]    |
 | 25  | [Final review pass](../25.final-review-pass.md)                                  | SHOULD, last        | [x]    |
-| 26  | [A theme the user can choose](26.light-theme.md)                                 | SHOULD              | [ ]    |
+| 26  | [A theme the user can choose](../26.light-theme.md)                              | SHOULD              | [x]    |
+| 27  | [Placeholders and skeletons that match](27.placeholder-audit.md)                 | SHOULD              | [ ]    |
 
-**Dependencies:** 4 defines the test database used by 5 and 21 · 5 needs 2 and 4 · 6 needs 2 · 7 needs 3 · 12 needs 7 and 8 · 14 needs 3 and 11 · 16 runs with no other branch open · 18 needs 17 live (the drop of the `@ignore`d columns) · 19 needs 17 (cron dispatcher, HMAC rate limits) and 18 (downgrade of custom types) · 20 needs 16 (one stats component) · 21 needs 15–20 (UI before the baselines) · 22 needs 21 · 23 needs 22 (its tests come before its refactors, commit by commit) · 24 needs 23 · 25 needs 1–24 · 26 needs 25 (its inventory).
+**Dependencies:** 4 defines the test database used by 5 and 21 · 5 needs 2 and 4 · 6 needs 2 · 7 needs 3 · 12 needs 7 and 8 · 14 needs 3 and 11 · 16 runs with no other branch open · 18 needs 17 live (the drop of the `@ignore`d columns) · 19 needs 17 (cron dispatcher, HMAC rate limits) and 18 (downgrade of custom types) · 20 needs 16 (one stats component) · 21 needs 15–20 (UI before the baselines) · 22 needs 21 · 23 needs 22 (its tests come before its refactors, commit by commit) · 24 needs 23 · 25 needs 1–24 · 26 needs 25 (its inventory) · 27 needs 26 (`e2e/placeholders.spec.ts`).
 
 ## Order principles
 

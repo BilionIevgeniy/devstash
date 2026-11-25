@@ -38,6 +38,12 @@
     "switching": "Switching…",
     "failed": "Couldn't change the language. Please try again."
   },
+  "theme": {
+    "label": "Appearance",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
   "actions": {
     "cancel": "Cancel",
     "delete": "Delete",

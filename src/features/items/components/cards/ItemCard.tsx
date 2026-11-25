@@ -1,4 +1,5 @@
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
+import { typeTint } from "@/features/item-types/components/type-color";
 import { useFormatter } from "next-intl";
 import { AiGeneratedLabel } from "@/features/ai/components/AiGeneratedLabel";
 import { aiMarkProps } from "@/features/ai/domain/marking";
@@ -14,9 +15,6 @@ interface ItemCardProps {
 export function ItemCard({ item }: ItemCardProps) {
   const format = useFormatter();
   const { type } = item;
-  const iconBackground = type.color
-    ? `color-mix(in oklab, ${type.color} 10%, transparent)`
-    : undefined;
 
   return (
     <article
@@ -26,12 +24,12 @@ export function ItemCard({ item }: ItemCardProps) {
       <div className="flex items-start gap-3">
         <div
           className="flex size-10 shrink-0 items-center justify-center rounded-md"
-          style={{ backgroundColor: iconBackground }}
+          style={{ backgroundColor: typeTint(type.color) }}
         >
           <TypeIcon
             name={type.icon}
             className="size-5"
-            style={{ color: type.color }}
+            typeColor={type.color}
           />
         </div>
         {/* Room for the buttons over the corner (ItemCardTrigger). */}
