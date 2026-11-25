@@ -14,6 +14,7 @@ import { useTranslations } from "next-intl";
 
 import { useSignOut } from "@/features/auth/components/hooks/use-sign-out";
 import { LanguageMenu } from "@/features/app-shell/_internal/components/sidebar/LanguageMenu";
+import { ThemeMenu } from "@/features/app-shell/_internal/components/sidebar/ThemeMenu";
 import { UserAvatar } from "@/features/auth/components/UserAvatar";
 import {
   DropdownMenu,
@@ -99,6 +100,8 @@ export function UserArea({ user }: UserAreaProps) {
               {t("cancelContracts")}
             </Link>
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <ThemeMenu />
           <DropdownMenuSeparator />
           <LanguageMenu />
           <DropdownMenuSeparator />

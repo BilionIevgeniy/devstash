@@ -1,4 +1,5 @@
 import { AccountActions } from "@/app/(app)/settings/_components/AccountActions";
+import { AppearancePanel } from "@/app/(app)/settings/_components/AppearancePanel";
 import { useTranslations } from "next-intl";
 import { BillingPanel } from "@/app/(app)/settings/_components/BillingPanel";
 import { CustomTypesPanel } from "@/app/(app)/settings/_components/CustomTypesPanel";
@@ -13,6 +14,7 @@ export default function SettingsPage({ searchParams }: PageProps<"/settings">) {
         <h1 className="text-3xl font-bold">{t("title")}</h1>
         <p className="text-muted-foreground">{t("lead")}</p>
       </header>
+      <AppearancePanel />
       <EditorPreferencesSection />
       <CustomTypesPanel />
       <BillingPanel searchParams={searchParams} />
