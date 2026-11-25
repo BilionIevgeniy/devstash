@@ -7,15 +7,17 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { CancellationValues } from "@/features/billing/_internal/components/hooks/use-cancellation";
 import {
-  CANCELLATION_KINDS,
   CANCELLATION_NAME_MAX,
   CANCELLATION_REASON_MAX,
+  type CancellationKind,
 } from "@/features/billing/domain/cancellation";
 
 interface CancellationFieldsProps {
   values: CancellationValues;
   /** A signed-in user's contract is known: no name or email to give. */
   signedIn: boolean;
+  /** The types offered; a single one is chosen already. */
+  kinds: readonly CancellationKind[];
   disabled: boolean;
 }
 
@@ -24,6 +26,7 @@ interface CancellationFieldsProps {
 export function CancellationFields({
   values,
   signedIn,
+  kinds,
   disabled,
 }: CancellationFieldsProps) {
   const t = useTranslations("billing.cancel");
@@ -64,13 +67,13 @@ export function CancellationFields({
         <legend className="text-sm font-medium text-muted-foreground">
           {t("kind")}
         </legend>
-        {CANCELLATION_KINDS.map((kind) => (
+        {kinds.map((kind) => (
           <label key={kind} className="flex items-center gap-2 text-sm">
             <input
               type="radio"
               name="kind"
               value={kind}
-              defaultChecked={values.kind === kind}
+              defaultChecked={kinds.length === 1 || values.kind === kind}
               disabled={disabled}
               className="accent-primary"
             />
