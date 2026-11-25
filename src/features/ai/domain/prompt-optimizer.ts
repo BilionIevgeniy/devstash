@@ -16,15 +16,6 @@ export function promptOptimizeInput(title: string, prompt: string): string {
   return itemInput(title, prompt);
 }
 
-// Any image syntax, inline or by reference: the read view of a saved prompt
-// shows images, so a URL in the answer would load once it is accepted. A
-// false match only hides Accept; Copy stays.
-const MARKDOWN_IMAGE = /!\[[^\]]*\]/;
-
-export function hasMarkdownImage(text: string): boolean {
-  return MARKDOWN_IMAGE.test(text);
-}
-
 export interface OptimizedPromptState {
   /** The stream reached its end mark. */
   complete: boolean;
@@ -34,8 +25,7 @@ export interface OptimizedPromptState {
   original: string;
 }
 
-export type AcceptBlocker =
-  "incomplete" | "prompt-cut" | "empty" | "unchanged" | "image";
+export type AcceptBlocker = "incomplete" | "prompt-cut" | "empty" | "unchanged";
 
 // Why "Use this prompt" is not offered, or null when it is. A cut prompt's
 // answer covers only its start, so accepting it would delete the rest; an
@@ -51,6 +41,5 @@ export function acceptBlocker({
   if (isPromptCut) return "prompt-cut";
   if (optimized === "") return "empty";
   if (optimized === original.trim()) return "unchanged";
-  if (hasMarkdownImage(optimized)) return "image";
   return null;
 }

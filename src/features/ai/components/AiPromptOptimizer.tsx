@@ -53,7 +53,6 @@ const BLOCKER_NOTES = {
   empty: "cutMessage",
   "prompt-cut": "promptCut",
   unchanged: "unchanged",
-  image: "image",
 } as const satisfies Record<AcceptBlocker, string>;
 
 // Prompt optimization for a read-only prompt. Like AiCodeExplanation it hands
