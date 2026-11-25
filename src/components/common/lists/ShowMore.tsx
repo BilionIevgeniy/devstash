@@ -35,7 +35,8 @@ export function ShowMore({
   const t = useTranslations("common.list");
   // The space of the button stays once there was one, so the last page does not
   // move what is below; a list that never had more reserves none.
-  const [hadMore] = useState(hasMore);
+  const [hadMore, setHadMore] = useState(hasMore);
+  if (hasMore && !hadMore) setHadMore(true);
   const [seenCount, setSeenCount] = useState(rowCount);
   const [announcement, setAnnouncement] = useState("");
   // The row count when the button asked, so its first new row takes the focus.
@@ -64,7 +65,7 @@ export function ShowMore({
     <div
       className={cn(
         "flex flex-col items-center justify-center gap-1",
-        (hadMore || hasMore || failed) && "min-h-9 py-2",
+        (hadMore || failed) && "min-h-9 py-2",
       )}
     >
       {failed && !isLoading && (

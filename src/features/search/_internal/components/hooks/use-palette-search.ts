@@ -91,10 +91,8 @@ export function usePaletteSearch(text: string): PaletteSearch {
   // A text that can match nothing ("r", "!!") is sent nowhere: the recent list
   // stays, as for an empty text.
   // A pasted text longer than the route takes is searched by its start.
-  const query =
-    toSearchMatch(text) === null
-      ? ""
-      : text.trim().slice(0, SEARCH_TEXT_MAX).trimEnd();
+  const start = text.trim().slice(0, SEARCH_TEXT_MAX).trimEnd();
+  const query = toSearchMatch(start) === null ? "" : start;
   const [recent, setRecent] = useState<SearchOutcome | null>(null);
   const [search, setSearch] = useState<SettledSearch | null>(null);
   const [moreFor, setMoreFor] = useState<string | null>(null);
