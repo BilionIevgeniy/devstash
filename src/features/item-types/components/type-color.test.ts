@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { buttonVariants } from "@/components/ui/button";
-import { typeInk } from "@/features/item-types/components/type-color";
+import { typeInk, typeTint } from "@/features/item-types/components/type-color";
 import { cn } from "@/lib/utils";
 
 describe("typeInk", () => {
@@ -31,5 +31,14 @@ describe("typeInk", () => {
     expect(classes).toContain("hover:text-type");
     expect(classes).not.toContain("hover:text-foreground");
     expect(classes).not.toContain("text-muted-foreground");
+  });
+});
+
+describe("typeTint", () => {
+  it("mixes a tenth of the colour over the ground, and nothing for none", () => {
+    expect(typeTint("#3b82f6")).toBe(
+      "color-mix(in oklab, #3b82f6 10%, transparent)",
+    );
+    expect(typeTint(null)).toBeUndefined();
   });
 });

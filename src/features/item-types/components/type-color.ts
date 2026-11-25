@@ -19,3 +19,10 @@ export function typeInk(color: string | null | undefined): TypeInk | undefined {
     style: { "--type-color": color } as CSSProperties,
   };
 }
+
+// A type's colour as a faint tint behind its icon (cards, rows, the drawer's
+// header): 10% of the stored colour over the ground, which reads on either
+// theme. Undefined for no colour.
+export function typeTint(color: string | null | undefined): string | undefined {
+  return color ? `color-mix(in oklab, ${color} 10%, transparent)` : undefined;
+}

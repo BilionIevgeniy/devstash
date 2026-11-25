@@ -1,4 +1,5 @@
 import { TypeIcon } from "@/features/item-types/components/TypeIcon";
+import { typeTint } from "@/features/item-types/components/type-color";
 import { useFormatter } from "next-intl";
 import { AiGeneratedLabel } from "@/features/ai/components/AiGeneratedLabel";
 import { aiMarkProps } from "@/features/ai/domain/marking";
@@ -14,9 +15,6 @@ interface ItemRowProps {
 export function ItemRow({ item }: ItemRowProps) {
   const format = useFormatter();
   const { type } = item;
-  const iconBackground = type.color
-    ? `color-mix(in oklab, ${type.color} 10%, transparent)`
-    : undefined;
   const dateTime = item.createdAt.toISOString();
   const date = format.dateTime(item.createdAt, "short");
 
@@ -31,7 +29,7 @@ export function ItemRow({ item }: ItemRowProps) {
     >
       <div
         className="flex size-10 shrink-0 items-center justify-center rounded-md"
-        style={{ backgroundColor: iconBackground }}
+        style={{ backgroundColor: typeTint(type.color) }}
       >
         <TypeIcon name={type.icon} className="size-5" typeColor={type.color} />
       </div>
