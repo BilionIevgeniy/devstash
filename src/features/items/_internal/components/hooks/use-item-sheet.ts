@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useRef, useState, type RefObject } from "react";
+import { useLayoutEffect, useRef, useState, type RefObject } from "react";
 
 import {
   captureFocusTargets,
@@ -66,6 +66,20 @@ export function useItemSheet(focusSentinelRef: RefObject<HTMLElement | null>) {
   const [isEditing, setIsEditing] = useState(false);
   const openItemIdRef = useRef<string | null>(null);
   const focusTargetsRef = useRef<FocusTargets>(NO_FOCUS_TARGETS);
+
+  // Closed and emptied when its route is hidden (Back with the sheet open,
+  // ADR 0037): an editor its cleanup disposed throws on return. Not a key as
+  // in ItemRouteDrawer (useRemountOnReveal): the state is the provider's, and
+  // a key there would remount the page's lists too.
+  useLayoutEffect(
+    () => () => {
+      openItemIdRef.current = null;
+      setIsOpen(false);
+      setItem(null);
+      setIsEditing(false);
+    },
+    [],
+  );
 
   const detail = useQuery({
     ...itemDetailQuery(item?.id ?? ""),

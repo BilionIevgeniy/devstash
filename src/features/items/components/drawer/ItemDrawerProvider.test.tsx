@@ -1,6 +1,6 @@
 import { act, render, screen, waitFor } from "../../../../../test/intl";
 import userEvent from "@testing-library/user-event";
-import { useEffect, type ComponentProps } from "react";
+import { Activity, useEffect, type ComponentProps } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ItemDrawerContent } from "@/features/items/_internal/components/drawer/ItemDrawerContent";
@@ -170,6 +170,26 @@ describe("ItemDrawerProvider", () => {
     await waitFor(() => {
       expect(screen.getByRole("status")).toHaveTextContent("ready: Alpha");
     });
+  });
+
+  it("closes its sheet when its route is hidden", async () => {
+    queueAnswers(1);
+    const onDrawer = vi.fn();
+    const route = (mode: "visible" | "hidden") => (
+      <Activity mode={mode}>
+        <ItemDrawerProvider>
+          <Capture onDrawer={onDrawer} />
+        </ItemDrawerProvider>
+      </Activity>
+    );
+    const { rerender } = render(route("visible"));
+    await act(async () => onDrawer.mock.lastCall?.[0].open(ALPHA));
+    expect(screen.getByRole("dialog", { name: "Alpha" })).toBeInTheDocument();
+
+    rerender(route("hidden"));
+    rerender(route("visible"));
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("fetches an item opened twice within a minute once", async () => {
