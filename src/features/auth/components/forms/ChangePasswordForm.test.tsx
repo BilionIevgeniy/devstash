@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "../../../../test/intl";
+import { render, screen, waitFor } from "../../../../../test/intl";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -22,7 +22,7 @@ vi.mock("@/features/auth/_internal/actions/account", () => ({
 vi.mock("next/navigation", () => ({ unstable_rethrow: rethrow }));
 vi.mock("@/features/auth/components/leave-session", () => ({ leaveSession }));
 
-import { ChangePasswordForm } from "@/features/auth/components/ChangePasswordForm";
+import { ChangePasswordForm } from "@/features/auth/components/forms/ChangePasswordForm";
 
 const SUCCESS: AuthActionState = { success: true, data: null, error: null };
 const WRONG_PASSWORD: AuthActionState = {

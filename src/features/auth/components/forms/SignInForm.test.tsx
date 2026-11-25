@@ -1,4 +1,4 @@
-import { render, screen } from "../../../../test/intl";
+import { render, screen } from "../../../../../test/intl";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -10,7 +10,7 @@ vi.mock("@/features/auth/_internal/actions/email-verification", () => ({
   resendVerificationEmail: vi.fn(),
 }));
 
-import { SignInForm } from "@/features/auth/components/SignInForm";
+import { SignInForm } from "@/features/auth/components/forms/SignInForm";
 
 const REJECTED: AuthActionState = {
   success: false,

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { AuthCard } from "@/features/auth/components/AuthCard";
-import { ForgotPasswordForm } from "@/features/auth/components/ForgotPasswordForm";
+import { ForgotPasswordForm } from "@/features/auth/components/forms/ForgotPasswordForm";
 import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
 export default async function ForgotPasswordPage() {

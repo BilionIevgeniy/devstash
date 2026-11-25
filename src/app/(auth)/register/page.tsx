@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { GitHubAuthSection } from "@/features/auth/components/GitHubAuthSection";
-import { RegisterForm } from "@/features/auth/components/RegisterForm";
+import { RegisterForm } from "@/features/auth/components/forms/RegisterForm";
 import { auth } from "@/features/auth/nextauth/auth";
 import {
   DASHBOARD_PATH,

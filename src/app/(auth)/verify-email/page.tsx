@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/features/auth/nextauth/auth";
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { isOtherAccount } from "@/features/auth/domain/account-switch";
-import { ConfirmEmailForm } from "@/features/auth/components/ConfirmEmailForm";
+import { ConfirmEmailForm } from "@/features/auth/components/forms/ConfirmEmailForm";
 import { ResendVerificationButton } from "@/features/auth/components/ResendVerificationButton";
 import { Button } from "@/components/ui/button";
 import { isVerificationTokenValid } from "@/features/auth/queries";
