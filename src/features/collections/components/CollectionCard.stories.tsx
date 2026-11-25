@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { useState } from "react";
+import { toast } from "sonner";
 import { expect, mocked, userEvent, waitFor, within } from "storybook/test";
 
 import { setCollectionFavorite } from "@/features/collections/actions/collection";
@@ -134,5 +135,26 @@ export const StarFails: Story = {
     );
     await waitFor(() => expect(toastElement?.getAnimations()).toHaveLength(0));
     await waitFor(() => expect(star).toHaveAttribute("aria-pressed", "false"));
+  },
+};
+
+// The same refused save in the light theme: the error toast's colours on a
+// light ground, checked by axe like the dark one (ADR 0039). Sonner keeps its
+// toasts in one store for the page, so the toast of the story before is
+// dismissed and gone before the star is clicked.
+export const StarFailsLight: Story = {
+  ...StarFails,
+  name: "Star fails (refused save, light)",
+  globals: { theme: "light" },
+  beforeEach: () => {
+    toast.dismiss();
+    mocked(setCollectionFavorite).mockResolvedValue(fail("favoriteFailed"));
+  },
+  play: async (context) => {
+    const body = within(context.canvasElement.ownerDocument.body);
+    await waitFor(() =>
+      expect(body.queryByText("Couldn't update the favorite.")).toBeNull(),
+    );
+    await StarFails.play?.(context);
   },
 };
