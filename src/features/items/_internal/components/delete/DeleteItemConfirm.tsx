@@ -1,13 +1,10 @@
 import type { MouseEvent } from "react";
 import { useTranslations } from "next-intl";
-import { Loader2Icon } from "lucide-react";
 
+import { DeleteConfirmFooter } from "@/components/common/DeleteConfirmFooter";
 import {
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
@@ -36,25 +33,7 @@ export function DeleteItemConfirm({
           {t("items.delete.description", { title })}
         </AlertDialogDescription>
       </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel disabled={isDeleting}>
-          {t("common.actions.cancel")}
-        </AlertDialogCancel>
-        <AlertDialogAction
-          variant="destructive"
-          disabled={isDeleting}
-          onClick={onConfirm}
-        >
-          {isDeleting ? (
-            <>
-              <Loader2Icon className="size-4 animate-spin" />
-              {t("common.actions.deleting")}
-            </>
-          ) : (
-            t("common.actions.delete")
-          )}
-        </AlertDialogAction>
-      </AlertDialogFooter>
+      <DeleteConfirmFooter isDeleting={isDeleting} onConfirm={onConfirm} />
     </AlertDialogContent>
   );
 }
