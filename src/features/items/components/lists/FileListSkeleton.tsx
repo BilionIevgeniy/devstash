@@ -16,14 +16,13 @@ export function FileListSkeleton() {
   return (
     <div className={FILE_LIST}>
       {Array.from({ length: ROW_COUNT }, (_, index) => (
-        <div
-          key={index}
-          className={cn("flex items-center gap-3 pl-4", FILE_ROW_HEIGHT)}
-        >
-          <Skeleton className="size-5 shrink-0" />
-          <div className="flex-1 space-y-1.5">
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-3 w-1/3" />
+        <div key={index} className={cn("flex items-stretch", FILE_ROW_HEIGHT)}>
+          <div className="flex min-w-0 flex-1 items-center gap-3 px-4">
+            <Skeleton className="size-5 shrink-0" />
+            <div className="flex-1 space-y-1.5">
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-3 w-1/3" />
+            </div>
           </div>
           <div className={FILE_ROW_ACTIONS}>
             <Skeleton className="size-8" />

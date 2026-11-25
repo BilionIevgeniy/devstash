@@ -1,3 +1,4 @@
+import { PageHeader } from "@/app/(app)/_components/PageHeader";
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 
@@ -24,10 +25,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <ItemDrawerProvider lockProItems={!isPro}>
-        <header>
-          <h1 className="text-3xl font-bold">{t("title")}</h1>
-          <p className="text-muted-foreground">{t("lead")}</p>
-        </header>
+        <PageHeader title={t("title")} lead={t("lead")} />
         <Suspense fallback={<StatsSkeleton />}>
           <StatsCards />
         </Suspense>

@@ -2,9 +2,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const CARD_COUNT = 6;
 
-// The card height mirrors a rendered ItemCard so the page does not shift when
+// The card height mirrors a rendered ItemCard with a one-line description and
+// tags so the page does not shift when
 // the real content replaces the skeleton.
-const ITEM_CARD_HEIGHT = "h-38";
+const ITEM_CARD_HEIGHT = "h-27.5";
 
 export function ItemListSkeleton() {
   return (

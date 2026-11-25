@@ -1,3 +1,4 @@
+import { PageHeader } from "@/app/(app)/_components/PageHeader";
 import { FavoriteLists } from "@/app/(app)/favorites/_components/FavoriteLists";
 import { getTranslations } from "next-intl/server";
 import { getSessionUser } from "@/features/auth/nextauth/session";
@@ -28,10 +29,7 @@ export default async function FavoritesPage({
 
   return (
     <div className="space-y-8">
-      <header>
-        <h1 className="text-3xl font-bold">{t("title")}</h1>
-        <p className="text-muted-foreground">{t("lead")}</p>
-      </header>
+      <PageHeader title={t("title")} lead={t("lead")} />
       {/* Around the empty state too: the last favorite leaving through the open
           drawer must not unmount the drawer's sheet. */}
       <ItemDrawerProvider lockProItems={!isPro}>

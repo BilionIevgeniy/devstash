@@ -1,6 +1,15 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
-// The size of DeletionNotice with its title, two lines of text and a button.
+import { DeletionNoticeSkeleton } from "@/app/(app)/settings/delete-account/_components/DeletionNoticeSkeleton";
+
+// The state a working link opens: its title, its text and its button.
 export default function DeleteAccountLoading() {
-  return <Skeleton className="h-48 max-w-xl rounded-lg" />;
+  const t = useTranslations("account");
+  return (
+    <DeletionNoticeSkeleton
+      title={t("confirmTitle")}
+      description={t("dialogDescription")}
+      button={t("confirmButton")}
+    />
+  );
 }

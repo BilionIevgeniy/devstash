@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 
 import { SORT_SELECT_WIDTH } from "@/app/(app)/_components/SortSelect";
+import { ItemsHeaderSkeleton } from "@/app/(app)/items/[type]/_components/ItemsHeaderSkeleton";
 import { ListingSkeleton } from "@/app/(app)/items/[type]/_components/ListingSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { systemTypeNameForSlug } from "@/features/item-types/domain/item-type";
@@ -21,10 +22,7 @@ export default function ItemsByTypeLoading() {
 
   return (
     <div className="space-y-8">
-      <header>
-        <Skeleton className="h-9 w-48" />
-        <Skeleton className="mt-1 h-5 w-20" />
-      </header>
+      <ItemsHeaderSkeleton typeName={typeName} />
       <div className="space-y-4">
         <Skeleton className={cn(SORT_SELECT_WIDTH, "h-8 max-md:h-11")} />
         <ListingSkeleton listing={listing} />

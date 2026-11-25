@@ -1,50 +1,28 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslations } from "next-intl";
 
-// Block heights approximate AppearancePanel, EditorPreferencesSection, CustomTypesSection with
-// no types, BillingSection on the
-// Free plan, DataSection and AccountActions for a user with a password, so the page does not
-// shift much when the real content streams in.
-// The card's padding around the picker, whose choices are 44px on phones.
-const APPEARANCE_HEIGHT = "h-21 max-md:h-25";
-const EDITOR_PREFERENCES_HEIGHT = "h-72";
-const CUSTOM_TYPES_HEIGHT = "h-32";
-const BILLING_HEIGHT = "h-40";
-const DATA_HEIGHT = "h-36";
-const CHANGE_PASSWORD_HEIGHT = "h-95";
-const DELETE_ACCOUNT_HEIGHT = "h-23";
+import { PageHeader } from "@/app/(app)/_components/PageHeader";
+import { AccountActionsSkeleton } from "@/app/(app)/settings/_components/AccountActionsSkeleton";
+import { AppearancePanel } from "@/app/(app)/settings/_components/AppearancePanel";
+import { BillingSectionSkeleton } from "@/features/billing/components/BillingSectionSkeleton";
+import { EditorPreferencesSkeleton } from "@/features/editor/components/EditorPreferencesSkeleton";
+import { DataSectionSkeleton } from "@/features/import-export/components/DataSectionSkeleton";
+import { CustomTypesSkeleton } from "@/features/item-types/components/CustomTypesSkeleton";
+import { isStripeTestMode } from "@/lib/vendors/stripe";
 
+// The theme is the browser's own, so its panel is the real one. The others are
+// those of a Free user with a password: a Pro user's billing and data differ,
+// and so do custom types.
 export default function SettingsLoading() {
+  const t = useTranslations("pages.settings");
   return (
     <div className="space-y-8">
-      <header>
-        <Skeleton className="h-9 w-48" />
-        <Skeleton className="mt-1 h-5 w-40" />
-      </header>
-      <section className="space-y-4">
-        <Skeleton className="h-7 w-32" />
-        <Skeleton className={`${APPEARANCE_HEIGHT} rounded-lg`} />
-      </section>
-      <section className="space-y-4">
-        <Skeleton className="h-7 w-32" />
-        <Skeleton className={`${EDITOR_PREFERENCES_HEIGHT} rounded-lg`} />
-      </section>
-      <section className="space-y-4">
-        <Skeleton className="h-7 w-32" />
-        <Skeleton className={`${CUSTOM_TYPES_HEIGHT} rounded-lg`} />
-      </section>
-      <section className="space-y-4">
-        <Skeleton className="h-7 w-32" />
-        <Skeleton className={`${BILLING_HEIGHT} rounded-lg`} />
-      </section>
-      <section className="space-y-4">
-        <Skeleton className="h-7 w-32" />
-        <Skeleton className={`${DATA_HEIGHT} rounded-lg`} />
-      </section>
-      <section className="space-y-4">
-        <Skeleton className="h-7 w-32" />
-        <Skeleton className={`${CHANGE_PASSWORD_HEIGHT} rounded-lg`} />
-        <Skeleton className={`${DELETE_ACCOUNT_HEIGHT} rounded-lg`} />
-      </section>
+      <PageHeader title={t("title")} lead={t("lead")} />
+      <AppearancePanel />
+      <EditorPreferencesSkeleton />
+      <CustomTypesSkeleton />
+      <BillingSectionSkeleton testMode={isStripeTestMode()} />
+      <DataSectionSkeleton />
+      <AccountActionsSkeleton />
     </div>
   );
 }
