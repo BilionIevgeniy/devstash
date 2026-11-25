@@ -8,7 +8,7 @@ Nothing new is written here unless it cannot be built at all (the rule is "Found
 
 - **AI Act Art. 50 (2) by 2026-12-02.** Decided without a lawyer and built in feature 15 ([ADR 0027](../docs/adr/0027-marking-ai-generated-output.md)): every saved AI output is flagged per field, marked in the markup and carried in the export. What stays here is the lawyer's check of that decision before live, including the two departures from the Code of Practice the ADR records: no watermark on long text (the optimized prompt, the Explain answer), and the export's marks not digitally signed (Sub-measure 1.1.1).
 
-- **Delete the old Neon project seven days after the move to Frankfurt.** `devstash` (`purple-voice-82062641`, Ohio) is the read-only backup of the moment of the switch ([ADR 0038](../docs/adr/0038-frankfurt-region.md)) and holds accounts that may have been erased since. Then drop its sentence from the Neon row of `docs/privacy/processing-record.md` and from the Neon text of `_legal/datenschutz/vendors.*.tsx`, and `OLD_*_DATABASE_HOST` from `scripts/`.
+- **Delete the old Neon project on 2026-12-02, seven days after the move to Frankfurt.** `devstash` (`purple-voice-82062641`, Ohio) is the read-only backup of the moment of the switch ([ADR 0038](../docs/adr/0038-frankfurt-region.md)) and holds accounts that may have been erased since. Then drop its sentence from the Neon row of `docs/privacy/processing-record.md` and from the Neon text of `_legal/datenschutz/vendors.*.tsx`, and `OLD_*_DATABASE_HOST` from `scripts/`.
 
 ## Tax adviser
 
