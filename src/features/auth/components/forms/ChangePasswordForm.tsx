@@ -19,6 +19,7 @@ import {
 } from "@/features/auth/domain/password-reset";
 import { leaveSession } from "@/features/auth/components/leave-session";
 import type { FormActionState } from "@/features/auth/types";
+import { useMismatchField } from "@/features/auth/_internal/components/hooks/use-mismatch-field";
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
 import { Button } from "@/components/ui/button";
@@ -109,6 +110,7 @@ function PasswordForm() {
   // Gone while a new attempt runs, so a repeated error is announced again.
   const error = isPending ? null : state.error;
   const errorText = useErrorText();
+  const { errorId, fieldProps } = useMismatchField(error);
 
   return (
     <div className="rounded-lg border bg-card p-6">
@@ -131,11 +133,12 @@ function PasswordForm() {
               required
               minLength={isNewPassword ? MIN_PASSWORD_LENGTH : undefined}
               maxLength={isNewPassword ? MAX_PASSWORD_LENGTH : undefined}
+              {...(name === "confirmPassword" && fieldProps)}
             />
           </div>
         ))}
         {error && (
-          <p role="alert" className="text-sm text-destructive">
+          <p id={errorId} role="alert" className="text-sm text-destructive">
             {errorText(error)}
           </p>
         )}
