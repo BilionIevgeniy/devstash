@@ -3,7 +3,7 @@ import { expect, within } from "storybook/test";
 
 import { Button } from "@/components/ui/button";
 
-import { NavActionPlaceholder } from "./NavActionPlaceholder";
+import { NavActionPlaceholder } from "./pending/NavActionPlaceholder";
 import { SessionActionView } from "./SessionActionView";
 
 const meta = {
