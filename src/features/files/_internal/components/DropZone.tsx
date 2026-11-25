@@ -42,7 +42,6 @@ export function DropZone({ kind, disabled, onFile }: DropZoneProps) {
       <div
         role="button"
         tabIndex={disabled ? -1 : 0}
-        aria-label={t("upload", { kind })}
         aria-disabled={disabled}
         onClick={openPicker}
         onKeyDown={(event) => {
@@ -63,6 +62,7 @@ export function DropZone({ kind, disabled, onFile }: DropZoneProps) {
         )}
       >
         <FileUp className="size-5 text-muted-foreground" />
+        <span className="sr-only">{t("upload", { kind })}</span>
         <span>{t("drop", { kind })}</span>
         <span className="text-xs text-muted-foreground">
           {t("limits", {

@@ -13,7 +13,7 @@ interface ItemFileFieldProps {
 }
 
 // Not a Field: its label points at an input, and the drop zone is named by
-// its own aria-label.
+// its own text.
 export function ItemFileField({
   kind,
   onChange,
