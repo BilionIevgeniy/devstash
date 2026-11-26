@@ -53,7 +53,9 @@ describe("isDevDatabase", () => {
   it("is false for a host that only contains the development one", () => {
     expect(
       isDevDatabase(
-        url("ep-orange-star-bh3ldo06.c-10.eu-central-1.aws.neon.tech.example.com"),
+        url(
+          "ep-orange-star-bh3ldo06.c-10.eu-central-1.aws.neon.tech.example.com",
+        ),
       ),
     ).toBe(false);
   });
@@ -79,7 +81,9 @@ describe("requireDevDatabase", () => {
   it("refuses a host that only contains the development one", () => {
     expect(() =>
       requireDevDatabase(
-        url("ep-orange-star-bh3ldo06.c-10.eu-central-1.aws.neon.tech.example.com"),
+        url(
+          "ep-orange-star-bh3ldo06.c-10.eu-central-1.aws.neon.tech.example.com",
+        ),
       ),
     ).toThrow("is not the development database");
   });
