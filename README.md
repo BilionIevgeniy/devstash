@@ -67,6 +67,10 @@ The development seed differs from production on purpose: there the demo user sta
 
 Before every commit: `npm run format:check`, `npm run test`, `npm run typecheck`, `npm run lint` and `npm run build` must all pass, `npm run test:integration` when a query or service changed, and `npm run test:e2e` when a page, a route or the sign-in or item flows changed. CI runs all seven on every PR and every push to `main`. Schema changes go through `prisma migrate dev`, never `db push`.
 
+### After a production deploy
+
+`.github/workflows/post-deploy.yml` runs when Vercel reports a successful production deployment: `scripts/post-deploy-smoke.ts` asks the live domain for the homepage, `/de`, the sign-in and registration, Auth.js's session, the app's redirect to sign-in, the imprint and `robots.txt`, with up to five rounds while the domain moves to the new deployment. A red run means the live site is broken although the build passed; the way back is Instant Rollback in Vercel's dashboard. Run it by hand with `SMOKE_ORIGIN=https://devstash.ievgenbilion.de node scripts/post-deploy-smoke.ts`.
+
 ### Integration tests
 
 They run the app's Prisma against a Postgres of their own and empty it before each file, so they never use the database of `.env`. `requireTestDatabase` (`scripts/require-dev-database.ts`) refuses any host but `localhost`, `127.0.0.1` or the one in `TEST_DATABASE_HOST`, and always refuses the `development` and production branches and any pooled (`-pooler`) host.
