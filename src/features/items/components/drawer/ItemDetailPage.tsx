@@ -6,9 +6,8 @@ import { toast } from "sonner";
 
 import { useErrorText } from "@/components/common/hooks/use-error-text";
 import { useRemountOnReveal } from "@/components/common/hooks/use-remount-on-reveal";
-import { Skeleton } from "@/components/ui/skeleton";
 import { systemTypeNameForSlug } from "@/features/item-types/domain/item-type";
-import { ItemDrawerSkeleton } from "@/features/items/_internal/components/drawer/ItemDrawerSkeleton";
+import { ItemDetailSkeleton } from "@/features/items/_internal/components/drawer/ItemDetailSkeleton";
 import { ItemDetailView } from "@/features/items/_internal/components/drawer/ItemDetailView";
 import { deleteItem } from "@/features/items/actions/item";
 import { useSyncItemQueries } from "@/features/items/components/hooks/use-item-queries";
@@ -92,15 +91,13 @@ export function ItemDetailPageSkeleton() {
   const { type } = useParams<{ type: string }>();
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 rounded-lg border bg-card p-6">
-      <div className="flex items-start gap-3">
-        <Skeleton className="size-12 rounded-md" />
-        <div className="space-y-2">
-          <Skeleton className="h-6 w-56" />
-          <Skeleton className="h-5 w-20" />
-        </div>
+    <div className="mx-auto max-w-3xl">
+      <div className="flex flex-col rounded-lg border bg-card">
+        <ItemDetailSkeleton
+          typeName={systemTypeNameForSlug(type) ?? undefined}
+          variant="page"
+        />
       </div>
-      <ItemDrawerSkeleton typeName={systemTypeNameForSlug(type) ?? undefined} />
     </div>
   );
 }

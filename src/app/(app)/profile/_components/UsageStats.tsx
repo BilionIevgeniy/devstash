@@ -4,6 +4,10 @@ import { useTranslations } from "next-intl";
 import { getTranslations } from "next-intl/server";
 
 import { StatCard } from "@/app/(app)/_components/StatCard";
+import {
+  USAGE_TOTALS,
+  USAGE_TYPES,
+} from "@/app/(app)/profile/_components/ProfileSkeletons";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { getCollectionStats } from "@/features/collections/queries/dashboard";
 import { getItemStats } from "@/features/items/queries/dashboard";
@@ -43,7 +47,7 @@ export async function UsageStats() {
         <BarChart3 className="size-4 text-muted-foreground" />
         {t("usage")}
       </h2>
-      <div className="grid grid-cols-2 gap-4">
+      <div className={USAGE_TOTALS}>
         <StatCard label={t("items")} value={itemStats.total} icon={Package} />
         <StatCard
           label={t("collections")}
@@ -51,7 +55,7 @@ export async function UsageStats() {
           icon={FolderOpen}
         />
       </div>
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className={USAGE_TYPES}>
         {itemTypes.map((type) => (
           <TypeCount key={type.id} type={type} />
         ))}

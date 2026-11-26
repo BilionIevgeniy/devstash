@@ -1,6 +1,6 @@
 "use client";
 
-import { BilingualErrorText } from "@/components/common/BilingualErrorText";
+import { BilingualErrorText } from "@/components/common/bilingual/BilingualErrorText";
 import { ErrorState } from "@/components/common/ErrorState";
 import { useReportError } from "@/components/common/hooks/use-report-error";
 import { ThemeSync } from "@/components/common/theme/ThemeSync";

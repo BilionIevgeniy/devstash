@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { DASHBOARD_PATH } from "@/features/auth/domain/auth-paths";
 import { cn } from "@/lib/utils";
 
+import { PendingLinkLabel } from "../pending/PendingLinkLabel";
 import { BUTTON_TRANSITION, SessionAwareAction } from "../SessionAwareAction";
 
 const START_BUTTON = cn("h-11 px-5 text-[15px]", BUTTON_TRANSITION);
@@ -27,14 +28,14 @@ export function StartAction({
       guest={(hidden) => (
         <Button asChild size="lg" className={START_BUTTON}>
           <Link href="/register" prefetch={hidden ? false : undefined}>
-            {label}
+            <PendingLinkLabel>{label}</PendingLinkLabel>
           </Link>
         </Button>
       )}
       member={(hidden) => (
         <Button asChild size="lg" className={START_BUTTON}>
           <Link href={DASHBOARD_PATH} prefetch={hidden ? false : undefined}>
-            {t("openDashboard")}
+            <PendingLinkLabel>{t("openDashboard")}</PendingLinkLabel>
           </Link>
         </Button>
       )}

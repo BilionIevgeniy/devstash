@@ -10,7 +10,7 @@ interface ListRowSkeletonProps {
 
 export function ListRowSkeleton({ badge = false }: ListRowSkeletonProps) {
   return (
-    <div className={cn("flex", LIST_ROW_HEIGHT)}>
+    <div className={cn("flex items-stretch", LIST_ROW_HEIGHT)}>
       <div className="flex min-w-0 flex-1 items-center gap-3 px-2">
         <Skeleton className="size-4 shrink-0" />
         <Skeleton className="h-4 flex-1" />

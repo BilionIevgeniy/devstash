@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { BilingualErrorText } from "@/components/common/BilingualErrorText";
+import { BilingualErrorText } from "@/components/common/bilingual/BilingualErrorText";
 import { Button } from "@/components/ui/button";
 import { homePath } from "@/i18n/config";
 

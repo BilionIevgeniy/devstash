@@ -49,8 +49,14 @@ function pageOf(request: Request): Page | null {
   }
 }
 
-export async function waitForAnswers(page: Page): Promise<void> {
-  const waiting = contexts.get(page.context());
+export function waitForAnswers(page: Page): Promise<void> {
+  return waitForContextAnswers(page.context());
+}
+
+export async function waitForContextAnswers(
+  context: BrowserContext,
+): Promise<void> {
+  const waiting = contexts.get(context);
   if (!waiting) throw new Error("The context is not tracked: use support/test");
   await expect
     .poll(

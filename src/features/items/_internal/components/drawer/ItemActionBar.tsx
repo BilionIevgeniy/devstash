@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 
 import { CopyButton } from "@/components/common/CopyButton";
 import { Button } from "@/components/ui/button";
+import { ACTION_LABEL } from "@/features/items/_internal/components/drawer/action-label";
 import {
   DeleteItemDialog,
   type ItemDeleteHandler,
@@ -14,10 +15,6 @@ import {
 import type { DashboardItem } from "@/features/items/types";
 import { typeInk } from "@/features/item-types/components/type-color";
 import { cn } from "@/lib/utils";
-
-// Five labelled buttons do not fit a phone, so there the labels are only read
-// out. The active state stays visible through the filled icons.
-const ACTION_LABEL = "sr-only sm:not-sr-only";
 
 interface ItemActionBarProps {
   item: DashboardItem;

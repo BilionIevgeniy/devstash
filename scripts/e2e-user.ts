@@ -46,6 +46,12 @@ export function visualUserEmail(runEmail: string): string {
   return `visual-${runEmail}`;
 }
 
+// A sixth user on the Pro plan whose rows fill the loading states
+// (e2e/skeletons.spec.ts, scripts/e2e-skeleton-user.ts); nothing writes to it.
+export function skeletonUserEmail(runEmail: string): string {
+  return `skeleton-${runEmail}`;
+}
+
 // The favorites of the Pro user of the 500-row profile of /favorites
 // (scripts/e2e-fixture.ts, e2e/perf/; not part of CI).
 export const E2E_MANY_FAVORITES = 500;

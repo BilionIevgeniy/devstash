@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 
+import { LinkPendingMark } from "@/components/common/LinkPendingMark";
 import { homePath } from "@/i18n/config";
+
+import { cn } from "@/lib/utils";
 
 import { LanguageLink } from "./links/LanguageLink";
 import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
@@ -40,8 +43,15 @@ export function MobileNavPanel({
         </Link>
         <LanguageLink variant="name" className={PANEL_LINK} />
         {hasSession === false && (
-          <Link href={SIGN_IN_PATH} className={PANEL_LINK}>
+          <Link
+            href={SIGN_IN_PATH}
+            className={cn(
+              PANEL_LINK,
+              "transition-opacity has-data-pending:opacity-60 has-data-pending:delay-100",
+            )}
+          >
             {t("nav.signIn")}
+            <LinkPendingMark />
           </Link>
         )}
         {hasSession === null && (

@@ -1,3 +1,4 @@
+import { SkeletonText } from "@/components/common/skeletons/SkeletonText";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const TYPE_ROWS = 7;
@@ -26,11 +27,13 @@ function SectionSkeleton({ rows, hasLabel = false }: SectionSkeletonProps) {
             <Skeleton className="h-4 w-16" />
           </div>
         )}
-        {Array.from({ length: rows }, (_, index) => (
-          <div key={index} className="flex h-8 items-center max-md:h-11">
-            <Skeleton className="h-6 w-full max-md:h-9" />
-          </div>
-        ))}
+        <div>
+          {Array.from({ length: rows }, (_, index) => (
+            <div key={index} className="flex h-8 items-center max-md:h-11">
+              <Skeleton className="h-6 w-full max-md:h-9" />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -40,8 +43,14 @@ export function SidebarSkeleton() {
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-16 shrink-0 items-center gap-2 px-4">
-        <Skeleton className="size-6" />
-        <Skeleton className="h-5 w-24" />
+        <div className="flex items-center gap-2 max-md:min-h-11">
+          <Skeleton className="size-6" />
+          {/* As wide as the name in the font of the system, as the badge after
+              it starts there. */}
+          <SkeletonText className="text-lg font-semibold">
+            DevStash
+          </SkeletonText>
+        </div>
         <Skeleton className="h-5 w-10 rounded-full" />
       </div>
 
@@ -51,11 +60,18 @@ export function SidebarSkeleton() {
         <SectionSkeleton rows={ITEM_ROWS} hasLabel />
       </div>
 
-      <div className="flex shrink-0 items-center gap-3 border-t p-4">
-        <Skeleton className="size-8 rounded-full" />
-        <div className="space-y-1.5">
-          <Skeleton className="h-3.5 w-24" />
-          <Skeleton className="h-3 w-32" />
+      <div className="shrink-0 border-t p-2">
+        <div className="flex items-center gap-3 p-2">
+          <Skeleton className="size-8 rounded-full" />
+          <div>
+            <div className="flex h-5 items-center">
+              <Skeleton className="h-3.5 w-24" />
+            </div>
+            <div className="flex h-4 items-center">
+              <Skeleton className="h-3 w-32" />
+            </div>
+          </div>
+          <Skeleton className="ml-auto size-4" />
         </div>
       </div>
     </div>

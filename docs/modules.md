@@ -36,7 +36,7 @@ A module writes only the models it owns and reads only its own models. A relatio
 - **`queries`:** `getEntitlements`, `getBillingOverview`, `getContractState`. A user with no row is on the Free plan
 - **`services/`:** `webhook` (the route), `customer` (for `account`), `reconciliation` (the cron route). Every write of a row goes through the one sync, scoped by the customer ([ADR 0012](adr/0012-webhook-writes-scoped-by-customer.md))
 - **`domain/`:** `limits`, `upgrade` (`UPGRADE_PATH`), `terms` (the numbers of the AGB)
-- **`components/`:** the pricing parts, `BillingSection`, `ProUpgradePanel`, `CancelContractForm`, `ProBadge`, `PlanBadge`, `TestModeHint` (shown while Stripe runs on a test key)
+- **`components/`:** the pricing parts, `BillingSection` with `BillingSectionSkeleton`, `UpgradeHeader` and `UpgradePlansSkeleton` (the loading state of `/upgrade`), `ProUpgradePanel`, `CancelContractForm`, `ProBadge`, `PlanBadge`, `TestModeHint` (shown while Stripe runs on a test key)
 - **Uses:** `auth`
 
 ### item-types
@@ -44,7 +44,7 @@ A module writes only the models it owns and reads only its own models. A relatio
 - **Owns:** `ItemType`: the system types and the custom types of Pro users ([ADR 0031](adr/0031-custom-item-types.md)): their names, slugs, colors and icons, the cap of 50, their settings section
 - **`queries`, `services/custom-types`:** the types of a user; create, update and delete behind a lock, with the Pro check in the service
 - **`domain/`:** `item-type` (labels, slugs, `typePagePath`, row to `ItemTypeInfo`), `custom-type` (the rules and the palette), `rank-types-by-usage`
-- **`components/`:** `TypeIcon`, `CustomTypesSection` (the settings page hands it the Query sync of items)
+- **`components/`:** `TypeIcon`, `CustomTypesSection` with `CustomTypesSkeleton` (the settings page hands it the Query sync of items)
 - **Uses:** `auth`, `billing`
 
 ### files
@@ -76,7 +76,7 @@ A module writes only the models it owns and reads only its own models. A relatio
 ### editor
 
 - **Owns:** `UserPreference` and the editor preferences; the editors of item content: `CodeEditor` (Monaco, served from `public/monaco/`, a plain textarea when it fails to load) and `MarkdownEditor`; the Markdown preview (no raw HTML, and never an image: its alt text); the languages and their picker
-- **`components/`:** the two editors, `MarkdownPreview`, `LanguageSelect`, `EditorPreferencesProvider` (around the shell, whose dialogs hold editors), `EditorPreferencesSection`, `hooks/use-language-label`
+- **`components/`:** the two editors, `MarkdownPreview`, `LanguageSelect`, `EditorPreferencesProvider` (around the shell, whose dialogs hold editors), `EditorPreferencesSection` with `EditorPreferencesSkeleton`, `hooks/use-language-label`
 - **`queries`, `domain/code-language`, `types`:** the preferences; the language names; `EditorHandle`, the `ref` with `focus()` only
 - It cannot import `ai`: Explain Code and prompt optimization reach the editors through slots that `items` fills
 - **Uses:** `auth`
@@ -101,7 +101,7 @@ A module writes only the models it owns and reads only its own models. A relatio
 
 - **Owns:** no model; the export format and the export ([ADR 0019](adr/0019-export-without-file-bytes.md)), the import in batches ([ADR 0020](adr/0020-import-as-batched-data-input.md)), the data section of the settings page. It writes through the owners' services, never straight to Prisma
 - **`services/export`:** Pro or a Pro that has ended (`canExport`), once a minute, then the stream, for `app/api/export`
-- **`components/DataSection`:** composed by the settings page, which passes the plan and whether the export is open
+- **`components/DataSection`** (with `DataSectionSkeleton`)**:** composed by the settings page, which passes the plan and whether the export is open
 - **Uses:** `auth`, `billing`, `item-types`, `items`, `collections`
 
 ### account

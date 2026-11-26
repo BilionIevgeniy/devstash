@@ -605,7 +605,7 @@ const eslintConfig = defineConfig([
       "src/components/ui/**",
       "src/app/(marketing)/_legal/**",
       "src/app/(marketing)/_components/legal/LegalPage.tsx",
-      "src/components/common/BilingualErrorText.tsx",
+      "src/components/common/bilingual/BilingualErrorText.tsx",
       "src/app/global-error.tsx",
       // The throw routes of the end-to-end build only (scripts/e2e-build.ts):
       // no user ever sees them.

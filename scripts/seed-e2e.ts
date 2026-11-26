@@ -9,9 +9,11 @@ import {
   overLimitUserEmail,
   proUserEmail,
   requireE2eUserEmail,
+  skeletonUserEmail,
   visualUserEmail,
 } from "./e2e-user";
 import { hashTestPassword, makePro, writeSnippets } from "./e2e-rows";
+import { seedSkeletonUser, writeUploads } from "./e2e-skeleton-user";
 import { seedVisualUser } from "./e2e-visual-user";
 import { migrateTestDatabase } from "./migrate-test-database";
 import { requireTestDatabase } from "./require-dev-database";
@@ -19,7 +21,7 @@ import { createVerifiedTestUser, resetTestDatabase } from "./test-database";
 
 // Prepares the database of the end-to-end tests: brings it to the schema of
 // this branch, empties it, seeds the system item types and the two test users,
-// and adds the user of this run and four more (verified, with a password), who
+// and adds the user of this run and five more (verified, with a password), who
 // sign in through the form (e2e/auth.setup.ts). The global setup of Playwright runs it in a child process,
 // so the generated Prisma client loads the way it does for `db:seed-test`.
 // Reads TEST_DATABASE_URL (locally from .env.test), never DATABASE_URL, so it
@@ -83,6 +85,9 @@ async function seedOverLimitUser(
     },
   });
   await writeSnippets(prisma, userId, E2E_OVER_LIMIT_ROWS, "Kept item");
+  // Uploads from Pro, which a Free user can only download or delete
+  // (/settings/locked-files).
+  await writeUploads(prisma, userId, "file");
 }
 
 async function main() {
@@ -101,6 +106,7 @@ async function main() {
     await seedProUser(prisma, proUserEmail(email), passwordHash);
     await seedOverLimitUser(prisma, overLimitUserEmail(email), passwordHash);
     await seedVisualUser(prisma, visualUserEmail(email), passwordHash);
+    await seedSkeletonUser(prisma, skeletonUserEmail(email), passwordHash);
     console.log("End-to-end database ready");
   } finally {
     await prisma.$disconnect();

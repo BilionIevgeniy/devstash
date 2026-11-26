@@ -16,7 +16,7 @@ import { systemTypeNameForSlug } from "@/features/item-types/domain/item-type";
 import { DiscardChangesDialog } from "@/features/items/_internal/components/form/DiscardChangesDialog";
 import { ItemDetailView } from "@/features/items/_internal/components/drawer/ItemDetailView";
 import { ITEM_SHEET_CLASS } from "@/features/items/_internal/components/drawer/ItemDrawerContent";
-import { ItemDrawerSkeleton } from "@/features/items/_internal/components/drawer/ItemDrawerSkeleton";
+import { ItemDetailSkeleton } from "@/features/items/_internal/components/drawer/ItemDetailSkeleton";
 import { useDirtyCloseGuard } from "@/features/items/_internal/components/hooks/use-dirty-close-guard";
 import { useItemDrawer } from "@/features/items/components/hooks/use-item-drawer";
 import type {
@@ -148,9 +148,12 @@ export function ItemRouteDrawerSkeleton() {
   const slug = usePathname().split("/")[2];
 
   return (
-    <div className="px-6 pt-12 pb-6">
+    <>
       <SheetTitle className="sr-only">{t("loading")}</SheetTitle>
-      <ItemDrawerSkeleton typeName={systemTypeNameForSlug(slug) ?? undefined} />
-    </div>
+      <ItemDetailSkeleton
+        typeName={systemTypeNameForSlug(slug) ?? undefined}
+        variant="sheet"
+      />
+    </>
   );
 }
