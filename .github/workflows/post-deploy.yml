@@ -1,0 +1,32 @@
+# After Vercel reports a successful production deployment (the deployment
+# status it sends to GitHub), the live site must answer: the homepage, the
+# sign-in, Auth.js, a redirect of the app (scripts/post-deploy-smoke.ts). The
+# build and the suite passed before the merge; this catches what only the
+# live environment can break, such as a missing variable or a route that
+# throws at runtime. A red run is an email to the owner; Vercel keeps the
+# deployment, so the way back is Instant Rollback in its dashboard.
+name: post-deploy
+
+on: deployment_status
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment == 'Production'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      SMOKE_ORIGIN: https://devstash.ievgenbilion.de
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.deployment.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      # Node runs the TypeScript as it is (erasable syntax only): no install.
+      - run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/post-deploy-smoke.ts
