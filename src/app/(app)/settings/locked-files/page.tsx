@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { titleOf } from "@/app/page-title";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -10,30 +10,16 @@ import { getSessionUser } from "@/features/auth/nextauth/session";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 import { getEntitlements } from "@/features/billing/queries";
 import { LockedFileList } from "@/features/items/components/lists/LockedFileList";
-import { LockedFileListSkeleton } from "@/features/items/components/lists/LockedFileListSkeleton";
 import { LOCKED_FILES_PATH } from "@/features/items/domain/item-fields";
 import { getUserLockedFiles } from "@/features/items/services/locked-files";
 import { parsePage } from "@/lib/pagination";
 import { SETTINGS_PATH } from "@/features/auth/domain/auth-paths";
 
-async function LockedFilesContent({ page }: { page: number }) {
-  const { id: userId } = await getSessionUser();
-  const files = await getUserLockedFiles(userId, page);
+export const generateMetadata = titleOf("pages.lockedFiles");
 
-  return (
-    <>
-      <LockedFileList files={files.items} />
-      <PaginationNav
-        basePath={LOCKED_FILES_PATH}
-        page={files.page}
-        totalPages={files.totalPages}
-      />
-    </>
-  );
-}
-
-// loading.tsx does not show when only the query string changes, since the
-// segment stays the same: the key gives each page its own loading state.
+// No Suspense: a page change is a navigation in a transition, so the header
+// and the pagination stay, with the focus on the link that was used, and the
+// rows dim until the next page commits; the first load shows loading.tsx.
 export default async function LockedFilesPage({
   searchParams,
 }: PageProps<"/settings/locked-files">) {
@@ -42,10 +28,13 @@ export default async function LockedFilesPage({
   const { isPro } = await getEntitlements(userId);
   if (isPro) redirect(SETTINGS_PATH);
 
-  const page = parsePage((await searchParams).page);
+  const files = await getUserLockedFiles(
+    userId,
+    parsePage((await searchParams).page),
+  );
 
   return (
-    <div className="space-y-8">
+    <div className="group/list space-y-8">
       <LockedFilesHeader
         actions={
           <>
@@ -58,9 +47,14 @@ export default async function LockedFilesPage({
           </>
         }
       />
-      <Suspense key={page} fallback={<LockedFileListSkeleton />}>
-        <LockedFilesContent page={page} />
-      </Suspense>
+      <div className="transition-opacity group-has-data-pending/list:opacity-50">
+        <LockedFileList files={files.items} />
+      </div>
+      <PaginationNav
+        basePath={LOCKED_FILES_PATH}
+        page={files.page}
+        totalPages={files.totalPages}
+      />
     </div>
   );
 }

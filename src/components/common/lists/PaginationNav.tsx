@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { FocusKeepingNav } from "@/components/common/lists/FocusKeepingNav";
 import { LinkPendingMark } from "@/components/common/LinkPendingMark";
 import { buttonVariants } from "@/components/ui/button";
 import { pageHref, pageNumbers } from "@/lib/pagination";
@@ -59,8 +60,9 @@ export function PaginationNav({
   if (totalPages <= 1) return null;
 
   return (
-    <nav
-      aria-label={t("label")}
+    <FocusKeepingNav
+      label={t("label")}
+      page={page}
       className="flex flex-wrap items-center justify-center gap-1"
     >
       <PageStep
@@ -105,6 +107,6 @@ export function PaginationNav({
         <span className="hidden sm:inline">{t("next")}</span>
         <ChevronRight />
       </PageStep>
-    </nav>
+    </FocusKeepingNav>
   );
 }

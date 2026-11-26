@@ -10,6 +10,11 @@ export const E2E_USER_PASSWORD = "e2e-test-password";
 // the run's, so it is new every run too.
 export const E2E_LIST_ROWS = 40;
 
+// Its collections: three pages of /collections, and one collection that holds
+// the 40 rows, two pages of it (e2e/paging.spec.ts).
+export const E2E_LIST_COLLECTIONS = 45;
+export const E2E_PAGED_COLLECTION = "Paged collection";
+
 export function listsUserEmail(runEmail: string): string {
   return `lists-${runEmail}`;
 }

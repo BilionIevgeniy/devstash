@@ -3,7 +3,9 @@ import { config } from "dotenv";
 import { PrismaClient } from "../src/generated/prisma/client";
 import {
   E2E_KEPT_TYPE,
+  E2E_LIST_COLLECTIONS,
   E2E_LIST_ROWS,
+  E2E_PAGED_COLLECTION,
   E2E_OVER_LIMIT_ROWS,
   listsUserEmail,
   overLimitUserEmail,
@@ -45,6 +47,27 @@ async function seedListsUser(
     isPinned: true,
     createdAt: new Date(start + i * 60_000),
   }));
+  // Not favorites, so /favorites keeps only the rows above.
+  await prisma.collection.createMany({
+    data: Array.from({ length: E2E_LIST_COLLECTIONS }, (_, i) => ({
+      userId,
+      name:
+        i === 0
+          ? E2E_PAGED_COLLECTION
+          : `List collection ${String(i).padStart(2, "0")}`,
+    })),
+  });
+  const paged = await prisma.collection.findFirstOrThrow({
+    where: { userId, name: E2E_PAGED_COLLECTION },
+    select: { id: true },
+  });
+  const rows = await prisma.item.findMany({
+    where: { userId },
+    select: { id: true },
+  });
+  await prisma.itemCollection.createMany({
+    data: rows.map(({ id }) => ({ itemId: id, collectionId: paged.id })),
+  });
 }
 
 // The Pro user of the AI journey: an active subscription row, as the Stripe
