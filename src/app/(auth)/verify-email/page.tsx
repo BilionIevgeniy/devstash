@@ -12,6 +12,10 @@ import { emailLinkParamsSchema } from "@/features/auth/schemas";
 import { getErrorText } from "@/lib/errors/error-text";
 import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 
+// Reads the request at its top (the session, or the link's query), so the page
+// blocks on the server and has no instant shell (ADR 0037).
+export const instant = false;
+
 export default async function VerifyEmailPage({
   searchParams,
 }: PageProps<"/verify-email">) {
