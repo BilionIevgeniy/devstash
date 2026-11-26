@@ -11,9 +11,11 @@ The copy script, `scripts/region-move/`, was deleted after the move. It is in th
 | Vercel functions          | `iad1` (Washington)                                                 | `fra1` (Frankfurt), `regions` in `vercel.json`                  |
 | Neon project              | `devstash`, `purple-voice-82062641`, AWS `us-east-2` (Ohio)         | `devstash-eu`, `lively-wildflower-46234559`, AWS `eu-central-1` |
 | production, direct host   | `ep-twilight-hat-b4ay1zs8.c-6.us-east-2.aws.neon.tech`              | `ep-green-mud-bhzhz461.c-10.eu-central-1.aws.neon.tech`         |
-| development, direct host  | `ep-calm-voice-b4zvdl6z.c-6.us-east-2.aws.neon.tech`                | `ep-soft-art-bhqrx5ln.c-10.eu-central-1.aws.neon.tech`          |
-| development, branch id    | `br-super-sound-b4wxm3u6`                                           | `br-raspy-sound-bh0suynz`                                       |
+| development, direct host  | `ep-calm-voice-b4zvdl6z.c-6.us-east-2.aws.neon.tech`                | `ep-orange-star-bh3ldo06.c-10.eu-central-1.aws.neon.tech`       |
+| development, branch id    | `br-super-sound-b4wxm3u6`                                           | `br-ancient-surf-bhvbcik7`                                      |
 | Upstash, R2, Stripe, etc. | not changed (Upstash `devstash-ratelimit` was in Frankfurt already) | not changed                                                     |
+
+The `development` branch of the move (`br-raspy-sound-bh0suynz`, `ep-soft-art-bhqrx5ln`) was gone on 2026-11-26 and every preview failed with P1001; it was created again from `production`, its real users deleted (`npm run db:delete-users`), and the Preview `DATABASE_URL` and `DIRECT_URL` in Vercel replaced. The values above are the new branch.
 
 A pooled host is the direct one with `-pooler` after the endpoint id.
 
