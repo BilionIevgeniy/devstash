@@ -1,5 +1,5 @@
 // Compares the boxes of a loading state with the boxes of the page that
-// replaced it (e2e/support/placeholders.ts measures them, spec 27). Pure, so
+// replaced it (e2e/support/held/placeholders.ts measures them, spec 27). Pure, so
 // the rules of the comparison are unit-tested.
 
 export interface Block {
@@ -7,6 +7,8 @@ export interface Block {
   name: string;
   /** A skeleton bar or box: the loading state's leaf. */
   bar: boolean;
+  /** Has a border or a background: its two edges are seen. */
+  framed?: boolean;
   top: number;
   bottom: number;
   left: number;
@@ -16,11 +18,12 @@ export interface Block {
 
 export interface CompareOptions {
   /**
-   * The number of rows of a list is not known while it loads: its rows are
-   * compared as far as both states have them, and the heights that follow
-   * from the count are not.
+   * The lists whose number of rows is not known while they load, as the end of
+   * the path a difference would name ("section:5 > div:2"). Their rows are
+   * compared as far as both states have them, and the heights that follow from
+   * the count are not. Anywhere else another number of blocks is a difference.
    */
-  rows?: boolean;
+  rows?: readonly string[];
   /** The body is as long as its text: the box a tall bar stands for may be too. */
   text?: boolean;
   /**
@@ -111,7 +114,9 @@ function compareLine(
   const differences: string[] = [];
   // In the middle of a taller line: a line of 44px, the touch target of a phone.
   const middle = near(top + height(before) / 2, lineTop + height(after) / 2);
-  const fits = middle || height(after) - height(before) <= LINE_SLACK;
+  const fits =
+    (middle && height(after) <= TEXT_WIDE + TOLERANCE) ||
+    height(after) - height(before) <= LINE_SLACK;
   if (!inside || !fits) {
     differences.push(
       where(
@@ -141,7 +146,7 @@ function compareChildren(
   const differences: string[] = [];
   let resized = false;
   if (before.children.length !== after.children.length) {
-    if (!options.rows) {
+    if (!options.rows?.some((list) => path.endsWith(` > ${list}`))) {
       differences.push(
         where(
           path,
@@ -214,10 +219,12 @@ function compareAt(
       where(path, `${px(height(before))} tall, then ${px(height(after))}`),
     );
   }
-  const boxEdges =
-    before.bar && height(before) > TEXT_WIDE
-      ? near(before.left, after.left) && near(before.right, after.right)
-      : sameEdge(before, after);
+  const bothEdges =
+    (before.bar && height(before) > TEXT_WIDE) ||
+    (before.framed && after.framed);
+  const boxEdges = bothEdges
+    ? near(before.left, after.left) && near(before.right, after.right)
+    : sameEdge(before, after);
   if (!boxEdges) {
     differences.push(
       where(
@@ -233,8 +240,10 @@ function compareAt(
 }
 
 // What differs between the two states, or nothing. A bar of one line of text
-// lies inside the line; every other block has the place, the height and the
-// edges of the one that replaces it, and as many blocks come before it.
+// lies inside the line; every other block has the place and the height of the
+// one that replaces it, and as many blocks come before it. A box and a framed
+// block also have both of its edges; any other block is as wide as what is in
+// it, so one edge, or the middle, is enough.
 export function compareBlocks(
   before: Block,
   after: Block,

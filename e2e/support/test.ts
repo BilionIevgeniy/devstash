@@ -1,5 +1,9 @@
 import { expect, test as base } from "@playwright/test";
-import { holdReads, type HeldTable, type ReleaseReads } from "./hold-reads";
+import {
+  holdReads,
+  type HeldTable,
+  type ReleaseReads,
+} from "./held/hold-reads";
 import { trackAnswers } from "./network";
 
 // Every spec imports `test` and `expect` from here, never from
@@ -8,7 +12,7 @@ import { trackAnswers } from "./network";
 // any page of its context (ADR 0036): a policy that blocks a part of the app
 // shows here. It also tracks the answers of the context for waitForAnswers
 // (support/network.ts). `holdReads` holds the server's answer back
-// (support/hold-reads.ts) and releases what the test did not, also after a
+// (support/held/hold-reads.ts) and releases what the test did not, also after a
 // timeout, so no lock outlives its test.
 const CSP_MESSAGE = /Content Security Policy/i;
 
@@ -37,7 +41,10 @@ export const test = base.extend<Fixtures>({
       held.push(release);
       return release;
     });
-    for (const release of held) await release();
+    // Every one is released, also after one that failed.
+    const results = await Promise.allSettled(held.map((release) => release()));
+    const failed = results.find(({ status }) => status === "rejected");
+    if (failed?.status === "rejected") throw failed.reason;
   },
 });
 

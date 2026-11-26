@@ -1,8 +1,9 @@
-import type { Route } from "@playwright/test";
 import { expect, test } from "./support/test";
+import { holdRoute } from "./support/held/hold-route";
 import { waitForAnswers } from "./support/network";
-import { linkSpinner, lookOf } from "./support/placeholders";
+import { linkSpinner, lookOf } from "./support/held/placeholders";
 import { PAINTED_THEMES, startInTheme } from "./support/theme";
+import { VIEWPORTS } from "./support/held/viewports";
 
 // The app's shell is not prefetched (ADR 0037), so a click on a homepage button
 // shows nothing until the server has answered. The answer of /dashboard is held
@@ -10,10 +11,7 @@ import { PAINTED_THEMES, startInTheme } from "./support/theme";
 // Nothing is held of the prefetches, which leave with their own header.
 
 for (const theme of PAINTED_THEMES) {
-  for (const [name, size] of [
-    ["desktop", { width: 1280, height: 800 }],
-    ["phone", { width: 375, height: 800 }],
-  ] as const) {
+  for (const { name, size } of VIEWPORTS) {
     test.describe(`${theme}, ${name}`, () => {
       test.use({ viewport: size });
 
@@ -28,15 +26,14 @@ for (const theme of PAINTED_THEMES) {
         await expect(link).toBeVisible();
         await waitForAnswers(page);
 
-        const held: Route[] = [];
-        let released = false;
-        await page.route(/\/dashboard/, async (route) => {
-          const headers = await route.request().allHeaders();
-          const prefetch = "next-router-prefetch" in headers;
-          if (released || prefetch || !("rsc" in headers)) {
-            await route.continue();
-          } else held.push(route);
-        });
+        const release = await holdRoute(
+          page,
+          /\/dashboard/,
+          async (request) => {
+            const headers = await request.allHeaders();
+            return "rsc" in headers && !("next-router-prefetch" in headers);
+          },
+        );
         const before = await lookOf(link);
         await link.click();
         const spinner = linkSpinner(link);
@@ -52,9 +49,7 @@ for (const theme of PAINTED_THEMES) {
         expect(after.height).toBe(before.height);
         expect(after.left).toBe(before.left);
 
-        await expect.poll(() => held.length).toBeGreaterThan(0);
-        released = true;
-        await Promise.all(held.map((route) => route.continue()));
+        await release();
         await expect(page).toHaveURL(/\/dashboard$/);
       });
     });

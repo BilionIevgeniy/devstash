@@ -1,7 +1,7 @@
 import type { BrowserContext } from "@playwright/test";
 import { Client, DatabaseError } from "pg";
-import { requireTestDatabase } from "../../scripts/require-dev-database";
-import { waitForContextAnswers } from "./network";
+import { requireTestDatabase } from "../../../scripts/require-dev-database";
+import { waitForContextAnswers } from "../network";
 
 // Holds the server's answer back without a test path in production code: the
 // test takes a lock on a table, so every read of it waits and the production

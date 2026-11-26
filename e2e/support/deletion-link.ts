@@ -17,15 +17,19 @@ export async function openDeletionLink(email: string): Promise<string> {
   });
   await client.connect();
   try {
-    await client.query('UPDATE "User" SET password = NULL WHERE email = $1', [
-      email,
-    ]);
+    const updated = await client.query(
+      'UPDATE "User" SET password = NULL WHERE email = $1',
+      [email],
+    );
+    if (updated.rowCount !== 1) throw new Error("No such test user");
     await client.query(
       'INSERT INTO "VerificationToken" (identifier, token, expires) VALUES ($1, $2, $3)',
       [
         getAccountDeletionIdentifier(email),
         createHash("sha256").update(token).digest("hex"),
-        getAccountDeletionExpiry(new Date()),
+        // As UTC, like Prisma: pg writes a Date in the machine's time zone,
+        // which a column without one drops.
+        getAccountDeletionExpiry(new Date()).toISOString(),
       ],
     );
   } finally {

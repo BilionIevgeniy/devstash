@@ -6,9 +6,10 @@ import {
   lookOf,
   menuRowPlaceholder,
   navbarPlaceholder,
-} from "./support/placeholders";
+} from "./support/held/placeholders";
 import { SIGNED_OUT } from "./support/storage-state";
 import { PAINTED_THEMES, startInTheme } from "./support/theme";
+import { PHONE, VIEWPORTS } from "./support/held/viewports";
 
 // The homepage is static and learns of the session after it has painted
 // (ADR 0037). Until the answer, a placeholder holds the place of each action
@@ -34,11 +35,6 @@ const ANSWERS = [
     // After the hero's, before the one of the closing section.
     freeIndex: 1,
   },
-] as const;
-
-const VIEWPORTS = [
-  { name: "desktop", size: { width: 1280, height: 800 } },
-  { name: "phone", size: { width: 375, height: 800 } },
 ] as const;
 
 for (const theme of PAINTED_THEMES) {
@@ -110,7 +106,7 @@ for (const theme of PAINTED_THEMES) {
   for (const answer of ANSWERS) {
     test.describe(`the phone menu, ${theme}, ${answer.name}`, () => {
       test.use({
-        viewport: { width: 375, height: 800 },
+        viewport: PHONE,
         ...(answer.storageState ? { storageState: answer.storageState } : {}),
       });
 

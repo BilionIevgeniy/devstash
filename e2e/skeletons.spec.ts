@@ -10,19 +10,18 @@ import {
 import { LOCALE_COOKIE } from "../src/i18n/config";
 import { openDeletionLink } from "./support/deletion-link";
 import { signInFreshUser } from "./support/fresh-user";
-import type { HeldTable } from "./support/hold-reads";
+import type { HeldTable } from "./support/held/hold-reads";
+import { expectSameBlocks, measureSettled } from "./support/held/blocks";
+import { now, trackLayoutShifts } from "./support/held/layout-shifts";
 import {
   expectInPlace,
-  expectSameBlocks,
   expectSameLook,
   lookOf,
   measureHeld,
-  measureThemes,
   newItemPlaceholder,
   skeletonIn,
-  trackLayoutShifts,
   type InPlace,
-} from "./support/placeholders";
+} from "./support/held/placeholders";
 import {
   E2E_ORIGIN,
   OVER_LIMIT_AUTH_FILE,
@@ -31,12 +30,14 @@ import {
   VISUAL_AUTH_FILE,
 } from "./support/storage-state";
 import { PAINTED_THEMES, startInTheme } from "./support/theme";
+import { PHONE, VIEWPORTS } from "./support/held/viewports";
 
 // Every loading.tsx of the app and every Suspense fallback, against the page
 // that replaces it (spec 27): the read is held back, the skeleton measured,
 // the answer let through and the page measured, on a desktop and a phone, in
 // both themes. The boxes are the proof; a layout shift is reported only of
-// nodes that stay on the page and move (the top bar, the footer).
+// nodes that stay on the page and move (the top bar, the footer), from the start
+// of the document or the click.
 //
 // Not held apart, because no read can do it:
 // - items/[type]'s inner Suspense: the page counts items before it, so "Item"
@@ -45,21 +46,19 @@ import { PAINTED_THEMES, startInTheme } from "./support/theme";
 //   page's own Suspense, which is what shows
 // - profile/loading.tsx: the page is synchronous, so its own fallbacks show,
 //   the same two skeletons under the same header
+// - dashboard/loading.tsx and the page's own fallbacks: the same skeletons, so
+//   that the second case shows the page's own cannot be told apart
 // - the client parts with a loading state of their own and no read of the
 //   server: MarkdownPreview, the palette, the create form, AI answers
 //
 // Named exceptions:
-// - `rows`: how many rows a list has is not known while it loads
+// - `rows`: the lists whose number of rows is not known while they load
 // - `depth`: the inside of a row or a card is not drawn, its box is
 // - `text`: a note is as long as its text, and the content below it moves when
 //   the Markdown parser has loaded ("content")
 // - the Upgrade button of a Free user joins the top bar ("top bar")
 // - a Pro user's /settings and one with custom types, a custom type's header
-
-const VIEWPORTS = [
-  { name: "desktop", size: { width: 1280, height: 800 } },
-  { name: "phone", size: { width: 375, height: 800 } },
-] as const;
+// - the row of kept files of a Free user in /settings and below /upgrade
 
 type Target = (page: Page) => Locator;
 
@@ -71,7 +70,8 @@ type Case = {
   holds: HeldTable[];
   /** On screen only with the answer. */
   settled: Target;
-} & Pick<InPlace, "rows" | "text" | "depth" | "mayShift">;
+  /** On screen only in this state, not in the loading.tsx before it. */
+} & Pick<InPlace, "rows" | "text" | "depth" | "mayShift"> & { held?: Target };
 
 // The page, without the footer that follows it.
 const pageRoot: Target = (page) =>
@@ -100,6 +100,9 @@ const linkOn =
     return href ?? "";
   };
 
+// Ten items, and a skeleton of five rows.
+const RECENT_ITEMS = ["section:5 > div:2"];
+
 const CASES: Case[] = [
   {
     name: "dashboard, loading.tsx",
@@ -107,7 +110,7 @@ const CASES: Case[] = [
     path: "/dashboard",
     holds: ["User"],
     settled: heading("Recent Items"),
-    rows: true,
+    rows: RECENT_ITEMS,
     depth: 4,
     mayShift: ["footer"],
   },
@@ -117,7 +120,7 @@ const CASES: Case[] = [
     path: "/dashboard",
     holds: ["Item", "Collection"],
     settled: heading("Recent Items"),
-    rows: true,
+    rows: RECENT_ITEMS,
     depth: 4,
     mayShift: ["footer"],
   },
@@ -158,7 +161,7 @@ const CASES: Case[] = [
     path: "/pinned",
     holds: ["User"],
     settled: firstSelect,
-    rows: true,
+    rows: ["div:2", "section:2 > div:2"],
     depth: 5,
     mayShift: ["footer"],
   },
@@ -221,7 +224,11 @@ const CASES: Case[] = [
     storageState: OVER_LIMIT_AUTH_FILE,
     path: "/settings/locked-files",
     holds: ["Item"],
+    // Only the page offers to renew.
+    held: (page) =>
+      page.getByRole("main").getByRole("link", { name: /^Renew/ }),
     settled: (page) => page.getByRole("link", { name: /^Download / }).first(),
+    mayShift: ["top bar"],
   },
 ];
 
@@ -229,7 +236,15 @@ for (const viewport of VIEWPORTS) {
   test.describe(viewport.name, () => {
     test.use({ viewport: viewport.size });
 
-    for (const { name, storageState, path, holds, settled, ...rest } of CASES) {
+    for (const {
+      name,
+      storageState,
+      path,
+      holds,
+      settled,
+      held,
+      ...rest
+    } of CASES) {
       test.describe(name, () => {
         test.use({ storageState });
 
@@ -246,6 +261,7 @@ for (const viewport of VIEWPORTS) {
             root: pageRoot(page),
             release,
             settled: settled(page),
+            held: held?.(page),
             ...rest,
           });
         });
@@ -279,7 +295,7 @@ for (const viewport of VIEWPORTS) {
       // The session of a guest reads no table, so nothing holds it: the
       // skeleton is measured as a signed-in visitor sees it, the form as a
       // guest. A signed-in visitor gets their contract instead of it, which
-      // is shorter.
+      // is shorter: two documents, so no shift is measured.
       test("the skeleton has the boxes of a guest's form", async ({
         page,
         browser,
@@ -301,7 +317,7 @@ for (const viewport of VIEWPORTS) {
 
         await page.goto("/vertraege-kuendigen");
         await expect(page.getByRole("radio").first()).toBeVisible();
-        const after = await measureThemes(page, root(page));
+        const after = await measureSettled(page, root(page));
         expectSameBlocks(page, before, after);
       });
     });
@@ -323,6 +339,7 @@ for (const viewport of VIEWPORTS) {
           const link = linkTo(page, title);
           await expect(link).toBeVisible();
           const release = await holdReads("User");
+          const since = await now(page);
           await link.click();
           const drawer = page.getByRole("dialog");
           await expect(drawer).toBeVisible();
@@ -330,6 +347,7 @@ for (const viewport of VIEWPORTS) {
             root: drawer,
             release,
             settled: drawer.getByRole("heading", { name: title, exact: true }),
+            since,
             text: slug === "notes",
             mayShift: slug === "notes" ? ["content"] : [],
           });
@@ -373,7 +391,7 @@ for (const viewport of VIEWPORTS) {
 // words: German wraps in other places than English.
 test.describe("in German, on a phone", () => {
   test.use({
-    viewport: VIEWPORTS[1].size,
+    viewport: PHONE,
     storageState: VISUAL_AUTH_FILE,
   });
   test.beforeEach(async ({ context }) => {
@@ -415,13 +433,13 @@ test.describe("after a click", () => {
     name: string;
     link: string;
     settled: Target;
-    rows?: boolean;
+    rows?: string[];
   }[] = [
     {
       name: "dashboard",
       link: "DevStash",
       settled: heading("Recent Items"),
-      rows: true,
+      rows: RECENT_ITEMS,
     },
     {
       name: "items/snippets",
@@ -438,6 +456,7 @@ test.describe("after a click", () => {
       await page.goto("/favorites");
       await expect(firstSelect(page)).toBeVisible();
       const release = await holdReads("User");
+      const since = await now(page);
       await page
         .getByRole("complementary")
         .getByRole("link", { name: new RegExp(`^${link}`) })
@@ -446,6 +465,7 @@ test.describe("after a click", () => {
         root: pageRoot(page),
         release,
         settled: settled(page),
+        since,
         rows,
         depth: 4,
         mayShift: rows ? ["footer"] : [],
@@ -469,10 +489,12 @@ test.describe("after a click", () => {
       await expect(menuItem).toBeVisible({ timeout: 2_000 });
     }).toPass();
     const release = await holdReads("User");
+    const since = await now(page);
     await menuItem.click();
     await expectInPlace(page, {
       root: pageRoot(page),
       release,
+      since,
       settled: heading(/^Usage/)(page),
     });
   });

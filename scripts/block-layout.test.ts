@@ -68,6 +68,39 @@ describe("compareBlocks", () => {
     ]);
   });
 
+  it("accepts a bar in the middle of a 44px line and of nothing taller", () => {
+    const pair = (height: number) =>
+      [
+        block("div", 0, 100, {
+          children: [bar("i", 0, 20), bar("p", (height - 20) / 2, 20)],
+        }),
+        block("div", 0, 100, {
+          children: [block("i", 0, 20), block("p", 0, height)],
+        }),
+      ] as const;
+    // Both start from where the row starts.
+    expect(compareBlocks(...pair(44))).toEqual([]);
+    expect(compareBlocks(...pair(100))).not.toEqual([]);
+  });
+
+  it("compares both edges of a framed block", () => {
+    const page = (right: number) =>
+      block("main", 0, 100, {
+        children: [
+          block("div", 0, 50, {
+            framed: true,
+            right,
+            children: [bar("p", 0, 20), bar("p", 24, 20)],
+          }),
+          bar("div", 60, 40),
+        ],
+      });
+    const after = page(900);
+    after.children[0].children = [block("p", 0, 20), block("p", 24, 20)];
+    after.children[1].bar = false;
+    expect(compareBlocks(page(300), after)).toHaveLength(1);
+  });
+
   it("reports a bar that stands for something far taller than a line", () => {
     const before = block("div", 0, 48, { children: [bar("p", 0, 20)] });
     const after = block("div", 0, 48, { children: [block("p", 0, 48)] });
@@ -79,14 +112,9 @@ describe("compareBlocks", () => {
     const taller = block("div", 0, 44, { children: [block("a", 0, 44)] });
     expect(compareBlocks(control, taller)).toEqual(["a: 32px tall, then 44px"]);
     const card = block("div", 0, 90, { children: [bar("a", 0, 90, 80)] });
-    const wider = block("div", 0, 90, {
-      children: [
-        block("a", 0, 90),
-        block("i", 0, 2, { left: 301, right: 310 }),
-      ],
-    });
-    expect(compareBlocks(card, wider, { rows: true })).toEqual([
-      "div > a: from 0px to 80px, then from 0px to 300px",
+    const wider = block("div", 0, 90, { children: [block("a", 0, 90)] });
+    expect(compareBlocks(card, wider)).toEqual([
+      "a: from 0px to 80px, then from 0px to 300px",
     ]);
   });
 
@@ -111,13 +139,38 @@ describe("compareBlocks", () => {
       Array.from({ length: count }, (_, index) =>
         block("li", index * height, height, { bar: isBar }),
       );
-    const before = block("ul", 0, 6 * 36, { children: rows(6, 36, true) });
-    const after = block("ul", 0, 2 * 36, { children: rows(2, 36, false) });
-    expect(compareBlocks(before, after, { rows: true })).toEqual([]);
-    expect(compareBlocks(before, after)).toHaveLength(1);
+    const page = (list: Block) =>
+      block("main", 0, 400, { children: [block("h1", 0, 2), list] });
+    const before = page(
+      block("ul:2", 0, 6 * 36, { children: rows(6, 36, true) }),
+    );
+    const after = page(
+      block("ul:2", 0, 2 * 36, { children: rows(2, 36, false) }),
+    );
+    expect(compareBlocks(before, after, { rows: ["ul:2"] })).toEqual([]);
+    expect(compareBlocks(before, after)).not.toEqual([]);
 
-    const taller = block("ul", 0, 2 * 44, { children: rows(2, 44, false) });
-    expect(compareBlocks(before, taller, { rows: true })).toHaveLength(2);
+    const taller = page(
+      block("ul:2", 0, 2 * 44, { children: rows(2, 44, false) }),
+    );
+    expect(compareBlocks(before, taller, { rows: ["ul:2"] })).toHaveLength(2);
+  });
+
+  it("reports a missing section on a page whose list is excused", () => {
+    const section = (name: string, top: number) => bar(name, top, 60);
+    const before = block("main", 0, 300, {
+      children: [section("a", 0), block("ul:2", 60, 72, { children: [] })],
+    });
+    const after = block("main", 0, 300, {
+      children: [
+        block("a", 0, 60),
+        block("ul:2", 60, 72),
+        block("section", 140, 60),
+      ],
+    });
+    expect(compareBlocks(before, after, { rows: ["ul:2"] })).toEqual([
+      "main: 2 blocks while loading, 3 after",
+    ]);
   });
 
   it("places a block after a list from the end of the list", () => {
@@ -135,7 +188,7 @@ describe("compareBlocks", () => {
         block("section", 68, 90),
       ],
     });
-    expect(compareBlocks(before, after, { rows: true })).toEqual([]);
+    expect(compareBlocks(before, after, { rows: ["ul:1", "ul"] })).toEqual([]);
   });
 
   it("lets a tall box be as long as its text, when the case says so", () => {
