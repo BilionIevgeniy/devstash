@@ -72,3 +72,7 @@ A session that ends on the server (expiry, or the sessions a password change on 
 ## Addendum (2026-11-25)
 
 The regions named here (`iad1`, `us-east-2`) are the ones before [ADR 0038](0038-frankfurt-region.md), which moved the functions and Neon to Frankfurt.
+
+## Addendum (2026-11-26): instant validation in CI
+
+Next.js validates in `next dev` only, and in the browser's console only, that a navigation can show its loading state at once. The production build of the suite never saw it, and a user found the errors in their own dev server: `loading.tsx` files with a server `useTranslations` (the locale is the request), the layout of `/items/[type]` awaiting its `params` above its loading state, four auth pages and two more reading the request at their top without saying so, and the app layout's `generateMetadata` reading the locale for a description that pages never indexed do not need. Fixed: the words of a loading state come from the provider through client components, the type comes from `useParams`, those pages export `instant = false`, and the app layout's metadata is static. `npm run test:instant` (`playwright.instant.config.ts`, `e2e/instant.spec.ts`) now runs every page on `next dev` after the main suite in the `e2e` job and fails on any console error. The intercepted drawer route exports `instant = false`: the validator cannot render the shell's browser-only palette there; its loading state is measured in `e2e/skeletons.spec.ts`.

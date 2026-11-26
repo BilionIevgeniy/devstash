@@ -9,6 +9,11 @@ import {
 import { toItemDetailJson } from "@/features/items/domain/item-detail";
 import { openUserItem } from "@/features/items/services/item-detail";
 
+// Next's instant validation cannot render this intercepted route: the shell's
+// palette is browser-only (next/dynamic without SSR), and it stops there. The
+// drawer's loading state on a click is measured in e2e/skeletons.spec.ts.
+export const instant = false;
+
 // No type check here: the interception rewrite takes `type` from the page the
 // link was clicked on, so a sidebar row of another type lands with the wrong
 // one. A typed URL is a hard load and never reaches this route.

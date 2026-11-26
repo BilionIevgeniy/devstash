@@ -15,6 +15,10 @@ import { Button } from "@/components/ui/button";
 // Where an email link finished while the browser is signed in with another
 // account, or where a refused GitHub sign-in lands. Without a session there is
 // nothing to switch from, so the sign-in page takes over.
+// Reads the request at its top (the session, or the link's query), so the page
+// blocks on the server and has no instant shell (ADR 0037).
+export const instant = false;
+
 export default async function SwitchAccountPage({
   searchParams,
 }: PageProps<"/switch-account">) {

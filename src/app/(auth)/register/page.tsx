@@ -14,6 +14,10 @@ import {
 // A signed-in user goes to the dashboard. Checked here and not in the proxy:
 // auth() also checks the session version, so a revoked session reads as signed
 // out here instead of bouncing between the proxy and the pages.
+// Reads the request at its top (the session, or the link's query), so the page
+// blocks on the server and has no instant shell (ADR 0037).
+export const instant = false;
+
 export default async function RegisterPage() {
   const session = await auth();
   if (session?.user) redirect(DASHBOARD_PATH);

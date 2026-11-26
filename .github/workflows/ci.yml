@@ -196,6 +196,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-e2e-${{ hashFiles('package-lock.json') }}-
       - run: npm run test:e2e
+      # What only `next dev` reports, in the browser's console (instant
+      # validation, hydration): after the suite, on the same database.
+      - run: npm run test:instant
       # Playwright writes a missing screenshot baseline and lets its test pass,
       # so a baseline that was never committed would never be compared. The
       # job fails instead; the written picture is in the artifact below.

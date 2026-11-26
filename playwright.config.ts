@@ -29,6 +29,8 @@ const isCi = Boolean(process.env.CI);
 
 export default defineConfig({
   testDir: "e2e",
+  // Runs against `next dev` with its own config (playwright.instant.config.ts).
+  testIgnore: /instant\.(setup|spec)\.ts$/,
   globalSetup: "./e2e/global-setup.ts",
   // One user and one database: the order of the tests is the order of the files.
   fullyParallel: false,

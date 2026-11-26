@@ -1,3 +1,5 @@
+"use client";
+
 import { SkeletonText } from "@/components/common/skeletons/SkeletonText";
 import { ThemePickerView } from "@/components/common/theme/ThemePickerView";
 import { useTranslations } from "next-intl";

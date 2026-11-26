@@ -1,15 +1,28 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+
+/** The pages whose title and lead need no data. */
+export type PageHeaderNamespace =
+  | "pages.dashboard"
+  | "pages.favorites"
+  | "pages.pinned"
+  | "pages.profile"
+  | "pages.settings";
+
 interface PageHeaderProps {
-  title: string;
-  lead: string;
+  namespace: PageHeaderNamespace;
 }
 
-// The header of a page whose title and lead need no data: the page and its
-// loading.tsx both show it, so nothing about it is a guess.
-export function PageHeader({ title, lead }: PageHeaderProps) {
+// The header of a page and of its loading.tsx. A client component: its words
+// come from the layout's provider, so a loading state reads no request and
+// stays instant (`instant` validation of next dev, e2e/instant.spec.ts).
+export function PageHeader({ namespace }: PageHeaderProps) {
+  const t = useTranslations(namespace);
   return (
     <header>
-      <h1 className="text-3xl font-bold">{title}</h1>
-      <p className="text-muted-foreground">{lead}</p>
+      <h1 className="text-3xl font-bold">{t("title")}</h1>
+      <p className="text-muted-foreground">{t("lead")}</p>
     </header>
   );
 }

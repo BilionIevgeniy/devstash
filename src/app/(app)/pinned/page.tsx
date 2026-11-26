@@ -1,6 +1,5 @@
 import { PageHeader } from "@/app/(app)/_components/PageHeader";
 import { PinnedLists } from "@/app/(app)/pinned/_components/PinnedLists";
-import { getTranslations } from "next-intl/server";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { getEntitlements } from "@/features/billing/queries";
 import { ItemDrawerProvider } from "@/features/items/components/drawer/ItemDrawerProvider";
@@ -12,7 +11,6 @@ import { pinnedItemSortSchema } from "@/features/items/schemas";
 export default async function PinnedPage({
   searchParams,
 }: PageProps<"/pinned">) {
-  const t = await getTranslations("pages.pinned");
   const { id: userId } = await getSessionUser();
   const sort = pinnedItemSortSchema.parse((await searchParams).sort);
   const [groups, { isPro }] = await Promise.all([
@@ -22,7 +20,7 @@ export default async function PinnedPage({
 
   return (
     <div className="space-y-8">
-      <PageHeader title={t("title")} lead={t("lead")} />
+      <PageHeader namespace="pages.pinned" />
       {/* Around the empty state too: the last pin leaving through the open
           drawer must not unmount the drawer's sheet. */}
       <ItemDrawerProvider lockProItems={!isPro}>

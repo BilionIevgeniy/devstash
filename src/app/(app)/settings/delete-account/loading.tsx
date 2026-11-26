@@ -1,3 +1,5 @@
+"use client";
+
 import { useTranslations } from "next-intl";
 
 import { DeletionNoticeSkeleton } from "@/app/(app)/settings/delete-account/_components/DeletionNoticeSkeleton";

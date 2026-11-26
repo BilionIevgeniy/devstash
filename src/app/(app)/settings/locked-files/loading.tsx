@@ -1,3 +1,5 @@
+"use client";
+
 import { useTranslations } from "next-intl";
 
 import { LockedFilesHeader } from "@/app/(app)/settings/locked-files/_components/LockedFilesHeader";

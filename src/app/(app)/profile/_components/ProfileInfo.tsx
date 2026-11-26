@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getFormatter, getTranslations } from "next-intl/server";
 
-import { PROFILE_INFO } from "@/app/(app)/profile/_components/ProfileSkeletons";
+import { PROFILE_INFO } from "@/app/(app)/profile/_components/profile-classes";
 import { UserAvatar } from "@/features/auth/components/UserAvatar";
 import { getUserProfile } from "@/features/auth/queries";
 import { getSessionUser } from "@/features/auth/nextauth/session";

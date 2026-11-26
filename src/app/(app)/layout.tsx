@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getLocale } from "next-intl/server";
 
 import { ConsentRoot } from "@/components/common/consent/ConsentRoot";
 import { AppToaster } from "@/components/common/providers/AppToaster";
@@ -30,17 +30,15 @@ import { appMessages } from "@/i18n/messages";
 // to guess the sidebar's width and would shift the page when the shell came.
 export const instant = false;
 
-// The description of every page under this layout, in its language; the
-// title stays the root layout's "DevStash". Never indexed: the same rule goes
-// out as the X-Robots-Tag header (next.config.ts), since this dynamic layout's
-// metadata streams into the body.
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("common.meta");
-  return {
-    description: t("description"),
-    robots: { index: false, follow: false },
-  };
-}
+// Never indexed: the same rule goes out as the X-Robots-Tag header
+// (next.config.ts). Static, with the root layout's title and description: a
+// description read in the visitor's language read the request, and every
+// navigation inside the app (an item's drawer) waited for it (instant
+// validation, e2e/instant.spec.ts). Pages that are never indexed need no
+// words of their own here.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const [cookieStore, locale] = await Promise.all([cookies(), getLocale()]);

@@ -1,3 +1,5 @@
+"use client";
+
 import { useFormatter, useTranslations } from "next-intl";
 
 import { SkeletonButton } from "@/components/common/skeletons/SkeletonButton";

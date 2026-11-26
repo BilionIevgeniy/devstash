@@ -1,3 +1,5 @@
+"use client";
+
 import { useTranslations } from "next-intl";
 
 // The header of /upgrade, which its loading state shows too: it needs no data.
