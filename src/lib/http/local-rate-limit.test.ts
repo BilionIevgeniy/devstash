@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { consumeLocalRateLimit } from "@/lib/vendors/local-rate-limit";
+import { consumeLocalRateLimit } from "@/lib/http/local-rate-limit";
 
 const POLICY = { name: "test:local", limit: 2, windowSeconds: 60 };
 

@@ -7,7 +7,7 @@ const { info, consumeLocalRateLimit } = vi.hoisted(() => ({
 vi.mock("@/lib/observability/logger", () => ({
   logger: { info, warn: vi.fn(), error: vi.fn() },
 }));
-vi.mock("@/lib/vendors/local-rate-limit", () => ({ consumeLocalRateLimit }));
+vi.mock("@/lib/http/local-rate-limit", () => ({ consumeLocalRateLimit }));
 
 import { POST } from "@/app/api/vitals/route";
 

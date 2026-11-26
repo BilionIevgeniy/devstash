@@ -15,6 +15,8 @@ function formatIn(locale: "de" | "en", value: Date, format: DateFormat) {
     formats: FORMATS,
     timeZone: DEFAULT_TIME_ZONE,
   });
+  // Two calls: `dateTime` takes a named format or options through separate
+  // overloads, and a union of both matches neither.
   const option = OPTIONS[format];
   return typeof option === "string"
     ? formatter.dateTime(value, option)

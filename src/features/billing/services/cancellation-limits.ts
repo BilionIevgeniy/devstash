@@ -7,7 +7,7 @@ import {
 } from "@/features/billing/domain/cancellation";
 import { fail, ok, type OperationResult } from "@/lib/errors/action-result";
 import { tooManyAttemptsParams } from "@/lib/http/retry-after";
-import { consumeLocalRateLimit } from "@/lib/vendors/local-rate-limit";
+import { consumeLocalRateLimit } from "@/lib/http/local-rate-limit";
 import {
   consumeIpRateLimit,
   consumeRateLimit,
