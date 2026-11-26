@@ -2,7 +2,7 @@
 // credential, so they live in git, where a change to them is reviewed. Moving
 // a branch to a new endpoint means changing the line here.
 export const DEV_DATABASE_HOST =
-  "ep-soft-art-bhqrx5ln.c-10.eu-central-1.aws.neon.tech";
+  "ep-orange-star-bh3ldo06.c-10.eu-central-1.aws.neon.tech";
 export const PROD_DATABASE_HOST =
   "ep-green-mud-bhzhz461.c-10.eu-central-1.aws.neon.tech";
 
