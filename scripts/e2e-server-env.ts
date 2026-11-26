@@ -55,7 +55,9 @@ export function buildE2eServerEnv({
     R2_BUCKET_NAME: DUMMY,
     // The local stand-in (scripts/fake-r2.ts); r2.ts takes only localhost.
     R2_ENDPOINT: FAKE_R2_ENDPOINT,
-    STRIPE_SECRET_KEY: DUMMY,
+    // The prefix of a test key: the app then says that no payment is real, as
+    // on the live site (isStripeTestMode).
+    STRIPE_SECRET_KEY: `sk_test_${DUMMY}`,
     STRIPE_WEBHOOK_SECRET: DUMMY,
     STRIPE_PRICE_ID_MONTHLY: DUMMY,
     STRIPE_PRICE_ID_YEARLY: DUMMY,

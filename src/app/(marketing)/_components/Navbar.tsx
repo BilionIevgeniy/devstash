@@ -18,7 +18,8 @@ import { useEscapeToClose } from "./hooks/use-escape-to-close";
 import { useScrolled } from "./hooks/use-scrolled";
 import { LanguageLink } from "./links/LanguageLink";
 import { MobileNavPanel } from "./MobileNavPanel";
-import { NavActionPlaceholder } from "./NavActionPlaceholder";
+import { PendingLinkLabel } from "./pending/PendingLinkLabel";
+import { NavActionPlaceholder } from "./pending/NavActionPlaceholder";
 import { BUTTON_TRANSITION, SessionAwareAction } from "./SessionAwareAction";
 import {
   DASHBOARD_PATH,
@@ -49,12 +50,12 @@ function GuestActions({ hidden }: { hidden: boolean }) {
         )}
       >
         <Link href={SIGN_IN_PATH} prefetch={prefetch}>
-          {t("nav.signIn")}
+          <PendingLinkLabel>{t("nav.signIn")}</PendingLinkLabel>
         </Link>
       </Button>
       <Button asChild size="lg" className={cn("px-3.5", BUTTON_TRANSITION)}>
         <Link href="/register" prefetch={prefetch}>
-          {t("nav.getStarted")}
+          <PendingLinkLabel>{t("nav.getStarted")}</PendingLinkLabel>
         </Link>
       </Button>
     </>
@@ -69,7 +70,7 @@ function MemberAction({ hidden }: { hidden: boolean }) {
   return (
     <Button asChild size="lg" className={cn("px-3.5", BUTTON_TRANSITION)}>
       <Link href={DASHBOARD_PATH} prefetch={hidden ? false : undefined}>
-        {t("nav.dashboard")}
+        <PendingLinkLabel>{t("nav.dashboard")}</PendingLinkLabel>
       </Link>
     </Button>
   );

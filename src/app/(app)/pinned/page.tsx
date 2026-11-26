@@ -1,3 +1,4 @@
+import { PageHeader } from "@/app/(app)/_components/PageHeader";
 import { PinnedLists } from "@/app/(app)/pinned/_components/PinnedLists";
 import { getTranslations } from "next-intl/server";
 import { getSessionUser } from "@/features/auth/nextauth/session";
@@ -21,10 +22,7 @@ export default async function PinnedPage({
 
   return (
     <div className="space-y-8">
-      <header>
-        <h1 className="text-3xl font-bold">{t("title")}</h1>
-        <p className="text-muted-foreground">{t("lead")}</p>
-      </header>
+      <PageHeader title={t("title")} lead={t("lead")} />
       {/* Around the empty state too: the last pin leaving through the open
           drawer must not unmount the drawer's sheet. */}
       <ItemDrawerProvider lockProItems={!isPro}>

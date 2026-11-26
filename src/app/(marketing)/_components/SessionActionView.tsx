@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-import { PendingSpinner } from "./PendingSpinner";
+import { PendingSpinner } from "./pending/PendingSpinner";
 
 type ButtonVariant = NonNullable<
   Parameters<typeof buttonVariants>[0]

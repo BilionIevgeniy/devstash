@@ -8,7 +8,8 @@ export const RECENT_SKELETON_ROWS = 5;
 // Block heights mirror the rendered cards (StatsCards, ItemRow) so the page
 // does not shift when the real content streams in.
 const STAT_CARD_HEIGHT = "h-22.5";
-const ITEM_ROW_HEIGHT = "h-26";
+// A row with a description and tags; on a phone its title takes two lines.
+const ITEM_ROW_HEIGHT = "h-26.5 max-sm:h-32.5";
 
 function SkeletonBlocks({
   count,
@@ -40,7 +41,7 @@ export function StatsSkeleton() {
 export function CollectionsSkeleton() {
   return (
     <section>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between max-md:h-11">
         <Skeleton className="h-7 w-32" />
         <Skeleton className="h-5 w-14" />
       </div>

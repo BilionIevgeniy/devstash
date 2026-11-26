@@ -10,9 +10,13 @@ export default function CollectionLoading() {
           <Skeleton className="mt-1 h-5 w-20" />
           <Skeleton className="mt-1 h-5 w-64 max-w-full" />
         </div>
-        <Skeleton className="h-8 w-26 shrink-0" />
+        <Skeleton className="h-8 w-26 shrink-0 max-md:h-11 max-md:w-35" />
       </header>
-      <ItemListSkeleton />
+      {/* The section of one type, the common case: its title and its cards. */}
+      <section className="space-y-4">
+        <Skeleton className="h-7 w-32" />
+        <ItemListSkeleton />
+      </section>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
 import { TestModeHint } from "@/features/billing/components/TestModeHint";
+import { UpgradeHeader } from "@/features/billing/components/upgrade/UpgradeHeader";
 import { UpgradePlans } from "@/features/billing/_internal/components/UpgradePlans";
 
 interface ProUpgradePanelProps {
@@ -15,10 +16,7 @@ export function ProUpgradePanel({ testMode, children }: ProUpgradePanelProps) {
   const t = useTranslations("billing.upgradePage");
   return (
     <div className="space-y-8">
-      <header className="text-center">
-        <h1 className="text-3xl font-bold">{t("title")}</h1>
-        <p className="text-muted-foreground">{t("lead")}</p>
-      </header>
+      <UpgradeHeader />
       {/* The cards are headed h3, under the pricing heading of the homepage. */}
       <h2 className="sr-only">{t("plans")}</h2>
       <UpgradePlans testMode={testMode} />

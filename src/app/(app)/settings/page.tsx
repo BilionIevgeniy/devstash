@@ -1,3 +1,4 @@
+import { PageHeader } from "@/app/(app)/_components/PageHeader";
 import { AccountActions } from "@/app/(app)/settings/_components/AccountActions";
 import { AppearancePanel } from "@/app/(app)/settings/_components/AppearancePanel";
 import { useTranslations } from "next-intl";
@@ -10,10 +11,7 @@ export default function SettingsPage({ searchParams }: PageProps<"/settings">) {
   const t = useTranslations("pages.settings");
   return (
     <div className="space-y-8">
-      <header>
-        <h1 className="text-3xl font-bold">{t("title")}</h1>
-        <p className="text-muted-foreground">{t("lead")}</p>
-      </header>
+      <PageHeader title={t("title")} lead={t("lead")} />
       <AppearancePanel />
       <EditorPreferencesSection />
       <CustomTypesPanel />

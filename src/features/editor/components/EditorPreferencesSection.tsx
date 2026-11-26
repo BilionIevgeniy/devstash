@@ -20,6 +20,7 @@ import {
   type EditorPreferences,
   type EditorThemeName,
 } from "@/features/editor/_internal/domain/preferences";
+import { PREFERENCES_CARD } from "@/features/editor/components/EditorPreferencesSkeleton";
 import { useEditorPreferences } from "@/features/editor/components/EditorPreferencesProvider";
 
 const FONT_SIZE_OPTIONS = FONT_SIZES.map((size) => ({
@@ -47,23 +48,29 @@ function PreferenceSelect({
   return (
     <Field label={label}>
       {(id) => (
-        <Select value={value} onValueChange={onChange}>
-          <SelectTrigger id={id} className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div>
+          <Select value={value} onValueChange={onChange}>
+            <SelectTrigger id={id} className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {options.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       )}
     </Field>
   );
 }
 
+// Each control is in a box of its own: until hydration Radix renders a hidden
+// native control beside it, and the field's `space-y` would give the visible
+// one a margin that goes with it, a shift of the whole page below.
+//
 // Controls stay enabled during a save: the value changes at once, and disabling
 // a focused control would drop the keyboard focus.
 export function EditorPreferencesSection() {
@@ -80,7 +87,7 @@ export function EditorPreferencesSection() {
         <Code className="size-4 text-muted-foreground" />
         {t("title")}
       </h2>
-      <div className="grid gap-6 rounded-lg border bg-card p-6 sm:grid-cols-2">
+      <div className={PREFERENCES_CARD}>
         <PreferenceSelect
           label={t("fontSize")}
           value={String(preferences.fontSize)}
@@ -104,20 +111,24 @@ export function EditorPreferencesSection() {
         />
         <Field label={t("wordWrap")}>
           {(id) => (
-            <Switch
-              id={id}
-              checked={preferences.wordWrap}
-              onCheckedChange={(wordWrap) => change({ wordWrap })}
-            />
+            <div>
+              <Switch
+                id={id}
+                checked={preferences.wordWrap}
+                onCheckedChange={(wordWrap) => change({ wordWrap })}
+              />
+            </div>
           )}
         </Field>
         <Field label={t("minimap")}>
           {(id) => (
-            <Switch
-              id={id}
-              checked={preferences.minimap}
-              onCheckedChange={(minimap) => change({ minimap })}
-            />
+            <div>
+              <Switch
+                id={id}
+                checked={preferences.minimap}
+                onCheckedChange={(minimap) => change({ minimap })}
+              />
+            </div>
           )}
         </Field>
       </div>

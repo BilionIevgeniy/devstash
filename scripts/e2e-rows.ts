@@ -36,7 +36,12 @@ export async function makePro(
 type SnippetExtra = Partial<
   Pick<
     Prisma.ItemCreateManyInput,
-    "isFavorite" | "favoritedAt" | "isPinned" | "createdAt"
+    | "isFavorite"
+    | "favoritedAt"
+    | "isPinned"
+    | "createdAt"
+    | "description"
+    | "language"
   >
 >;
 

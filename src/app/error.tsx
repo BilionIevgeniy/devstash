@@ -1,7 +1,7 @@
 "use client";
 
-import { BilingualErrorText } from "@/components/common/BilingualErrorText";
-import { BilingualHomeLinks } from "@/components/common/BilingualHomeLinks";
+import { BilingualErrorText } from "@/components/common/bilingual/BilingualErrorText";
+import { BilingualHomeLinks } from "@/components/common/bilingual/BilingualHomeLinks";
 
 import { ErrorState } from "@/components/common/ErrorState";
 import { useReportError } from "@/components/common/hooks/use-report-error";

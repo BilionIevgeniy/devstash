@@ -1,12 +1,13 @@
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { CreateMenu } from "@/features/app-shell/components/CreateMenu";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { getEntitlements } from "@/features/billing/queries";
 import { getCustomTypeNames } from "@/features/item-types/queries";
 import { CreateItemDialog } from "@/features/items/components/CreateItemDialog";
+import { cn } from "@/lib/utils";
 
 // Streams into the top bar, so the shell does not wait for the plan. The button
 // from `sm` up, the create menu below it.
@@ -29,24 +30,20 @@ export async function NewItemButton() {
   );
 }
 
-// The same controls, inert, while the plan is read.
+// The look of the same controls while the plan is read, as a placeholder of the
+// rule "No flash of the wrong state": no control, nothing to reach or to hear.
 export function NewItemButtonFallback() {
   const t = useTranslations("shell");
 
   return (
-    <>
-      <Button disabled className="hidden sm:inline-flex">
+    <span aria-hidden="true" className="pointer-events-none contents">
+      <span className={cn(buttonVariants(), "hidden sm:inline-flex")}>
         <Plus />
         <span>{t("newItem")}</span>
-      </Button>
-      <Button
-        disabled
-        size="icon"
-        aria-label={t("create")}
-        className="sm:hidden"
-      >
+      </span>
+      <span className={cn(buttonVariants({ size: "icon" }), "sm:hidden")}>
         <Plus />
-      </Button>
-    </>
+      </span>
+    </span>
   );
 }

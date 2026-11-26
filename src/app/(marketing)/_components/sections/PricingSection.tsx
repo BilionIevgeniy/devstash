@@ -17,6 +17,7 @@ import {
 import { DASHBOARD_PATH } from "@/features/auth/domain/auth-paths";
 import { UPGRADE_PATH } from "@/features/billing/domain/upgrade";
 
+import { PendingLinkLabel } from "../pending/PendingLinkLabel";
 import { BUTTON_TRANSITION, SessionAwareAction } from "../SessionAwareAction";
 import { ScrollFadeIn } from "./ScrollFadeIn";
 import { SectionHead } from "./SectionHead";
@@ -50,7 +51,7 @@ function PlanAction({
           className={BUTTON_TRANSITION}
         >
           <Link href="/register" prefetch={prefetch(hidden)}>
-            {label}
+            <PendingLinkLabel>{label}</PendingLinkLabel>
           </Link>
         </PricingCardButton>
       )}
@@ -61,7 +62,7 @@ function PlanAction({
           className={BUTTON_TRANSITION}
         >
           <Link href={memberHref} prefetch={prefetch(hidden)}>
-            {memberLabel}
+            <PendingLinkLabel>{memberLabel}</PendingLinkLabel>
           </Link>
         </PricingCardButton>
       )}

@@ -14,6 +14,10 @@
   --animate-pending-spin:
     pending-in 200ms ease-out 300ms both, pending-turn 1s linear infinite;
   --animate-pending-dot: pending-in 200ms ease-out 300ms both;
+  /* The same after a click, as the sidebar's links dim: in after 100 ms. */
+  --animate-pending-spin-soon:
+    pending-in 200ms ease-out 100ms both, pending-turn 1s linear infinite;
+  --animate-pending-dot-soon: pending-in 200ms ease-out 100ms both;
   --animate-arrow-pulse: arrow-pulse 2s ease-in-out infinite;
 
   @keyframes pending-in {
