@@ -73,6 +73,12 @@ async function measureBlocks(root: Locator): Promise<Block> {
 
 // The boxes do not depend on the theme, so the painted theme is switched on
 // the page that is there instead of loading it once more (ADR 0039).
+// The page has come: a loading state shows its real header already (PageHeader),
+// so a heading on screen does not say so.
+export async function waitForPage(page: Page): Promise<void> {
+  await expect(page.getByRole("main").locator(SKELETON)).toHaveCount(0);
+}
+
 // Settled for a measurement: the skeletons gone, the fonts in, nothing moving.
 export async function measureSettled(
   page: Page,

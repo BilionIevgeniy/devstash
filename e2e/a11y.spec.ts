@@ -1,6 +1,7 @@
 import { expect, test } from "./support/test";
 import { VISUAL_DRAWER_ITEM } from "../scripts/e2e-visual-user";
 import { expectNoSeriousViolations } from "./support/axe";
+import { waitForPage } from "./support/held/blocks";
 import { itemLink, openCreateDialog } from "./support/items";
 import { openPalette } from "./support/palette";
 import {
@@ -40,6 +41,8 @@ for (const theme of PAINTED_THEMES) {
         test(`${path} has no serious violations`, async ({ page }) => {
           await page.goto(path);
           await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+          // Its loading state is scanned in skeletons.spec.ts.
+          await waitForPage(page);
           await expectNoSeriousViolations(page);
         });
       }
