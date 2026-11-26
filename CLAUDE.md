@@ -35,6 +35,7 @@ Planned work is in `context/features/plan/` (its README gives the order). What o
 - `npm run storybook` / `npm run build-storybook` — Storybook on port 6006 / the static build; what gets a story is in "Stories" in `context/coding-standards.md` (ADR 0026)
 - `npm run test:integration` — the `*.int.test.ts` files against the test database (`TEST_DATABASE_URL` from `.env.test`, a local Docker Postgres on port 5433); run it when a query or service changed
 - `npm run test:e2e` — the Playwright smoke tests in `e2e/` against the production build (`next build`, then `next start` on port 3100) on the test database; needs `TEST_DATABASE_URL` and `E2E_UPSTASH_REDIS_REST_URL`/`E2E_UPSTASH_REDIS_REST_TOKEN` in `.env.test` and Chromium (`npx playwright install chromium`, once); run it when a page, a route or the sign-in or item flows changed
+- `npm run test:instant` — `next dev` on port 3105 against the test database: every page opened and reached through a link, failing on any console error (Next's instant validation, hydration), which a production build never reports; a step of the `e2e` job after `test:e2e`. Stop your own `npm run dev` first (one dev server per folder)
 - `npm run db:seed-test` — empty and seed the test database (system types, a Free and a Pro user)
 
 Tests are colocated as `[name].test.ts` (node), `[name].test.tsx` (components and hooks, jsdom) and `[name].stories.tsx` (stories, Chromium); the end-to-end tests are `[name].spec.ts` in `e2e/`. What to test and how is in "Testing" in `context/coding-standards.md`.
