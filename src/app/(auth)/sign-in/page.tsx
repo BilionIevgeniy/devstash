@@ -1,3 +1,4 @@
+import { titleOf } from "@/app/page-title";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -32,6 +33,8 @@ function getErrorCode(
 // Reads the request at its top (the session, or the link's query), so the page
 // blocks on the server and has no instant shell (ADR 0037).
 export const instant = false;
+
+export const generateMetadata = titleOf("auth.signIn");
 
 export default async function SignInPage({
   searchParams,

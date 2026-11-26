@@ -1,25 +1,36 @@
-import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 
-import CollectionsLoading from "@/app/(app)/collections/(list)/loading";
+import { titleOf } from "@/app/page-title";
 import { PaginationNav } from "@/components/common/lists/PaginationNav";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { CollectionCard } from "@/features/collections/components/CollectionCard";
 import { getUserCollections } from "@/features/collections/queries/list";
 import { parsePage } from "@/lib/pagination";
 
-async function CollectionsContent({ page }: { page: number }) {
-  const t = await getTranslations("pages.collections");
-  const { id: userId } = await getSessionUser();
+export const generateMetadata = titleOf("pages.collections");
+
+// One read for the count and the rows. No Suspense: a page change is a
+// navigation in a transition, so the header and the pagination stay, with the
+// focus on the link that was used, and the rows dim (`group-has-data-pending/
+// list:`, set by the pagination's links) until the next page commits; the
+// first load shows loading.tsx.
+export default async function CollectionsPage({
+  searchParams,
+}: PageProps<"/collections">) {
+  const [t, { id: userId }, { page }] = await Promise.all([
+    getTranslations("pages.collections"),
+    getSessionUser(),
+    searchParams,
+  ]);
   const {
     items: collections,
     totalCount,
     page: currentPage,
     totalPages,
-  } = await getUserCollections(userId, page);
+  } = await getUserCollections(userId, parsePage(page));
 
   return (
-    <div className="space-y-8">
+    <div className="group/list space-y-8">
       <header>
         <h1 className="text-3xl font-bold">{t("title")}</h1>
         <p className="text-muted-foreground">
@@ -29,7 +40,7 @@ async function CollectionsContent({ page }: { page: number }) {
       {collections.length === 0 ? (
         <p className="text-sm text-muted-foreground">{t("empty")}</p>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 transition-opacity group-has-data-pending/list:opacity-50 sm:grid-cols-2 xl:grid-cols-3">
           {collections.map((collection) => (
             <CollectionCard
               key={collection.id}
@@ -45,19 +56,5 @@ async function CollectionsContent({ page }: { page: number }) {
         totalPages={totalPages}
       />
     </div>
-  );
-}
-
-// loading.tsx does not show when only the query string changes, since the
-// segment stays the same: the key gives each page its own loading state.
-export default async function CollectionsPage({
-  searchParams,
-}: PageProps<"/collections">) {
-  const page = parsePage((await searchParams).page);
-
-  return (
-    <Suspense key={page} fallback={<CollectionsLoading />}>
-      <CollectionsContent page={page} />
-    </Suspense>
   );
 }

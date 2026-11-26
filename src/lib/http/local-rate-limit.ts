@@ -14,11 +14,11 @@ const MAX_KEYS = 10_000;
 
 const windows = new Map<string, Window>();
 
-// A fixed-window counter in the memory of this instance, for a caller that
-// keeps taking requests while Upstash is down (the § 312k form, ADR 0032):
-// still bounded, not unbounded. Weaker than Upstash (one counter per instance,
-// gone on a cold start) on purpose: it only covers an outage. Keys are hashed,
-// so the memory holds no address.
+// A fixed-window counter in the memory of this instance. Two callers: the
+// § 312k form while Upstash is down (ADR 0032), still bounded, not unbounded;
+// and the Web Vitals route (api/vitals), whose beacons are not worth an
+// Upstash call each. Weaker than Upstash (one counter per instance, gone on a
+// cold start) on purpose. Keys are hashed, so the memory holds no address.
 export function consumeLocalRateLimit(
   policy: RateLimitPolicy,
   identifier: string,

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { fetchCollections } from "@/features/collections/_internal/queries/collection-rows";
 import type {
   CollectionOption,
@@ -21,7 +23,8 @@ export function getUserCollections(
   );
 }
 
-export function getCollectionById(
+// cache() shares the read between the page and its title.
+export const getCollectionById = cache(function getCollectionById(
   userId: string,
   id: string,
 ): Promise<CollectionSummary | null> {
@@ -29,7 +32,7 @@ export function getCollectionById(
     where: { id, userId },
     select: { id: true, name: true, description: true, isFavorite: true },
   });
-}
+});
 
 export function getCollectionOptions(
   userId: string,

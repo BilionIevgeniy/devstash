@@ -1,3 +1,4 @@
+import { titleOf } from "@/app/page-title";
 import { PageHeader } from "@/app/(app)/_components/PageHeader";
 import { FavoriteLists } from "@/app/(app)/favorites/_components/FavoriteLists";
 import { getSessionUser } from "@/features/auth/nextauth/session";
@@ -9,6 +10,8 @@ import {
   getFavoriteFirstPage,
 } from "@/features/items/queries/lists";
 import { favoriteItemSortSchema } from "@/features/items/schemas";
+
+export const generateMetadata = titleOf("pages.favorites");
 
 // The first page of items comes from here, for the sort in the URL; the next
 // ones are fetched by the list as it scrolls (ADR 0025). The collections stay

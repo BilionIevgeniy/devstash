@@ -1,3 +1,4 @@
+import { titleOf } from "@/app/page-title";
 import { PageHeader } from "@/app/(app)/_components/PageHeader";
 import { Suspense } from "react";
 
@@ -7,6 +8,8 @@ import {
   UsageStatsSkeleton,
 } from "@/app/(app)/profile/_components/ProfileSkeletons";
 import { UsageStats } from "@/app/(app)/profile/_components/UsageStats";
+
+export const generateMetadata = titleOf("pages.profile");
 
 export default function ProfilePage() {
   return (

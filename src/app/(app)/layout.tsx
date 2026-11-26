@@ -13,16 +13,15 @@ import {
   parseSidebarOpen,
   SIDEBAR_COOKIE,
 } from "@/features/app-shell/domain/sidebar";
-import {
-  NewItemButton,
-  NewItemButtonFallback,
-} from "@/app/(app)/_components/NewItemButton";
+import { NewItemButton } from "@/app/(app)/_components/NewItemButton";
+import { NewItemButtonFallback } from "@/app/(app)/_components/NewItemButtonFallback";
 import { UpgradeButton } from "@/app/(app)/_components/UpgradeButton";
 import { SidebarSkeleton } from "@/features/app-shell/components/SidebarSkeleton";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { EditorPreferencesProvider } from "@/features/editor/components/EditorPreferencesProvider";
 import { getEditorPreferences } from "@/features/editor/queries";
 import { appMessages } from "@/i18n/messages";
+import { TITLE_TEMPLATE } from "@/app/page-title";
 
 // The layout reads the request at its top (the locale, the sidebar cookie)
 // and every page below reads the session, so this segment blocks on the
@@ -37,6 +36,7 @@ export const instant = false;
 // validation, e2e/instant.spec.ts). Pages that are never indexed need no
 // words of their own here.
 export const metadata: Metadata = {
+  title: TITLE_TEMPLATE,
   robots: { index: false, follow: false },
 };
 

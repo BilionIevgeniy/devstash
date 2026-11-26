@@ -54,7 +54,8 @@ export async function getUserItemTypeByName(
 
 // The type of a type page: a system type, or the caller's own custom type.
 // Another user's type of the same slug is never read.
-export async function getItemTypeBySlug(
+// cache() shares the read between the page and its title.
+export const getItemTypeBySlug = cache(async function getItemTypeBySlug(
   userId: string,
   slug: string,
 ): Promise<ItemTypeInfo | null> {
@@ -63,7 +64,7 @@ export async function getItemTypeBySlug(
     select: itemTypeSelect,
   });
   return type ? toItemTypeInfo(type) : null;
-}
+});
 
 // The shared system types and the caller's own: someone else's custom type is
 // never read, whatever ids come in.

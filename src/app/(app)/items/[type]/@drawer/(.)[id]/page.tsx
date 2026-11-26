@@ -7,6 +7,7 @@ import {
   ItemRouteDrawerView,
 } from "@/features/items/components/drawer/ItemRouteDrawer";
 import { toItemDetailJson } from "@/features/items/domain/item-detail";
+import { itemIdSchema } from "@/features/items/schemas";
 import { openUserItem } from "@/features/items/services/item-detail";
 
 // Next's instant validation cannot render this intercepted route: the shell's
@@ -22,7 +23,10 @@ export default async function ItemDrawerPage({
 }: PageProps<"/items/[type]/[id]">) {
   const { id } = await params;
   const { id: userId } = await getSessionUser();
-  const result = await openUserItem(userId, id);
+  // A refused id is missing too: a 404 would replace the whole page.
+  const parsed = itemIdSchema.safeParse(id);
+  if (!parsed.success) return <ItemRouteDrawerMissing />;
+  const result = await openUserItem(userId, parsed.data);
   // Not a 404: a delete from this drawer can refresh this route before the
   // drawer has gone back to the list, and a 404 would replace the whole page.
   if (result.status === "missing") return <ItemRouteDrawerMissing />;

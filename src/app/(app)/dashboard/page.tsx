@@ -1,3 +1,4 @@
+import { titleOf } from "@/app/page-title";
 import { PageHeader } from "@/app/(app)/_components/PageHeader";
 import { Suspense } from "react";
 
@@ -15,6 +16,8 @@ import { StatsCards } from "@/app/(app)/dashboard/_components/StatsCards";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { getEntitlements } from "@/features/billing/queries";
 import { ItemDrawerProvider } from "@/features/items/components/drawer/ItemDrawerProvider";
+
+export const generateMetadata = titleOf("pages.dashboard");
 
 export default async function DashboardPage() {
   const { id: userId } = await getSessionUser();

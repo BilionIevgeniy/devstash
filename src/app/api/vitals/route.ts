@@ -7,7 +7,7 @@ import {
   parseWebVital,
   WEB_VITALS_BY_IP,
 } from "@/lib/observability/web-vitals";
-import { consumeLocalRateLimit } from "@/lib/vendors/local-rate-limit";
+import { consumeLocalRateLimit } from "@/lib/http/local-rate-limit";
 
 // One real-user Web Vital, sent by the browser of a visitor who agreed to the
 // measurement (ADR 0034): the metric, its value and the group of the page,

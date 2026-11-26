@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import { typeLabel } from "@/features/item-types/domain/item-type";
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 
@@ -34,6 +37,19 @@ import { typePagePath } from "@/features/item-types/domain/item-type";
 // such as the zoom of each gallery card. The filters show for an empty type
 // too, so the skeleton of loading.tsx fits every type. The first load and a
 // change of type show loading.tsx.
+// The type's name, from the read the page makes too (cache()).
+export async function generateMetadata({
+  params,
+}: PageProps<"/items/[type]">): Promise<Metadata> {
+  const [{ type: slug }, { id: userId }, t] = await Promise.all([
+    params,
+    getSessionUser(),
+    getTranslations("itemTypes"),
+  ]);
+  const type = await getItemTypeBySlug(userId, slug);
+  return type ? { title: typeLabel(t, type.name, "other") } : {};
+}
+
 export default async function ItemsByTypePage({
   params,
   searchParams,

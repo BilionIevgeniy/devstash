@@ -1,3 +1,4 @@
+import { titleOf } from "@/app/page-title";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
@@ -8,6 +9,8 @@ import { SIGN_IN_PATH } from "@/features/auth/domain/auth-paths";
 // Reads the request at its top (the locale, or the link's query), so the page
 // blocks on the server and has no instant shell (ADR 0037).
 export const instant = false;
+
+export const generateMetadata = titleOf("auth.forgot");
 
 export default async function ForgotPasswordPage() {
   const t = await getTranslations("auth.forgot");

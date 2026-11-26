@@ -162,8 +162,12 @@ export async function expectInPlace(
 
   // What a screen reader and the contrast are told while the page loads, once
   // per case: on the desktop, since the phone shows the same nodes.
+  // A title read from the data (a type, an item, a collection) streams with
+  // the page's metadata, so a held page has none yet.
   if ((page.viewportSize()?.width ?? 0) >= DESKTOP_WIDTH) {
-    await expectNoSeriousViolations(page);
+    await expectNoSeriousViolations(page, {
+      disabledRules: ["document-title"],
+    });
   }
 
   await release();

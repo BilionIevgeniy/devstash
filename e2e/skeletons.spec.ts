@@ -42,8 +42,6 @@ import { PHONE, VIEWPORTS } from "./support/held/viewports";
 // Not held apart, because no read can do it:
 // - items/[type]'s inner Suspense: the page counts items before it, so "Item"
 //   holds both. It is the same ListingSkeleton as in loading.tsx
-// - collections and collections/[id]: their loading.tsx is the fallback of the
-//   page's own Suspense, which is what shows
 // - profile/loading.tsx: the page is synchronous, so its own fallbacks show,
 //   the same two skeletons under the same header
 // - dashboard/loading.tsx and the page's own fallbacks: the same skeletons, so
@@ -216,17 +214,6 @@ const CASES: Case[] = [
     storageState: OVER_LIMIT_AUTH_FILE,
     path: "/settings/locked-files",
     holds: ["User"],
-    settled: (page) => page.getByRole("link", { name: /^Download / }).first(),
-    mayShift: ["top bar"],
-  },
-  {
-    name: "locked files, the list",
-    storageState: OVER_LIMIT_AUTH_FILE,
-    path: "/settings/locked-files",
-    holds: ["Item"],
-    // Only the page offers to renew.
-    held: (page) =>
-      page.getByRole("main").getByRole("link", { name: /^Renew/ }),
     settled: (page) => page.getByRole("link", { name: /^Download / }).first(),
     mayShift: ["top bar"],
   },

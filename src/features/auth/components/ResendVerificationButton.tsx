@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { unstable_rethrow } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
@@ -28,8 +29,10 @@ export function ResendVerificationButton({
         } else {
           toast.error(errorText(result));
         }
-      } catch {
-        // A rejection left in the transition would show the error page.
+      } catch (error) {
+        // A redirect (a session that ended) goes on; any other rejection left
+        // in the transition would show the error page.
+        unstable_rethrow(error);
         toast.error(errorText("generic"));
       }
     });

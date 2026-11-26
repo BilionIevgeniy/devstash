@@ -108,7 +108,7 @@ This record is the design and our reading of the law. It is not legal advice: a 
   - A cancellation for good cause also goes to the operator's address with its reason, also when the contract already ends: it asks for an earlier end, which the operator decides.
 - **Limits:** `cancel:ip` and `cancel:email` (HMAC identifiers):
   - A refusal shows "try again in N minutes". The limits count requests, not accounts, so the refusal reveals nothing.
-  - When Upstash is down, the declaration is taken anyway: a consumer's cancellation must never be lost to our outage. It is still bounded, by the same limits counted in the memory of the instance (`lib/vendors/local-rate-limit.ts`).
+  - When Upstash is down, the declaration is taken anyway: a consumer's cancellation must never be lost to our outage. It is still bounded, by the same limits counted in the memory of the instance (`lib/http/local-rate-limit.ts`).
   - A missing Upstash setting or HMAC key is not an outage: `isRateLimitConfigured` is checked first, and the form answers with an error, so the mistake shows at once instead of turning the limits off.
   - A failure of the deferred work goes to Sentry with ids only, and the full declaration goes to the operator's address to be finished by hand. An operator notice that does not go out is an error of its own, and the deferred task rethrows, so the platform records it too.
 - **No declaration table:**
