@@ -223,6 +223,14 @@ test.describe("the language switch", () => {
     await german.click();
     // The menu stays open while the switch runs, and shows the new language.
     await expect(german).toBeChecked();
+    // The document is German too: the menu, in a portal outside the page's
+    // wrapper, is read as German (useDocumentLang).
+    await expect(page.locator("html")).toHaveAttribute("lang", "de");
+    expect(
+      await page
+        .getByRole("menu")
+        .evaluate((menu) => menu.closest("[lang]")?.getAttribute("lang")),
+    ).toBe("de");
     await page.keyboard.press("Escape");
 
     // The heading of the sidebar's types, in the shell's words.
