@@ -26,10 +26,14 @@ export async function waitForAnimations(page: Page): Promise<void> {
     .toBe(0);
 }
 
-export async function expectNoSeriousViolations(page: Page): Promise<void> {
+export async function expectNoSeriousViolations(
+  page: Page,
+  { disabledRules = [] }: { disabledRules?: string[] } = {},
+): Promise<void> {
   await waitForAnimations(page);
   const { violations } = await new AxeBuilder({ page })
     .withTags(WCAG_TAGS)
+    .disableRules(disabledRules)
     .analyze();
   const failing = violations
     .filter((violation) => FAILING_IMPACTS.has(violation.impact ?? ""))

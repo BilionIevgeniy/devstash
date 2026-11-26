@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -17,6 +18,11 @@ import { getErrorText } from "@/lib/errors/error-text";
 // renders only: the delete is the button's action, so a mail scanner that
 // fetches the link deletes nothing. A link for another account is offered a
 // sign-out first, and leads back here after the sign-in.
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("account");
+  return { title: t("confirmTitle") };
+}
+
 export default async function DeleteAccountPage({
   searchParams,
 }: PageProps<"/settings/delete-account">) {

@@ -1,3 +1,4 @@
+import { titleOf } from "@/app/page-title";
 import { redirect } from "next/navigation";
 
 import { getSessionUser } from "@/features/auth/nextauth/session";
@@ -7,6 +8,8 @@ import { LockedFilesRow } from "@/features/items/components/lists/LockedFilesRow
 import { getUserLockedFileCount } from "@/features/items/services/locked-files";
 import { isStripeTestMode } from "@/lib/vendors/stripe";
 import { SETTINGS_PATH } from "@/features/auth/domain/auth-paths";
+
+export const generateMetadata = titleOf("billing.upgradePage");
 
 export default async function UpgradePage() {
   const { id: userId } = await getSessionUser();

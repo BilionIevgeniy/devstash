@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import {
   getItemDetail,
   getItemDetailOfType,
@@ -75,7 +77,8 @@ export async function openUserItem(
 // system type is refused before any read, so a Free user learns nothing about
 // the id; a custom type opens on every plan (its items stay readable after a
 // downgrade, ADR 0032).
-export async function openUserItemOfType(
+// cache() shares the read between the page and its title.
+export const openUserItemOfType = cache(async function openUserItemOfType(
   userId: string,
   itemId: string,
   typeSlug: string,
@@ -98,4 +101,4 @@ export async function openUserItemOfType(
     canUseAi: isPro,
     editMode,
   };
-}
+});

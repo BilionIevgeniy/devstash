@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getLocale } from "next-intl/server";
+
+import { TITLE_TEMPLATE } from "@/app/page-title";
 
 import { ConsentRoot } from "@/components/common/consent/ConsentRoot";
 import { PrivacySettingsButton } from "@/components/common/consent/PrivacySettingsButton";
@@ -8,17 +10,13 @@ import { I18nProvider } from "@/components/common/providers/I18nProvider";
 import { FreshAuthDocument } from "@/features/auth/components/FreshAuthDocument";
 import { appMessages } from "@/i18n/messages";
 
-// The description of every page under this layout, in its language; the
-// title stays the root layout's "DevStash". Never indexed (a reset link
-// carries a token): the same rule goes out as the X-Robots-Tag header
-// (next.config.ts), since this dynamic layout's metadata streams into the body.
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("common.meta");
-  return {
-    description: t("description"),
-    robots: { index: false, follow: false },
-  };
-}
+// Never indexed (a reset link carries a token): the same rule goes out as
+// the X-Robots-Tag header (next.config.ts). Static: each page names itself
+// (titleOf), and the layout's metadata reads no request (ADR 0037 addendum).
+export const metadata: Metadata = {
+  title: TITLE_TEMPLATE,
+  robots: { index: false, follow: false },
+};
 
 // Reads the locale of the request at its top, so the segment blocks on the
 // server, as it did before Cache Components (ADR 0037).

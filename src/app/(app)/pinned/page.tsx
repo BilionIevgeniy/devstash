@@ -1,3 +1,4 @@
+import { titleOf } from "@/app/page-title";
 import { PageHeader } from "@/app/(app)/_components/PageHeader";
 import { PinnedLists } from "@/app/(app)/pinned/_components/PinnedLists";
 import { getSessionUser } from "@/features/auth/nextauth/session";
@@ -5,6 +6,8 @@ import { getEntitlements } from "@/features/billing/queries";
 import { ItemDrawerProvider } from "@/features/items/components/drawer/ItemDrawerProvider";
 import { getPinnedFirstPages } from "@/features/items/queries/lists";
 import { pinnedItemSortSchema } from "@/features/items/schemas";
+
+export const generateMetadata = titleOf("pages.pinned");
 
 // Every type with pins as a group, each with its count and its first page for
 // the sort in the URL; a group shows more on request (ADR 0025).
