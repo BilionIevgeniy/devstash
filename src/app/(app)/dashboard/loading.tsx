@@ -1,4 +1,3 @@
-import { useTranslations } from "next-intl";
 import { PageHeader } from "@/app/(app)/_components/PageHeader";
 import {
   CollectionsSkeleton,
@@ -10,10 +9,9 @@ import {
 
 // The page waits for the plan before its own sections stream in.
 export default function DashboardLoading() {
-  const t = useTranslations("pages.dashboard");
   return (
     <div className="space-y-8">
-      <PageHeader title={t("title")} lead={t("lead")} />
+      <PageHeader namespace="pages.dashboard" />
       <StatsSkeleton />
       <CollectionsSkeleton />
       <ItemsSkeleton rows={PINNED_SKELETON_ROWS} />

@@ -1,6 +1,5 @@
 import { PageHeader } from "@/app/(app)/_components/PageHeader";
 import { FavoriteLists } from "@/app/(app)/favorites/_components/FavoriteLists";
-import { getTranslations } from "next-intl/server";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { getEntitlements } from "@/features/billing/queries";
 import { getFavoriteCollections } from "@/features/collections/queries/favorites";
@@ -17,7 +16,6 @@ import { favoriteItemSortSchema } from "@/features/items/schemas";
 export default async function FavoritesPage({
   searchParams,
 }: PageProps<"/favorites">) {
-  const t = await getTranslations("pages.favorites");
   const { id: userId } = await getSessionUser();
   const itemSort = favoriteItemSortSchema.parse((await searchParams).itemSort);
   const [first, count, collections, { isPro }] = await Promise.all([
@@ -29,7 +27,7 @@ export default async function FavoritesPage({
 
   return (
     <div className="space-y-8">
-      <PageHeader title={t("title")} lead={t("lead")} />
+      <PageHeader namespace="pages.favorites" />
       {/* Around the empty state too: the last favorite leaving through the open
           drawer must not unmount the drawer's sheet. */}
       <ItemDrawerProvider lockProItems={!isPro}>

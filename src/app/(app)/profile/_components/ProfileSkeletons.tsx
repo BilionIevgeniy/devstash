@@ -1,17 +1,19 @@
+"use client";
+
 import { useFormatter, useTranslations } from "next-intl";
 
 import { SkeletonText } from "@/components/common/skeletons/SkeletonText";
+import {
+  PROFILE_INFO,
+  USAGE_TOTALS,
+  USAGE_TYPES,
+} from "@/app/(app)/profile/_components/profile-classes";
 import { Skeleton } from "@/components/ui/skeleton";
-
-// The classes ProfileInfo and UsageStats share with their skeletons.
-export const PROFILE_INFO =
-  "flex items-center gap-4 rounded-lg border bg-card p-6";
-export const USAGE_TOTALS = "grid grid-cols-2 gap-4";
-export const USAGE_TYPES = "grid gap-3 sm:grid-cols-2 lg:grid-cols-4";
 
 const TOTALS = 2;
 // The built-in types; a user with custom types has more.
 const TYPE_ROWS = 7;
+// Client components, so a fallback reads no request (PageHeader).
 // A long date, for the line that wraps on a phone.
 const TYPICAL_DATE = new Date("2025-11-30T12:00:00Z");
 

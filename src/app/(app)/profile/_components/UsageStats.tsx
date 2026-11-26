@@ -7,7 +7,7 @@ import { StatCard } from "@/app/(app)/_components/StatCard";
 import {
   USAGE_TOTALS,
   USAGE_TYPES,
-} from "@/app/(app)/profile/_components/ProfileSkeletons";
+} from "@/app/(app)/profile/_components/profile-classes";
 import { getSessionUser } from "@/features/auth/nextauth/session";
 import { getCollectionStats } from "@/features/collections/queries/dashboard";
 import { getItemStats } from "@/features/items/queries/dashboard";

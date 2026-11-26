@@ -1,6 +1,5 @@
 import { PageHeader } from "@/app/(app)/_components/PageHeader";
 import { Suspense } from "react";
-import { getTranslations } from "next-intl/server";
 
 import {
   CollectionsSkeleton,
@@ -18,14 +17,13 @@ import { getEntitlements } from "@/features/billing/queries";
 import { ItemDrawerProvider } from "@/features/items/components/drawer/ItemDrawerProvider";
 
 export default async function DashboardPage() {
-  const t = await getTranslations("pages.dashboard");
   const { id: userId } = await getSessionUser();
   const { isPro } = await getEntitlements(userId);
 
   return (
     <div className="space-y-8">
       <ItemDrawerProvider lockProItems={!isPro}>
-        <PageHeader title={t("title")} lead={t("lead")} />
+        <PageHeader namespace="pages.dashboard" />
         <Suspense fallback={<StatsSkeleton />}>
           <StatsCards />
         </Suspense>
