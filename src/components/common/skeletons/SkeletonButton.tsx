@@ -23,11 +23,11 @@ export function SkeletonButton({
       aria-hidden
       className={cn(
         buttonVariants({ size }),
-        "pointer-events-none bg-muted *:invisible",
+        "pointer-events-none bg-muted",
         className,
       )}
     >
-      {children}
+      <span className="invisible contents">{children}</span>
     </Skeleton>
   );
 }

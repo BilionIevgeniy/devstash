@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 
+import { SkeletonButton } from "@/components/common/skeletons/SkeletonButton";
 import { SkeletonText } from "@/components/common/skeletons/SkeletonText";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -40,7 +41,7 @@ export function CancelContractFormSkeleton() {
         </SkeletonText>
         <Skeleton className="h-16 w-full" />
       </div>
-      <Skeleton className="h-8 w-44 max-md:h-11" />
+      <SkeletonButton>{t("submit")}</SkeletonButton>
     </div>
   );
 }

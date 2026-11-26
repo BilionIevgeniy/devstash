@@ -47,10 +47,15 @@ export default async function LockedFilesPage({
   return (
     <div className="space-y-8">
       <LockedFilesHeader
-        renew={
-          <Button asChild>
-            <Link href={UPGRADE_PATH}>{t("renew")}</Link>
-          </Button>
+        actions={
+          <>
+            <Button asChild variant="outline">
+              <Link href={SETTINGS_PATH}>{t("back")}</Link>
+            </Button>
+            <Button asChild>
+              <Link href={UPGRADE_PATH}>{t("renew")}</Link>
+            </Button>
+          </>
         }
       />
       <Suspense key={page} fallback={<LockedFileListSkeleton />}>

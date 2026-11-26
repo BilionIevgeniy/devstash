@@ -24,6 +24,7 @@ export function ItemDrawerSkeleton({
   return (
     <div
       className={cn("space-y-6", className)}
+      role="status"
       aria-busy="true"
       aria-label={t("loading")}
     >
