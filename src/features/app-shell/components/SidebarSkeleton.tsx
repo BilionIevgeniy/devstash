@@ -1,3 +1,4 @@
+import { SkeletonText } from "@/components/common/skeletons/SkeletonText";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const TYPE_ROWS = 7;
@@ -44,9 +45,11 @@ export function SidebarSkeleton() {
       <div className="flex h-16 shrink-0 items-center gap-2 px-4">
         <div className="flex items-center gap-2 max-md:min-h-11">
           <Skeleton className="size-6" />
-          <div className="flex h-7 items-center">
-            <Skeleton className="h-5 w-20" />
-          </div>
+          {/* As wide as the name in the font of the system, as the badge after
+              it starts there. */}
+          <SkeletonText className="text-lg font-semibold">
+            DevStash
+          </SkeletonText>
         </div>
         <Skeleton className="h-5 w-10 rounded-full" />
       </div>
