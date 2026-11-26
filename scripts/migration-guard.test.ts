@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { decideMigration } from "./migration-guard";
 
-const DEV = "ep-soft-art-bhqrx5ln.c-10.eu-central-1.aws.neon.tech";
+const DEV = "ep-orange-star-bh3ldo06.c-10.eu-central-1.aws.neon.tech";
 const DEV_POOLER =
-  "ep-soft-art-bhqrx5ln-pooler.c-10.eu-central-1.aws.neon.tech";
+  "ep-orange-star-bh3ldo06-pooler.c-10.eu-central-1.aws.neon.tech";
 const PROD = "ep-green-mud-bhzhz461.c-10.eu-central-1.aws.neon.tech";
 const PROD_POOLER =
   "ep-green-mud-bhzhz461-pooler.c-10.eu-central-1.aws.neon.tech";
