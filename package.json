@@ -28,6 +28,7 @@
     "db:studio": "prisma studio",
     "test:integration": "vitest run --config vitest.integration.config.mts",
     "test:e2e": "playwright test",
+    "test:instant": "playwright test --config playwright.instant.config.ts",
     "test:storybook": "vitest run --project storybook",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
